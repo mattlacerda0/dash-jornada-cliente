@@ -26,6 +26,12 @@ A tela espera uma lista de objetos no formato:
 
 O endpoint local `/api/quality` retorna os totais calculados diretamente no Supabase. Não exponha `service_role` no navegador.
 
+## Publicar no Netlify
+
+O arquivo `netlify.toml` publica a raiz do projeto e encaminha `/api/quality` para uma Netlify Function. No painel do Netlify, cadastre as variáveis de ambiente `SUPABASE_URL` e `SUPABASE_SERVICE_ROLE_KEY`.
+
+O dashboard consulta os dados ao abrir, atualiza automaticamente a cada 5 minutos enquanto estiver aberto e também permite uma atualização imediata pelo botão **Atualizar**.
+
 ## Próximas abas previstas
 
 Jornada, Reuniões, Financeiro, NPS e CSAT, Cancelamentos e Renovação.

@@ -2,3 +2,4 @@
 exemplo.env
 .server.stdout.log
 .server.stderr.log
+.netlify

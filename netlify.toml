@@ -1,0 +1,9 @@
+[build]
+  publish = "."
+  functions = "netlify/functions"
+
+[[redirects]]
+  from = "/api/quality"
+  to = "/.netlify/functions/quality"
+  status = 200
+

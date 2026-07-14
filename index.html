@@ -3,42 +3,576 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Qualidade dos Dados | Quarta Via</title>
+  <title>Analytics Jornada do Cliente | Quarta Via</title>
+  <link rel="icon" href="/favicon.ico" type="image/x-icon">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root{--color-bg:#0d0d0d;--color-surface:#1a1a1a;--color-surface-2:#222;--color-border:#303030;--color-border-strong:#444;--color-primary:#f47920;--color-primary-soft:rgba(244,121,32,.13);--color-primary-tint:rgba(244,121,32,.08);--color-text:#f7f7f7;--color-text-muted:#b7b7b7;--color-text-subtle:#818181;--color-success:#42c985;--color-warning:#f6bd4b;--color-danger:#ef6b73;--color-info:#69a8ff;--radius-md:8px;--radius-lg:12px;--radius-xl:16px;--space-1:4px;--space-2:8px;--space-3:12px;--space-4:16px;--space-5:24px;--space-6:32px;--shadow-card:0 14px 34px rgba(0,0,0,.18)}
-    *{box-sizing:border-box}body{margin:0;background:var(--color-bg);color:var(--color-text);font-family:Inter,system-ui,sans-serif;line-height:1.5;color-scheme:dark}button,input,select{font:inherit}.topbar{position:sticky;top:0;z-index:10;height:64px;border-bottom:1px solid var(--color-border);background:rgba(13,13,13,.88);backdrop-filter:blur(14px);display:flex;align-items:center;padding:0 28px}.brand{display:flex;align-items:center;gap:12px;font-weight:700}.brand-mark{width:30px;height:30px;border-radius:9px;background:linear-gradient(135deg,#ff9b50,var(--color-primary));display:grid;place-items:center;color:#17110d}.brand span:last-child{color:var(--color-text-muted);font-weight:500}.layout{display:grid;grid-template-columns:238px minmax(0,1fr);min-height:calc(100vh - 64px)}.sidebar{border-right:1px solid var(--color-border);padding:24px 16px;background:#111}.sidebar-label,.eyebrow{font-size:11px;letter-spacing:.11em;text-transform:uppercase;color:var(--color-text-subtle);font-weight:700}.nav{display:grid;gap:6px;margin-top:12px}.nav button{display:flex;align-items:center;gap:10px;width:100%;border:0;background:transparent;color:var(--color-text-muted);padding:10px 12px;border-radius:var(--radius-md);text-align:left;cursor:pointer}.nav button:hover{background:var(--color-surface-2);color:var(--color-text)}.nav button.active{background:var(--color-primary-soft);color:#ffab6f}.nav button[disabled]{opacity:.42;cursor:not-allowed}.nav-icon{width:22px;text-align:center}.soon{margin-left:auto;font-size:9px;text-transform:uppercase;color:var(--color-text-subtle)}main{min-width:0;padding:32px}.container{max-width:1450px;margin:0 auto}.page-header{display:flex;justify-content:space-between;gap:24px;align-items:flex-start}.page-header h1{font-size:30px;line-height:1.2;margin:5px 0 8px}.page-header p{margin:0;color:var(--color-text-muted);max-width:700px}.status{font-size:12px;color:var(--color-text-muted);text-align:right}.status b{display:block;color:var(--color-success);font-weight:600;margin-bottom:3px}.filters{position:sticky;top:80px;z-index:8;margin:24px 0;background:rgba(26,26,26,.94);backdrop-filter:blur(12px);border:1px solid var(--color-border);border-radius:var(--radius-lg);padding:16px;display:grid;grid-template-columns:1.2fr 1fr 1fr auto;gap:12px;box-shadow:var(--shadow-card)}label{display:grid;gap:6px;color:var(--color-text-muted);font-size:12px;font-weight:600}select,input{height:40px;border:1px solid var(--color-border);background:var(--color-surface-2);color:var(--color-text);border-radius:var(--radius-md);padding:0 12px;outline:none}select:focus,input:focus{border-color:var(--color-primary);box-shadow:0 0 0 3px var(--color-primary-tint)}.btn{height:40px;align-self:end;border:1px solid var(--color-border-strong);border-radius:var(--radius-md);background:transparent;color:var(--color-text);padding:0 16px;cursor:pointer}.btn:hover{border-color:var(--color-primary);background:var(--color-primary-tint)}.summary{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}.metric,.field-card,.table-panel{background:linear-gradient(145deg,var(--color-surface),#171717);border:1px solid var(--color-border);border-radius:var(--radius-lg);box-shadow:var(--shadow-card)}.metric{padding:18px}.metric.highlight{border-top:2px solid var(--color-primary)}.metric-label{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--color-text-subtle);font-weight:700}.metric-value{font-size:32px;font-weight:700;margin:7px 0 2px}.metric-note{font-size:12px;color:var(--color-text-muted)}.section-head{display:flex;justify-content:space-between;align-items:end;margin:30px 0 14px}.section-head h2{font-size:18px;margin:0 0 3px}.section-head p,.counter{font-size:12px;color:var(--color-text-muted);margin:0}.cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}.field-card{padding:18px;transition:.18s ease}.field-card:hover{transform:translateY(-2px);border-color:var(--color-border-strong)}.card-top{display:flex;justify-content:space-between;gap:12px}.field{font-size:14px;font-weight:700}.table-name{font-size:11px;color:var(--color-text-subtle);margin-top:3px;font-family:ui-monospace,monospace}.badge{font-size:10px;font-weight:700;text-transform:uppercase;padding:4px 8px;border-radius:999px;height:max-content}.badge.high{color:#ff9399;background:rgba(239,107,115,.12)}.badge.medium{color:#ffd37b;background:rgba(246,189,75,.12)}.badge.low{color:#75dca9;background:rgba(66,201,133,.12)}.missing{display:flex;justify-content:space-between;align-items:end;margin:20px 0 12px}.missing strong{font-size:27px}.missing span{font-size:13px;color:var(--color-text-muted)}.percent{text-align:right}.percent b{display:block;font-size:20px;color:var(--color-primary)}.track{height:7px;background:#303030;border-radius:999px;overflow:hidden}.track div{height:100%;border-radius:999px;background:linear-gradient(90deg,var(--color-primary),#ff9b50)}.card-footer{display:flex;justify-content:space-between;margin-top:10px;font-size:11px;color:var(--color-text-subtle)}.table-panel{margin-top:28px;padding:20px;overflow:hidden}.table-wrap{overflow-x:auto;margin-top:14px}table{width:100%;border-collapse:collapse;min-width:760px}th,td{padding:12px 10px;border-bottom:1px solid var(--color-border);font-size:12px;text-align:left}th{text-transform:uppercase;letter-spacing:.07em;color:var(--color-text-subtle);font-size:10px}td.num,th.num{text-align:right}.empty{display:none;padding:42px;text-align:center;color:var(--color-text-muted)}@media(max-width:1100px){.cards{grid-template-columns:repeat(2,1fr)}.summary{grid-template-columns:repeat(2,1fr)}}@media(max-width:780px){.layout{grid-template-columns:1fr}.sidebar{display:none}main{padding:20px}.page-header{display:block}.status{text-align:left;margin-top:12px}.filters{position:static;grid-template-columns:1fr}.summary,.cards{grid-template-columns:1fr}.topbar{padding:0 20px}}
-    .layout{display:block}.sidebar{display:none}.badge.high{color:#75dca9;background:rgba(66,201,133,.12)}.badge.low{color:#ff9399;background:rgba(239,107,115,.12)}
-    .status-actions{display:flex;align-items:center;gap:12px}.btn:disabled{opacity:.55;cursor:wait}@media(max-width:780px){.status-actions{align-items:flex-start;justify-content:space-between}}
+    *{box-sizing:border-box}body{margin:0;background:var(--color-bg);color:var(--color-text);font-family:Inter,system-ui,sans-serif;line-height:1.5;color-scheme:dark}button,input,select{font:inherit}
+    .topbar{position:sticky;top:0;z-index:10;height:64px;border-bottom:1px solid var(--color-border);background:rgba(13,13,13,.88);backdrop-filter:blur(14px);display:flex;align-items:center;padding:0 28px}
+    .brand{display:flex;align-items:center;gap:12px;font-weight:700}.brand-mark{width:30px;height:30px;border-radius:9px;object-fit:contain;display:block;flex-shrink:0}.brand span:last-child{color:var(--color-text-muted);font-weight:500}
+    .layout{display:grid;grid-template-columns:238px minmax(0,1fr);min-height:calc(100vh - 64px)}
+    .sidebar{border-right:1px solid var(--color-border);padding:24px 16px;background:#111}
+    .sidebar-label,.eyebrow{font-size:11px;letter-spacing:.11em;text-transform:uppercase;color:var(--color-text-subtle);font-weight:700}
+    .nav{display:grid;gap:6px;margin-top:12px}.nav button{display:flex;align-items:center;gap:10px;width:100%;border:0;background:transparent;color:var(--color-text-muted);padding:10px 12px;border-radius:var(--radius-md);text-align:left;cursor:pointer}.nav button:hover{background:var(--color-surface-2);color:var(--color-text)}.nav button.active{background:var(--color-primary-soft);color:#ffab6f}.nav button[disabled]{opacity:.42;cursor:not-allowed}.nav-icon{width:22px;text-align:center}.soon{margin-left:auto;font-size:9px;text-transform:uppercase;color:var(--color-text-subtle)}
+    main{min-width:0;padding:32px}.container{max-width:1450px;margin:0 auto}.view{display:none}.view.active{display:block}
+    .page-header{display:flex;justify-content:space-between;gap:24px;align-items:flex-start}.page-header h1{font-size:30px;line-height:1.2;margin:5px 0 8px}.page-header p{margin:0;color:var(--color-text-muted);max-width:720px}
+    .status{font-size:12px;color:var(--color-text-muted);text-align:right}.status b{display:block;font-weight:600;margin-bottom:3px}
+    .status-actions{display:flex;align-items:center;gap:12px}.btn{height:40px;align-self:end;border:1px solid var(--color-border-strong);border-radius:var(--radius-md);background:transparent;color:var(--color-text);padding:0 16px;cursor:pointer}.btn:hover{border-color:var(--color-primary);background:var(--color-primary-tint)}.btn:disabled{opacity:.55;cursor:wait}.btn.primary{background:var(--color-primary);border-color:var(--color-primary);color:#17110d;font-weight:600}
+    .filters{position:sticky;top:80px;z-index:8;margin:24px 0;background:rgba(26,26,26,.94);backdrop-filter:blur(12px);border:1px solid var(--color-border);border-radius:var(--radius-lg);padding:16px;display:grid;grid-template-columns:1.4fr repeat(3,1fr) auto;gap:12px;box-shadow:var(--shadow-card)}
+    .filters.general{grid-template-columns:repeat(4,minmax(0,1fr));}
+    label{display:grid;gap:6px;color:var(--color-text-muted);font-size:12px;font-weight:600}
+    select,input{height:40px;border:1px solid var(--color-border);background:var(--color-surface-2);color:var(--color-text);border-radius:var(--radius-md);padding:0 12px;outline:none;width:100%}
+    select:focus,input:focus{border-color:var(--color-primary);box-shadow:0 0 0 3px var(--color-primary-tint)}
+    .summary{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}.summary + .summary{margin-top:16px}
+    .metric,.field-card,.table-panel,.chart-card{background:linear-gradient(145deg,var(--color-surface),#171717);border:1px solid var(--color-border);border-radius:var(--radius-lg);box-shadow:var(--shadow-card)}
+    .metric{padding:18px}.metric.highlight{border-top:2px solid var(--color-primary)}
+    .metric-label{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--color-text-subtle);font-weight:700;display:flex;align-items:center;gap:6px}
+    .metric-value{font-size:30px;font-weight:700;margin:7px 0 2px}.metric-note{font-size:12px;color:var(--color-text-muted)}
+    .help{cursor:help;color:var(--color-text-subtle);border:1px solid var(--color-border);border-radius:999px;width:16px;height:16px;display:inline-grid;place-items:center;font-size:10px}
+    .section-head{display:flex;justify-content:space-between;align-items:end;margin:30px 0 14px}.section-head h2{font-size:18px;margin:0 0 3px}.section-head p,.counter{font-size:12px;color:var(--color-text-muted);margin:0}
+    .cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+    .field-card{padding:18px;transition:.18s ease}.field-card:hover{transform:translateY(-2px);border-color:var(--color-border-strong)}
+    .card-top{display:flex;justify-content:space-between;gap:12px}.field{font-size:14px;font-weight:700}.table-name{font-size:11px;color:var(--color-text-subtle);margin-top:3px;font-family:ui-monospace,monospace}.field-desc{font-size:12px;color:var(--color-text-muted);margin-top:8px}
+    .badge{font-size:10px;font-weight:700;text-transform:uppercase;padding:4px 8px;border-radius:999px;height:max-content;display:inline-flex;align-items:center}
+    .badge.high,.badge.positive,.badge.active{color:#75dca9;background:rgba(66,201,133,.12)}
+    .badge.medium,.badge.stable{color:#ffd37b;background:rgba(246,189,75,.12)}
+    .badge.low,.badge.negative,.badge.cancelled{color:#ff9399;background:rgba(239,107,115,.12)}
+    .badge.unavailable{color:var(--color-text-muted);background:rgba(129,129,129,.16)}
+    .missing{display:flex;justify-content:space-between;align-items:end;margin:20px 0 12px}.missing strong{font-size:27px}.missing span{font-size:13px;color:var(--color-text-muted)}
+    .percent{text-align:right}.percent b{display:block;font-size:20px;color:var(--color-primary)}
+    .track{height:7px;background:#303030;border-radius:999px;overflow:hidden}.track div{height:100%;border-radius:999px;background:linear-gradient(90deg,var(--color-primary),#ff9b50)}
+    .card-footer{display:flex;justify-content:space-between;margin-top:10px;font-size:11px;color:var(--color-text-subtle)}
+    .charts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.chart-card{padding:18px}.chart-card h3{margin:0 0 4px;font-size:15px}.chart-card p{margin:0 0 14px;font-size:12px;color:var(--color-text-muted)}
+    .hbar{display:grid;grid-template-columns:140px 1fr 72px;gap:10px;align-items:center;margin:8px 0}.hbar-label{font-size:12px;color:var(--color-text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.hbar-track{height:8px;background:#303030;border-radius:999px;overflow:hidden}.hbar-track span{display:block;height:100%;background:linear-gradient(90deg,var(--color-primary),#ff9b50)}.hbar-val{font-size:12px;text-align:right;color:var(--color-text)}
+    .donut-wrap{display:flex;gap:20px;align-items:center;flex-wrap:wrap}.donut{width:132px;height:132px}.legend{display:grid;gap:8px;font-size:12px;color:var(--color-text-muted)}.legend i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:8px}
+    .table-panel{margin-top:28px;padding:20px;overflow:hidden}.table-wrap{overflow-x:auto;margin-top:14px;max-height:560px}
+    table{width:100%;border-collapse:collapse;min-width:1100px}th,td{padding:12px 10px;border-bottom:1px solid var(--color-border);font-size:12px;text-align:left}
+    .bool-yes{color:var(--color-success);font-weight:700}.bool-no{color:var(--color-text-subtle);font-weight:700}.bool-na{color:var(--color-text-subtle)}
+    .drawer-section{margin-top:18px}.drawer-section h3{margin:0 0 10px;font-size:13px;text-transform:uppercase;letter-spacing:.08em;color:var(--color-text-subtle)}
+    th{text-transform:uppercase;letter-spacing:.07em;color:var(--color-text-subtle);font-size:10px;position:sticky;top:0;background:#1b1b1b;z-index:2;cursor:pointer;user-select:none}th.num,td.num{text-align:right}
+    td.center{text-align:center}
+    tbody tr{cursor:pointer}tbody tr:hover{background:rgba(244,121,32,.06)}
+    .empty{display:none;padding:42px;text-align:center;color:var(--color-text-muted)}
+    .pagination{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:14px;flex-wrap:wrap}.pagination .btn{height:34px;padding:0 12px}
+    .truncate{max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.62);display:none;align-items:stretch;justify-content:flex-end;z-index:40}
+    .modal-backdrop.open{display:flex}.drawer{width:min(440px,100%);background:#141414;border-left:1px solid var(--color-border);padding:24px;overflow:auto}
+    .drawer h2{margin:0 0 6px;font-size:20px}.drawer .sub{color:var(--color-text-muted);font-size:12px;margin-bottom:18px}
+    .drawer-grid{display:grid;gap:10px}.drawer-item{border:1px solid var(--color-border);border-radius:10px;padding:12px;background:#1a1a1a}
+    .drawer-item span{display:block;font-size:11px;color:var(--color-text-subtle);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
+    .warnings{margin-top:16px}.warnings li{margin:6px 0;color:#ffb4b8;font-size:12px}
+    .engineers-toggle{margin-top:10px}
+    @media(max-width:1100px){.cards,.charts{grid-template-columns:1fr}.summary{grid-template-columns:repeat(2,1fr)}.filters,.filters.general{grid-template-columns:1fr 1fr}}
+    @media(max-width:780px){.layout{grid-template-columns:1fr}.sidebar{display:none}main{padding:20px}.page-header{display:block}.status{text-align:left;margin-top:12px}.filters,.filters.general,.summary,.cards,.charts{grid-template-columns:1fr}.topbar{padding:0 20px}.status-actions{align-items:flex-start;justify-content:space-between}}
   </style>
 </head>
 <body>
-  <header class="topbar"><div class="brand"><div class="brand-mark">QV</div><div>Quartavia</div><span>Dados & Inteligência</span></div></header>
+  <header class="topbar"><div class="brand"><img class="brand-mark" src="/favicon.ico" alt="Quarta Via" width="30" height="30"><div>Quartavia</div><span>Dados & Inteligência</span></div></header>
   <div class="layout">
-    <main><div class="container">
-      <header class="page-header"><div><div class="eyebrow">Backup BASE QV · schema public</div><h1>Qualidade e preenchimento dos dados</h1><p>Visão das informações preenchidas em relação ao total de linhas de cada tabela, com quantidade absoluta e percentual por coluna.</p></div><div class="status-actions"><div class="status"><b id="connectionStatus" style="color:var(--color-warning)">● Conectando ao Supabase</b><span id="updatedAt">Calculando indicadores…</span></div><button class="btn" id="refresh" type="button">Atualizar</button></div></header>
-      <section class="filters" aria-label="Filtros globais"><label>Buscar coluna ou tabela<input id="search" placeholder="Ex.: churn_date" /></label><label>Domínio<select id="domain"><option value="all">Todos os domínios</option></select></label><label>Preenchimento<select id="severity"><option value="all">Todos</option><option value="high">Alto (≥ 85%)</option><option value="medium">Médio (60%–84,9%)</option><option value="low">Baixo (&lt; 60%)</option></select></label><button class="btn" id="clear">Limpar filtros</button></section>
-      <section class="summary" id="summary"></section>
-      <div class="section-head"><div><h2>Preenchimento por coluna</h2><p>Cada cartão compara valores vazios ou nulos com o total de registros da tabela.</p></div><span class="counter" id="counter"></span></div>
-      <section class="cards" id="cards"></section><div class="empty" id="empty">Nenhuma coluna encontrada para os filtros selecionados.</div>
-      <section class="table-panel"><div class="section-head" style="margin:0"><div><h2>Detalhamento técnico</h2><p>Base para validação da consulta e acompanhamento da completude.</p></div></div><div class="table-wrap"><table><thead><tr><th>Domínio</th><th>Tabela</th><th>Coluna</th><th class="num">Linhas</th><th class="num">Preenchidos</th><th class="num">Percentual preenchido</th></tr></thead><tbody id="rows"></tbody></table></div></section>
-    </div></main>
+    <aside class="sidebar">
+      <div class="sidebar-label">Analytics</div>
+      <nav class="nav" aria-label="Navegação principal">
+        <button type="button" class="active" data-nav="general"><span class="nav-icon">◎</span>Dados Gerais</button>
+        <button type="button" data-nav="quality"><span class="nav-icon">▦</span>Qualidade</button>
+        <button type="button" disabled><span class="nav-icon">⇢</span>Jornada<span class="soon">em breve</span></button>
+        <button type="button" disabled><span class="nav-icon">◎</span>Reuniões<span class="soon">em breve</span></button>
+        <button type="button" disabled><span class="nav-icon">$</span>Financeiro<span class="soon">em breve</span></button>
+      </nav>
+    </aside>
+    <main>
+      <section class="view active" id="view-general">
+        <div class="container">
+          <header class="page-header">
+            <div>
+              <div class="eyebrow">Portal · Jornada do Cliente</div>
+              <h1>Dados Gerais</h1>
+              <p>Visão consolidada do perfil, vínculo e perfil financeiro dos clientes.</p>
+            </div>
+            <div class="status-actions">
+              <div class="status"><b id="gStatus" style="color:var(--color-warning)">● Conectando ao Supabase</b><span id="gUpdated">Calculando indicadores…</span></div>
+              <button class="btn" id="gRefresh" type="button">Atualizar</button>
+            </div>
+          </header>
+
+          <section class="filters general" aria-label="Filtros de dados gerais">
+            <label>Busca<input id="gSearch" placeholder="Nome, código ou ID" /></label>
+            <label>Status<select id="gStatusFilter"><option value="all">Todos</option></select></label>
+            <label>Segmento<select id="gSegment"><option value="all">Todos</option></select></label>
+            <label>Engenheiro Patrimonial<select id="gEngineer"><option value="all">Todos</option></select></label>
+            <label>Faixa de contratação<select id="gContractRange">
+              <option value="all">Todas</option>
+              <option value="last3">Últimos 3 meses</option>
+              <option value="last6">Últimos 6 meses</option>
+              <option value="last12">Últimos 12 meses</option>
+              <option value="older12">Há mais de 12 meses</option>
+              <option value="missing">Sem data</option>
+            </select></label>
+            <label>Faixa de cancelamento<select id="gCancelRange">
+              <option value="all">Todas</option>
+              <option value="last3">Últimos 3 meses</option>
+              <option value="last6">Últimos 6 meses</option>
+              <option value="last12">Últimos 12 meses</option>
+              <option value="older12">Há mais de 12 meses</option>
+              <option value="missing">Sem data</option>
+              <option value="none">Sem cancelamento</option>
+            </select></label>
+            <label>Faixa de permanência<select id="gStayRange"><option value="all">Todas</option></select></label>
+            <button class="btn" id="gClear" type="button">Limpar filtros</button>
+          </section>
+
+          <section class="summary" id="gKpis1"></section>
+          <section class="summary" id="gKpis2"></section>
+
+          <div class="section-head"><div><h2>Distribuições</h2><p>Leitura rápida do perfil da carteira.</p></div></div>
+          <section class="charts">
+            <article class="chart-card"><h3>Clientes por status</h3><p>Quantidade e percentual</p><div id="chartStatus"></div></article>
+            <article class="chart-card"><h3>Clientes por segmento</h3><p>Valores vazios agrupados como “Não informado”</p><div id="chartSegments"></div></article>
+            <article class="chart-card"><h3>Engenheiro Patrimonial</h3><p>Principais responsáveis</p><div id="chartEngineers"></div><button class="btn engineers-toggle" id="toggleEngineers" type="button">Ver todos</button></article>
+            <article class="chart-card"><h3>Tempo de permanência</h3><p>Faixas de vínculo com a Quarta Via</p><div id="chartStay"></div></article>
+            <article class="chart-card"><h3>Perfil Financeiro</h3><p>Clientes com imóvel, carro, consórcio ou reserva informada</p><div id="chartFinancialProfile"></div></article>
+            <article class="chart-card"><h3>Distribuição da renda mensal</h3><p>Faixas de última renda registrada</p><div id="chartIncome"></div></article>
+            <article class="chart-card" style="grid-column:1/-1"><h3>Distribuição da reserva de liquidez</h3><p>Faixas de reserva informada</p><div id="chartLiquidity"></div></article>
+          </section>
+
+          <section class="table-panel">
+            <div class="section-head" style="margin:0">
+              <div><h2>Detalhamento dos clientes</h2><p>Clique em uma linha para abrir os detalhes.</p></div>
+              <span class="counter" id="gCounter"></span>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th data-sort="clientName">Cliente</th>
+                    <th data-sort="clientCode">Código</th>
+                    <th data-sort="clientId">ID</th>
+                    <th data-sort="contractDate">Contratação</th>
+                    <th data-sort="cancellationDate">Cancelamento</th>
+                    <th data-sort="stayDays" class="num">Permanência</th>
+                    <th data-sort="status">Status</th>
+                    <th data-sort="segment">Segmento</th>
+                    <th data-sort="engineer">Engenheiro Patrimonial</th>
+                    <th data-sort="monthlyIncome" class="num">Última renda mensal</th>
+                    <th data-sort="lastContribution" class="num">Último aporte</th>
+                    <th data-sort="liquidityReserve" class="num">Reserva de liquidez</th>
+                    <th data-sort="hasProperty">Imóvel</th>
+                    <th data-sort="hasCar">Carro</th>
+                    <th data-sort="hasConsortium">Consórcio</th>
+                  </tr>
+                </thead>
+                <tbody id="gRows"></tbody>
+              </table>
+            </div>
+            <div class="empty" id="gEmpty">Nenhum cliente encontrado para os filtros selecionados.</div>
+            <div class="pagination">
+              <div id="gPageInfo"></div>
+              <div>
+                <button class="btn" id="gPrev" type="button">Anterior</button>
+                <button class="btn" id="gNext" type="button">Próxima</button>
+              </div>
+            </div>
+          </section>
+        </div>
+      </section>
+
+      <section class="view" id="view-quality">
+        <div class="container">
+          <header class="page-header">
+            <div>
+              <div class="eyebrow">Backup BASE QV · schema public</div>
+              <h1>Qualidade e preenchimento dos dados</h1>
+              <p>Visão das informações preenchidas em relação ao total de linhas de cada tabela, com quantidade absoluta e percentual por coluna.</p>
+            </div>
+            <div class="status-actions">
+              <div class="status"><b id="connectionStatus" style="color:var(--color-warning)">● Conectando ao Supabase</b><span id="updatedAt">Calculando indicadores…</span></div>
+              <button class="btn" id="refresh" type="button">Atualizar</button>
+            </div>
+          </header>
+          <section class="filters" aria-label="Filtros globais">
+            <label>Buscar coluna ou tabela<input id="search" placeholder="Ex.: data_inicio_ciclo" /></label>
+            <label>Domínio<select id="domain"><option value="all">Todos os domínios</option></select></label>
+            <label>Preenchimento<select id="severity"><option value="all">Todos</option><option value="high">Alto (≥ 85%)</option><option value="medium">Médio (60%–84,9%)</option><option value="low">Baixo (&lt; 60%)</option></select></label>
+            <button class="btn" id="clear">Limpar filtros</button>
+          </section>
+          <section class="summary" id="summary"></section>
+          <div class="section-head"><div><h2>Preenchimento por coluna</h2><p>Cada cartão compara valores vazios ou nulos com o total de registros da tabela.</p></div><span class="counter" id="counter"></span></div>
+          <section class="cards" id="cards"></section>
+          <div class="empty" id="empty">Nenhuma coluna encontrada para os filtros selecionados.</div>
+          <section class="table-panel">
+            <div class="section-head" style="margin:0"><div><h2>Detalhamento técnico</h2><p>Base para validação da consulta e acompanhamento da completude.</p></div></div>
+            <div class="table-wrap"><table><thead><tr><th>Domínio</th><th>Tabela</th><th>Coluna</th><th class="num">Linhas</th><th class="num">Preenchidos</th><th class="num">Percentual preenchido</th></tr></thead><tbody id="rows"></tbody></table></div>
+          </section>
+        </div>
+      </section>
+    </main>
   </div>
+
+  <div class="modal-backdrop" id="drawer" aria-hidden="true">
+    <aside class="drawer" role="dialog" aria-modal="true" aria-labelledby="drawerTitle">
+      <button class="btn" id="drawerClose" type="button" style="float:right">Fechar</button>
+      <h2 id="drawerTitle">Cliente</h2>
+      <div class="sub" id="drawerSub"></div>
+      <div class="drawer-grid" id="drawerGrid"></div>
+      <div class="warnings"><strong>Alertas de qualidade</strong><ul id="drawerWarnings"></ul></div>
+    </aside>
+  </div>
+
   <script>
-    let qualityData=[];
-    const fmt=new Intl.NumberFormat('pt-BR'); const pct=n=>n.toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1})+'%';
-    const getFilled=d=>d.totalRows-d.missingRows; const getPct=d=>d.totalRows?getFilled(d)/d.totalRows*100:0; const sev=p=>p>=85?'high':p>=60?'medium':'low'; const sevLabel={high:'Alto',medium:'Médio',low:'Baixo'};
-    const els={search:document.querySelector('#search'),domain:document.querySelector('#domain'),severity:document.querySelector('#severity'),cards:document.querySelector('#cards'),rows:document.querySelector('#rows'),summary:document.querySelector('#summary'),counter:document.querySelector('#counter'),empty:document.querySelector('#empty')};
-    function fillDomains(){els.domain.innerHTML='<option value="all">Todos os domínios</option>';[...new Set(qualityData.map(d=>d.domain))].sort().forEach(d=>els.domain.insertAdjacentHTML('beforeend',`<option>${d}</option>`))}
-    function filtered(){const q=els.search.value.trim().toLowerCase();return qualityData.filter(d=>(els.domain.value==='all'||d.domain===els.domain.value)&&(els.severity.value==='all'||sev(getPct(d))===els.severity.value)&&(!q||`${d.table} ${d.column}`.toLowerCase().includes(q))).sort((a,b)=>getPct(b)-getPct(a)||getFilled(b)-getFilled(a)||`${a.table}.${a.column}`.localeCompare(`${b.table}.${b.column}`,'pt-BR'))}
-    function render(){const data=filtered();const totals=data.reduce((a,d)=>(a.rows+=d.totalRows,a.filled+=getFilled(d),a),{rows:0,filled:0});const completion=totals.rows?totals.filled/totals.rows*100:0;els.summary.innerHTML=`<article class="metric highlight"><div class="metric-label">Linhas analisadas*</div><div class="metric-value">${fmt.format(totals.rows)}</div><div class="metric-note">Soma das linhas por coluna filtrada</div></article><article class="metric"><div class="metric-label">Colunas auditadas</div><div class="metric-value">${fmt.format(data.length)}</div><div class="metric-note">Em ${new Set(data.map(d=>d.table)).size} tabelas</div></article><article class="metric"><div class="metric-label">Valores preenchidos</div><div class="metric-value">${fmt.format(totals.filled)}</div><div class="metric-note">Células com informação registrada</div></article><article class="metric"><div class="metric-label">Completude geral*</div><div class="metric-value">${pct(completion)}</div><div class="metric-note">Sobre todas as células auditadas</div></article>`;
-      els.cards.innerHTML=data.map(d=>{const p=getPct(d),filled=getFilled(d),s=sev(p);return `<article class="field-card"><div class="card-top"><div><div class="field">${d.column}</div><div class="table-name">public.${d.table}</div></div><span class="badge ${s}">${sevLabel[s]}</span></div><div class="missing"><div><span>Preenchidos</span><br><strong>${fmt.format(filled)}</strong></div><div class="percent"><b>${pct(p)}</b><span>de ${fmt.format(d.totalRows)} linhas</span></div></div><div class="track" title="${pct(p)} preenchido"><div style="width:${Math.min(p,100)}%"></div></div><div class="card-footer"><span>${d.domain}</span><span>${fmt.format(d.totalRows)} linhas</span></div></article>`}).join('');
-      els.rows.innerHTML=data.map(d=>`<tr><td>${d.domain}</td><td><code>public.${d.table}</code></td><td><code>${d.column}</code></td><td class="num">${fmt.format(d.totalRows)}</td><td class="num">${fmt.format(getFilled(d))}</td><td class="num">${pct(getPct(d))}</td></tr>`).join('');els.counter.textContent=`${data.length} de ${qualityData.length} colunas`;els.empty.style.display=data.length?'none':'block';els.cards.style.display=data.length?'grid':'none'}
-    let isLoading=false;
-    async function loadData(){if(isLoading)return;isLoading=true;const refresh=document.querySelector('#refresh');const status=document.querySelector('#connectionStatus');refresh.disabled=true;refresh.textContent='Atualizando…';status.textContent='● Atualizando dados';status.style.color='var(--color-warning)';try{const response=await fetch(`/api/quality?t=${Date.now()}`,{cache:'no-store'});const payload=await response.json();if(!response.ok)throw new Error(payload.error||'Falha ao consultar o banco');qualityData=payload.data;fillDomains();render();status.textContent=payload.errors?.length?'● Supabase conectado com alertas':'● Supabase conectado';status.style.color=payload.errors?.length?'var(--color-warning)':'var(--color-success)';document.querySelector('#updatedAt').textContent=`Atualizado em ${new Date(payload.generatedAt).toLocaleString('pt-BR')}`}catch(error){status.textContent='● Falha na atualização';status.style.color='var(--color-danger)';document.querySelector('#updatedAt').textContent=error.message;if(!qualityData.length){els.empty.style.display='block';els.empty.textContent='Não foi possível carregar os indicadores. Verifique as variáveis do Supabase no Netlify.'}}finally{isLoading=false;refresh.disabled=false;refresh.textContent='Atualizar'}}
-    [els.search,els.domain,els.severity].forEach(e=>e.addEventListener('input',render));document.querySelector('#clear').addEventListener('click',()=>{els.search.value='';els.domain.value='all';els.severity.value='all';render()});document.querySelector('#refresh').addEventListener('click',loadData);loadData();setInterval(loadData,5*60*1000);
+    const fmt = new Intl.NumberFormat('pt-BR');
+    const pct = n => n.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + '%';
+    const money = v => v == null ? 'Não informado' : v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    const moneyAvg = v => v == null ? '—' : v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 });
+    const boolIcon = v => v === true
+      ? '<span class="bool-yes" title="Sim">✔</span>'
+      : v === false
+        ? '<span class="bool-no" title="Não">✖</span>'
+        : '<span class="bool-na" title="Não informado">—</span>';
+    const boolLabel = v => v === true ? 'Sim' : v === false ? 'Não' : 'Não informado';
+    const dateBR = iso => {
+      if (!iso) return 'Não informado';
+      const d = new Date(iso);
+      if (Number.isNaN(d.getTime())) return 'Não informado';
+      return d.toLocaleDateString('pt-BR', { timeZone: 'UTC' });
+    };
+    const escapeHtml = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    const monthsAgo = n => { const d = new Date(); d.setMonth(d.getMonth() - n); return d; };
+    const inDateBand = (iso, band) => {
+      if (band === 'all') return true;
+      if (band === 'none') return !iso;
+      if (band === 'missing') return !iso;
+      if (!iso) return false;
+      const d = new Date(iso);
+      if (band === 'last3') return d >= monthsAgo(3);
+      if (band === 'last6') return d >= monthsAgo(6);
+      if (band === 'last12') return d >= monthsAgo(12);
+      if (band === 'older12') return d < monthsAgo(12);
+      return true;
+    };
+
+    /* -------- Navigation -------- */
+    const views = { general: document.querySelector('#view-general'), quality: document.querySelector('#view-quality') };
+    document.querySelectorAll('[data-nav]').forEach(btn => btn.addEventListener('click', () => {
+      document.querySelectorAll('[data-nav]').forEach(b => b.classList.toggle('active', b === btn));
+      Object.entries(views).forEach(([key, el]) => el.classList.toggle('active', key === btn.dataset.nav));
+      if (btn.dataset.nav === 'general' && !generalState.payload) loadGeneral();
+      if (btn.dataset.nav === 'quality' && !qualityData.length) loadQuality();
+    }));
+
+    /* -------- Quality (existing behavior + descriptions) -------- */
+    let qualityData = [];
+    const getFilled = d => d.totalRows - d.missingRows;
+    const getPct = d => d.totalRows ? getFilled(d) / d.totalRows * 100 : 0;
+    const sev = p => p >= 85 ? 'high' : p >= 60 ? 'medium' : 'low';
+    const sevLabel = { high: 'Alto', medium: 'Médio', low: 'Baixo' };
+    const qEls = {
+      search: document.querySelector('#search'), domain: document.querySelector('#domain'), severity: document.querySelector('#severity'),
+      cards: document.querySelector('#cards'), rows: document.querySelector('#rows'), summary: document.querySelector('#summary'),
+      counter: document.querySelector('#counter'), empty: document.querySelector('#empty')
+    };
+    function fillDomains() {
+      qEls.domain.innerHTML = '<option value="all">Todos os domínios</option>';
+      [...new Set(qualityData.map(d => d.domain))].sort().forEach(d => qEls.domain.insertAdjacentHTML('beforeend', `<option>${escapeHtml(d)}</option>`));
+    }
+    function filteredQuality() {
+      const q = qEls.search.value.trim().toLowerCase();
+      return qualityData.filter(d =>
+        (qEls.domain.value === 'all' || d.domain === qEls.domain.value) &&
+        (qEls.severity.value === 'all' || sev(getPct(d)) === qEls.severity.value) &&
+        (!q || `${d.table} ${d.column}`.toLowerCase().includes(q))
+      ).sort((a, b) => getPct(b) - getPct(a) || getFilled(b) - getFilled(a) || `${a.table}.${a.column}`.localeCompare(`${b.table}.${b.column}`, 'pt-BR'));
+    }
+    function renderQuality() {
+      const data = filteredQuality();
+      const totals = data.reduce((a, d) => (a.rows += d.totalRows, a.filled += getFilled(d), a), { rows: 0, filled: 0 });
+      const completion = totals.rows ? totals.filled / totals.rows * 100 : 0;
+      qEls.summary.innerHTML = `
+        <article class="metric highlight"><div class="metric-label">Linhas analisadas*</div><div class="metric-value">${fmt.format(totals.rows)}</div><div class="metric-note">Soma das linhas por coluna filtrada</div></article>
+        <article class="metric"><div class="metric-label">Colunas auditadas</div><div class="metric-value">${fmt.format(data.length)}</div><div class="metric-note">Em ${new Set(data.map(d => d.table)).size} tabelas</div></article>
+        <article class="metric"><div class="metric-label">Valores preenchidos</div><div class="metric-value">${fmt.format(totals.filled)}</div><div class="metric-note">Células com informação registrada</div></article>
+        <article class="metric"><div class="metric-label">Completude geral*</div><div class="metric-value">${pct(completion)}</div><div class="metric-note">Sobre todas as células auditadas</div></article>`;
+      qEls.cards.innerHTML = data.map(d => {
+        const p = getPct(d), filled = getFilled(d), s = sev(p);
+        return `<article class="field-card"><div class="card-top"><div><div class="field">${escapeHtml(d.column)}</div><div class="table-name">public.${escapeHtml(d.table)}</div>${d.description ? `<div class="field-desc">${escapeHtml(d.description)}</div>` : ''}</div><span class="badge ${s}">${sevLabel[s]}</span></div>
+          <div class="missing"><div><span>Preenchidos</span><br><strong>${fmt.format(filled)}</strong></div><div class="percent"><b>${pct(p)}</b><span>de ${fmt.format(d.totalRows)} linhas</span></div></div>
+          <div class="track" title="${pct(p)} preenchido"><div style="width:${Math.min(p, 100)}%"></div></div>
+          <div class="card-footer"><span>${escapeHtml(d.domain)}</span><span>${fmt.format(d.totalRows)} linhas</span></div></article>`;
+      }).join('');
+      qEls.rows.innerHTML = data.map(d => `<tr><td>${escapeHtml(d.domain)}</td><td><code>public.${escapeHtml(d.table)}</code></td><td title="${escapeHtml(d.description || '')}"><code>${escapeHtml(d.column)}</code></td><td class="num">${fmt.format(d.totalRows)}</td><td class="num">${fmt.format(getFilled(d))}</td><td class="num">${pct(getPct(d))}</td></tr>`).join('');
+      qEls.counter.textContent = `${data.length} de ${qualityData.length} colunas`;
+      qEls.empty.style.display = data.length ? 'none' : 'block';
+      qEls.cards.style.display = data.length ? 'grid' : 'none';
+    }
+    let qualityLoading = false;
+    let qualityRequestId = 0;
+    async function loadQuality() {
+      if (qualityLoading) return;
+      qualityLoading = true;
+      const requestId = ++qualityRequestId;
+      const refresh = document.querySelector('#refresh');
+      const status = document.querySelector('#connectionStatus');
+      refresh.disabled = true; refresh.textContent = 'Atualizando…';
+      status.textContent = '● Atualizando dados'; status.style.color = 'var(--color-warning)';
+      try {
+        const response = await fetch(`/api/quality?t=${Date.now()}`, { cache: 'no-store' });
+        const payload = await response.json();
+        if (requestId !== qualityRequestId) return;
+        if (!response.ok) throw new Error(payload.error || 'Falha ao consultar o banco');
+        qualityData = payload.data;
+        fillDomains(); renderQuality();
+        status.textContent = payload.errors?.length ? '● Supabase conectado com alertas' : '● Supabase conectado';
+        status.style.color = payload.errors?.length ? 'var(--color-warning)' : 'var(--color-success)';
+        document.querySelector('#updatedAt').textContent = `Atualizado em ${new Date(payload.generatedAt).toLocaleString('pt-BR')}`;
+      } catch (error) {
+        if (requestId !== qualityRequestId) return;
+        status.textContent = '● Falha na atualização'; status.style.color = 'var(--color-danger)';
+        document.querySelector('#updatedAt').textContent = error.message;
+        if (!qualityData.length) { qEls.empty.style.display = 'block'; qEls.empty.textContent = 'Não foi possível carregar os indicadores.'; }
+      } finally {
+        if (requestId === qualityRequestId) { qualityLoading = false; refresh.disabled = false; refresh.textContent = 'Atualizar'; }
+      }
+    }
+    [qEls.search, qEls.domain, qEls.severity].forEach(e => e.addEventListener('input', renderQuality));
+    document.querySelector('#clear').addEventListener('click', () => { qEls.search.value = ''; qEls.domain.value = 'all'; qEls.severity.value = 'all'; renderQuality(); });
+    document.querySelector('#refresh').addEventListener('click', loadQuality);
+
+    /* -------- Dados Gerais -------- */
+    const generalState = {
+      payload: null, page: 1, pageSize: 25, sortKey: 'clientName', sortDir: 'asc',
+      showAllEngineers: false, loading: false, requestId: 0
+    };
+    const gFilters = {
+      search: document.querySelector('#gSearch'), status: document.querySelector('#gStatusFilter'),
+      segment: document.querySelector('#gSegment'), engineer: document.querySelector('#gEngineer'),
+      contract: document.querySelector('#gContractRange'), cancel: document.querySelector('#gCancelRange'),
+      stay: document.querySelector('#gStayRange')
+    };
+
+    function fillSelect(select, values, allLabel) {
+      const current = select.value || 'all';
+      select.innerHTML = `<option value="all">${allLabel}</option>` + values.map(v => `<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`).join('');
+      select.value = [...select.options].some(o => o.value === current) ? current : 'all';
+    }
+
+    function statusBadge(status) {
+      const cancelled = /cancel|churn|inativ|encerr/i.test(status || '');
+      return `<span class="badge ${cancelled ? 'cancelled' : 'active'}">${escapeHtml(status || 'Não informado')}</span>`;
+    }
+
+    function filteredClients() {
+      const clients = generalState.payload?.clients || [];
+      const q = gFilters.search.value.trim().toLowerCase();
+      return clients.filter(c => {
+        if (gFilters.status.value !== 'all' && c.status !== gFilters.status.value) return false;
+        if (gFilters.segment.value !== 'all' && c.segment !== gFilters.segment.value) return false;
+        if (gFilters.engineer.value !== 'all' && c.engineer !== gFilters.engineer.value) return false;
+        if (gFilters.stay.value !== 'all' && c.stayRange !== gFilters.stay.value) return false;
+        if (!inDateBand(c.contractDate, gFilters.contract.value)) return false;
+        if (gFilters.cancel.value === 'none') { if (c.cancellationDate) return false; }
+        else if (!inDateBand(c.cancellationDate, gFilters.cancel.value)) return false;
+        if (q) {
+          const hay = `${c.clientName} ${c.clientCode || ''} ${c.clientId}`.toLowerCase();
+          if (!hay.includes(q)) return false;
+        }
+        return true;
+      }).sort((a, b) => {
+        const key = generalState.sortKey;
+        const av = a[key], bv = b[key];
+        let cmp = 0;
+        if (av == null && bv == null) cmp = 0;
+        else if (av == null) cmp = 1;
+        else if (bv == null) cmp = -1;
+        else if (typeof av === 'number' && typeof bv === 'number') cmp = av - bv;
+        else if (typeof av === 'boolean' && typeof bv === 'boolean') cmp = Number(av) - Number(bv);
+        else cmp = String(av).localeCompare(String(bv), 'pt-BR', { numeric: true });
+        return generalState.sortDir === 'asc' ? cmp : -cmp;
+      });
+    }
+
+    function hBars(items, limit) {
+      const list = limit ? items.slice(0, limit) : items;
+      const max = Math.max(...list.map(i => i.count), 1);
+      return list.map(i => `
+        <div class="hbar" title="${escapeHtml(i.label)}: ${fmt.format(i.count)} (${pct(i.percent)})">
+          <div class="hbar-label">${escapeHtml(i.label)}</div>
+          <div class="hbar-track"><span style="width:${(i.count / max) * 100}%"></span></div>
+          <div class="hbar-val">${fmt.format(i.count)} · ${pct(i.percent)}</div>
+        </div>`).join('') || '<div class="empty" style="display:block">Sem dados</div>';
+    }
+
+    function donut(items) {
+      const colors = ['#f47920', '#69a8ff', '#42c985', '#f6bd4b', '#ef6b73', '#b48cff', '#7dd3c7'];
+      const total = items.reduce((a, i) => a + i.count, 0) || 1;
+      let offset = 0;
+      const radius = 42, c = 2 * Math.PI * radius;
+      const arcs = items.map((item, idx) => {
+        const len = (item.count / total) * c;
+        const circle = `<circle cx="60" cy="60" r="${radius}" fill="none" stroke="${colors[idx % colors.length]}" stroke-width="14" stroke-dasharray="${len} ${c - len}" stroke-dashoffset="${-offset}" transform="rotate(-90 60 60)"></circle>`;
+        offset += len;
+        return circle;
+      }).join('');
+      const legend = items.map((item, idx) => `<div><i style="background:${colors[idx % colors.length]}"></i>${escapeHtml(item.label)} — ${fmt.format(item.count)} (${pct(item.percent)})</div>`).join('');
+      return `<div class="donut-wrap"><svg class="donut" viewBox="0 0 120 120">${arcs}<circle cx="60" cy="60" r="28" fill="#141414"></circle></svg><div class="legend">${legend}</div></div>`;
+    }
+
+    function renderGeneral() {
+      if (!generalState.payload) return;
+      const data = filteredClients();
+      const summary = generalState.payload.summary;
+      const dist = generalState.payload.distributions;
+      document.querySelector('#gKpis1').innerHTML = `
+        <article class="metric highlight"><div class="metric-label">Total de clientes</div><div class="metric-value">${fmt.format(summary.totalClients)}</div><div class="metric-note">Carteira consolidada</div></article>
+        <article class="metric"><div class="metric-label">Clientes ativos</div><div class="metric-value">${fmt.format(summary.activeClients)}</div><div class="metric-note">Sem cancelamento efetivo dominante</div></article>
+        <article class="metric"><div class="metric-label">Clientes cancelados</div><div class="metric-value">${fmt.format(summary.cancelledClients)}</div><div class="metric-note">Com churn efetivo ou status de cancelamento</div></article>
+        <article class="metric"><div class="metric-label">Tempo médio de permanência <span class="help" title="Período entre a contratação e o cancelamento. Para clientes ativos, considera a data atual.">?</span></div><div class="metric-value">${summary.averageStayDays == null ? '—' : fmt.format(Math.round(summary.averageStayDays)) + ' d'}</div><div class="metric-note">Média em dias</div></article>`;
+      document.querySelector('#gKpis2').innerHTML = `
+        <article class="metric"><div class="metric-label">Reserva de liquidez média <span class="help" title="Média da reserva de liquidez informada pelos clientes.">?</span></div><div class="metric-value" style="font-size:22px">${moneyAvg(summary.averageLiquidityReserve)}</div><div class="metric-note">${fmt.format(summary.liquidityReserveFilledCount || 0)} clientes preenchidos</div></article>
+        <article class="metric"><div class="metric-label">Último aporte médio <span class="help" title="Valor médio do último aporte registrado.">?</span></div><div class="metric-value" style="font-size:22px">${moneyAvg(summary.averageLastContribution)}</div><div class="metric-note">${fmt.format(summary.lastContributionFilledCount || 0)} clientes preenchidos</div></article>
+        <article class="metric"><div class="metric-label">Renda mensal média <span class="help" title="Última renda mensal registrada.">?</span></div><div class="metric-value" style="font-size:22px">${moneyAvg(summary.averageMonthlyIncome)}</div><div class="metric-note">${fmt.format(summary.monthlyIncomeFilledCount || 0)} clientes preenchidos</div></article>
+        <article class="metric highlight"><div class="metric-label">Clientes com diagnóstico financeiro</div><div class="metric-value">${fmt.format(summary.clientsWithFinancialProfile || 0)}</div><div class="metric-note">${pct(summary.financialProfilePercent || 0)} da carteira</div></article>`;
+
+      document.querySelector('#chartStatus').innerHTML = donut(dist.status);
+      document.querySelector('#chartSegments').innerHTML = hBars(dist.segments);
+      document.querySelector('#chartEngineers').innerHTML = hBars(dist.engineers, generalState.showAllEngineers ? null : 8);
+      document.querySelector('#toggleEngineers').textContent = generalState.showAllEngineers ? 'Ver principais' : 'Ver todos';
+      document.querySelector('#chartStay').innerHTML = hBars(dist.stayRanges);
+      document.querySelector('#chartFinancialProfile').innerHTML = hBars(dist.financialProfile || []);
+      document.querySelector('#chartIncome').innerHTML = hBars(dist.monthlyIncome || []);
+      document.querySelector('#chartLiquidity').innerHTML = hBars(dist.liquidityReserve || []);
+
+      const pages = Math.max(1, Math.ceil(data.length / generalState.pageSize));
+      if (generalState.page > pages) generalState.page = pages;
+      const start = (generalState.page - 1) * generalState.pageSize;
+      const pageRows = data.slice(start, start + generalState.pageSize);
+      document.querySelector('#gRows').innerHTML = pageRows.map(c => `
+        <tr data-id="${escapeHtml(c.clientId)}">
+          <td class="truncate" title="${escapeHtml(c.clientName)}">${escapeHtml(c.clientName)}</td>
+          <td title="${escapeHtml(c.clientCode || 'Não informado')}">${escapeHtml(c.clientCode || 'Não informado')}</td>
+          <td class="truncate" title="${escapeHtml(c.clientId)}">${escapeHtml(c.clientId)}</td>
+          <td>${dateBR(c.contractDate)}</td>
+          <td>${dateBR(c.cancellationDate)}</td>
+          <td class="num" title="${c.stayDays == null ? 'Não informado' : c.stayDays + ' dias'}">${c.stayDays == null ? '—' : fmt.format(c.stayDays) + ' d'}</td>
+          <td>${statusBadge(c.status)}</td>
+          <td class="truncate" title="${escapeHtml(c.segment)}">${escapeHtml(c.segment)}</td>
+          <td class="truncate" title="${escapeHtml(c.engineer)}">${escapeHtml(c.engineer)}</td>
+          <td class="num">${money(c.monthlyIncome)}</td>
+          <td class="num">${money(c.lastContribution)}</td>
+          <td class="num">${money(c.liquidityReserve)}</td>
+          <td class="center">${boolIcon(c.hasProperty)}</td>
+          <td class="center">${boolIcon(c.hasCar)}</td>
+          <td class="center">${boolIcon(c.hasConsortium)}</td>
+        </tr>`).join('');
+      document.querySelector('#gEmpty').style.display = data.length ? 'none' : 'block';
+      document.querySelector('#gCounter').textContent = `${data.length} de ${generalState.payload.clients.length} clientes`;
+      document.querySelector('#gPageInfo').textContent = `Página ${generalState.page} de ${pages}`;
+      document.querySelector('#gPrev').disabled = generalState.page <= 1;
+      document.querySelector('#gNext').disabled = generalState.page >= pages;
+    }
+
+    function openDrawer(client) {
+      document.querySelector('#drawerTitle').textContent = client.clientName;
+      document.querySelector('#drawerSub').textContent = `Código ${client.clientCode || 'Não informado'} · ID ${client.clientId}`;
+      const items = [
+        ['Contratação', dateBR(client.contractDate)],
+        ['Cancelamento', dateBR(client.cancellationDate)],
+        ['Permanência', client.stayDays == null ? 'Não informado' : `${fmt.format(client.stayDays)} dias (${client.stayRange})`],
+        ['Status', client.status],
+        ['Segmento', client.segment],
+        ['Engenheiro Patrimonial', client.engineer],
+      ];
+      const financial = [
+        ['Última renda mensal', money(client.monthlyIncome)],
+        ['Último aporte', money(client.lastContribution)],
+        ['Reserva de liquidez', money(client.liquidityReserve)],
+        ['Possui imóvel', boolLabel(client.hasProperty)],
+        ['Possui carro', boolLabel(client.hasCar)],
+        ['Possui consórcio', boolLabel(client.hasConsortium)],
+      ];
+      document.querySelector('#drawerGrid').innerHTML =
+        items.map(([k, v]) => `<div class="drawer-item"><span>${k}</span><strong>${escapeHtml(v)}</strong></div>`).join('') +
+        `<div class="drawer-section" style="grid-column:1/-1"><h3>Perfil Financeiro</h3><div class="drawer-grid">${financial.map(([k, v]) => `<div class="drawer-item"><span>${k}</span><strong>${escapeHtml(v)}</strong></div>`).join('')}</div></div>`;
+      document.querySelector('#drawerWarnings').innerHTML = (client.dataWarnings || []).map(w => `<li>${escapeHtml(w)}</li>`).join('') || '<li style="color:var(--color-text-muted)">Nenhum alerta</li>';
+      document.querySelector('#drawer').classList.add('open');
+      document.querySelector('#drawer').setAttribute('aria-hidden', 'false');
+    }
+
+    async function loadGeneral() {
+      if (generalState.loading) return;
+      generalState.loading = true;
+      const requestId = ++generalState.requestId;
+      const refresh = document.querySelector('#gRefresh');
+      const status = document.querySelector('#gStatus');
+      refresh.disabled = true; refresh.textContent = 'Atualizando…';
+      status.textContent = '● Atualizando dados'; status.style.color = 'var(--color-warning)';
+      try {
+        const response = await fetch(`/api/general-data?t=${Date.now()}`, { cache: 'no-store' });
+        const payload = await response.json();
+        if (requestId !== generalState.requestId) return;
+        if (!response.ok) throw new Error(payload.error || 'Falha ao consultar o banco');
+        generalState.payload = payload;
+        generalState.page = 1;
+        const clients = payload.clients || [];
+        fillSelect(gFilters.status, [...new Set(clients.map(c => c.status))].sort((a, b) => a.localeCompare(b, 'pt-BR')), 'Todos');
+        fillSelect(gFilters.segment, [...new Set(clients.map(c => c.segment))].sort((a, b) => a.localeCompare(b, 'pt-BR')), 'Todos');
+        fillSelect(gFilters.engineer, [...new Set(clients.map(c => c.engineer))].sort((a, b) => a.localeCompare(b, 'pt-BR')), 'Todos');
+        fillSelect(gFilters.stay, (payload.distributions?.stayRanges || []).map(r => r.label), 'Todas');
+        renderGeneral();
+        status.textContent = payload.quality?.warnings?.length ? '● Supabase conectado com alertas' : '● Supabase conectado';
+        status.style.color = payload.quality?.warnings?.length ? 'var(--color-warning)' : 'var(--color-success)';
+        document.querySelector('#gUpdated').textContent = `Atualizado em ${new Date(payload.generatedAt).toLocaleString('pt-BR')}`;
+      } catch (error) {
+        if (requestId !== generalState.requestId) return;
+        status.textContent = '● Falha na atualização'; status.style.color = 'var(--color-danger)';
+        document.querySelector('#gUpdated').textContent = error.message;
+        document.querySelector('#gEmpty').style.display = 'block';
+        document.querySelector('#gEmpty').textContent = 'Não foi possível carregar os dados gerais.';
+      } finally {
+        if (requestId === generalState.requestId) {
+          generalState.loading = false; refresh.disabled = false; refresh.textContent = 'Atualizar';
+        }
+      }
+    }
+
+    Object.values(gFilters).forEach(el => el.addEventListener('input', () => { generalState.page = 1; renderGeneral(); }));
+    document.querySelector('#gClear').addEventListener('click', () => {
+      gFilters.search.value = '';
+      ['status', 'segment', 'engineer', 'contract', 'cancel', 'stay'].forEach(k => gFilters[k].value = 'all');
+      generalState.page = 1; renderGeneral();
+    });
+    document.querySelector('#gRefresh').addEventListener('click', loadGeneral);
+    document.querySelector('#gPrev').addEventListener('click', () => { generalState.page -= 1; renderGeneral(); });
+    document.querySelector('#gNext').addEventListener('click', () => { generalState.page += 1; renderGeneral(); });
+    document.querySelector('#toggleEngineers').addEventListener('click', () => { generalState.showAllEngineers = !generalState.showAllEngineers; renderGeneral(); });
+    document.querySelectorAll('#view-general th[data-sort]').forEach(th => th.addEventListener('click', () => {
+      const key = th.dataset.sort;
+      if (generalState.sortKey === key) generalState.sortDir = generalState.sortDir === 'asc' ? 'desc' : 'asc';
+      else { generalState.sortKey = key; generalState.sortDir = 'asc'; }
+      renderGeneral();
+    }));
+    document.querySelector('#gRows').addEventListener('click', e => {
+      const tr = e.target.closest('tr[data-id]');
+      if (!tr || !generalState.payload) return;
+      const client = generalState.payload.clients.find(c => c.clientId === tr.dataset.id);
+      if (client) openDrawer(client);
+    });
+    document.querySelector('#drawerClose').addEventListener('click', () => {
+      document.querySelector('#drawer').classList.remove('open');
+      document.querySelector('#drawer').setAttribute('aria-hidden', 'true');
+    });
+    document.querySelector('#drawer').addEventListener('click', e => {
+      if (e.target.id === 'drawer') {
+        document.querySelector('#drawer').classList.remove('open');
+        document.querySelector('#drawer').setAttribute('aria-hidden', 'true');
+      }
+    });
+
+    loadGeneral();
+    setInterval(() => {
+      if (views.general.classList.contains('active')) loadGeneral();
+      if (views.quality.classList.contains('active')) loadQuality();
+    }, 5 * 60 * 1000);
   </script>
 </body>
 </html>

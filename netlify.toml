@@ -7,3 +7,7 @@
   to = "/.netlify/functions/quality"
   status = 200
 
+[[redirects]]
+  from = "/api/general-data"
+  to = "/.netlify/functions/general-data"
+  status = 200

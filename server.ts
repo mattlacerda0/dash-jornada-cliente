@@ -1,8 +1,8 @@
 const ROOT = import.meta.dir;
-const ENV_PATH = `${ROOT}/exemplo.env`;
 
-if (await Bun.file(ENV_PATH).exists()) {
-  const contents = await Bun.file(ENV_PATH).text();
+async function loadEnvFile(path: string) {
+  if (!(await Bun.file(path).exists())) return;
+  const contents = await Bun.file(path).text();
   for (const rawLine of contents.split(/\r?\n/)) {
     const line = rawLine.trim();
     if (!line || line.startsWith("#") || !line.includes("=")) continue;
@@ -13,16 +13,46 @@ if (await Bun.file(ENV_PATH).exists()) {
   }
 }
 
+await loadEnvFile(`${ROOT}/exemplo.env`);
+await loadEnvFile(`${ROOT}/.env`);
+
+if (Bun.env.SUPABASE_URL) process.env.SUPABASE_URL = Bun.env.SUPABASE_URL;
+if (Bun.env.SUPABASE_SERVICE_ROLE_KEY) process.env.SUPABASE_SERVICE_ROLE_KEY = Bun.env.SUPABASE_SERVICE_ROLE_KEY;
+
+const generalDataHandler = (await import("./netlify/functions/general-data.mjs")).default;
+
 const PORT = Number(Bun.env.PORT || 4173);
 
 type Field = [string, string, string, boolean];
 
+const FIELD_DESCRIPTIONS: Record<string, string> = {
+  "clients.id": "Identificador técnico único do cliente",
+  "clients.codigo": "Código de identificação do cliente na Quarta Via",
+  "clients.name": "Nome do cliente",
+  "clients.data_inicio_ciclo": "Data de início do vínculo ou ciclo do cliente",
+  "clients.data_churn": "Data de churn registrada no cadastro do cliente",
+  "clients.status": "Situação atual do cliente",
+  "clients.segmentacao": "Segmento atribuído ao cliente",
+  "clients.engenheiro_patrimonial": "Engenheiro Patrimonial responsável pelo acompanhamento",
+  "cancellations.client_id": "Vínculo do cancelamento com o cliente",
+  "cancellations.churn_efetivado_at": "Data em que o cancelamento foi efetivamente concluído",
+  "client_financial_data.reserva_liquidez": "Reserva de liquidez informada pelo cliente",
+  "client_financial_data.ultimo_aporte": "Valor do último aporte registrado",
+  "client_financial_data.ultima_renda_mensal": "Última renda mensal registrada",
+  "client_financial_data.possui_imovel": "Indica se o cliente possui imóvel",
+  "client_financial_data.possui_carro": "Indica se o cliente possui carro",
+  "client_financial_data.possui_consorcio": "Indica se o cliente possui consórcio",
+};
+
 const FIELDS: Field[] = [
+  ["Cliente", "clients", "id", false],
+  ["Cliente", "clients", "codigo", true],
   ["Cliente", "clients", "qv_id", true],
   ["Cliente", "clients", "name", true],
   ["Cliente", "clients", "email", true],
   ["Cliente", "clients", "phone", true],
   ["Cliente", "clients", "created_at", false],
+  ["Cliente", "clients", "data_inicio_ciclo", false],
   ["Cliente", "clients", "status", true],
   ["Cliente", "clients", "segmentacao", true],
   ["Cliente", "clients", "engenheiro_patrimonial", true],
@@ -32,6 +62,9 @@ const FIELDS: Field[] = [
   ["Financeiro", "client_financial_data", "ultima_renda_mensal", false],
   ["Financeiro", "client_financial_data", "ultimo_aporte", false],
   ["Financeiro", "client_financial_data", "reserva_liquidez", false],
+  ["Financeiro", "client_financial_data", "possui_imovel", false],
+  ["Financeiro", "client_financial_data", "possui_carro", false],
+  ["Financeiro", "client_financial_data", "possui_consorcio", false],
   ["Jornada", "client_journeys", "started_at", false],
   ["Jornada", "client_journeys", "current_stage_id", false],
   ["Reuniões", "client_meetings", "start_time", false],
@@ -42,6 +75,7 @@ const FIELDS: Field[] = [
   ["Satisfação", "nps_responses", "submitted_at", false],
   ["Satisfação", "csat_responses", "score", false],
   ["Satisfação", "csat_responses", "submitted_at", false],
+  ["Cancelamento", "cancellations", "client_id", false],
   ["Cancelamento", "cancellations", "motivo", true],
   ["Cancelamento", "cancellations", "motivo_categoria", false],
   ["Cancelamento", "cancellations", "churn_efetivado_at", false],
@@ -88,7 +122,10 @@ async function measure([domain, table, column, includeBlank]: Field) {
     countRows(table),
     countRows(table, column, includeBlank),
   ]);
-  return { domain, table, column, totalRows, missingRows };
+  const item: Record<string, unknown> = { domain, table, column, totalRows, missingRows };
+  const description = FIELD_DESCRIPTIONS[`${table}.${column}`];
+  if (description) item.description = description;
+  return item;
 }
 
 async function qualityResponse() {
@@ -98,7 +135,7 @@ async function qualityResponse() {
   const data = settled
     .filter((item): item is PromiseFulfilledResult<Awaited<ReturnType<typeof measure>>> => item.status === "fulfilled")
     .map((item) => item.value)
-    .sort((a, b) => `${a.domain}.${a.table}.${a.column}`.localeCompare(`${b.domain}.${b.table}.${b.column}`));
+    .sort((a, b) => `${a.domain}.${a.table}.${a.column}`.localeCompare(`${String(b.domain)}.${String(b.table)}.${String(b.column)}`));
   const errors = settled
     .filter((item): item is PromiseRejectedResult => item.status === "rejected")
     .map((item) => item.reason instanceof Error ? item.reason.message : "Falha desconhecida");
@@ -113,6 +150,7 @@ const server = Bun.serve({
   async fetch(request) {
     const url = new URL(request.url);
     if (url.pathname === "/api/quality") return qualityResponse();
+    if (url.pathname === "/api/general-data") return generalDataHandler();
     if (url.pathname !== "/" && url.pathname !== "/index.html") return new Response("Não encontrado", { status: 404 });
     return new Response(Bun.file(`${ROOT}/index.html`), { headers: { "Content-Type": "text/html; charset=utf-8" } });
   },

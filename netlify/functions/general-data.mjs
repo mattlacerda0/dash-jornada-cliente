@@ -132,9 +132,51 @@ function liquidityBand(value) {
   return "Acima de 1 milhão";
 }
 
-function isCancelledStatus(status) {
-  const s = String(status || "").toLowerCase();
-  return /cancel|churn|inativ|encerr/.test(s);
+const STATUS_LABELS = ["Ativo", "Cancelado", "Congelado", "Não informado"];
+
+function foldStatusToken(value) {
+  return String(value || "")
+    .normalize("NFD")
+    .replace(/\p{M}/gu, "")
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, " ");
+}
+
+/** Normaliza status bruto da carteira para categoria analítica amigável. */
+function normalizeClientStatus(rawStatus) {
+  const token = foldStatusToken(rawStatus);
+  if (!token || token === "null" || token === "undefined" || token === "vazio") {
+    return "Não informado";
+  }
+  if (["ativo", "active", "ativa"].includes(token)) return "Ativo";
+  if (
+    [
+      "churn",
+      "cancelado",
+      "cancelada",
+      "canceled",
+      "cancelled",
+      "encerrado",
+      "encerrada",
+      "inativo",
+      "inativa",
+      "inactive",
+    ].includes(token) ||
+    token.includes("cancel") ||
+    token.includes("churn") ||
+    token.includes("encerr")
+  ) {
+    return "Cancelado";
+  }
+  if (
+    ["congelado", "congelada", "freeze", "frozen", "pausado", "pausada"].includes(token) ||
+    token.includes("congel") ||
+    token.includes("pausad")
+  ) {
+    return "Congelado";
+  }
+  return "Não informado";
 }
 
 function labelOrUnknown(value) {
@@ -251,8 +293,9 @@ function buildPayload(clients, cancellations, financialRows) {
     const cancelPrimary = cancelMap.get(client.id)?.date || null;
     const cancelFallback = parseDate(client.data_churn);
     const cancellationDate = cancelPrimary || cancelFallback;
-    const status = blankToNull(client.status);
-    const cancelled = isCancelledStatus(status) || Boolean(cancellationDate);
+    const rawStatus = blankToNull(client.status);
+    const status = normalizeClientStatus(rawStatus);
+    const cancelled = status === "Cancelado";
     const financial = financialMap.get(client.id) || null;
 
     if (!contractDate) dataWarnings.push("Sem data de contratação");
@@ -262,8 +305,8 @@ function buildPayload(clients, cancellations, financialRows) {
       );
     }
     if (cancelled && !cancellationDate) dataWarnings.push("Cancelado sem data de cancelamento");
-    if (!cancelled && cancellationDate) dataWarnings.push("Ativo com data de cancelamento");
-    if (!status) dataWarnings.push("Cliente sem status");
+    if (!cancelled && cancellationDate) dataWarnings.push("Cliente ativo/congelado com data de cancelamento");
+    if (!rawStatus) dataWarnings.push("Cliente sem status");
     if (!blankToNull(client.segmentacao)) dataWarnings.push("Cliente sem segmento");
     if (!blankToNull(client.engenheiro_patrimonial)) dataWarnings.push("Cliente sem engenheiro responsável");
     if (!financial) dataWarnings.push("Sem diagnóstico financeiro");
@@ -302,7 +345,8 @@ function buildPayload(clients, cancellations, financialRows) {
       stayMonths: inconsistentStay ? null : stayMonths,
       stayRange,
       stayUsedCreatedAtFallback: usedCreatedFallback,
-      status: status || "Não informado",
+      status,
+      rawStatus: rawStatus,
       segment: labelOrUnknown(client.segmentacao),
       engineer: labelOrUnknown(client.engenheiro_patrimonial),
       hasFinancialProfile: Boolean(financial),
@@ -315,7 +359,6 @@ function buildPayload(clients, cancellations, financialRows) {
       incomeBand: incomeBand(financial?.monthlyIncome ?? null),
       liquidityBand: liquidityBand(financial?.liquidityReserve ?? null),
       dataWarnings,
-      _cancelled: cancelled,
     });
   }
 
@@ -324,11 +367,26 @@ function buildPayload(clients, cancellations, financialRows) {
   const incomeValues = rows.map((r) => r.monthlyIncome).filter((v) => v != null);
   const withFinancial = rows.filter((r) => r.hasFinancialProfile).length;
   const total = rows.length || 1;
+  const activeClients = rows.filter((r) => r.status === "Ativo").length;
+  const cancelledClients = rows.filter((r) => r.status === "Cancelado").length;
+  const frozenClients = rows.filter((r) => r.status === "Congelado").length;
+
+  const rawByNormalized = new Map();
+  for (const row of rows) {
+    const key = row.status;
+    if (!rawByNormalized.has(key)) rawByNormalized.set(key, new Set());
+    if (row.rawStatus) rawByNormalized.get(key).add(String(row.rawStatus));
+  }
+  const statusConsistencyNotes = [...rawByNormalized.entries()]
+    .filter(([, set]) => set.size > 1)
+    .map(([label, set]) => `${set.size} variações de escrita encontradas para o status ${label}.`);
+  const distinctRawStatuses = [...new Set(rows.map((r) => r.rawStatus).filter(Boolean))];
 
   const summary = {
     totalClients: rows.length,
-    activeClients: rows.filter((r) => !r._cancelled).length,
-    cancelledClients: rows.filter((r) => r._cancelled).length,
+    activeClients,
+    cancelledClients,
+    frozenClients,
     averageStayDays: average(rows.map((r) => r.stayDays).filter((v) => v != null)),
     averageLiquidityReserve: average(liquidityValues),
     liquidityReserveFilledCount: liquidityValues.length,
@@ -341,7 +399,7 @@ function buildPayload(clients, cancellations, financialRows) {
   };
 
   const distributions = {
-    status: distributionFrom(rows, (r) => r.status),
+    status: distributionFrom(rows, (r) => r.status, STATUS_LABELS).filter((item) => item.count > 0),
     segments: distributionFrom(rows, (r) => r.segment),
     engineers: distributionFrom(rows, (r) => r.engineer),
     stayRanges: distributionFrom(rows, (r) => r.stayRange, STAY_RANGES),
@@ -358,15 +416,18 @@ function buildPayload(clients, cancellations, financialRows) {
     liquidityReserve: distributionFrom(rows, (r) => r.liquidityBand, LIQUIDITY_BANDS),
   };
 
-  const clientsOut = rows.map(({ _cancelled, ...rest }) => rest);
-
   return {
     generatedAt: new Date().toISOString(),
     summary,
     distributions,
-    clients: clientsOut,
+    clients: rows,
     quality: {
       usedFields: USED_FIELDS,
+      statusConsistency: {
+        distinctRawValues: distinctRawStatuses.sort((a, b) => a.localeCompare(b, "pt-BR")),
+        distinctRawCount: distinctRawStatuses.length,
+        notes: statusConsistencyNotes,
+      },
       warnings: [],
     },
   };

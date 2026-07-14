@@ -21,6 +21,8 @@ if (Bun.env.SUPABASE_SERVICE_ROLE_KEY) process.env.SUPABASE_SERVICE_ROLE_KEY = B
 
 const generalDataHandler = (await import("./netlify/functions/general-data.mjs")).default;
 const onboardingHandler = (await import("./netlify/functions/onboarding.mjs")).default;
+const meetingsHandler = (await import("./netlify/functions/meetings.mjs")).default;
+const qualityHandler = (await import("./netlify/functions/quality.mjs")).default;
 
 const PORT = Number(Bun.env.PORT || 4173);
 
@@ -43,6 +45,23 @@ const FIELD_DESCRIPTIONS: Record<string, string> = {
   "client_financial_data.possui_imovel": "Indica se o cliente possui imóvel",
   "client_financial_data.possui_carro": "Indica se o cliente possui carro",
   "client_financial_data.possui_consorcio": "Indica se o cliente possui consórcio",
+  "client_meetings.start_time": "Data e horário de início da reunião",
+  "client_meetings.end_time": "Data e horário de término da reunião",
+  "client_meetings.calendly_event_uri": "Identificador externo do evento no Calendly",
+  "client_meetings.event_name": "Título ou nome do evento de reunião",
+  "client_meetings.host_email": "E-mail do anfitrião da reunião",
+  "client_meetings.manually_linked": "Indica vínculo manual da reunião ao cliente",
+  "client_meetings.client_id": "Cliente vinculado à reunião Calendly",
+  "manual_meetings.title": "Título da reunião registrada manualmente",
+  "manual_meetings.start_time": "Data e horário de início da reunião",
+  "manual_meetings.client_id": "Cliente vinculado à reunião manual",
+  "manual_meetings.google_event_id": "Identificador do evento no Google Calendar",
+  "meeting_attendance.status": "Situação de presença ou realização da reunião",
+  "meeting_attendance.remarcado": "Indica se a reunião foi remarcada",
+  "meeting_attendance.calendly_event_uri": "Identificador externo do evento no Calendly",
+  "client_implementation_meeting_date.meeting_date": "Data registrada para a reunião de implementação",
+  "client_implementation_meeting_date.client_id": "Cliente com data de reunião de implementação",
+  "client_implementation_meeting_date.source": "Origem do registro da reunião de implementação",
 };
 
 const FIELDS: Field[] = [
@@ -68,8 +87,28 @@ const FIELDS: Field[] = [
   ["Financeiro", "client_financial_data", "possui_consorcio", false],
   ["Jornada", "client_journeys", "started_at", false],
   ["Jornada", "client_journeys", "current_stage_id", false],
-  ["Reuniões", "client_meetings", "start_time", false],
+  ["Reuniões", "client_meetings", "id", false],
+  ["Reuniões", "client_meetings", "client_id", false],
+  ["Reuniões", "client_meetings", "calendly_event_uri", true],
   ["Reuniões", "client_meetings", "event_name", true],
+  ["Reuniões", "client_meetings", "start_time", false],
+  ["Reuniões", "client_meetings", "end_time", false],
+  ["Reuniões", "client_meetings", "host_email", true],
+  ["Reuniões", "client_meetings", "manually_linked", false],
+  ["Reuniões", "manual_meetings", "id", false],
+  ["Reuniões", "manual_meetings", "client_id", false],
+  ["Reuniões", "manual_meetings", "title", true],
+  ["Reuniões", "manual_meetings", "start_time", false],
+  ["Reuniões", "manual_meetings", "end_time", false],
+  ["Reuniões", "manual_meetings", "google_event_id", true],
+  ["Reuniões", "manual_meetings", "recurrence_group_id", true],
+  ["Reuniões", "meeting_attendance", "calendly_event_uri", true],
+  ["Reuniões", "meeting_attendance", "status", true],
+  ["Reuniões", "meeting_attendance", "remarcado", false],
+  ["Reuniões", "meeting_attendance", "created_at", false],
+  ["Reuniões", "client_implementation_meeting_date", "client_id", false],
+  ["Reuniões", "client_implementation_meeting_date", "meeting_date", false],
+  ["Reuniões", "client_implementation_meeting_date", "source", true],
   ["Mecanismos", "client_mecanismos", "status", true],
   ["Mecanismos", "client_mecanismos", "implemented_at", false],
   ["Satisfação", "nps_responses", "score", false],
@@ -97,7 +136,8 @@ function configurationError(): string | null {
 
 async function countRows(table: string, column?: string, includeBlank = false) {
   const url = new URL(`/rest/v1/${table}`, Bun.env.SUPABASE_URL!);
-  url.searchParams.set("select", "id");
+  const selectCol = table === "client_implementation_meeting_date" ? "client_id" : "id";
+  url.searchParams.set("select", selectCol);
   url.searchParams.set("limit", "1");
   if (column) {
     if (includeBlank) url.searchParams.set("or", `(${column}.is.null,${column}.eq.)`);
@@ -150,9 +190,10 @@ const server = Bun.serve({
   port: PORT,
   async fetch(request) {
     const url = new URL(request.url);
-    if (url.pathname === "/api/quality") return qualityResponse();
+    if (url.pathname === "/api/quality") return qualityHandler();
     if (url.pathname === "/api/general-data") return generalDataHandler();
     if (url.pathname === "/api/onboarding") return onboardingHandler();
+    if (url.pathname === "/api/meetings") return meetingsHandler();
     if (url.pathname !== "/" && url.pathname !== "/index.html") return new Response("Não encontrado", { status: 404 });
     return new Response(Bun.file(`${ROOT}/index.html`), { headers: { "Content-Type": "text/html; charset=utf-8" } });
   },

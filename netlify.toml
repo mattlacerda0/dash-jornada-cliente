@@ -16,3 +16,8 @@
   from = "/api/onboarding"
   to = "/.netlify/functions/onboarding"
   status = 200
+
+[[redirects]]
+  from = "/api/meetings"
+  to = "/.netlify/functions/meetings"
+  status = 200

@@ -23,6 +23,16 @@
     .status-actions{display:flex;align-items:center;gap:12px}.btn{height:40px;align-self:end;border:1px solid var(--color-border-strong);border-radius:var(--radius-md);background:transparent;color:var(--color-text);padding:0 16px;cursor:pointer}.btn:hover{border-color:var(--color-primary);background:var(--color-primary-tint)}.btn:disabled{opacity:.55;cursor:wait}.btn.primary{background:var(--color-primary);border-color:var(--color-primary);color:#17110d;font-weight:600}
     .filters{position:sticky;top:80px;z-index:8;margin:24px 0;background:rgba(26,26,26,.94);backdrop-filter:blur(12px);border:1px solid var(--color-border);border-radius:var(--radius-lg);padding:16px;display:grid;grid-template-columns:1.4fr repeat(3,1fr) auto;gap:12px;box-shadow:var(--shadow-card)}
     .filters.general{grid-template-columns:repeat(4,minmax(0,1fr));}
+    .status-filter-block{display:grid;gap:6px}
+    .status-filter-row{display:flex;gap:8px;align-items:stretch;flex-wrap:wrap}
+    .status-filter-row select{flex:1 1 140px;min-width:0}
+    .chip-btn{height:40px;border:1px solid #4a4a4a;border-radius:999px;background:#1c1c1c;color:#e8e8e8;padding:0 14px;font-size:12px;cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center;gap:8px;transition:border-color .15s ease,color .15s ease,background .15s ease}
+    .chip-btn .chip-dot{width:7px;height:7px;border-radius:50%;background:#7a7a7a;flex:0 0 auto}
+    .chip-btn:hover{border-color:var(--color-primary);color:#ffc093}
+    .chip-btn:hover .chip-dot{background:var(--color-primary)}
+    .chip-btn.is-active,.chip-btn[aria-pressed="true"]{background:rgba(244,121,32,.16);border-color:var(--color-primary);color:#ffd2b0;font-weight:600}
+    .chip-btn.is-active .chip-dot,.chip-btn[aria-pressed="true"] .chip-dot{background:var(--color-primary);box-shadow:0 0 0 2px rgba(244,121,32,.25)}
+    .field-consistency{font-size:11px;color:var(--color-warning);margin-top:8px;line-height:1.35}
     label{display:grid;gap:6px;color:var(--color-text-muted);font-size:12px;font-weight:600}
     select,input{height:40px;border:1px solid var(--color-border);background:var(--color-surface-2);color:var(--color-text);border-radius:var(--radius-md);padding:0 12px;outline:none;width:100%}
     select:focus,input:focus{border-color:var(--color-primary);box-shadow:0 0 0 3px var(--color-primary-tint)}
@@ -73,6 +83,35 @@
     .engineers-toggle{margin-top:10px}
     @media(max-width:1100px){.cards,.charts,.journey-grid{grid-template-columns:1fr}.summary{grid-template-columns:repeat(2,1fr)}.filters,.filters.general{grid-template-columns:1fr 1fr}.indicator-row{grid-template-columns:1fr}.indicator-cell{border-right:0;border-bottom:1px solid var(--color-border)}.indicator-cell:last-child{border-bottom:0}}
     @media(max-width:780px){.layout{grid-template-columns:1fr}.sidebar{display:none}main{padding:20px}.page-header{display:block}.status{text-align:left;margin-top:12px}.filters,.filters.general,.summary,.cards,.charts{grid-template-columns:1fr}.topbar{padding:0 20px}.status-actions{align-items:flex-start;justify-content:space-between}.hbar{grid-template-columns:minmax(108px,36%) minmax(48px,1fr) minmax(96px,104px);gap:8px;margin:9px 0}.hbar-val{font-size:11px}.journey-step{grid-template-columns:30px 1fr}}
+    .summary.kpis-8{grid-template-columns:repeat(4,1fr)}
+    .filters.meetings{grid-template-columns:repeat(4,minmax(0,1fr))}
+    tr.warn-stale{background:rgba(246,189,75,.06)}tr.warn-absence{background:rgba(239,107,115,.05)}tr.warn-nofirst{outline:1px solid rgba(239,107,115,.25)}
+    .month-chart-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:10px}
+    .month-chart-head h3{margin:0 0 4px;font-size:15px}.month-chart-head p{margin:0;font-size:12px;color:var(--color-text-muted)}
+    .seg{display:inline-flex;border:1px solid var(--color-border);border-radius:999px;overflow:hidden;background:#171717}
+    .seg button{border:0;background:transparent;color:var(--color-text-muted);padding:7px 12px;font-size:11px;cursor:pointer}
+    .seg button.active,.seg button[aria-pressed="true"]{background:var(--color-primary-soft);color:#ffab6f}
+    .month-legend{display:flex;gap:16px;flex-wrap:wrap;align-items:center;font-size:11px;color:var(--color-text-muted);margin:0 0 10px}
+    .month-legend span{display:inline-flex;align-items:center;gap:6px}
+    .month-legend i{width:14px;height:8px;border-radius:999px;display:inline-block}
+    .month-legend .lg-sch{background:#5b6b7c}
+    .month-legend .lg-done{background:var(--color-primary)}
+    .month-count{margin-left:auto;font-size:11px;color:var(--color-text-subtle)}
+    .month-bars{display:grid;gap:12px}.month-bars.scroll{max-height:420px;overflow:auto;padding-right:6px;scrollbar-width:thin}
+    .month-row{display:grid;grid-template-columns:72px minmax(120px,1fr) minmax(210px,240px);gap:12px;align-items:center;font-size:12px;min-width:0;padding:8px 0;border-bottom:1px solid rgba(48,48,48,.7)}
+    .month-row:last-child{border-bottom:0}
+    .month-label{color:var(--color-text);font-weight:600;white-space:nowrap}
+    .month-dual{display:grid;gap:5px;min-width:0}
+    .month-line{display:grid;grid-template-columns:68px 1fr;gap:8px;align-items:center}
+    .month-line em{font-style:normal;font-size:10px;color:var(--color-text-subtle);text-transform:uppercase;letter-spacing:.04em}
+    .month-track{height:9px;background:#242424;border:1px solid #3a3a3a;border-radius:999px;overflow:hidden;min-width:0}
+    .month-track .fill-sch{display:block;height:100%;border-radius:999px;background:#6a7d92;max-width:100%}
+    .month-track .fill-done{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,var(--color-primary),#ff9b50);max-width:100%}
+    .month-val{font-size:12px;text-align:right;color:var(--color-text);white-space:nowrap;font-variant-numeric:tabular-nums;line-height:1.35}
+    .month-val b{color:#ffab6f;font-weight:600}
+    .timeline{display:grid;gap:10px;margin-top:12px}.timeline-item{border:1px solid var(--color-border);border-radius:10px;padding:12px;background:#1a1a1a}.timeline-item .meta{font-size:11px;color:var(--color-text-subtle);margin-top:4px}
+    @media(max-width:1100px){.cards,.charts,.journey-grid{grid-template-columns:1fr}.summary,.summary.kpis-8{grid-template-columns:repeat(2,1fr)}.filters,.filters.general,.filters.meetings{grid-template-columns:1fr 1fr}.indicator-row{grid-template-columns:1fr}.indicator-cell{border-right:0;border-bottom:1px solid var(--color-border)}.indicator-cell:last-child{border-bottom:0}.month-row{grid-template-columns:64px minmax(100px,1fr) minmax(160px,1fr)}.month-val{white-space:normal}}
+    @media(max-width:780px){.layout{grid-template-columns:1fr}.sidebar{display:none}main{padding:20px}.page-header{display:block}.status{text-align:left;margin-top:12px}.filters,.filters.general,.summary,.cards,.charts{grid-template-columns:1fr}.topbar{padding:0 20px}.status-actions{align-items:flex-start;justify-content:space-between}.hbar{grid-template-columns:minmax(108px,36%) minmax(48px,1fr) minmax(96px,104px);gap:8px;margin:9px 0}.hbar-val{font-size:11px}.month-row{grid-template-columns:1fr;gap:8px}.month-val{text-align:left}.month-count{margin-left:0;width:100%}}
   </style>
 </head>
 <body>
@@ -83,8 +122,8 @@
       <nav class="nav" aria-label="Navegação principal">
         <button type="button" class="active" data-nav="general"><span class="nav-icon">◎</span>Dados Gerais</button>
         <button type="button" data-nav="journey"><span class="nav-icon">⇢</span>Jornada</button>
+        <button type="button" data-nav="meetings"><span class="nav-icon">◎</span>Reuniões</button>
         <button type="button" data-nav="quality"><span class="nav-icon">▦</span>Qualidade</button>
-        <button type="button" disabled><span class="nav-icon">◎</span>Reuniões<span class="soon">em breve</span></button>
         <button type="button" disabled><span class="nav-icon">$</span>Financeiro<span class="soon">em breve</span></button>
       </nav>
     </aside>
@@ -105,7 +144,22 @@
 
           <section class="filters general" aria-label="Filtros de dados gerais">
             <label>Busca<input id="gSearch" placeholder="Nome, código ou ID" /></label>
-            <label>Status<select id="gStatusFilter"><option value="all">Todos</option></select></label>
+            <div class="status-filter-block">
+              <label for="gStatusFilter">Status</label>
+              <div class="status-filter-row">
+                <select id="gStatusFilter">
+                  <option value="all">Todos</option>
+                  <option value="active">Ativos</option>
+                  <option value="cancelled">Cancelados</option>
+                  <option value="frozen">Congelados</option>
+                  <option value="unknown">Não informados</option>
+                </select>
+                <button type="button" class="chip-btn" id="gActiveOnly" aria-pressed="false">
+                  <span class="chip-dot" aria-hidden="true"></span>
+                  <span class="chip-label">Somente clientes ativos</span>
+                </button>
+              </div>
+            </div>
             <label>Segmento<select id="gSegment"><option value="all">Todos</option></select></label>
             <label>Engenheiro Patrimonial<select id="gEngineer"><option value="all">Todos</option></select></label>
             <label>Faixa de contratação<select id="gContractRange">
@@ -177,6 +231,126 @@
               <div>
                 <button class="btn" id="gPrev" type="button">Anterior</button>
                 <button class="btn" id="gNext" type="button">Próxima</button>
+              </div>
+            </div>
+          </section>
+        </div>
+      </section>
+
+      <section class="view" id="view-meetings">
+        <div class="container">
+          <header class="page-header">
+            <div>
+              <div class="eyebrow">Portal · Jornada do Cliente</div>
+              <h1>Reuniões</h1>
+              <p>Acompanhamento da frequência, recorrência e participação dos clientes nas reuniões da jornada.</p>
+            </div>
+            <div class="status-actions">
+              <div class="status"><b id="mStatus" style="color:var(--color-warning)">● Conectando ao Supabase</b><span id="mUpdated">Calculando indicadores…</span></div>
+              <button class="btn" id="mRefresh" type="button">Atualizar</button>
+            </div>
+          </header>
+
+          <section class="filters meetings" aria-label="Filtros de reuniões">
+            <label>Busca<input id="mSearch" placeholder="Nome, código ou ID" /></label>
+            <label>Engenheiro Patrimonial<select id="mEngineer"><option value="all">Todos</option></select></label>
+            <label>Período<select id="mPeriod">
+              <option value="all">Todo o histórico</option>
+              <option value="30">Últimos 30 dias</option>
+              <option value="90">Últimos 90 dias</option>
+              <option value="180">Últimos 6 meses</option>
+              <option value="365">Últimos 12 meses</option>
+              <option value="custom">Período personalizado</option>
+            </select></label>
+            <label>De<input id="mFrom" type="date" /></label>
+            <label>Até<input id="mTo" type="date" /></label>
+            <label>Status de presença<select id="mAttendance">
+              <option value="all">Todos</option>
+              <option value="compareceu">Compareceu</option>
+              <option value="nao_compareceu">No-show</option>
+              <option value="cancelada">Cancelada</option>
+              <option value="desconhecido">Sem confirmação</option>
+            </select></label>
+            <label>Frequência<select id="mFreq"><option value="all">Todas</option></select></label>
+            <label>Primeira reunião<select id="mFirst">
+              <option value="all">Todos</option>
+              <option value="yes">Realizou</option>
+              <option value="no">Não realizou</option>
+            </select></label>
+            <label>Possui no-show<select id="mHasAbsence">
+              <option value="all">Todos</option>
+              <option value="yes">Sim</option>
+              <option value="no">Não</option>
+            </select></label>
+            <label>Possui remarcação<select id="mHasReschedule">
+              <option value="all">Todos</option>
+              <option value="yes">Sim</option>
+              <option value="no">Não</option>
+            </select></label>
+            <button class="btn" id="mClear" type="button">Limpar filtros</button>
+          </section>
+
+          <section class="summary kpis-8" id="mKpis"></section>
+
+          <div class="section-head"><div><h2>Distribuições</h2><p>Leitura da agenda e da recorrência.</p></div></div>
+          <section class="charts">
+            <article class="chart-card" style="grid-column:1/-1">
+              <div class="month-chart-head">
+                <div>
+                  <h3>Reuniões por mês</h3>
+                  <p>Agendadas no trilho e realizadas no preenchimento</p>
+                </div>
+                <div class="seg" id="mMonthRangeSeg" role="group" aria-label="Período do gráfico mensal">
+                  <button type="button" data-month-range="6" class="active">Últimos 6 meses</button>
+                  <button type="button" data-month-range="12">Últimos 12 meses</button>
+                </div>
+              </div>
+              <div class="month-legend">
+                <span><i class="lg-sch"></i> Cinza-azulado = reuniões agendadas</span>
+                <span><i class="lg-done"></i> Laranja = reuniões realizadas</span>
+                <span class="month-count" id="mMonthCount"></span>
+              </div>
+              <div id="mChartMonths"></div>
+            </article>
+            <article class="chart-card"><h3>Status das reuniões</h3><p>Presença consolidada</p><div id="mChartStatus"></div></article>
+            <article class="chart-card"><h3>Frequência por cliente</h3><p>Quantidade de reuniões na carteira</p><div id="mChartFreq"></div></article>
+            <article class="chart-card"><h3>Dias desde a última reunião</h3><p>Recência da última reunião considerada</p><div id="mChartDays"></div></article>
+            <article class="chart-card"><h3>Intervalo médio entre reuniões</h3><p>Entre reuniões com presença confirmada</p><div id="mChartInterval"></div></article>
+            <article class="chart-card" style="grid-column:1/-1"><h3>Reuniões por Engenheiro Patrimonial</h3><p>Volume de reuniões vinculadas aos clientes</p><div id="mChartEngineers"></div><button class="btn engineers-toggle" id="mToggleEngineers" type="button">Ver todos</button></article>
+          </section>
+
+          <section class="table-panel">
+            <div class="section-head" style="margin:0">
+              <div><h2>Detalhamento por cliente</h2><p>Clique em uma linha para ver o histórico.</p></div>
+              <span class="counter" id="mCounter"></span>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th data-msort="clientName">Cliente</th>
+                    <th data-msort="clientCode">Código</th>
+                    <th data-msort="engineer">Engenheiro Patrimonial</th>
+                    <th data-msort="totalMeetings" class="num">Total</th>
+                    <th data-msort="meetingsPerMonth" class="num">Média/mês</th>
+                    <th data-msort="lastMeetingDate">Última reunião</th>
+                    <th data-msort="daysSinceLastMeeting" class="num">Dias sem reunião</th>
+                    <th data-msort="averageIntervalDays" class="num">Intervalo médio</th>
+                    <th data-msort="absences" class="num">No-shows</th>
+                    <th data-msort="reschedules" class="num">Remarcações</th>
+                    <th data-msort="cancelledMeetings" class="num">Canceladas</th>
+                    <th data-msort="firstMeetingCompleted">Primeira reunião</th>
+                  </tr>
+                </thead>
+                <tbody id="mRows"></tbody>
+              </table>
+            </div>
+            <div class="empty" id="mEmpty">Nenhum cliente encontrado para os filtros selecionados.</div>
+            <div class="pagination">
+              <div id="mPageInfo"></div>
+              <div>
+                <button class="btn" id="mPrev" type="button">Anterior</button>
+                <button class="btn" id="mNext" type="button">Próxima</button>
               </div>
             </div>
           </section>
@@ -337,11 +511,17 @@
     };
 
     /* -------- Navigation -------- */
-    const views = { general: document.querySelector('#view-general'), quality: document.querySelector('#view-quality'), journey: document.querySelector('#view-journey') };
+    const views = {
+      general: document.querySelector('#view-general'),
+      journey: document.querySelector('#view-journey'),
+      meetings: document.querySelector('#view-meetings'),
+      quality: document.querySelector('#view-quality')
+    };
     document.querySelectorAll('[data-nav]').forEach(btn => btn.addEventListener('click', () => {
       document.querySelectorAll('[data-nav]').forEach(b => b.classList.toggle('active', b === btn));
       Object.entries(views).forEach(([key, el]) => el.classList.toggle('active', key === btn.dataset.nav));
       if (btn.dataset.nav === 'general' && !generalState.payload) loadGeneral();
+      if (btn.dataset.nav === 'meetings' && !meetingsState.payload) loadMeetings();
       if (btn.dataset.nav === 'quality' && !qualityData.length) loadQuality();
       if (btn.dataset.nav === 'journey' && !onboardingState.payload) loadOnboarding();
     }));
@@ -433,7 +613,8 @@
       renderViabilityMatrix(document.querySelector('#qJourneyMatrix'), journeyViability, onboardingState.payload?.clients || []);
       qEls.cards.innerHTML = data.map(d => {
         const p = getPct(d), filled = getFilled(d), s = sev(p);
-        return `<article class="field-card"><div class="card-top"><div><div class="field">${escapeHtml(d.column)}</div><div class="table-name">public.${escapeHtml(d.table)}</div>${d.description ? `<div class="field-desc">${escapeHtml(d.description)}</div>` : ''}</div><span class="badge ${s}">${sevLabel[s]}</span></div>
+        const consistency = (d.consistencyNotes || []).map(n => `<div class="field-consistency">${escapeHtml(n)}</div>`).join('');
+        return `<article class="field-card"><div class="card-top"><div><div class="field">${escapeHtml(d.column)}</div><div class="table-name">public.${escapeHtml(d.table)}</div>${d.description ? `<div class="field-desc">${escapeHtml(d.description)}</div>` : ''}${consistency}</div><span class="badge ${s}">${sevLabel[s]}</span></div>
           <div class="missing"><div><span>Preenchidos</span><br><strong>${fmt.format(filled)}</strong></div><div class="percent"><b>${pct(p)}</b><span>de ${fmt.format(d.totalRows)} linhas</span></div></div>
           <div class="track" title="${pct(p)} preenchido"><div style="width:${Math.min(p, 100)}%"></div></div>
           <div class="card-footer"><span>${escapeHtml(d.domain)}</span><span>${fmt.format(d.totalRows)} linhas</span></div></article>`;
@@ -487,9 +668,26 @@
     document.querySelector('#refresh').addEventListener('click', loadQuality);
 
     /* -------- Dados Gerais -------- */
+    const STATUS_FILTER_OPTIONS = [
+      { value: 'all', label: 'Todos' },
+      { value: 'active', label: 'Ativos' },
+      { value: 'cancelled', label: 'Cancelados' },
+      { value: 'frozen', label: 'Congelados' },
+      { value: 'unknown', label: 'Não informados' }
+    ];
+    const STATUS_FILTER_TO_LABEL = {
+      active: 'Ativo',
+      cancelled: 'Cancelado',
+      frozen: 'Congelado',
+      unknown: 'Não informado'
+    };
+    const STATUS_ORDER = ['Ativo', 'Cancelado', 'Congelado', 'Não informado'];
+    const STAY_ORDER = ['Até 3 meses', 'De 4 a 6 meses', 'De 7 a 12 meses', 'De 13 a 24 meses', 'Mais de 24 meses', 'Sem data de referência'];
+    const INCOME_ORDER = ['Até R$ 5 mil', '5 a 10 mil', '10 a 20 mil', '20 a 50 mil', 'Acima de 50 mil', 'Não informado'];
+    const LIQUIDITY_ORDER = ['Até R$ 50 mil', '50 a 100 mil', '100 a 250 mil', '250 a 500 mil', '500 mil a 1 milhão', 'Acima de 1 milhão', 'Não informado'];
     const generalState = {
       payload: null, page: 1, pageSize: 25, sortKey: 'clientName', sortDir: 'asc',
-      showAllEngineers: false, loading: false, requestId: 0
+      statusFilter: 'all', showAllEngineers: false, loading: false, requestId: 0
     };
     const gFilters = {
       search: document.querySelector('#gSearch'), status: document.querySelector('#gStatusFilter'),
@@ -497,6 +695,37 @@
       contract: document.querySelector('#gContractRange'), cancel: document.querySelector('#gCancelRange'),
       stay: document.querySelector('#gStayRange')
     };
+    const gActiveOnly = document.querySelector('#gActiveOnly');
+
+    function foldStatusToken(value) {
+      return String(value || '')
+        .normalize('NFD')
+        .replace(/\p{M}/gu, '')
+        .toLowerCase()
+        .trim()
+        .replace(/\s+/g, ' ');
+    }
+    /** Agrupa variações equivalentes; não exclui categorias. */
+    function normalizeStatus(rawStatus) {
+      const token = foldStatusToken(rawStatus);
+      if (!token || token === 'null' || token === 'undefined' || token === 'vazio') return 'Não informado';
+      if (['ativo', 'active', 'ativa'].includes(token)) return 'Ativo';
+      if (
+        ['churn', 'cancelado', 'cancelada', 'canceled', 'cancelled', 'encerrado', 'encerrada', 'inativo', 'inativa', 'inactive'].includes(token) ||
+        token.includes('cancel') || token.includes('churn') || token.includes('encerr')
+      ) return 'Cancelado';
+      if (
+        ['congelado', 'congelada', 'freeze', 'frozen', 'pausado', 'pausada'].includes(token) ||
+        token.includes('congel') || token.includes('pausad')
+      ) return 'Congelado';
+      if (rawStatus === 'Ativo' || rawStatus === 'Cancelado' || rawStatus === 'Congelado' || rawStatus === 'Não informado') {
+        return rawStatus;
+      }
+      return 'Não informado';
+    }
+    function clientStatusLabel(client) {
+      return normalizeStatus(client?.status ?? client?.rawStatus);
+    }
 
     function fillSelect(select, values, allLabel) {
       const current = select.value || 'all';
@@ -504,16 +733,109 @@
       select.value = [...select.options].some(o => o.value === current) ? current : 'all';
     }
 
+    function fillStatusFilter(select) {
+      select.innerHTML = STATUS_FILTER_OPTIONS.map(o => `<option value="${escapeHtml(o.value)}">${escapeHtml(o.label)}</option>`).join('');
+      const current = STATUS_FILTER_OPTIONS.some(o => o.value === generalState.statusFilter)
+        ? generalState.statusFilter
+        : 'all';
+      generalState.statusFilter = current;
+      select.value = current;
+    }
+
+    function setStatusFilter(next) {
+      const allowed = new Set(STATUS_FILTER_OPTIONS.map(o => o.value));
+      generalState.statusFilter = allowed.has(next) ? next : 'all';
+      gFilters.status.value = generalState.statusFilter;
+      syncActiveOnlyButton();
+    }
+
+    function syncActiveOnlyButton() {
+      const on = generalState.statusFilter === 'active';
+      gActiveOnly.classList.toggle('is-active', on);
+      gActiveOnly.classList.remove('active');
+      gActiveOnly.setAttribute('aria-pressed', on ? 'true' : 'false');
+      const label = gActiveOnly.querySelector('.chip-label');
+      if (label) label.textContent = on ? '✓ Somente clientes ativos' : 'Somente clientes ativos';
+    }
+
     function statusBadge(status) {
-      const cancelled = /cancel|churn|inativ|encerr/i.test(status || '');
-      return `<span class="badge ${cancelled ? 'cancelled' : 'active'}">${escapeHtml(status || 'Não informado')}</span>`;
+      const key = normalizeStatus(status);
+      const cancelled = key === 'Cancelado';
+      const frozen = key === 'Congelado';
+      const cls = cancelled ? 'cancelled' : frozen ? 'medium' : key === 'Ativo' ? 'active' : 'unavailable';
+      return `<span class="badge ${cls}">${escapeHtml(key)}</span>`;
+    }
+
+    function avgNums(nums) {
+      if (!nums.length) return null;
+      return Math.round((nums.reduce((a, b) => a + b, 0) / nums.length) * 100) / 100;
+    }
+
+    function distFrom(rows, keyFn, ordered) {
+      const counts = new Map();
+      if (ordered) ordered.forEach(label => counts.set(label, 0));
+      for (const row of rows) {
+        const key = keyFn(row);
+        counts.set(key, (counts.get(key) || 0) + 1);
+      }
+      const total = rows.length || 1;
+      const list = ordered
+        ? ordered.map(label => [label, counts.get(label) || 0]).filter(([, count]) => count > 0)
+        : [...counts.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], 'pt-BR'));
+      return list.map(([label, count]) => ({
+        label, count, percent: Math.round((count / total) * 1000) / 10
+      }));
+    }
+
+    function summarizeFiltered(rows) {
+      const total = rows.length || 1;
+      const liquidityValues = rows.map(r => r.liquidityReserve).filter(v => v != null);
+      const contributionValues = rows.map(r => r.lastContribution).filter(v => v != null);
+      const incomeValues = rows.map(r => r.monthlyIncome).filter(v => v != null);
+      const withFinancial = rows.filter(r => r.hasFinancialProfile).length;
+      return {
+        totalClients: rows.length,
+        activeClients: rows.filter(r => clientStatusLabel(r) === 'Ativo').length,
+        cancelledClients: rows.filter(r => clientStatusLabel(r) === 'Cancelado').length,
+        frozenClients: rows.filter(r => clientStatusLabel(r) === 'Congelado').length,
+        averageStayDays: avgNums(rows.map(r => r.stayDays).filter(v => v != null)),
+        averageLiquidityReserve: avgNums(liquidityValues),
+        liquidityReserveFilledCount: liquidityValues.length,
+        averageLastContribution: avgNums(contributionValues),
+        lastContributionFilledCount: contributionValues.length,
+        averageMonthlyIncome: avgNums(incomeValues),
+        monthlyIncomeFilledCount: incomeValues.length,
+        clientsWithFinancialProfile: withFinancial,
+        financialProfilePercent: Math.round((withFinancial / total) * 1000) / 10
+      };
+    }
+
+    function distributionsFrom(rows) {
+      const total = rows.length || 1;
+      const financialProfile = [
+        { label: 'Imóvel', count: rows.filter(r => r.hasProperty === true).length },
+        { label: 'Carro', count: rows.filter(r => r.hasCar === true).length },
+        { label: 'Consórcio', count: rows.filter(r => r.hasConsortium === true).length },
+        { label: 'Reserva de liquidez', count: rows.filter(r => r.liquidityReserve != null).length }
+      ].map(item => ({ ...item, percent: Math.round((item.count / total) * 1000) / 10 }));
+      return {
+        // Normaliza ao agregar (agrupa; não filtra outras categorias)
+        status: distFrom(rows, r => clientStatusLabel(r), STATUS_ORDER),
+        segments: distFrom(rows, r => r.segment),
+        engineers: distFrom(rows, r => r.engineer),
+        stayRanges: distFrom(rows, r => r.stayRange, STAY_ORDER),
+        financialProfile,
+        monthlyIncome: distFrom(rows, r => r.incomeBand, INCOME_ORDER),
+        liquidityReserve: distFrom(rows, r => r.liquidityBand, LIQUIDITY_ORDER)
+      };
     }
 
     function filteredClients() {
       const clients = generalState.payload?.clients || [];
       const q = gFilters.search.value.trim().toLowerCase();
+      const statusLabel = STATUS_FILTER_TO_LABEL[generalState.statusFilter] || null;
       return clients.filter(c => {
-        if (gFilters.status.value !== 'all' && c.status !== gFilters.status.value) return false;
+        if (statusLabel && clientStatusLabel(c) !== statusLabel) return false;
         if (gFilters.segment.value !== 'all' && c.segment !== gFilters.segment.value) return false;
         if (gFilters.engineer.value !== 'all' && c.engineer !== gFilters.engineer.value) return false;
         if (gFilters.stay.value !== 'all' && c.stayRange !== gFilters.stay.value) return false;
@@ -572,13 +894,16 @@
 
     function renderGeneral() {
       if (!generalState.payload) return;
-      const data = filteredClients();
-      const summary = generalState.payload.summary;
-      const dist = generalState.payload.distributions;
+      // Fonte única: KPIs, gráficos, tabela e paginação usam a mesma coleção
+      const filteredClientsList = filteredClients();
+      const summary = summarizeFiltered(filteredClientsList);
+      const dist = distributionsFrom(filteredClientsList);
+      gFilters.status.value = generalState.statusFilter;
+      syncActiveOnlyButton();
       document.querySelector('#gKpis1').innerHTML = `
-        <article class="metric highlight"><div class="metric-label">Total de clientes</div><div class="metric-value">${fmt.format(summary.totalClients)}</div><div class="metric-note">Carteira consolidada</div></article>
-        <article class="metric"><div class="metric-label">Clientes ativos</div><div class="metric-value">${fmt.format(summary.activeClients)}</div><div class="metric-note">Sem cancelamento efetivo dominante</div></article>
-        <article class="metric"><div class="metric-label">Clientes cancelados</div><div class="metric-value">${fmt.format(summary.cancelledClients)}</div><div class="metric-note">Com churn efetivo ou status de cancelamento</div></article>
+        <article class="metric highlight"><div class="metric-label">Total de clientes</div><div class="metric-value">${fmt.format(summary.totalClients)}</div><div class="metric-note">Carteira filtrada</div></article>
+        <article class="metric"><div class="metric-label">Clientes ativos</div><div class="metric-value">${fmt.format(summary.activeClients)}</div><div class="metric-note">Status normalizado: Ativo</div></article>
+        <article class="metric"><div class="metric-label">Clientes cancelados</div><div class="metric-value">${fmt.format(summary.cancelledClients)}</div><div class="metric-note">Status normalizado: Cancelado</div></article>
         <article class="metric"><div class="metric-label">Tempo médio de permanência <span class="help" title="Período entre a contratação e o cancelamento. Para clientes ativos, considera a data atual.">?</span></div><div class="metric-value">${summary.averageStayDays == null ? '—' : fmt.format(Math.round(summary.averageStayDays)) + ' d'}</div><div class="metric-note">Média em dias</div></article>`;
       document.querySelector('#gKpis2').innerHTML = `
         <article class="metric"><div class="metric-label">Reserva de liquidez média <span class="help" title="Média da reserva de liquidez informada pelos clientes.">?</span></div><div class="metric-value" style="font-size:22px">${moneyAvg(summary.averageLiquidityReserve)}</div><div class="metric-note">${fmt.format(summary.liquidityReserveFilledCount || 0)} clientes preenchidos</div></article>
@@ -594,10 +919,10 @@
       document.querySelector('#chartIncome').innerHTML = hBars(dist.monthlyIncome || []);
       document.querySelector('#chartLiquidity').innerHTML = hBars(dist.liquidityReserve || []);
 
-      const pages = Math.max(1, Math.ceil(data.length / generalState.pageSize));
+      const pages = Math.max(1, Math.ceil(filteredClientsList.length / generalState.pageSize));
       if (generalState.page > pages) generalState.page = pages;
       const start = (generalState.page - 1) * generalState.pageSize;
-      const pageRows = data.slice(start, start + generalState.pageSize);
+      const pageRows = filteredClientsList.slice(start, start + generalState.pageSize);
       document.querySelector('#gRows').innerHTML = pageRows.map(c => `
         <tr data-id="${escapeHtml(c.clientId)}">
           <td class="truncate" title="${escapeHtml(c.clientName)}">${escapeHtml(c.clientName)}</td>
@@ -606,7 +931,7 @@
           <td>${dateBR(c.contractDate)}</td>
           <td>${dateBR(c.cancellationDate)}</td>
           <td class="num" title="${c.stayDays == null ? 'Não informado' : c.stayDays + ' dias'}">${c.stayDays == null ? '—' : fmt.format(c.stayDays) + ' d'}</td>
-          <td>${statusBadge(c.status)}</td>
+          <td>${statusBadge(clientStatusLabel(c))}</td>
           <td class="truncate" title="${escapeHtml(c.segment)}">${escapeHtml(c.segment)}</td>
           <td class="truncate" title="${escapeHtml(c.engineer)}">${escapeHtml(c.engineer)}</td>
           <td class="num">${money(c.monthlyIncome)}</td>
@@ -616,8 +941,8 @@
           <td class="center">${boolIcon(c.hasCar)}</td>
           <td class="center">${boolIcon(c.hasConsortium)}</td>
         </tr>`).join('');
-      document.querySelector('#gEmpty').style.display = data.length ? 'none' : 'block';
-      document.querySelector('#gCounter').textContent = `${data.length} de ${generalState.payload.clients.length} clientes`;
+      document.querySelector('#gEmpty').style.display = filteredClientsList.length ? 'none' : 'block';
+      document.querySelector('#gCounter').textContent = `${filteredClientsList.length} de ${generalState.payload.clients.length} clientes`;
       document.querySelector('#gPageInfo').textContent = `Página ${generalState.page} de ${pages}`;
       document.querySelector('#gPrev').disabled = generalState.page <= 1;
       document.querySelector('#gNext').disabled = generalState.page >= pages;
@@ -633,7 +958,10 @@
         ...(client.stayUsedCreatedAtFallback || (client.dataWarnings || []).some(w => w.includes('data de criação'))
           ? [['Observação de permanência', 'Permanência calculada com data de criação do cliente por ausência de data de contratação.']]
           : []),
-        ['Status', client.status],
+        ['Status', clientStatusLabel(client)],
+        ...(client.rawStatus && client.rawStatus !== clientStatusLabel(client)
+          ? [['Status original', client.rawStatus]]
+          : []),
         ['Segmento', client.segment],
         ['Engenheiro Patrimonial', client.engineer],
       ];
@@ -668,14 +996,20 @@
         if (!response.ok) throw new Error(payload.error || 'Falha ao consultar o banco');
         generalState.payload = payload;
         generalState.page = 1;
+        generalState.statusFilter = 'all';
         const clients = payload.clients || [];
-        fillSelect(gFilters.status, [...new Set(clients.map(c => c.status))].sort((a, b) => a.localeCompare(b, 'pt-BR')), 'Todos');
+        fillStatusFilter(gFilters.status);
         fillSelect(gFilters.segment, [...new Set(clients.map(c => c.segment))].sort((a, b) => a.localeCompare(b, 'pt-BR')), 'Todos');
         fillSelect(gFilters.engineer, [...new Set(clients.map(c => c.engineer))].sort((a, b) => a.localeCompare(b, 'pt-BR')), 'Todos');
-        fillSelect(gFilters.stay, (payload.distributions?.stayRanges || []).map(r => r.label), 'Todas');
+        fillSelect(gFilters.stay, STAY_ORDER, 'Todas');
         renderGeneral();
-        status.textContent = payload.quality?.warnings?.length ? '● Supabase conectado com alertas' : '● Supabase conectado';
-        status.style.color = payload.quality?.warnings?.length ? 'var(--color-warning)' : 'var(--color-success)';
+        const hasStatusNotes = Boolean(payload.quality?.statusConsistency?.notes?.length);
+        status.textContent = (payload.quality?.warnings?.length || hasStatusNotes)
+          ? '● Supabase conectado com alertas'
+          : '● Supabase conectado';
+        status.style.color = (payload.quality?.warnings?.length || hasStatusNotes)
+          ? 'var(--color-warning)'
+          : 'var(--color-success)';
         document.querySelector('#gUpdated').textContent = `Atualizado em ${new Date(payload.generatedAt).toLocaleString('pt-BR')}`;
       } catch (error) {
         if (requestId !== generalState.requestId) return;
@@ -821,11 +1155,28 @@
       }
     }
 
-    Object.values(gFilters).forEach(el => el.addEventListener('input', () => { generalState.page = 1; renderGeneral(); }));
+    Object.entries(gFilters).forEach(([key, el]) => el.addEventListener('change', () => {
+      if (key === 'status') setStatusFilter(el.value);
+      generalState.page = 1;
+      renderGeneral();
+    }));
+    gFilters.search.addEventListener('input', () => {
+      generalState.page = 1;
+      renderGeneral();
+    });
+    gActiveOnly.addEventListener('click', (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      setStatusFilter(generalState.statusFilter === 'active' ? 'all' : 'active');
+      generalState.page = 1;
+      renderGeneral();
+    });
     document.querySelector('#gClear').addEventListener('click', () => {
       gFilters.search.value = '';
-      ['status', 'segment', 'engineer', 'contract', 'cancel', 'stay'].forEach(k => gFilters[k].value = 'all');
-      generalState.page = 1; renderGeneral();
+      ['segment', 'engineer', 'contract', 'cancel', 'stay'].forEach(k => gFilters[k].value = 'all');
+      setStatusFilter('all');
+      generalState.page = 1;
+      renderGeneral();
     });
     document.querySelector('#gRefresh').addEventListener('click', loadGeneral);
     document.querySelector('#gPrev').addEventListener('click', () => { generalState.page -= 1; renderGeneral(); });
@@ -871,9 +1222,360 @@
       }
     });
 
+    /* -------- Reuniões -------- */
+    const meetingsState = {
+      payload: null, page: 1, pageSize: 25, sortKey: 'totalMeetings', sortDir: 'desc',
+      showAllEngineers: false, monthRange: '6', monthsAll: [], monthsVisible: [],
+      loading: false, requestId: 0
+    };
+    const mFilters = {
+      search: document.querySelector('#mSearch'), engineer: document.querySelector('#mEngineer'),
+      period: document.querySelector('#mPeriod'), from: document.querySelector('#mFrom'), to: document.querySelector('#mTo'),
+      attendance: document.querySelector('#mAttendance'), freq: document.querySelector('#mFreq'),
+      first: document.querySelector('#mFirst'), absence: document.querySelector('#mHasAbsence'),
+      reschedule: document.querySelector('#mHasReschedule')
+    };
+
+    function periodStart() {
+      const p = mFilters.period.value;
+      if (p === 'all') return null;
+      if (p === 'custom') {
+        return mFilters.from.value ? new Date(mFilters.from.value + 'T00:00:00Z') : null;
+      }
+      const d = new Date();
+      d.setUTCDate(d.getUTCDate() - Number(p));
+      return d;
+    }
+    function periodEnd() {
+      if (mFilters.period.value !== 'custom') return null;
+      return mFilters.to.value ? new Date(mFilters.to.value + 'T23:59:59Z') : null;
+    }
+    function meetingInPeriod(m) {
+      const start = m.startTime ? new Date(m.startTime) : null;
+      if (!start) return false;
+      const from = periodStart();
+      const to = periodEnd();
+      if (from && start < from) return false;
+      if (to && start > to) return false;
+      return true;
+    }
+    function clientMeetingsInPeriod(c) {
+      const all = c.meetings || [];
+      if (mFilters.period.value === 'all') return all;
+      return all.filter(meetingInPeriod);
+    }
+    function firstBadge(v) {
+      if (v === true) return '<span class="badge active">Realizou</span>';
+      if (v === false) return '<span class="badge cancelled">Não realizou</span>';
+      return '<span class="badge unavailable">Não informado</span>';
+    }
+    const monthShort = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+    function formatMonthLabel(ym) {
+      const [y, m] = String(ym || '').split('-');
+      const idx = Number(m) - 1;
+      if (!y || idx < 0 || idx > 11) return ym || '—';
+      return `${monthShort[idx]}/${y}`;
+    }
+    function currentMonthKey() {
+      const d = new Date();
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    }
+    function normalizeMonthKey(value) {
+      const raw = String(value || '').trim();
+      const m = raw.match(/^(\d{4})-(\d{1,2})/);
+      if (!m) return '';
+      return `${m[1]}-${String(Number(m[2])).padStart(2, '0')}`;
+    }
+    function rebuildMonthsAll() {
+      // 1) obter dados mensais da API; 2) chave YYYY-MM; 3) só histórico (<= mês atual)
+      const current = currentMonthKey();
+      const byMonth = new Map();
+      for (const i of (meetingsState.payload?.distributions?.meetingsByMonth || [])) {
+        const month = normalizeMonthKey(i.month || i.label);
+        if (!month || month > current) continue;
+        const scheduled = Number(i.scheduled ?? i.count ?? 0);
+        const completed = Number(i.completed || 0);
+        const noShows = Number(i.noShows || 0);
+        byMonth.set(month, {
+          month,
+          scheduled,
+          completed,
+          noShows,
+          completionRate: scheduled > 0
+            ? (i.completionRate == null ? Math.round((completed / scheduled) * 1000) / 10 : i.completionRate)
+            : null
+        });
+      }
+      // 4) mais recente → mais antigo (só meses do conjunto consolidado)
+      meetingsState.monthsAll = [...byMonth.values()].sort((a, b) => b.month.localeCompare(a.month));
+    }
+    function deriveVisibleMonths() {
+      // 5) aplicar limite 6 / 12 depois do filtro e da ordenação
+      const historical = meetingsState.monthsAll;
+      const limit = String(meetingsState.monthRange) === '12' ? 12 : 6;
+      const visible = historical.slice(0, limit);
+      meetingsState.monthsVisible = visible;
+      return visible;
+    }
+    function syncMonthRangeButtons() {
+      if (meetingsState.monthRange !== '6' && meetingsState.monthRange !== '12') {
+        meetingsState.monthRange = '6';
+      }
+      const mode = String(meetingsState.monthRange);
+      document.querySelectorAll('#mMonthRangeSeg [data-month-range]').forEach(btn => {
+        const on = btn.getAttribute('data-month-range') === mode;
+        btn.classList.toggle('active', on);
+        btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+      });
+      const limit = mode === '12' ? 12 : 6;
+      const total = meetingsState.monthsAll.length;
+      const shown = meetingsState.monthsVisible.length;
+      const countEl = document.querySelector('#mMonthCount');
+      if (!countEl) return;
+      if (!shown) countEl.textContent = 'Sem meses históricos';
+      else if (shown < limit || total < limit) countEl.textContent = `Exibindo ${shown} meses disponíveis`;
+      else countEl.textContent = `Exibindo os ${limit} meses mais recentes`;
+    }
+    function monthBars(items) {
+      const max = Math.max(...items.map(i => i.scheduled), 1);
+      const useScroll = String(meetingsState.monthRange) === '12' && items.length > 6;
+      if (!items.length) return '<div class="empty" style="display:block">Sem meses históricos para exibir.</div>';
+      return `<div class="month-bars${useScroll ? ' scroll' : ''}" data-month-rows="${items.length}">${items.map(i => {
+        const schW = i.scheduled > 0 ? Math.max(4, (i.scheduled / max) * 100) : 0;
+        const doneW = i.completed > 0 ? Math.max(4, Math.min(100, (i.completed / max) * 100)) : 0;
+        const rateText = i.completionRate == null ? '—' : pct(i.completionRate);
+        const values = `${fmt.format(i.scheduled)} ag. · ${fmt.format(i.completed)} real. · <b>${rateText}</b>`;
+        const tip = `${formatMonthLabel(i.month)} | Agendadas: ${fmt.format(i.scheduled)} | Realizadas: ${fmt.format(i.completed)} | Taxa: ${rateText} | No-shows: ${fmt.format(i.noShows)}`;
+        return `<div class="month-row" title="${escapeHtml(tip)}">
+          <div class="month-label">${escapeHtml(formatMonthLabel(i.month))}</div>
+          <div class="month-dual">
+            <div class="month-line"><em>Agend.</em><div class="month-track"><span class="fill-sch" style="width:${schW}%"></span></div></div>
+            <div class="month-line"><em>Realiz.</em><div class="month-track"><span class="fill-done" style="width:${doneW}%"></span></div></div>
+          </div>
+          <div class="month-val">${values}</div>
+        </div>`;
+      }).join('')}</div>`;
+    }
+    function renderMonthChart() {
+      rebuildMonthsAll();
+      const visible = deriveVisibleMonths();
+      syncMonthRangeButtons();
+      const el = document.querySelector('#mChartMonths');
+      if (el) el.innerHTML = monthBars(visible);
+      const bars = el?.querySelector('.month-bars');
+      if (bars) bars.scrollTop = 0;
+    }
+    function filteredMeetingClients() {
+      const clients = meetingsState.payload?.clients || [];
+      const q = mFilters.search.value.trim().toLowerCase();
+      return clients.filter(c => {
+        const meetings = clientMeetingsInPeriod(c);
+        if (mFilters.period.value !== 'all' && !meetings.length && mFilters.period.value !== 'all') {
+          // keep clients with no meetings in period only if looking at first-meeting etc? Prefer hide if period filter and zero meetings unless all-time metrics needed
+        }
+        if (mFilters.engineer.value !== 'all' && c.engineer !== mFilters.engineer.value) return false;
+        if (mFilters.freq.value !== 'all' && c.frequencyBand !== mFilters.freq.value) return false;
+        if (mFilters.first.value === 'yes' && c.firstMeetingCompleted !== true) return false;
+        if (mFilters.first.value === 'no' && c.firstMeetingCompleted !== false) return false;
+        if (mFilters.absence.value === 'yes' && !(c.absences > 0)) return false;
+        if (mFilters.absence.value === 'no' && c.absences > 0) return false;
+        if (mFilters.reschedule.value === 'yes' && !(c.reschedules > 0)) return false;
+        if (mFilters.reschedule.value === 'no' && c.reschedules > 0) return false;
+        if (mFilters.attendance.value !== 'all') {
+          if (!meetings.some(m => m.attendanceStatus === mFilters.attendance.value)) return false;
+        }
+        if (mFilters.period.value !== 'all' && !meetings.length) return false;
+        if (q) {
+          const hay = `${c.clientName} ${c.clientCode || ''} ${c.clientId}`.toLowerCase();
+          if (!hay.includes(q)) return false;
+        }
+        return true;
+      }).map(c => {
+        const meetings = clientMeetingsInPeriod(c);
+        if (mFilters.period.value === 'all') return c;
+        const total = meetings.length;
+        return {
+          ...c,
+          totalMeetings: total,
+          absences: meetings.filter(m => m.attendanceStatus === 'nao_compareceu').length,
+          reschedules: meetings.filter(m => m.rescheduled).length,
+          _periodMeetings: meetings
+        };
+      }).sort((a, b) => {
+        const key = meetingsState.sortKey;
+        const av = a[key], bv = b[key];
+        let cmp = 0;
+        if (av == null && bv == null) cmp = 0;
+        else if (av == null) cmp = 1;
+        else if (bv == null) cmp = -1;
+        else if (typeof av === 'number' && typeof bv === 'number') cmp = av - bv;
+        else if (typeof av === 'boolean' && typeof bv === 'boolean') cmp = Number(av) - Number(bv);
+        else cmp = String(av).localeCompare(String(bv), 'pt-BR', { numeric: true });
+        return meetingsState.sortDir === 'asc' ? cmp : -cmp;
+      });
+    }
+    function renderMeetings() {
+      if (!meetingsState.payload) return;
+      const summary = meetingsState.payload.summary;
+      const dist = meetingsState.payload.distributions;
+      const data = filteredMeetingClients();
+      const noShows = summary.totalNoShows ?? summary.totalAbsences ?? 0;
+      const attendanceRateText = summary.attendanceRate == null ? 'Não calculável' : pct(summary.attendanceRate);
+      document.querySelector('#mKpis').innerHTML = `
+        <article class="metric highlight"><div class="metric-label">Total de reuniões</div><div class="metric-value">${fmt.format(summary.totalMeetings)}</div><div class="metric-note">Reuniões únicas consolidadas</div></article>
+        <article class="metric"><div class="metric-label">Média de reuniões/mês</div><div class="metric-value">${summary.averageMeetingsPerMonth == null ? '—' : fmt.format(summary.averageMeetingsPerMonth)}</div><div class="metric-note">Sobre o histórico consolidado</div></article>
+        <article class="metric"><div class="metric-label">Dias desde a última reunião <span class="help" title="Quantidade de dias entre hoje e a última reunião realizada do cliente.">?</span></div><div class="metric-value">${summary.averageDaysSinceLastMeeting == null ? '—' : fmt.format(Math.round(summary.averageDaysSinceLastMeeting))}</div><div class="metric-note">Média da carteira</div></article>
+        <article class="metric"><div class="metric-label">Intervalo médio <span class="help" title="Média de dias entre reuniões realizadas consecutivas.">?</span></div><div class="metric-value">${summary.averageIntervalDays == null ? '—' : fmt.format(Math.round(summary.averageIntervalDays)) + ' d'}</div><div class="metric-note">Entre presenças confirmadas</div></article>
+        <article class="metric"><div class="metric-label">Total de no-shows <span class="help" title="Quantidade de reuniões com ausência confirmada do cliente.">?</span></div><div class="metric-value">${fmt.format(noShows)}</div><div class="metric-note">Reuniões em que o cliente não compareceu</div></article>
+        <article class="metric"><div class="metric-label">Total de remarcações</div><div class="metric-value">${fmt.format(summary.totalReschedules)}</div><div class="metric-note">Campo remarcado = verdadeiro</div></article>
+        <article class="metric"><div class="metric-label">Taxa de comparecimento <span class="help" title="Percentual de reuniões com comparecimento confirmado entre aquelas que possuem status de presença válido.">?</span></div><div class="metric-value" style="font-size:${summary.attendanceRate == null ? '22px' : '30px'}">${attendanceRateText}</div><div class="metric-note">Presenças sobre reuniões com status confirmado</div></article>
+        <article class="metric"><div class="metric-label">Clientes com primeira reunião <span class="help" title="Clientes que possuem pelo menos uma reunião realizada com presença confirmada.">?</span></div><div class="metric-value">${fmt.format(summary.clientsWithFirstMeeting)}</div><div class="metric-note">${pct(summary.firstMeetingCompletionRate || 0)} da carteira · ao menos uma presença confirmada</div></article>`;
+
+      renderMonthChart();
+      document.querySelector('#mChartStatus').innerHTML = donut(dist.attendanceStatus || []);
+      document.querySelector('#mChartFreq').innerHTML = hBars(dist.meetingFrequency || []);
+      document.querySelector('#mChartDays').innerHTML = hBars(dist.daysSinceLastMeeting || []);
+      document.querySelector('#mChartInterval').innerHTML = hBars(dist.intervalRanges || []);
+      document.querySelector('#mChartEngineers').innerHTML = hBars(dist.meetingsByEngineer || [], meetingsState.showAllEngineers ? null : 8);
+      document.querySelector('#mToggleEngineers').textContent = meetingsState.showAllEngineers ? 'Ver principais' : 'Ver todos';
+
+      const pages = Math.max(1, Math.ceil(data.length / meetingsState.pageSize));
+      if (meetingsState.page > pages) meetingsState.page = pages;
+      const start = (meetingsState.page - 1) * meetingsState.pageSize;
+      const pageRows = data.slice(start, start + meetingsState.pageSize);
+      document.querySelector('#mRows').innerHTML = pageRows.map(c => {
+        const classes = [
+          c.daysSinceLastMeeting != null && c.daysSinceLastMeeting > 90 ? 'warn-stale' : '',
+          c.absences > 0 ? 'warn-absence' : '',
+          c.firstMeetingCompleted === false ? 'warn-nofirst' : ''
+        ].filter(Boolean).join(' ');
+        return `<tr class="${classes}" data-mid="${escapeHtml(c.clientId)}">
+          <td class="truncate" title="${escapeHtml(c.clientName)}">${escapeHtml(c.clientName)}</td>
+          <td>${escapeHtml(c.clientCode || 'Não informado')}</td>
+          <td class="truncate" title="${escapeHtml(c.engineer)}">${escapeHtml(c.engineer)}</td>
+          <td class="num">${fmt.format(c.totalMeetings)}</td>
+          <td class="num">${c.meetingsPerMonth == null ? '—' : fmt.format(c.meetingsPerMonth)}</td>
+          <td>${dateBR(c.lastMeetingDate)}</td>
+          <td class="num">${c.daysSinceLastMeeting == null ? '—' : fmt.format(c.daysSinceLastMeeting)}</td>
+          <td class="num">${c.averageIntervalDays == null ? '—' : fmt.format(Math.round(c.averageIntervalDays)) + ' d'}</td>
+          <td class="num">${fmt.format(c.absences)}</td>
+          <td class="num">${fmt.format(c.reschedules)}</td>
+          <td class="num">${c.cancelledMeetings == null ? 'Não informado' : fmt.format(c.cancelledMeetings)}</td>
+          <td>${firstBadge(c.firstMeetingCompleted)}</td>
+        </tr>`;
+      }).join('');
+      document.querySelector('#mEmpty').style.display = data.length ? 'none' : 'block';
+      document.querySelector('#mCounter').textContent = `${data.length} de ${meetingsState.payload.clients.length} clientes`;
+      document.querySelector('#mPageInfo').textContent = `Página ${meetingsState.page} de ${pages}`;
+      document.querySelector('#mPrev').disabled = meetingsState.page <= 1;
+      document.querySelector('#mNext').disabled = meetingsState.page >= pages;
+    }
+    function openMeetingDrawer(client) {
+      document.querySelector('#drawerTitle').textContent = client.clientName;
+      document.querySelector('#drawerSub').textContent = `Código ${client.clientCode || 'Não informado'} · ID ${client.clientId}`;
+      const items = [
+        ['Total de reuniões', fmt.format(client.totalMeetings)],
+        ['Média por mês', client.meetingsPerMonth == null ? 'Não informado' : fmt.format(client.meetingsPerMonth)],
+        ['Última reunião', dateBR(client.lastMeetingDate)],
+        ['Dias sem reunião', client.daysSinceLastMeeting == null ? 'Não informado' : fmt.format(client.daysSinceLastMeeting)],
+        ['Intervalo médio', client.averageIntervalDays == null ? 'Não informado' : `${fmt.format(Math.round(client.averageIntervalDays))} dias`],
+        ['Faltas', fmt.format(client.absences)],
+        ['Remarcações', fmt.format(client.reschedules)],
+        ['Canceladas', client.cancelledMeetings == null ? 'Não informado' : fmt.format(client.cancelledMeetings)],
+        ['Primeira reunião', client.firstMeetingCompleted === true ? 'Realizou' : client.firstMeetingCompleted === false ? 'Não realizou' : 'Não informado'],
+        ['Data da primeira', dateBR(client.firstMeetingDate)],
+        ['Engenheiro', client.engineer],
+      ];
+      const history = (client.meetings || []).slice().reverse().map(m => {
+        const statusLabel = m.attendanceStatus === 'compareceu' ? 'Compareceu'
+          : m.attendanceStatus === 'nao_compareceu' ? 'Não compareceu'
+          : m.attendanceStatus === 'cancelada' ? 'Cancelada' : 'Sem confirmação';
+        return `<div class="timeline-item">
+          <strong>${escapeHtml(m.title || 'Reunião')}</strong>
+          <div class="meta">${dateBR(m.startTime)} · ${escapeHtml(m.source)} · ${statusLabel}${m.rescheduled ? ' · Remarcada' : ''}</div>
+          ${m.recordingUrl ? `<div class="meta"><a href="${escapeHtml(m.recordingUrl)}" target="_blank" rel="noopener" style="color:var(--color-info)">Link da gravação</a></div>` : ''}
+        </div>`;
+      }).join('') || '<div class="timeline-item">Sem histórico de reuniões</div>';
+      document.querySelector('#drawerGrid').innerHTML =
+        items.map(([k, v]) => `<div class="drawer-item"><span>${k}</span><strong>${escapeHtml(v)}</strong></div>`).join('') +
+        `<div class="drawer-section" style="grid-column:1/-1"><h3>Histórico de reuniões</h3><div class="timeline">${history}</div></div>`;
+      document.querySelector('#drawerWarnings').innerHTML = (client.dataWarnings || []).map(w => `<li>${escapeHtml(w)}</li>`).join('') || '<li style="color:var(--color-text-muted)">Nenhum alerta</li>';
+      document.querySelector('#drawer').classList.add('open');
+      document.querySelector('#drawer').setAttribute('aria-hidden', 'false');
+    }
+    async function loadMeetings() {
+      if (meetingsState.loading) return;
+      meetingsState.loading = true;
+      const requestId = ++meetingsState.requestId;
+      const refresh = document.querySelector('#mRefresh');
+      const status = document.querySelector('#mStatus');
+      refresh.disabled = true; refresh.textContent = 'Atualizando…';
+      status.textContent = '● Atualizando dados'; status.style.color = 'var(--color-warning)';
+      try {
+        const response = await fetch(`/api/meetings?t=${Date.now()}`, { cache: 'no-store' });
+        const payload = await response.json();
+        if (requestId !== meetingsState.requestId) return;
+        if (!response.ok) throw new Error(payload.error || 'Falha ao consultar reuniões');
+        meetingsState.payload = payload;
+        meetingsState.page = 1;
+        const clients = payload.clients || [];
+        fillSelect(mFilters.engineer, [...new Set(clients.map(c => c.engineer))].sort((a, b) => a.localeCompare(b, 'pt-BR')), 'Todos');
+        fillSelect(mFilters.freq, (payload.distributions?.meetingFrequency || []).map(r => r.label), 'Todas');
+        renderMeetings();
+        status.textContent = payload.quality?.warnings?.length ? '● Supabase conectado com alertas' : '● Supabase conectado';
+        status.style.color = payload.quality?.warnings?.length ? 'var(--color-warning)' : 'var(--color-success)';
+        document.querySelector('#mUpdated').textContent = `Atualizado em ${new Date(payload.generatedAt).toLocaleString('pt-BR')}`;
+      } catch (error) {
+        if (requestId !== meetingsState.requestId) return;
+        status.textContent = '● Falha na atualização'; status.style.color = 'var(--color-danger)';
+        document.querySelector('#mUpdated').textContent = error.message;
+        document.querySelector('#mEmpty').style.display = 'block';
+        document.querySelector('#mEmpty').textContent = 'Não foi possível carregar as reuniões.';
+      } finally {
+        if (requestId === meetingsState.requestId) {
+          meetingsState.loading = false; refresh.disabled = false; refresh.textContent = 'Atualizar';
+        }
+      }
+    }
+    Object.values(mFilters).forEach(el => el && el.addEventListener('input', () => { meetingsState.page = 1; renderMeetings(); }));
+    document.querySelector('#mClear').addEventListener('click', () => {
+      mFilters.search.value = '';
+      ['engineer', 'period', 'attendance', 'freq', 'first', 'absence', 'reschedule'].forEach(k => mFilters[k].value = 'all');
+      mFilters.from.value = ''; mFilters.to.value = '';
+      meetingsState.page = 1; renderMeetings();
+    });
+    document.querySelector('#mRefresh').addEventListener('click', loadMeetings);
+    document.querySelector('#mPrev').addEventListener('click', () => { meetingsState.page -= 1; renderMeetings(); });
+    document.querySelector('#mNext').addEventListener('click', () => { meetingsState.page += 1; renderMeetings(); });
+    document.querySelector('#mToggleEngineers').addEventListener('click', () => { meetingsState.showAllEngineers = !meetingsState.showAllEngineers; renderMeetings(); });
+    const monthRangeSeg = document.querySelector('#mMonthRangeSeg');
+    if (monthRangeSeg) {
+      monthRangeSeg.addEventListener('click', (event) => {
+        const btn = event.target.closest('[data-month-range]');
+        if (!btn || !monthRangeSeg.contains(btn)) return;
+        event.preventDefault();
+        const next = btn.getAttribute('data-month-range');
+        meetingsState.monthRange = next === '12' ? '12' : '6';
+        renderMonthChart();
+      });
+    }
+    document.querySelectorAll('#view-meetings th[data-msort]').forEach(th => th.addEventListener('click', () => {
+      const key = th.dataset.msort;
+      if (meetingsState.sortKey === key) meetingsState.sortDir = meetingsState.sortDir === 'asc' ? 'desc' : 'asc';
+      else { meetingsState.sortKey = key; meetingsState.sortDir = 'desc'; }
+      renderMeetings();
+    }));
+    document.querySelector('#mRows').addEventListener('click', e => {
+      const tr = e.target.closest('tr[data-mid]');
+      if (!tr || !meetingsState.payload) return;
+      const client = meetingsState.payload.clients.find(c => c.clientId === tr.dataset.mid);
+      if (client) openMeetingDrawer(client);
+    });
+
     loadGeneral();
     setInterval(() => {
       if (views.general.classList.contains('active')) loadGeneral();
+      if (views.meetings.classList.contains('active')) loadMeetings();
       if (views.quality.classList.contains('active')) loadQuality();
       if (views.journey.classList.contains('active')) loadOnboarding();
     }, 5 * 60 * 1000);

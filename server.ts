@@ -20,6 +20,7 @@ if (Bun.env.SUPABASE_URL) process.env.SUPABASE_URL = Bun.env.SUPABASE_URL;
 if (Bun.env.SUPABASE_SERVICE_ROLE_KEY) process.env.SUPABASE_SERVICE_ROLE_KEY = Bun.env.SUPABASE_SERVICE_ROLE_KEY;
 
 const generalDataHandler = (await import("./netlify/functions/general-data.mjs")).default;
+const onboardingHandler = (await import("./netlify/functions/onboarding.mjs")).default;
 
 const PORT = Number(Bun.env.PORT || 4173);
 
@@ -151,6 +152,7 @@ const server = Bun.serve({
     const url = new URL(request.url);
     if (url.pathname === "/api/quality") return qualityResponse();
     if (url.pathname === "/api/general-data") return generalDataHandler();
+    if (url.pathname === "/api/onboarding") return onboardingHandler();
     if (url.pathname !== "/" && url.pathname !== "/index.html") return new Response("Não encontrado", { status: 404 });
     return new Response(Bun.file(`${ROOT}/index.html`), { headers: { "Content-Type": "text/html; charset=utf-8" } });
   },

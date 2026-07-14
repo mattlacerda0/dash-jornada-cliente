@@ -11,3 +11,8 @@
   from = "/api/general-data"
   to = "/.netlify/functions/general-data"
   status = 200
+
+[[redirects]]
+  from = "/api/onboarding"
+  to = "/.netlify/functions/onboarding"
+  status = 200

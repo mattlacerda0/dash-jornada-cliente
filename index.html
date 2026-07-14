@@ -12,7 +12,7 @@
     :root{--color-bg:#0d0d0d;--color-surface:#1a1a1a;--color-surface-2:#222;--color-border:#303030;--color-border-strong:#444;--color-primary:#f47920;--color-primary-soft:rgba(244,121,32,.13);--color-primary-tint:rgba(244,121,32,.08);--color-text:#f7f7f7;--color-text-muted:#b7b7b7;--color-text-subtle:#818181;--color-success:#42c985;--color-warning:#f6bd4b;--color-danger:#ef6b73;--color-info:#69a8ff;--radius-md:8px;--radius-lg:12px;--radius-xl:16px;--space-1:4px;--space-2:8px;--space-3:12px;--space-4:16px;--space-5:24px;--space-6:32px;--shadow-card:0 14px 34px rgba(0,0,0,.18)}
     *{box-sizing:border-box}body{margin:0;background:var(--color-bg);color:var(--color-text);font-family:Inter,system-ui,sans-serif;line-height:1.5;color-scheme:dark}button,input,select{font:inherit}
     .topbar{position:sticky;top:0;z-index:10;height:64px;border-bottom:1px solid var(--color-border);background:rgba(13,13,13,.88);backdrop-filter:blur(14px);display:flex;align-items:center;padding:0 28px}
-    .brand{display:flex;align-items:center;gap:12px;font-weight:700}.brand-mark{width:30px;height:30px;border-radius:9px;object-fit:contain;display:block;flex-shrink:0}.brand span:last-child{color:var(--color-text-muted);font-weight:500}
+    .brand{display:flex;align-items:center;gap:12px;font-weight:700}.brand-mark{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;flex-shrink:0;background:var(--color-primary);color:#15110e;font-size:11px;font-weight:800;letter-spacing:0}.brand span:last-child{color:var(--color-text-muted);font-weight:500}
     .layout{display:grid;grid-template-columns:238px minmax(0,1fr);min-height:calc(100vh - 64px)}
     .sidebar{border-right:1px solid var(--color-border);padding:24px 16px;background:#111}
     .sidebar-label,.eyebrow{font-size:11px;letter-spacing:.11em;text-transform:uppercase;color:var(--color-text-subtle);font-weight:700}
@@ -45,13 +45,15 @@
     .percent{text-align:right}.percent b{display:block;font-size:20px;color:var(--color-primary)}
     .track{height:7px;background:#303030;border-radius:999px;overflow:hidden}.track div{height:100%;border-radius:999px;background:linear-gradient(90deg,var(--color-primary),#ff9b50)}
     .card-footer{display:flex;justify-content:space-between;margin-top:10px;font-size:11px;color:var(--color-text-subtle)}
-    .charts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.chart-card{padding:18px}.chart-card h3{margin:0 0 4px;font-size:15px}.chart-card p{margin:0 0 14px;font-size:12px;color:var(--color-text-muted)}
+    .charts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.charts.viability-stack{grid-template-columns:1fr}.chart-card{padding:18px}.chart-card h3{margin:0 0 4px;font-size:15px}.chart-card p{margin:0 0 14px;font-size:12px;color:var(--color-text-muted)}
     .hbar{display:grid;grid-template-columns:minmax(158px,42%) minmax(72px,1fr) minmax(108px,118px);gap:12px;align-items:center;margin:11px 0;min-width:0}
     .hbar-label{font-size:12px;color:var(--color-text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.35;min-width:0}
     .hbar-track{height:9px;background:#303030;border-radius:999px;overflow:hidden;min-width:0}
     .hbar-track span{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,var(--color-primary),#ff9b50)}
     .hbar-val{font-size:12px;text-align:right;color:var(--color-text);white-space:nowrap;font-variant-numeric:tabular-nums;line-height:1.35;letter-spacing:.01em}
     .donut-wrap{display:flex;gap:20px;align-items:center;flex-wrap:wrap}.donut{width:132px;height:132px}.legend{display:grid;gap:8px;font-size:12px;color:var(--color-text-muted)}.legend i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:8px}
+    .indicator-matrix{display:grid;gap:12px}.indicator-row{display:grid;grid-template-columns:minmax(220px,1.2fr) 116px minmax(150px,.72fr) minmax(260px,1.55fr) 96px;gap:0;border:1px solid var(--color-border);border-radius:var(--radius-md);overflow:hidden;background:#202020}.indicator-cell{padding:13px 14px;border-right:1px solid var(--color-border);font-size:13px}.indicator-cell:last-child{border-right:0}.indicator-head{background:#2b2f34;color:var(--color-text);font-weight:700;text-transform:uppercase;letter-spacing:.04em}.indicator-status{display:flex;align-items:center;font-weight:700}.indicator-status.sim{background:rgba(66,201,133,.14);color:#c7f5dd}.indicator-status.no{background:rgba(239,107,115,.16);color:#ffb9bd}.indicator-status.base{background:rgba(246,189,75,.13);color:#ffe0a1}.indicator-coverage{font-weight:700;color:var(--color-text)}.indicator-coverage span{display:block;margin-top:2px;color:var(--color-text-muted);font-size:11px;font-weight:500}.source-note{margin-top:14px;border:1px dashed var(--color-border-strong);border-radius:var(--radius-md);padding:14px;color:var(--color-text-muted);font-size:12px;background:rgba(255,255,255,.025)}
+    .journey-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.journey-list{display:grid;gap:10px}.journey-step{display:grid;grid-template-columns:34px minmax(0,1fr) auto;gap:12px;align-items:center;border:1px solid var(--color-border);border-radius:var(--radius-md);padding:12px;background:#202020}.journey-step__index{width:30px;height:30px;border-radius:999px;background:var(--color-primary-soft);color:#ffab6f;display:grid;place-items:center;font-weight:700}.journey-step strong{display:block;font-size:13px}.journey-step span{font-size:11px;color:var(--color-text-muted)}.journey-step b{font-size:18px;color:var(--color-text)}
     .table-panel{margin-top:28px;padding:20px;overflow:hidden}.table-wrap{overflow-x:auto;margin-top:14px;max-height:560px}
     table{width:100%;border-collapse:collapse;min-width:1100px}th,td{padding:12px 10px;border-bottom:1px solid var(--color-border);font-size:12px;text-align:left}
     .bool-yes{color:var(--color-success);font-weight:700}.bool-no{color:var(--color-text-subtle);font-weight:700}.bool-na{color:var(--color-text-subtle)}
@@ -69,19 +71,19 @@
     .drawer-item span{display:block;font-size:11px;color:var(--color-text-subtle);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
     .warnings{margin-top:16px}.warnings li{margin:6px 0;color:#ffb4b8;font-size:12px}
     .engineers-toggle{margin-top:10px}
-    @media(max-width:1100px){.cards,.charts{grid-template-columns:1fr}.summary{grid-template-columns:repeat(2,1fr)}.filters,.filters.general{grid-template-columns:1fr 1fr}}
-    @media(max-width:780px){.layout{grid-template-columns:1fr}.sidebar{display:none}main{padding:20px}.page-header{display:block}.status{text-align:left;margin-top:12px}.filters,.filters.general,.summary,.cards,.charts{grid-template-columns:1fr}.topbar{padding:0 20px}.status-actions{align-items:flex-start;justify-content:space-between}.hbar{grid-template-columns:minmax(108px,36%) minmax(48px,1fr) minmax(96px,104px);gap:8px;margin:9px 0}.hbar-val{font-size:11px}}
+    @media(max-width:1100px){.cards,.charts,.journey-grid{grid-template-columns:1fr}.summary{grid-template-columns:repeat(2,1fr)}.filters,.filters.general{grid-template-columns:1fr 1fr}.indicator-row{grid-template-columns:1fr}.indicator-cell{border-right:0;border-bottom:1px solid var(--color-border)}.indicator-cell:last-child{border-bottom:0}}
+    @media(max-width:780px){.layout{grid-template-columns:1fr}.sidebar{display:none}main{padding:20px}.page-header{display:block}.status{text-align:left;margin-top:12px}.filters,.filters.general,.summary,.cards,.charts{grid-template-columns:1fr}.topbar{padding:0 20px}.status-actions{align-items:flex-start;justify-content:space-between}.hbar{grid-template-columns:minmax(108px,36%) minmax(48px,1fr) minmax(96px,104px);gap:8px;margin:9px 0}.hbar-val{font-size:11px}.journey-step{grid-template-columns:30px 1fr}}
   </style>
 </head>
 <body>
-  <header class="topbar"><div class="brand"><img class="brand-mark" src="/favicon.ico" alt="Quarta Via" width="30" height="30"><div>Quartavia</div><span>Dados & Inteligência</span></div></header>
+  <header class="topbar"><div class="brand"><div class="brand-mark" aria-label="Quarta Via">QV</div><div>Quartavia</div><span>Dados & Inteligência</span></div></header>
   <div class="layout">
     <aside class="sidebar">
       <div class="sidebar-label">Analytics</div>
       <nav class="nav" aria-label="Navegação principal">
         <button type="button" class="active" data-nav="general"><span class="nav-icon">◎</span>Dados Gerais</button>
+        <button type="button" data-nav="journey"><span class="nav-icon">⇢</span>Jornada</button>
         <button type="button" data-nav="quality"><span class="nav-icon">▦</span>Qualidade</button>
-        <button type="button" disabled><span class="nav-icon">⇢</span>Jornada<span class="soon">em breve</span></button>
         <button type="button" disabled><span class="nav-icon">◎</span>Reuniões<span class="soon">em breve</span></button>
         <button type="button" disabled><span class="nav-icon">$</span>Financeiro<span class="soon">em breve</span></button>
       </nav>
@@ -185,7 +187,7 @@
         <div class="container">
           <header class="page-header">
             <div>
-              <div class="eyebrow">Backup BASE QV · schema public</div>
+              <div class="eyebrow">Portal · Jornada do Cliente</div>
               <h1>Qualidade e preenchimento dos dados</h1>
               <p>Visão das informações preenchidas em relação ao total de linhas de cada tabela, com quantidade absoluta e percentual por coluna.</p>
             </div>
@@ -201,12 +203,91 @@
             <button class="btn" id="clear">Limpar filtros</button>
           </section>
           <section class="summary" id="summary"></section>
+          <div class="section-head">
+            <div><h2>Matrizes de viabilidade</h2><p>Leitura técnica das métricas construídas nas abas Dados Gerais e Jornada.</p></div>
+          </div>
+          <section class="charts viability-stack">
+            <article class="chart-card"><h3>Dados Gerais</h3><p>Indicadores usados na primeira aba</p><div class="indicator-matrix" id="qGeneralMatrix"></div></article>
+            <article class="chart-card"><h3>Jornada e onboarding</h3><p>Indicadores usados na tela de jornada</p><div class="indicator-matrix" id="qJourneyMatrix"></div></article>
+          </section>
           <div class="section-head"><div><h2>Preenchimento por coluna</h2><p>Cada cartão compara valores vazios ou nulos com o total de registros da tabela.</p></div><span class="counter" id="counter"></span></div>
           <section class="cards" id="cards"></section>
           <div class="empty" id="empty">Nenhuma coluna encontrada para os filtros selecionados.</div>
           <section class="table-panel">
             <div class="section-head" style="margin:0"><div><h2>Detalhamento técnico</h2><p>Base para validação da consulta e acompanhamento da completude.</p></div></div>
             <div class="table-wrap"><table><thead><tr><th>Domínio</th><th>Tabela</th><th>Coluna</th><th class="num">Linhas</th><th class="num">Preenchidos</th><th class="num">Percentual preenchido</th></tr></thead><tbody id="rows"></tbody></table></div>
+          </section>
+        </div>
+      </section>
+
+      <section class="view" id="view-journey">
+        <div class="container">
+          <header class="page-header">
+            <div>
+              <div class="eyebrow">Portal · Jornada do Cliente</div>
+              <h1>Jornada e onboarding</h1>
+              <p>Construção da tela do tópico 2 com foco em prazos entre contratação, reunião, plano patrimonial, implementação e conclusão do onboarding.</p>
+            </div>
+            <div class="status-actions">
+              <div class="status"><b id="jStatus" style="color:var(--color-warning)">● Aguardando consulta</b><span id="jUpdated">Fonte única: BASE QV</span></div>
+              <button class="btn" id="jRefresh" type="button">Atualizar</button>
+            </div>
+          </header>
+
+          <section class="filters general" aria-label="Filtros de jornada e onboarding">
+            <label>Busca<input id="jSearch" placeholder="Nome, código ou ID" /></label>
+            <label>Status<select id="jStatusFilter"><option value="all">Todos</option></select></label>
+            <label>Engenheiro Patrimonial<select id="jEngineer"><option value="all">Todos</option></select></label>
+            <label>Onboarding<select id="jCompletion"><option value="all">Todos</option><option value="complete">Concluído</option><option value="open">Não concluído</option></select></label>
+            <button class="btn" id="jClear" type="button">Limpar filtros</button>
+          </section>
+
+          <section class="summary" id="jKpis"></section>
+
+          <div class="section-head">
+            <div><h2>Indicadores de prazo e conclusão</h2><p>Médias e distribuições calculadas a partir da BASE QV.</p></div>
+          </div>
+          <section class="journey-grid">
+            <article class="chart-card"><h3>Dias até a primeira reunião</h3><p>Quantidade de clientes por faixa de dias</p><div id="jFirstMeetingChart"></div></article>
+            <article class="chart-card"><h3>Dias até entrega do plano patrimonial</h3><p>clients.data_inicio_ciclo → client_implementation_meeting_date.meeting_date</p><div id="jPlanDeliveryChart"></div></article>
+            <article class="chart-card"><h3>Dias até primeiro mecanismo implementado</h3><p>clients.data_inicio_ciclo → client_mecanismos.implemented_at</p><div id="jFirstImplementationChart"></div></article>
+            <article class="chart-card"><h3>Tempo total de onboarding</h3><p>Estágio inicial → próxima mudança em client_journeys</p><div id="jTotalOnboardingChart"></div></article>
+            <article class="chart-card"><h3>Concluiu onboarding</h3><p>Sim/Não pelo estágio atual do cliente</p><div id="jCompletionChart"></div></article>
+            <article class="chart-card"><h3>Tempo médio por etapa</h3><p>Eixo por journey_stages.name</p><div id="jStageDurationChart"></div></article>
+          </section>
+
+          <section class="table-panel">
+            <div class="section-head" style="margin:0">
+              <div><h2>Clientes e prazos de onboarding</h2><p>Clique nos cabeçalhos para ordenar.</p></div>
+              <span class="counter" id="jCounter"></span>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th data-jsort="clientName">Cliente</th>
+                    <th data-jsort="clientCode">Código</th>
+                    <th data-jsort="status">Status</th>
+                    <th data-jsort="engineer">EP</th>
+                    <th data-jsort="contractDate">Contratação</th>
+                    <th data-jsort="daysToFirstMeeting" class="num">1ª reunião</th>
+                    <th data-jsort="daysToPlanDelivery" class="num">Entrega plano</th>
+                    <th data-jsort="daysToFirstImplementation" class="num">1º mecanismo</th>
+                    <th data-jsort="totalOnboardingDays" class="num">Onboarding total</th>
+                    <th data-jsort="completedOnboarding">Concluiu?</th>
+                  </tr>
+                </thead>
+                <tbody id="jRows"></tbody>
+              </table>
+            </div>
+            <div class="empty" id="jEmpty">Nenhum cliente encontrado para os filtros selecionados.</div>
+            <div class="pagination">
+              <div id="jPageInfo"></div>
+              <div>
+                <button class="btn" id="jPrev" type="button">Anterior</button>
+                <button class="btn" id="jNext" type="button">Próxima</button>
+              </div>
+            </div>
           </section>
         </div>
       </section>
@@ -256,13 +337,65 @@
     };
 
     /* -------- Navigation -------- */
-    const views = { general: document.querySelector('#view-general'), quality: document.querySelector('#view-quality') };
+    const views = { general: document.querySelector('#view-general'), quality: document.querySelector('#view-quality'), journey: document.querySelector('#view-journey') };
     document.querySelectorAll('[data-nav]').forEach(btn => btn.addEventListener('click', () => {
       document.querySelectorAll('[data-nav]').forEach(b => b.classList.toggle('active', b === btn));
       Object.entries(views).forEach(([key, el]) => el.classList.toggle('active', key === btn.dataset.nav));
       if (btn.dataset.nav === 'general' && !generalState.payload) loadGeneral();
       if (btn.dataset.nav === 'quality' && !qualityData.length) loadQuality();
+      if (btn.dataset.nav === 'journey' && !onboardingState.payload) loadOnboarding();
     }));
+
+    const hasValue = value => value !== null && value !== undefined && value !== '' && value !== 'Não informado';
+    const coverage = (clients, predicate, totalOverride) => {
+      const total = totalOverride ?? clients.length;
+      const count = clients.reduce((sum, client) => sum + (predicate(client) ? 1 : 0), 0);
+      return { count, total, percent: total ? count / total * 100 : 0 };
+    };
+    const coverageText = item => item.total ? `${fmt.format(item.count)} / ${fmt.format(item.total)}<span>${pct(item.percent)}</span>` : 'Sem dados';
+    const generalViability = [
+      ['ID do cliente', 'Sim', 'public.clients.id', clients => coverage(clients, c => hasValue(c.clientId))],
+      ['Data de contratação', 'Sim', 'public.clients.data_inicio_ciclo; fallback public.clients.created_at', clients => coverage(clients, c => hasValue(c.contractDate))],
+      ['Data de cancelamento', 'Sim', 'public.cancellations.churn_efetivado_at; fallback public.clients.data_churn', clients => coverage(clients, c => hasValue(c.cancellationDate))],
+      ['Tempo de permanência', 'Sim', 'Diferença entre contratação e cancelamento ou data atual', clients => coverage(clients, c => c.stayDays != null)],
+      ['Status atual', 'Sim', 'public.clients.status', clients => coverage(clients, c => hasValue(c.status))],
+      ['Segmento do cliente', 'Sim', 'public.clients.segmentacao', clients => coverage(clients, c => hasValue(c.segment))],
+      ['Engenheiro Patrimonial responsável', 'Sim', 'public.clients.engenheiro_patrimonial', clients => coverage(clients, c => hasValue(c.engineer))],
+      ['Perfil financeiro', 'Sim', 'public.client_financial_data', clients => coverage(clients, c => c.hasFinancialProfile === true)],
+      ['Última renda mensal', 'Sim', 'public.client_financial_data.ultima_renda_mensal', clients => coverage(clients, c => c.monthlyIncome != null)],
+      ['Último aporte', 'Sim', 'public.client_financial_data.ultimo_aporte', clients => coverage(clients, c => c.lastContribution != null)],
+      ['Reserva de liquidez', 'Sim', 'public.client_financial_data.reserva_liquidez', clients => coverage(clients, c => c.liquidityReserve != null)],
+      ['Imóvel, carro e consórcio', 'Sim', 'public.client_financial_data.possui_imovel/possui_carro/possui_consorcio', clients => coverage(clients, c => c.hasProperty || c.hasCar || c.hasConsortium)],
+    ];
+    const journeyViability = [
+      ['Dias entre contratação e primeira reunião', 'Sim', 'clients.data_inicio_ciclo → primeira client_meetings.start_time', clients => coverage(clients, c => c.daysToFirstMeeting != null)],
+      ['Dias entre contratação e entrega do plano patrimonial', 'Sim', 'clients.data_inicio_ciclo → primeira client_implementation_meeting_date.meeting_date', clients => coverage(clients, c => c.daysToPlanDelivery != null)],
+      ['Dias entre contratação e primeiro mecanismo implementado', 'Sim', 'clients.data_inicio_ciclo → primeira client_mecanismos.implemented_at', clients => coverage(clients, c => c.daysToFirstImplementation != null)],
+      ['Tempo total de onboarding', 'Sim', 'client_journeys.started_at nos estágios 33bb253e.../7c43c981... → próxima data do mesmo client_id', clients => coverage(clients, c => c.totalOnboardingDays != null)],
+      ['Concluiu onboarding', 'Sim', 'Estágio atual fora da lista 7c43c981..., ae3a6015..., 33bb253e...', clients => coverage(clients, c => c.completedOnboarding != null)],
+      ['Tempo médio para cada etapa da jornada', 'Sim', 'Diferença entre mudanças de client_journeys.current_stage_id, eixo journey_stages.name', clients => coverage(clients, c => (c.journeyRecords || 0) > 1)],
+    ];
+    function renderViabilityMatrix(target, rows, clients) {
+      target.innerHTML = `
+        <div class="indicator-row">
+          <div class="indicator-cell indicator-head">Indicador</div>
+          <div class="indicator-cell indicator-head">Viabilidade</div>
+          <div class="indicator-cell indicator-head">Cobertura</div>
+          <div class="indicator-cell indicator-head">Fonte / cálculo</div>
+          <div class="indicator-cell indicator-head">Base</div>
+        </div>
+        ${rows.map(([indicator, viability, metric, getCoverage]) => {
+          const item = getCoverage ? getCoverage(clients || []) : { count: 0, total: 0, percent: 0 };
+          return `
+          <div class="indicator-row">
+            <div class="indicator-cell">${escapeHtml(indicator)}</div>
+            <div class="indicator-cell indicator-status ${viabilityClass(viability)}">${escapeHtml(viability)}</div>
+            <div class="indicator-cell indicator-coverage">${coverageText(item)}</div>
+            <div class="indicator-cell">${escapeHtml(metric)}</div>
+            <div class="indicator-cell">public</div>
+          </div>`;
+        }).join('')}`;
+    }
 
     /* -------- Quality (existing behavior + descriptions) -------- */
     let qualityData = [];
@@ -296,6 +429,8 @@
         <article class="metric"><div class="metric-label">Colunas auditadas</div><div class="metric-value">${fmt.format(data.length)}</div><div class="metric-note">Em ${new Set(data.map(d => d.table)).size} tabelas</div></article>
         <article class="metric"><div class="metric-label">Valores preenchidos</div><div class="metric-value">${fmt.format(totals.filled)}</div><div class="metric-note">Células com informação registrada</div></article>
         <article class="metric"><div class="metric-label">Completude geral*</div><div class="metric-value">${pct(completion)}</div><div class="metric-note">Sobre todas as células auditadas</div></article>`;
+      renderViabilityMatrix(document.querySelector('#qGeneralMatrix'), generalViability, generalState.payload?.clients || []);
+      renderViabilityMatrix(document.querySelector('#qJourneyMatrix'), journeyViability, onboardingState.payload?.clients || []);
       qEls.cards.innerHTML = data.map(d => {
         const p = getPct(d), filled = getFilled(d), s = sev(p);
         return `<article class="field-card"><div class="card-top"><div><div class="field">${escapeHtml(d.column)}</div><div class="table-name">public.${escapeHtml(d.table)}</div>${d.description ? `<div class="field-desc">${escapeHtml(d.description)}</div>` : ''}</div><span class="badge ${s}">${sevLabel[s]}</span></div>
@@ -324,6 +459,16 @@
         if (requestId !== qualityRequestId) return;
         if (!response.ok) throw new Error(payload.error || 'Falha ao consultar o banco');
         qualityData = payload.data;
+        if (!generalState.payload) {
+          const generalResponse = await fetch(`/api/general-data?t=${Date.now()}`, { cache: 'no-store' });
+          const generalPayload = await generalResponse.json().catch(() => ({}));
+          if (generalResponse.ok) generalState.payload = generalPayload;
+        }
+        if (!onboardingState.payload) {
+          const onboardingResponse = await fetch(`/api/onboarding?t=${Date.now()}`, { cache: 'no-store' });
+          const onboardingPayload = await onboardingResponse.json().catch(() => ({}));
+          if (onboardingResponse.ok) onboardingState.payload = onboardingPayload;
+        }
         fillDomains(); renderQuality();
         status.textContent = payload.errors?.length ? '● Supabase conectado com alertas' : '● Supabase conectado';
         status.style.color = payload.errors?.length ? 'var(--color-warning)' : 'var(--color-success)';
@@ -409,17 +554,19 @@
     }
 
     function donut(items) {
+      const visibleItems = (items || []).filter(item => item.label !== 'Sem base' && (item.count || 0) > 0);
+      if (!visibleItems.length) return '<div class="empty" style="display:block">Sem dados</div>';
       const colors = ['#f47920', '#69a8ff', '#42c985', '#f6bd4b', '#ef6b73', '#b48cff', '#7dd3c7'];
-      const total = items.reduce((a, i) => a + i.count, 0) || 1;
+      const total = visibleItems.reduce((a, i) => a + i.count, 0) || 1;
       let offset = 0;
       const radius = 42, c = 2 * Math.PI * radius;
-      const arcs = items.map((item, idx) => {
+      const arcs = visibleItems.map((item, idx) => {
         const len = (item.count / total) * c;
         const circle = `<circle cx="60" cy="60" r="${radius}" fill="none" stroke="${colors[idx % colors.length]}" stroke-width="14" stroke-dasharray="${len} ${c - len}" stroke-dashoffset="${-offset}" transform="rotate(-90 60 60)"></circle>`;
         offset += len;
         return circle;
       }).join('');
-      const legend = items.map((item, idx) => `<div><i style="background:${colors[idx % colors.length]}"></i>${escapeHtml(item.label)} — ${fmt.format(item.count)} (${pct(item.percent)})</div>`).join('');
+      const legend = visibleItems.map((item, idx) => `<div><i style="background:${colors[idx % colors.length]}"></i>${escapeHtml(item.label)} — ${fmt.format(item.count)} (${pct((item.count / total) * 100)})</div>`).join('');
       return `<div class="donut-wrap"><svg class="donut" viewBox="0 0 120 120">${arcs}<circle cx="60" cy="60" r="28" fill="#141414"></circle></svg><div class="legend">${legend}</div></div>`;
     }
 
@@ -543,6 +690,137 @@
       }
     }
 
+    /* -------- Jornada e onboarding -------- */
+    const onboardingState = {
+      payload: null, page: 1, pageSize: 25, sortKey: 'clientName', sortDir: 'asc',
+      loading: false, requestId: 0
+    };
+    const jFilters = {
+      search: document.querySelector('#jSearch'),
+      status: document.querySelector('#jStatusFilter'),
+      engineer: document.querySelector('#jEngineer'),
+      completion: document.querySelector('#jCompletion')
+    };
+    const dayValue = value => value == null ? '—' : `${fmt.format(Math.round(value))} d`;
+    const percentValue = value => value == null ? '—' : pct(value);
+    function viabilityClass(value) {
+      if (value === 'Sim') return 'sim';
+      if (value === 'Não identificado') return 'no';
+      return 'base';
+    }
+    function hBarsMetric(items) {
+      const list = (items || []).filter(i => i.value != null);
+      const max = Math.max(...list.map(i => i.value || 0), 1);
+      return list.map(i => `
+        <div class="hbar" title="${escapeHtml(i.label)}: ${dayValue(i.value)} · ${fmt.format(i.count || 0)} registros">
+          <div class="hbar-label" title="${escapeHtml(i.label)}">${escapeHtml(i.label)}</div>
+          <div class="hbar-track"><span style="width:${((i.value || 0) / max) * 100}%"></span></div>
+          <div class="hbar-val">${dayValue(i.value)} · ${fmt.format(i.count || 0)}</div>
+        </div>`).join('') || '<div class="empty" style="display:block">Sem dados</div>';
+    }
+    function filteredOnboardingClients() {
+      const clients = onboardingState.payload?.clients || [];
+      const q = jFilters.search.value.trim().toLowerCase();
+      return clients.filter(c => {
+        if (jFilters.status.value !== 'all' && c.status !== jFilters.status.value) return false;
+        if (jFilters.engineer.value !== 'all' && c.engineer !== jFilters.engineer.value) return false;
+        if (jFilters.completion.value === 'complete' && !c.completedOnboarding) return false;
+        if (jFilters.completion.value === 'open' && c.completedOnboarding) return false;
+        if (q) {
+          const hay = `${c.clientName} ${c.clientCode || ''} ${c.clientId}`.toLowerCase();
+          if (!hay.includes(q)) return false;
+        }
+        return true;
+      }).sort((a, b) => {
+        const key = onboardingState.sortKey;
+        const av = a[key], bv = b[key];
+        let cmp = 0;
+        if (av == null && bv == null) cmp = 0;
+        else if (av == null) cmp = 1;
+        else if (bv == null) cmp = -1;
+        else if (typeof av === 'number' && typeof bv === 'number') cmp = av - bv;
+        else if (typeof av === 'boolean' && typeof bv === 'boolean') cmp = Number(av) - Number(bv);
+        else cmp = String(av).localeCompare(String(bv), 'pt-BR', { numeric: true });
+        return onboardingState.sortDir === 'asc' ? cmp : -cmp;
+      });
+    }
+    function renderOnboarding() {
+      if (!onboardingState.payload) return;
+      const payload = onboardingState.payload;
+      const summary = payload.summary || {};
+      const data = filteredOnboardingClients();
+      document.querySelector('#jKpis').innerHTML = `
+        <article class="metric highlight"><div class="metric-label">Média até 1ª reunião</div><div class="metric-value">${dayValue(summary.averageFirstMeetingDays)}</div><div class="metric-note">Contratação → primeira reunião</div></article>
+        <article class="metric"><div class="metric-label">Média até entrega do plano</div><div class="metric-value">${dayValue(summary.averagePlanDeliveryDays)}</div><div class="metric-note">Contratação → reunião de implementação</div></article>
+        <article class="metric"><div class="metric-label">Média até 1º mecanismo</div><div class="metric-value">${dayValue(summary.averageFirstImplementationDays)}</div><div class="metric-note">Contratação → implementação</div></article>
+        <article class="metric"><div class="metric-label">Média onboarding total</div><div class="metric-value">${dayValue(summary.averageTotalOnboardingDays)}</div><div class="metric-note">Estágio inicial → próxima etapa</div></article>
+        <article class="metric highlight"><div class="metric-label">Concluíram onboarding</div><div class="metric-value">${fmt.format(summary.completedOnboarding || 0)}</div><div class="metric-note">${pct(summary.completedPercent || 0)} dos clientes com jornada - ${fmt.format(summary.totalClients || 0)} clientes total</div></article>`;
+
+      document.querySelector('#jFirstMeetingChart').innerHTML = donut(payload.distributions?.firstMeetingRanges || []);
+      document.querySelector('#jPlanDeliveryChart').innerHTML = donut(payload.distributions?.planDeliveryRanges || []);
+      document.querySelector('#jFirstImplementationChart').innerHTML = donut(payload.distributions?.firstImplementationRanges || []);
+      document.querySelector('#jTotalOnboardingChart').innerHTML = donut(payload.distributions?.totalOnboardingRanges || []);
+      document.querySelector('#jCompletionChart').innerHTML = donut(payload.distributions?.completion || []);
+      document.querySelector('#jStageDurationChart').innerHTML = hBarsMetric(payload.distributions?.stageDurations || []);
+
+      const pages = Math.max(1, Math.ceil(data.length / onboardingState.pageSize));
+      if (onboardingState.page > pages) onboardingState.page = pages;
+      const start = (onboardingState.page - 1) * onboardingState.pageSize;
+      const pageRows = data.slice(start, start + onboardingState.pageSize);
+      document.querySelector('#jRows').innerHTML = pageRows.map(c => `
+        <tr>
+          <td class="truncate" title="${escapeHtml(c.clientName)}">${escapeHtml(c.clientName)}</td>
+          <td>${escapeHtml(c.clientCode || 'Não informado')}</td>
+          <td>${statusBadge(c.status)}</td>
+          <td class="truncate" title="${escapeHtml(c.engineer)}">${escapeHtml(c.engineer)}</td>
+          <td>${dateBR(c.contractDate)}</td>
+          <td class="num">${dayValue(c.daysToFirstMeeting)}</td>
+          <td class="num">${dayValue(c.daysToPlanDelivery)}</td>
+          <td class="num">${dayValue(c.daysToFirstImplementation)}</td>
+          <td class="num">${dayValue(c.totalOnboardingDays)}</td>
+          <td>${c.completedOnboarding === true ? '<span class="badge high">Sim</span>' : c.completedOnboarding === false ? '<span class="badge unavailable">Não</span>' : '<span class="badge medium">Sem base</span>'}</td>
+        </tr>`).join('');
+      document.querySelector('#jEmpty').style.display = data.length ? 'none' : 'block';
+      document.querySelector('#jCounter').textContent = `${data.length} de ${(payload.clients || []).length} clientes`;
+      document.querySelector('#jPageInfo').textContent = `Página ${onboardingState.page} de ${pages}`;
+      document.querySelector('#jPrev').disabled = onboardingState.page <= 1;
+      document.querySelector('#jNext').disabled = onboardingState.page >= pages;
+    }
+    async function loadOnboarding() {
+      if (onboardingState.loading) return;
+      onboardingState.loading = true;
+      const requestId = ++onboardingState.requestId;
+      const refresh = document.querySelector('#jRefresh');
+      const status = document.querySelector('#jStatus');
+      refresh.disabled = true; refresh.textContent = 'Atualizando…';
+      status.textContent = '● Atualizando dados'; status.style.color = 'var(--color-warning)';
+      try {
+        const response = await fetch(`/api/onboarding?t=${Date.now()}`, { cache: 'no-store' });
+        const payload = await response.json();
+        if (requestId !== onboardingState.requestId) return;
+        if (!response.ok) throw new Error(payload.error || 'Falha ao consultar jornada');
+        onboardingState.payload = payload;
+        onboardingState.page = 1;
+        const clients = payload.clients || [];
+        fillSelect(jFilters.status, [...new Set(clients.map(c => c.status))].sort((a, b) => a.localeCompare(b, 'pt-BR')), 'Todos');
+        fillSelect(jFilters.engineer, [...new Set(clients.map(c => c.engineer))].sort((a, b) => a.localeCompare(b, 'pt-BR')), 'Todos');
+        renderOnboarding();
+        status.textContent = payload.sources?.warnings?.length ? '● Portal conectado com alertas' : '● Portal conectado';
+        status.style.color = payload.sources?.warnings?.length ? 'var(--color-warning)' : 'var(--color-success)';
+        document.querySelector('#jUpdated').textContent = `Atualizado em ${new Date(payload.generatedAt).toLocaleString('pt-BR')}`;
+      } catch (error) {
+        if (requestId !== onboardingState.requestId) return;
+        status.textContent = '● Falha na atualização'; status.style.color = 'var(--color-danger)';
+        document.querySelector('#jUpdated').textContent = error.message;
+        document.querySelector('#jEmpty').style.display = 'block';
+        document.querySelector('#jEmpty').textContent = 'Não foi possível carregar jornada e onboarding.';
+      } finally {
+        if (requestId === onboardingState.requestId) {
+          onboardingState.loading = false; refresh.disabled = false; refresh.textContent = 'Atualizar';
+        }
+      }
+    }
+
     Object.values(gFilters).forEach(el => el.addEventListener('input', () => { generalState.page = 1; renderGeneral(); }));
     document.querySelector('#gClear').addEventListener('click', () => {
       gFilters.search.value = '';
@@ -565,6 +843,23 @@
       const client = generalState.payload.clients.find(c => c.clientId === tr.dataset.id);
       if (client) openDrawer(client);
     });
+    Object.values(jFilters).forEach(el => el.addEventListener('input', () => { onboardingState.page = 1; renderOnboarding(); }));
+    document.querySelector('#jClear').addEventListener('click', () => {
+      jFilters.search.value = '';
+      jFilters.status.value = 'all';
+      jFilters.engineer.value = 'all';
+      jFilters.completion.value = 'all';
+      onboardingState.page = 1; renderOnboarding();
+    });
+    document.querySelector('#jRefresh').addEventListener('click', loadOnboarding);
+    document.querySelector('#jPrev').addEventListener('click', () => { onboardingState.page -= 1; renderOnboarding(); });
+    document.querySelector('#jNext').addEventListener('click', () => { onboardingState.page += 1; renderOnboarding(); });
+    document.querySelectorAll('#view-journey th[data-jsort]').forEach(th => th.addEventListener('click', () => {
+      const key = th.dataset.jsort;
+      if (onboardingState.sortKey === key) onboardingState.sortDir = onboardingState.sortDir === 'asc' ? 'desc' : 'asc';
+      else { onboardingState.sortKey = key; onboardingState.sortDir = 'asc'; }
+      renderOnboarding();
+    }));
     document.querySelector('#drawerClose').addEventListener('click', () => {
       document.querySelector('#drawer').classList.remove('open');
       document.querySelector('#drawer').setAttribute('aria-hidden', 'true');
@@ -580,6 +875,7 @@
     setInterval(() => {
       if (views.general.classList.contains('active')) loadGeneral();
       if (views.quality.classList.contains('active')) loadQuality();
+      if (views.journey.classList.contains('active')) loadOnboarding();
     }, 5 * 60 * 1000);
   </script>
 </body>

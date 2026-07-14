@@ -224,6 +224,13 @@ def fetch_all(table, select, page_size=1000):
     return rows
 
 
+def fetch_all_safe(table, select="*", page_size=1000):
+    try:
+        return fetch_all(table, select, page_size)
+    except Exception as exc:
+        return {"error": str(exc), "rows": []}
+
+
 def blank_to_null(value):
     if value is None:
         return None
@@ -350,6 +357,41 @@ def average(nums):
     if not nums:
         return None
     return round(sum(nums) / len(nums), 2)
+
+
+def median(nums):
+    clean = sorted(num for num in nums if num is not None)
+    if not clean:
+        return None
+    mid = len(clean) // 2
+    if len(clean) % 2:
+        return clean[mid]
+    return round((clean[mid - 1] + clean[mid]) / 2, 2)
+
+
+def first_value(row, *names):
+    for name in names:
+        value = blank_to_null(row.get(name))
+        if value is not None:
+            return value
+    return None
+
+
+def min_date(values):
+    dates = [parse_date(value) for value in values if blank_to_null(value) is not None]
+    dates = [date for date in dates if date is not None]
+    return min(dates) if dates else None
+
+
+def max_date(values):
+    dates = [parse_date(value) for value in values if blank_to_null(value) is not None]
+    dates = [date for date in dates if date is not None]
+    return max(dates) if dates else None
+
+
+def positive_status(value, tokens):
+    text = str(value or "").lower()
+    return any(token in text for token in tokens)
 
 
 def build_cancellation_map(cancellations):
@@ -552,6 +594,255 @@ def general_data_payload():
     }
 
 
+def build_rows_by_client(rows):
+    mapping = {}
+    for row in rows:
+        client_id = first_value(row, "client_id", "cliente_id", "clientId", "qv_id")
+        if not client_id:
+            continue
+        mapping.setdefault(str(client_id), []).append(row)
+    return mapping
+
+
+def onboarding_payload():
+    warnings = []
+    clients = fetch_all("clients", CLIENT_SELECT)
+
+    meetings_result = fetch_all_safe("client_meetings", "*")
+    journeys_result = fetch_all_safe("client_journeys", "*")
+    mechanisms_result = fetch_all_safe("client_mecanismos", "*")
+
+    optional_sources = {
+        "client_meetings": meetings_result,
+        "client_journeys": journeys_result,
+        "client_mecanismos": mechanisms_result,
+    }
+    for table, result in optional_sources.items():
+        if isinstance(result, dict):
+            warnings.append(f"{table}: {result['error']}")
+
+    meetings = meetings_result if isinstance(meetings_result, list) else []
+    journeys = journeys_result if isinstance(journeys_result, list) else []
+    mechanisms = mechanisms_result if isinstance(mechanisms_result, list) else []
+
+    plan_rows = []
+    plan_table = None
+    for table in ("client_patrimonial_plans", "patrimonial_plans", "planos_patrimoniais"):
+        result = fetch_all_safe(table, "*")
+        if isinstance(result, list):
+            plan_rows = result
+            plan_table = table
+            break
+    if not plan_table:
+        warnings.append("Plano patrimonial: nenhuma tabela candidata encontrada no schema public.")
+
+    meetings_by_client = build_rows_by_client(meetings)
+    journeys_by_client = build_rows_by_client(journeys)
+    mechanisms_by_client = build_rows_by_client(mechanisms)
+    plans_by_client = build_rows_by_client(plan_rows)
+
+    rows = []
+    for client in clients:
+        client_id = str(client.get("id"))
+        contract_date = parse_date(client.get("data_inicio_ciclo")) or parse_date(client.get("created_at"))
+        client_meetings = meetings_by_client.get(client_id, [])
+        client_journeys = journeys_by_client.get(client_id, [])
+        client_mechanisms = mechanisms_by_client.get(client_id, [])
+        client_plans = plans_by_client.get(client_id, [])
+
+        first_meeting = min_date([
+            first_value(row, "start_time", "started_at", "scheduled_at", "created_at")
+            for row in client_meetings
+        ])
+        plan_delivered = min_date([
+            first_value(row, "delivered_at", "entregue_at", "data_entrega", "created_at")
+            for row in client_plans
+            if positive_status(first_value(row, "status", "state", "etapa"), ("entreg", "aprov", "finaliz", "conclu"))
+            or first_value(row, "delivered_at", "entregue_at", "data_entrega")
+        ])
+        plan_approved = min_date([
+            first_value(row, "approved_at", "aprovado_at", "data_aprovacao", "updated_at", "created_at")
+            for row in client_plans
+            if positive_status(first_value(row, "status", "state", "etapa"), ("aprov",))
+            or first_value(row, "approved_at", "aprovado_at", "data_aprovacao")
+        ])
+        first_implementation = min_date([
+            first_value(row, "implemented_at", "implantado_at", "data_implementacao", "updated_at", "created_at")
+            for row in client_mechanisms
+            if positive_status(first_value(row, "status", "state"), ("implement", "implant", "conclu", "feito"))
+            or first_value(row, "implemented_at", "implantado_at", "data_implementacao")
+        ])
+
+        journey_started = min_date([
+            first_value(row, "started_at", "created_at")
+            for row in client_journeys
+        ])
+        journey_completed = min_date([
+            first_value(row, "completed_at", "finished_at", "concluded_at", "updated_at")
+            for row in client_journeys
+            if positive_status(first_value(row, "status", "state"), ("conclu", "complete", "finaliz"))
+            or to_number(first_value(row, "progress_percent", "percentual", "completion_percent")) == 100
+        ])
+        progress_values = [
+            to_number(first_value(row, "progress_percent", "percentual", "completion_percent", "progress"))
+            for row in client_journeys
+        ]
+        progress_values = [value for value in progress_values if value is not None]
+        progress = max(progress_values) if progress_values else (100 if journey_completed else 0 if client_journeys else None)
+
+        def days_until(date):
+            if not contract_date or not date:
+                return None
+            return days_between(contract_date, date)
+
+        total_onboarding_days = None
+        onboarding_end = journey_completed or plan_approved or first_implementation
+        if contract_date and onboarding_end:
+            total_onboarding_days = days_between(contract_date, onboarding_end)
+
+        rows.append({
+            "clientId": client_id,
+            "clientCode": blank_to_null(client.get("codigo")),
+            "clientName": blank_to_null(client.get("name")) or "Não informado",
+            "status": blank_to_null(client.get("status")) or "Não informado",
+            "engineer": label_or_unknown(client.get("engenheiro_patrimonial")),
+            "contractDate": contract_date.isoformat() if contract_date else None,
+            "firstMeetingDate": first_meeting.isoformat() if first_meeting else None,
+            "planDeliveredDate": plan_delivered.isoformat() if plan_delivered else None,
+            "planApprovedDate": plan_approved.isoformat() if plan_approved else None,
+            "firstImplementationDate": first_implementation.isoformat() if first_implementation else None,
+            "daysToFirstMeeting": days_until(first_meeting),
+            "daysToPlanDelivery": days_until(plan_delivered),
+            "daysToPlanApproval": days_until(plan_approved),
+            "daysToFirstImplementation": days_until(first_implementation),
+            "totalOnboardingDays": total_onboarding_days,
+            "completedOnboarding": bool(journey_completed) or (progress == 100),
+            "onboardingPercent": progress,
+            "journeyRecords": len(client_journeys),
+            "meetingRecords": len(client_meetings),
+            "planRecords": len(client_plans),
+            "mechanismRecords": len(client_mechanisms),
+        })
+
+    total = len(rows) or 1
+    complete_count = sum(1 for row in rows if row["completedOnboarding"])
+    with_first_meeting = sum(1 for row in rows if row["daysToFirstMeeting"] is not None)
+    with_plan_delivery = sum(1 for row in rows if row["daysToPlanDelivery"] is not None)
+    with_plan_approval = sum(1 for row in rows if row["daysToPlanApproval"] is not None)
+    with_implementation = sum(1 for row in rows if row["daysToFirstImplementation"] is not None)
+
+    indicators = [
+        {
+            "indicator": "Dias entre contratação e primeira reunião",
+            "viability": "Sim" if with_first_meeting else "Sem base",
+            "metric": "Diferença em dias entre clients.data_inicio_ciclo e a menor data em client_meetings.start_time.",
+            "value": median([row["daysToFirstMeeting"] for row in rows]),
+            "unit": "dias",
+            "coverage": round(with_first_meeting / total * 1000) / 10,
+        },
+        {
+            "indicator": "Dias entre contratação e entrega do plano patrimonial",
+            "viability": "Sim" if with_plan_delivery else "Sem base",
+            "metric": f"Usar status e datas do plano patrimonial por cliente{f' em {plan_table}' if plan_table else ''}.",
+            "value": median([row["daysToPlanDelivery"] for row in rows]),
+            "unit": "dias",
+            "coverage": round(with_plan_delivery / total * 1000) / 10,
+        },
+        {
+            "indicator": "Dias entre contratação e aprovação do plano",
+            "viability": "Sim" if with_plan_approval else "Sem base",
+            "metric": f"Usar data de aprovação/status aprovado do plano patrimonial{f' em {plan_table}' if plan_table else ''}.",
+            "value": median([row["daysToPlanApproval"] for row in rows]),
+            "unit": "dias",
+            "coverage": round(with_plan_approval / total * 1000) / 10,
+        },
+        {
+            "indicator": "Dias entre contratação e primeiro mecanismo implementado",
+            "viability": "Não identificado" if not with_implementation else "Sim",
+            "metric": "Diferença em dias entre contratação e primeira implementação em client_mecanismos.",
+            "value": median([row["daysToFirstImplementation"] for row in rows]),
+            "unit": "dias",
+            "coverage": round(with_implementation / total * 1000) / 10,
+        },
+        {
+            "indicator": "Tempo total de onboarding",
+            "viability": "Sim" if any(row["totalOnboardingDays"] is not None for row in rows) else "Sem base",
+            "metric": "Dias entre contratação e conclusão da jornada, aprovação do plano ou primeira implementação.",
+            "value": median([row["totalOnboardingDays"] for row in rows]),
+            "unit": "dias",
+            "coverage": round(sum(1 for row in rows if row["totalOnboardingDays"] is not None) / total * 1000) / 10,
+        },
+        {
+            "indicator": "Concluiu onboarding (Sim/Não)",
+            "viability": "Sim" if journeys else "Sem base",
+            "metric": "Cliente com jornada concluída ou percentual de onboarding igual a 100%.",
+            "value": complete_count,
+            "unit": "clientes",
+            "coverage": round(complete_count / total * 1000) / 10,
+        },
+        {
+            "indicator": "Percentual do onboarding concluído",
+            "viability": "Sim" if journeys else "Sem base",
+            "metric": "Maior percentual de progresso registrado por cliente em client_journeys.",
+            "value": average([row["onboardingPercent"] for row in rows if row["onboardingPercent"] is not None]),
+            "unit": "%",
+            "coverage": round(sum(1 for row in rows if row["onboardingPercent"] is not None) / total * 1000) / 10,
+        },
+        {
+            "indicator": "Tempo médio para cada etapa da jornada",
+            "viability": "Sim" if journeys else "Sem base",
+            "metric": "Média dos tempos disponíveis entre contratação, reunião, plano e conclusão.",
+            "value": average([
+                value
+                for row in rows
+                for value in (
+                    row["daysToFirstMeeting"],
+                    row["daysToPlanDelivery"],
+                    row["daysToPlanApproval"],
+                    row["totalOnboardingDays"],
+                )
+                if value is not None
+            ]),
+            "unit": "dias",
+            "coverage": round(sum(1 for row in rows if row["journeyRecords"] > 0) / total * 1000) / 10,
+        },
+    ]
+
+    distributions = {
+        "completion": distribution_from(rows, lambda row: "Concluiu" if row["completedOnboarding"] else "Não concluiu"),
+        "progress": distribution_from(rows, lambda row: (
+            "Sem base" if row["onboardingPercent"] is None else
+            "0-24%" if row["onboardingPercent"] < 25 else
+            "25-49%" if row["onboardingPercent"] < 50 else
+            "50-74%" if row["onboardingPercent"] < 75 else
+            "75-99%" if row["onboardingPercent"] < 100 else
+            "100%"
+        ), ["0-24%", "25-49%", "50-74%", "75-99%", "100%", "Sem base"]),
+        "engineers": distribution_from(rows, lambda row: row["engineer"]),
+    }
+
+    return {
+        "generatedAt": datetime.now(timezone.utc).isoformat(),
+        "summary": {
+            "totalClients": len(rows),
+            "completedOnboarding": complete_count,
+            "completedPercent": round(complete_count / total * 1000) / 10,
+            "medianFirstMeetingDays": indicators[0]["value"],
+            "medianTotalOnboardingDays": indicators[4]["value"],
+            "averageOnboardingPercent": indicators[6]["value"],
+        },
+        "indicators": indicators,
+        "distributions": distributions,
+        "clients": rows,
+        "sources": {
+            "primary": "BASE QV",
+            "schema": "public",
+            "tables": ["clients", "client_journeys", "client_meetings", "client_mecanismos"] + ([plan_table] if plan_table else []),
+            "warnings": warnings,
+        },
+    }
+
+
 class Handler(SimpleHTTPRequestHandler):
     def do_GET(self):
         path = urlparse(self.path).path
@@ -577,6 +868,20 @@ class Handler(SimpleHTTPRequestHandler):
                 body = json.dumps({"error": "Não foi possível consolidar os dados gerais"}, ensure_ascii=False).encode()
                 self.send_response(500)
                 print(f"general-data error: {exc}")
+            self.send_header("Content-Type", "application/json; charset=utf-8")
+            self.send_header("Cache-Control", "no-store")
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+            return
+        if path == "/api/onboarding":
+            try:
+                body = json.dumps(onboarding_payload(), ensure_ascii=False).encode()
+                self.send_response(200)
+            except Exception as exc:
+                body = json.dumps({"error": "Não foi possível consolidar a jornada e onboarding"}, ensure_ascii=False).encode()
+                self.send_response(500)
+                print(f"onboarding error: {exc}")
             self.send_header("Content-Type", "application/json; charset=utf-8")
             self.send_header("Cache-Control", "no-store")
             self.send_header("Content-Length", str(len(body)))

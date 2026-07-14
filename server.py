@@ -2,10 +2,12 @@
 import json
 import os
 import sys
+import unicodedata
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timezone
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+import subprocess
 from urllib.error import HTTPError
 from urllib.parse import urlencode, urlparse
 from urllib.request import Request, urlopen
@@ -39,8 +41,28 @@ FIELDS = [
     ("Financeiro", "client_financial_data", "possui_consorcio", False),
     ("Jornada", "client_journeys", "started_at", False),
     ("Jornada", "client_journeys", "current_stage_id", False),
-    ("Reuniões", "client_meetings", "start_time", False),
+    ("Reuniões", "client_meetings", "id", False),
+    ("Reuniões", "client_meetings", "client_id", False),
+    ("Reuniões", "client_meetings", "calendly_event_uri", True),
     ("Reuniões", "client_meetings", "event_name", True),
+    ("Reuniões", "client_meetings", "start_time", False),
+    ("Reuniões", "client_meetings", "end_time", False),
+    ("Reuniões", "client_meetings", "host_email", True),
+    ("Reuniões", "client_meetings", "manually_linked", False),
+    ("Reuniões", "manual_meetings", "id", False),
+    ("Reuniões", "manual_meetings", "client_id", False),
+    ("Reuniões", "manual_meetings", "title", True),
+    ("Reuniões", "manual_meetings", "start_time", False),
+    ("Reuniões", "manual_meetings", "end_time", False),
+    ("Reuniões", "manual_meetings", "google_event_id", True),
+    ("Reuniões", "manual_meetings", "recurrence_group_id", True),
+    ("Reuniões", "meeting_attendance", "calendly_event_uri", True),
+    ("Reuniões", "meeting_attendance", "status", True),
+    ("Reuniões", "meeting_attendance", "remarcado", False),
+    ("Reuniões", "meeting_attendance", "created_at", False),
+    ("Reuniões", "client_implementation_meeting_date", "client_id", False),
+    ("Reuniões", "client_implementation_meeting_date", "meeting_date", False),
+    ("Reuniões", "client_implementation_meeting_date", "source", True),
     ("Mecanismos", "client_mecanismos", "status", True),
     ("Mecanismos", "client_mecanismos", "implemented_at", False),
     ("Satisfação", "nps_responses", "score", False),
@@ -70,6 +92,23 @@ FIELD_DESCRIPTIONS = {
     ("client_financial_data", "possui_imovel"): "Indica se o cliente possui imóvel",
     ("client_financial_data", "possui_carro"): "Indica se o cliente possui carro",
     ("client_financial_data", "possui_consorcio"): "Indica se o cliente possui consórcio",
+    ("client_meetings", "start_time"): "Data e horário de início da reunião",
+    ("client_meetings", "end_time"): "Data e horário de término da reunião",
+    ("client_meetings", "calendly_event_uri"): "Identificador externo do evento no Calendly",
+    ("client_meetings", "event_name"): "Título ou nome do evento de reunião",
+    ("client_meetings", "host_email"): "E-mail do anfitrião da reunião",
+    ("client_meetings", "manually_linked"): "Indica vínculo manual da reunião ao cliente",
+    ("client_meetings", "client_id"): "Cliente vinculado à reunião Calendly",
+    ("manual_meetings", "title"): "Título da reunião registrada manualmente",
+    ("manual_meetings", "start_time"): "Data e horário de início da reunião",
+    ("manual_meetings", "client_id"): "Cliente vinculado à reunião manual",
+    ("manual_meetings", "google_event_id"): "Identificador do evento no Google Calendar",
+    ("meeting_attendance", "status"): "Situação de presença ou realização da reunião",
+    ("meeting_attendance", "remarcado"): "Indica se a reunião foi remarcada",
+    ("meeting_attendance", "calendly_event_uri"): "Identificador externo do evento no Calendly",
+    ("client_implementation_meeting_date", "meeting_date"): "Data registrada para a reunião de implementação",
+    ("client_implementation_meeting_date", "client_id"): "Cliente com data de reunião de implementação",
+    ("client_implementation_meeting_date", "source"): "Origem do registro da reunião de implementação",
 }
 
 CLIENT_SELECT = "id,codigo,name,data_inicio_ciclo,created_at,status,segmentacao,engenheiro_patrimonial,data_churn"
@@ -146,11 +185,12 @@ def supabase_headers():
 
 def count_rows(table, column=None, include_blank=False):
     base = os.environ["SUPABASE_URL"].rstrip("/")
-    params = {"select": "id", "limit": "1"}
+    select_col = "client_id" if table == "client_implementation_meeting_date" else "id"
+    params = {"select": select_col, "limit": "1"}
     if column:
         params[column] = "is.null"
         if include_blank:
-            params = {"select": "id", "limit": "1", "or": f"({column}.is.null,{column}.eq.)"}
+            params = {"select": select_col, "limit": "1", "or": f"({column}.is.null,{column}.eq.)"}
     request = Request(
         f"{base}/rest/v1/{table}?{urlencode(params)}",
         headers={
@@ -183,6 +223,32 @@ def measure(field):
     return item
 
 
+def clients_status_consistency():
+    rows = fetch_all("clients", "id,status")
+    by_normalized = {}
+    distinct_raw = set()
+    for row in rows:
+        raw = blank_to_null(row.get("status"))
+        if raw is not None:
+            distinct_raw.add(str(raw))
+        label = normalize_client_status(raw)
+        by_normalized.setdefault(label, set())
+        if raw is not None:
+            by_normalized[label].add(str(raw))
+    notes = [
+        f"{len(variants)} variações de escrita encontradas para o status {label}."
+        for label, variants in sorted(by_normalized.items())
+        if len(variants) > 1
+    ]
+    if distinct_raw:
+        notes.insert(0, f"{len(distinct_raw)} valores distintos encontrados na coluna original de status.")
+    return {
+        "distinctRawValues": sorted(distinct_raw, key=lambda value: str(value).lower()),
+        "distinctRawCount": len(distinct_raw),
+        "notes": notes,
+    }
+
+
 def quality_payload():
     results, errors = [], []
     with ThreadPoolExecutor(max_workers=8) as pool:
@@ -192,6 +258,16 @@ def quality_payload():
                 results.append(future.result())
             except Exception as exc:
                 errors.append(str(exc))
+    try:
+        consistency = clients_status_consistency()
+        for item in results:
+            if item.get("table") == "clients" and item.get("column") == "status":
+                item["consistencyNotes"] = consistency["notes"]
+                item["distinctRawValues"] = consistency["distinctRawValues"]
+                item["distinctRawCount"] = consistency["distinctRawCount"]
+                break
+    except Exception as exc:
+        errors.append(f"clients.status consistency: {exc}")
     results.sort(key=lambda item: (item["domain"], item["table"], item["column"]))
     return {"data": results, "errors": errors, "generatedAt": datetime.now(timezone.utc).isoformat()}
 
@@ -315,9 +391,44 @@ def liquidity_band(value):
     return "Acima de 1 milhão"
 
 
-def is_cancelled_status(status):
-    text = str(status or "").lower()
-    return any(token in text for token in ("cancel", "churn", "inativ", "encerr"))
+STATUS_LABELS = ["Ativo", "Cancelado", "Congelado", "Não informado"]
+
+
+def fold_status_token(value):
+    text = unicodedata.normalize("NFD", str(value or ""))
+    text = "".join(ch for ch in text if unicodedata.category(ch) != "Mn")
+    return " ".join(text.lower().split())
+
+
+def normalize_client_status(raw_status):
+    token = fold_status_token(raw_status)
+    if not token or token in {"null", "undefined", "vazio"}:
+        return "Não informado"
+    if token in {"ativo", "active", "ativa"}:
+        return "Ativo"
+    if token in {
+        "churn",
+        "cancelado",
+        "cancelada",
+        "canceled",
+        "cancelled",
+        "encerrado",
+        "encerrada",
+        "inativo",
+        "inativa",
+        "inactive",
+    } or any(part in token for part in ("cancel", "churn", "encerr")):
+        return "Cancelado"
+    if token in {
+        "congelado",
+        "congelada",
+        "freeze",
+        "frozen",
+        "pausado",
+        "pausada",
+    } or any(part in token for part in ("congel", "pausad")):
+        return "Congelado"
+    return "Não informado"
 
 
 def label_or_unknown(value):
@@ -417,8 +528,9 @@ def general_data_payload():
         cancel_primary = (cancel_map.get(client.get("id")) or {}).get("date")
         cancel_fallback = parse_date(client.get("data_churn"))
         cancellation_date = cancel_primary or cancel_fallback
-        status = blank_to_null(client.get("status"))
-        cancelled = is_cancelled_status(status) or bool(cancellation_date)
+        raw_status = blank_to_null(client.get("status"))
+        status = normalize_client_status(raw_status)
+        cancelled = status == "Cancelado"
         financial = financial_map.get(client.get("id"))
 
         if not contract_date:
@@ -430,8 +542,8 @@ def general_data_payload():
         if cancelled and not cancellation_date:
             data_warnings.append("Cancelado sem data de cancelamento")
         if not cancelled and cancellation_date:
-            data_warnings.append("Ativo com data de cancelamento")
-        if not status:
+            data_warnings.append("Cliente ativo/congelado com data de cancelamento")
+        if not raw_status:
             data_warnings.append("Cliente sem status")
         if not blank_to_null(client.get("segmentacao")):
             data_warnings.append("Cliente sem segmento")
@@ -483,7 +595,8 @@ def general_data_payload():
                 "stayMonths": None if inconsistent else stay_months,
                 "stayRange": stay_range,
                 "stayUsedCreatedAtFallback": used_created_fallback,
-                "status": status or "Não informado",
+                "status": status,
+                "rawStatus": raw_status,
                 "segment": label_or_unknown(client.get("segmentacao")),
                 "engineer": label_or_unknown(client.get("engenheiro_patrimonial")),
                 "hasFinancialProfile": bool(financial),
@@ -496,7 +609,6 @@ def general_data_payload():
                 "incomeBand": income_band(monthly_income),
                 "liquidityBand": liquidity_band(liquidity_reserve),
                 "dataWarnings": data_warnings,
-                "_cancelled": cancelled,
             }
         )
 
@@ -505,11 +617,30 @@ def general_data_payload():
     income_values = [row["monthlyIncome"] for row in rows if row["monthlyIncome"] is not None]
     with_financial = sum(1 for row in rows if row["hasFinancialProfile"])
     total = len(rows) or 1
+    active_clients = sum(1 for row in rows if row["status"] == "Ativo")
+    cancelled_clients = sum(1 for row in rows if row["status"] == "Cancelado")
+    frozen_clients = sum(1 for row in rows if row["status"] == "Congelado")
+
+    raw_by_normalized = {}
+    for row in rows:
+        raw_by_normalized.setdefault(row["status"], set())
+        if row["rawStatus"]:
+            raw_by_normalized[row["status"]].add(str(row["rawStatus"]))
+    status_consistency_notes = [
+        f"{len(variants)} variações de escrita encontradas para o status {label}."
+        for label, variants in raw_by_normalized.items()
+        if len(variants) > 1
+    ]
+    distinct_raw_statuses = sorted(
+        {row["rawStatus"] for row in rows if row["rawStatus"]},
+        key=lambda value: str(value).lower(),
+    )
 
     summary = {
         "totalClients": len(rows),
-        "activeClients": sum(1 for row in rows if not row["_cancelled"]),
-        "cancelledClients": sum(1 for row in rows if row["_cancelled"]),
+        "activeClients": active_clients,
+        "cancelledClients": cancelled_clients,
+        "frozenClients": frozen_clients,
         "averageStayDays": average([row["stayDays"] for row in rows if row["stayDays"] is not None]),
         "averageLiquidityReserve": average(liquidity_values),
         "liquidityReserveFilledCount": len(liquidity_values),
@@ -533,8 +664,13 @@ def general_data_payload():
     for item in financial_profile:
         item["percent"] = round(item["count"] / total * 1000) / 10
 
+    status_dist = [
+        item
+        for item in distribution_from(rows, lambda row: row["status"], STATUS_LABELS)
+        if item["count"] > 0
+    ]
     distributions = {
-        "status": distribution_from(rows, lambda row: row["status"]),
+        "status": status_dist,
         "segments": distribution_from(rows, lambda row: row["segment"]),
         "engineers": distribution_from(rows, lambda row: row["engineer"]),
         "stayRanges": distribution_from(rows, lambda row: row["stayRange"], STAY_RANGES),
@@ -542,14 +678,38 @@ def general_data_payload():
         "monthlyIncome": distribution_from(rows, lambda row: row["incomeBand"], INCOME_BANDS),
         "liquidityReserve": distribution_from(rows, lambda row: row["liquidityBand"], LIQUIDITY_BANDS),
     }
-    clients_out = [{k: v for k, v in row.items() if k != "_cancelled"} for row in rows]
     return {
         "generatedAt": datetime.now(timezone.utc).isoformat(),
         "summary": summary,
         "distributions": distributions,
-        "clients": clients_out,
-        "quality": {"usedFields": USED_FIELDS, "warnings": []},
+        "clients": rows,
+        "quality": {
+            "usedFields": USED_FIELDS,
+            "warnings": [],
+            "statusConsistency": {
+                "distinctRawValues": distinct_raw_statuses,
+                "distinctRawCount": len(distinct_raw_statuses),
+                "notes": status_consistency_notes,
+            },
+        },
     }
+
+
+def meetings_payload():
+    """Reaproveita a consolidação do Netlify Function via Node (fonte única)."""
+    result = subprocess.run(
+        ["node", str(ROOT / "run_meetings_api.mjs")],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        env=os.environ.copy(),
+        timeout=180,
+    )
+    if result.returncode != 0:
+        detail = (result.stderr or result.stdout or "falha ao gerar meetings").strip()
+        raise RuntimeError(detail[:240])
+    return json.loads(result.stdout)
 
 
 class Handler(SimpleHTTPRequestHandler):
@@ -577,6 +737,20 @@ class Handler(SimpleHTTPRequestHandler):
                 body = json.dumps({"error": "Não foi possível consolidar os dados gerais"}, ensure_ascii=False).encode()
                 self.send_response(500)
                 print(f"general-data error: {exc}")
+            self.send_header("Content-Type", "application/json; charset=utf-8")
+            self.send_header("Cache-Control", "no-store")
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+            return
+        if path == "/api/meetings":
+            try:
+                body = json.dumps(meetings_payload(), ensure_ascii=False).encode()
+                self.send_response(200)
+            except Exception as exc:
+                body = json.dumps({"error": "Não foi possível consolidar os dados de reuniões"}, ensure_ascii=False).encode()
+                self.send_response(500)
+                print(f"meetings error: {exc}")
             self.send_header("Content-Type", "application/json; charset=utf-8")
             self.send_header("Cache-Control", "no-store")
             self.send_header("Content-Length", str(len(body)))

@@ -72,7 +72,7 @@ FIELD_DESCRIPTIONS = {
     ("client_financial_data", "possui_consorcio"): "Indica se o cliente possui consórcio",
 }
 
-CLIENT_SELECT = "id,codigo,name,data_inicio_ciclo,status,segmentacao,engenheiro_patrimonial,data_churn"
+CLIENT_SELECT = "id,codigo,name,data_inicio_ciclo,created_at,status,segmentacao,engenheiro_patrimonial,data_churn"
 CANCEL_SELECT = "client_id,churn_efetivado_at,updated_at,created_at"
 FINANCIAL_SELECT = (
     "id,client_id,reserva_liquidez,ultimo_aporte,ultima_renda_mensal,"
@@ -84,7 +84,7 @@ STAY_RANGES = [
     "De 7 a 12 meses",
     "De 13 a 24 meses",
     "Mais de 24 meses",
-    "Sem data de contratação",
+    "Sem data de referência",
 ]
 INCOME_BANDS = [
     "Até R$ 5 mil",
@@ -108,6 +108,7 @@ USED_FIELDS = [
     {"table": "clients", "column": "codigo", "role": "clientCode"},
     {"table": "clients", "column": "name", "role": "clientName"},
     {"table": "clients", "column": "data_inicio_ciclo", "role": "contractDate"},
+    {"table": "clients", "column": "created_at", "role": "stayFallbackDate"},
     {"table": "clients", "column": "status", "role": "status"},
     {"table": "clients", "column": "segmentacao", "role": "segment"},
     {"table": "clients", "column": "engenheiro_patrimonial", "role": "engineer"},
@@ -272,7 +273,7 @@ def parse_date(value):
 
 def stay_range_from_months(months):
     if months is None:
-        return "Sem data de contratação"
+        return "Sem data de referência"
     if months <= 3:
         return "Até 3 meses"
     if months <= 6:
@@ -410,6 +411,9 @@ def general_data_payload():
     for client in clients:
         data_warnings = []
         contract_date = parse_date(client.get("data_inicio_ciclo"))
+        created_at = parse_date(client.get("created_at"))
+        stay_start_date = contract_date or created_at
+        used_created_fallback = not contract_date and bool(created_at)
         cancel_primary = (cancel_map.get(client.get("id")) or {}).get("date")
         cancel_fallback = parse_date(client.get("data_churn"))
         cancellation_date = cancel_primary or cancel_fallback
@@ -419,6 +423,10 @@ def general_data_payload():
 
         if not contract_date:
             data_warnings.append("Sem data de contratação")
+        if used_created_fallback:
+            data_warnings.append(
+                "Permanência calculada com data de criação do cliente por ausência de data de contratação."
+            )
         if cancelled and not cancellation_date:
             data_warnings.append("Cancelado sem data de cancelamento")
         if not cancelled and cancellation_date:
@@ -443,15 +451,15 @@ def general_data_payload():
 
         stay_days = None
         stay_months = None
-        stay_range = "Sem data de contratação"
+        stay_range = "Sem data de referência"
         inconsistent = False
-        if contract_date:
+        if stay_start_date:
             end_date = cancellation_date or now
-            if contract_date.tzinfo is None:
-                contract_date = contract_date.replace(tzinfo=timezone.utc)
+            if stay_start_date.tzinfo is None:
+                stay_start_date = stay_start_date.replace(tzinfo=timezone.utc)
             if end_date.tzinfo is None:
                 end_date = end_date.replace(tzinfo=timezone.utc)
-            days = days_between(contract_date, end_date)
+            days = days_between(stay_start_date, end_date)
             if days < 0:
                 inconsistent = True
                 data_warnings.append("Cancelamento anterior à contratação")
@@ -474,6 +482,7 @@ def general_data_payload():
                 "stayDays": None if inconsistent else stay_days,
                 "stayMonths": None if inconsistent else stay_months,
                 "stayRange": stay_range,
+                "stayUsedCreatedAtFallback": used_created_fallback,
                 "status": status or "Não informado",
                 "segment": label_or_unknown(client.get("segmentacao")),
                 "engineer": label_or_unknown(client.get("engenheiro_patrimonial")),
@@ -517,7 +526,7 @@ def general_data_payload():
         {"label": "Carro", "count": sum(1 for row in rows if row["hasCar"] is True)},
         {"label": "Consórcio", "count": sum(1 for row in rows if row["hasConsortium"] is True)},
         {
-            "label": "Reserva de liquidez informada",
+            "label": "Reserva de liquidez",
             "count": sum(1 for row in rows if row["liquidityReserve"] is not None),
         },
     ]

@@ -1,5 +1,5 @@
 const CLIENT_SELECT =
-  "id,codigo,name,data_inicio_ciclo,status,segmentacao,engenheiro_patrimonial,data_churn";
+  "id,codigo,name,data_inicio_ciclo,created_at,status,segmentacao,engenheiro_patrimonial,data_churn";
 const CANCEL_SELECT = "client_id,churn_efetivado_at,updated_at,created_at";
 const FINANCIAL_SELECT =
   "id,client_id,reserva_liquidez,ultimo_aporte,ultima_renda_mensal,possui_imovel,possui_carro,possui_consorcio,updated_at";
@@ -9,6 +9,7 @@ const USED_FIELDS = [
   { table: "clients", column: "codigo", role: "clientCode" },
   { table: "clients", column: "name", role: "clientName" },
   { table: "clients", column: "data_inicio_ciclo", role: "contractDate" },
+  { table: "clients", column: "created_at", role: "stayFallbackDate" },
   { table: "clients", column: "status", role: "status" },
   { table: "clients", column: "segmentacao", role: "segment" },
   { table: "clients", column: "engenheiro_patrimonial", role: "engineer" },
@@ -29,7 +30,7 @@ const STAY_RANGES = [
   "De 7 a 12 meses",
   "De 13 a 24 meses",
   "Mais de 24 meses",
-  "Sem data de contratação",
+  "Sem data de referência",
 ];
 
 const INCOME_BANDS = [
@@ -104,7 +105,7 @@ function daysBetween(start, end) {
 }
 
 function stayRangeFromMonths(months) {
-  if (months == null) return "Sem data de contratação";
+  if (months == null) return "Sem data de referência";
   if (months <= 3) return "Até 3 meses";
   if (months <= 6) return "De 4 a 6 meses";
   if (months <= 12) return "De 7 a 12 meses";
@@ -244,6 +245,9 @@ function buildPayload(clients, cancellations, financialRows) {
   for (const client of clients) {
     const dataWarnings = [];
     const contractDate = parseDate(client.data_inicio_ciclo);
+    const createdAt = parseDate(client.created_at);
+    const stayStartDate = contractDate || createdAt;
+    const usedCreatedFallback = !contractDate && Boolean(createdAt);
     const cancelPrimary = cancelMap.get(client.id)?.date || null;
     const cancelFallback = parseDate(client.data_churn);
     const cancellationDate = cancelPrimary || cancelFallback;
@@ -252,6 +256,11 @@ function buildPayload(clients, cancellations, financialRows) {
     const financial = financialMap.get(client.id) || null;
 
     if (!contractDate) dataWarnings.push("Sem data de contratação");
+    if (usedCreatedFallback) {
+      dataWarnings.push(
+        "Permanência calculada com data de criação do cliente por ausência de data de contratação.",
+      );
+    }
     if (cancelled && !cancellationDate) dataWarnings.push("Cancelado sem data de cancelamento");
     if (!cancelled && cancellationDate) dataWarnings.push("Ativo com data de cancelamento");
     if (!status) dataWarnings.push("Cliente sem status");
@@ -267,12 +276,12 @@ function buildPayload(clients, cancellations, financialRows) {
 
     let stayDays = null;
     let stayMonths = null;
-    let stayRange = "Sem data de contratação";
+    let stayRange = "Sem data de referência";
     let inconsistentStay = false;
 
-    if (contractDate) {
+    if (stayStartDate) {
       const endDate = cancellationDate || now;
-      const days = daysBetween(contractDate, endDate);
+      const days = daysBetween(stayStartDate, endDate);
       if (days < 0) {
         inconsistentStay = true;
         dataWarnings.push("Cancelamento anterior à contratação");
@@ -292,6 +301,7 @@ function buildPayload(clients, cancellations, financialRows) {
       stayDays: inconsistentStay ? null : stayDays,
       stayMonths: inconsistentStay ? null : stayMonths,
       stayRange,
+      stayUsedCreatedAtFallback: usedCreatedFallback,
       status: status || "Não informado",
       segment: labelOrUnknown(client.segmentacao),
       engineer: labelOrUnknown(client.engenheiro_patrimonial),
@@ -339,7 +349,7 @@ function buildPayload(clients, cancellations, financialRows) {
       { label: "Imóvel", count: rows.filter((r) => r.hasProperty === true).length },
       { label: "Carro", count: rows.filter((r) => r.hasCar === true).length },
       { label: "Consórcio", count: rows.filter((r) => r.hasConsortium === true).length },
-      { label: "Reserva de liquidez informada", count: rows.filter((r) => r.liquidityReserve != null).length },
+      { label: "Reserva de liquidez", count: rows.filter((r) => r.liquidityReserve != null).length },
     ].map((item) => ({
       ...item,
       percent: Math.round((item.count / total) * 1000) / 10,

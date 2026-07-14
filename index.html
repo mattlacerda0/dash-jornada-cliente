@@ -378,11 +378,12 @@
           </section>
           <section class="summary" id="summary"></section>
           <div class="section-head">
-            <div><h2>Matrizes de viabilidade</h2><p>Leitura técnica das métricas construídas nas abas Dados Gerais e Jornada.</p></div>
+            <div><h2>Matrizes de viabilidade</h2><p>Leitura técnica das métricas construídas nas abas Dados Gerais, Jornada e Reuniões.</p></div>
           </div>
           <section class="charts viability-stack">
             <article class="chart-card"><h3>Dados Gerais</h3><p>Indicadores usados na primeira aba</p><div class="indicator-matrix" id="qGeneralMatrix"></div></article>
             <article class="chart-card"><h3>Jornada e onboarding</h3><p>Indicadores usados na tela de jornada</p><div class="indicator-matrix" id="qJourneyMatrix"></div></article>
+            <article class="chart-card"><h3>Reuniões</h3><p>Indicadores usados na tela de reuniões</p><div class="indicator-matrix" id="qMeetingsMatrix"></div></article>
           </section>
           <div class="section-head"><div><h2>Preenchimento por coluna</h2><p>Cada cartão compara valores vazios ou nulos com o total de registros da tabela.</p></div><span class="counter" id="counter"></span></div>
           <section class="cards" id="cards"></section>
@@ -555,6 +556,16 @@
       ['Concluiu onboarding', 'Sim', 'Estágio atual fora da lista 7c43c981..., ae3a6015..., 33bb253e...', clients => coverage(clients, c => c.completedOnboarding != null)],
       ['Tempo médio para cada etapa da jornada', 'Sim', 'Diferença entre mudanças de client_journeys.current_stage_id, eixo journey_stages.name', clients => coverage(clients, c => (c.journeyRecords || 0) > 1)],
     ];
+    const meetingsViability = [
+      ['Quantidade total de reuniões', 'Sim', 'Contagem de reuniões por cliente em client_meetings/manual_meetings', clients => coverage(clients, c => (c.totalMeetings || 0) > 0)],
+      ['Média de reuniões por mês', 'Sim', 'totalMeetings dividido pelos meses desde a contratação ou primeira reunião', clients => coverage(clients, c => c.meetingsPerMonth != null)],
+      ['Dias desde a última reunião', 'Sim', 'Data atual - última reunião identificada do cliente', clients => coverage(clients, c => c.daysSinceLastMeeting != null)],
+      ['Intervalo médio entre reuniões', 'Sim', 'Média dos intervalos entre reuniões do mesmo cliente', clients => coverage(clients, c => c.averageIntervalDays != null)],
+      ['Quantidade de faltas do cliente', 'Sim', 'Contagem de registros de ausência/no-show em meeting_attendance', clients => coverage(clients, c => (c.totalMeetings || 0) > 0 || (c.absences || 0) > 0)],
+      ['Quantidade de remarcações', 'Sim', 'Contagem de registros remarcados em meeting_attendance/client_meetings', clients => coverage(clients, c => (c.totalMeetings || 0) > 0 || (c.reschedules || 0) > 0)],
+      ['Quantidade de reuniões canceladas', 'Parcial', 'Campo de cancelamento quando disponível nas fontes de reuniões', clients => coverage(clients, c => c.cancelledMeetings != null)],
+      ['Cliente realizou primeira reunião?', 'Sim', 'Primeira reunião encontrada para o cliente', clients => coverage(clients, c => c.firstMeetingCompleted != null)],
+    ];
     function renderViabilityMatrix(target, rows, clients) {
       target.innerHTML = `
         <div class="indicator-row">
@@ -611,6 +622,7 @@
         <article class="metric"><div class="metric-label">Completude geral*</div><div class="metric-value">${pct(completion)}</div><div class="metric-note">Sobre todas as células auditadas</div></article>`;
       renderViabilityMatrix(document.querySelector('#qGeneralMatrix'), generalViability, generalState.payload?.clients || []);
       renderViabilityMatrix(document.querySelector('#qJourneyMatrix'), journeyViability, onboardingState.payload?.clients || []);
+      renderViabilityMatrix(document.querySelector('#qMeetingsMatrix'), meetingsViability, meetingsState.payload?.clients || []);
       qEls.cards.innerHTML = data.map(d => {
         const p = getPct(d), filled = getFilled(d), s = sev(p);
         const consistency = (d.consistencyNotes || []).map(n => `<div class="field-consistency">${escapeHtml(n)}</div>`).join('');
@@ -649,6 +661,11 @@
           const onboardingResponse = await fetch(`/api/onboarding?t=${Date.now()}`, { cache: 'no-store' });
           const onboardingPayload = await onboardingResponse.json().catch(() => ({}));
           if (onboardingResponse.ok) onboardingState.payload = onboardingPayload;
+        }
+        if (!meetingsState.payload) {
+          const meetingsResponse = await fetch(`/api/meetings?t=${Date.now()}`, { cache: 'no-store' });
+          const meetingsPayload = await meetingsResponse.json().catch(() => ({}));
+          if (meetingsResponse.ok) meetingsState.payload = meetingsPayload;
         }
         fillDomains(); renderQuality();
         status.textContent = payload.errors?.length ? '● Supabase conectado com alertas' : '● Supabase conectado';

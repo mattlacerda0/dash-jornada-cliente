@@ -21,3 +21,8 @@
   from = "/api/meetings"
   to = "/.netlify/functions/meetings"
   status = 200
+
+[[redirects]]
+  from = "/api/patrimonial-plan"
+  to = "/.netlify/functions/patrimonial-plan"
+  status = 200

@@ -123,6 +123,7 @@
         <button type="button" class="active" data-nav="general"><span class="nav-icon">◎</span>Dados Gerais</button>
         <button type="button" data-nav="journey"><span class="nav-icon">⇢</span>Jornada</button>
         <button type="button" data-nav="meetings"><span class="nav-icon">◎</span>Reuniões</button>
+        <button type="button" data-nav="plan"><span class="nav-icon">□</span>Plano Patrimonial</button>
         <button type="button" data-nav="quality"><span class="nav-icon">▦</span>Qualidade</button>
         <button type="button" disabled><span class="nav-icon">$</span>Financeiro<span class="soon">em breve</span></button>
       </nav>
@@ -378,12 +379,13 @@
           </section>
           <section class="summary" id="summary"></section>
           <div class="section-head">
-            <div><h2>Matrizes de viabilidade</h2><p>Leitura técnica das métricas construídas nas abas Dados Gerais, Jornada e Reuniões.</p></div>
+            <div><h2>Matrizes de viabilidade</h2><p>Leitura técnica das métricas construídas nas abas Dados Gerais, Jornada, Reuniões e Plano Patrimonial.</p></div>
           </div>
           <section class="charts viability-stack">
             <article class="chart-card"><h3>Dados Gerais</h3><p>Indicadores usados na primeira aba</p><div class="indicator-matrix" id="qGeneralMatrix"></div></article>
             <article class="chart-card"><h3>Jornada e onboarding</h3><p>Indicadores usados na tela de jornada</p><div class="indicator-matrix" id="qJourneyMatrix"></div></article>
             <article class="chart-card"><h3>Reuniões</h3><p>Indicadores usados na tela de reuniões</p><div class="indicator-matrix" id="qMeetingsMatrix"></div></article>
+            <article class="chart-card"><h3>Plano Patrimonial</h3><p>Indicadores somando QV360 e App Pharus</p><div class="indicator-matrix" id="qPlanMatrix"></div></article>
           </section>
           <div class="section-head"><div><h2>Preenchimento por coluna</h2><p>Cada cartão compara valores vazios ou nulos com o total de registros da tabela.</p></div><span class="counter" id="counter"></span></div>
           <section class="cards" id="cards"></section>
@@ -391,6 +393,72 @@
           <section class="table-panel">
             <div class="section-head" style="margin:0"><div><h2>Detalhamento técnico</h2><p>Base para validação da consulta e acompanhamento da completude.</p></div></div>
             <div class="table-wrap"><table><thead><tr><th>Domínio</th><th>Tabela</th><th>Coluna</th><th class="num">Linhas</th><th class="num">Preenchidos</th><th class="num">Percentual preenchido</th></tr></thead><tbody id="rows"></tbody></table></div>
+          </section>
+        </div>
+      </section>
+
+      <section class="view" id="view-plan">
+        <div class="container">
+          <header class="page-header">
+            <div>
+              <div class="eyebrow">QV360 + App Pharus</div>
+              <h1>Plano Patrimonial</h1>
+              <p>Indicadores consolidados somando os registros dos dois bancos de dados, sem priorizar uma fonte sobre a outra.</p>
+            </div>
+            <div class="status-actions">
+              <div class="status"><b id="pStatus" style="color:var(--color-warning)">● Aguardando consulta</b><span id="pUpdated">Fontes: QV360 e App Pharus</span></div>
+              <button class="btn" id="pRefresh" type="button">Atualizar</button>
+            </div>
+          </header>
+
+          <section class="filters general" aria-label="Filtros de plano patrimonial">
+            <label>Busca<input id="pSearch" placeholder="Nome, código ou ID" /></label>
+            <label>Fonte<select id="pSource"><option value="all">Todas</option></select></label>
+            <label>Entrega<select id="pDelivered"><option value="all">Todos</option><option value="yes">Entregue</option><option value="no">Não entregue</option></select></label>
+            <label>Aprovação<select id="pApproved"><option value="all">Todos</option><option value="yes">Aprovado</option><option value="no">Não aprovado</option></select></label>
+            <button class="btn" id="pClear" type="button">Limpar filtros</button>
+          </section>
+
+          <section class="summary" id="pKpis"></section>
+
+          <div class="section-head">
+            <div><h2>Indicadores do plano</h2><p>Resultados complementares: QV360 + App Pharus.</p></div>
+          </div>
+          <section class="charts">
+            <article class="chart-card"><h3>Clientes por fonte</h3><p>Quantidade registrada em cada banco</p><div id="pSourceChart"></div></article>
+            <article class="chart-card"><h3>Status do plano</h3><p>Entrega, aprovação e revisão</p><div id="pStatusChart"></div></article>
+          </section>
+
+          <section class="table-panel">
+            <div class="section-head" style="margin:0">
+              <div><h2>Clientes e plano patrimonial</h2><p>Clique nos cabeçalhos para ordenar.</p></div>
+              <span class="counter" id="pCounter"></span>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th data-psort="source">Fonte</th>
+                    <th data-psort="clientName">Cliente</th>
+                    <th data-psort="clientCode">Código</th>
+                    <th data-psort="planDelivered">Plano entregue</th>
+                    <th data-psort="planApproved">Plano aprovado</th>
+                    <th data-psort="daysToApproval" class="num">Dias até aprovação</th>
+                    <th data-psort="revisedLater">Revisado?</th>
+                    <th data-psort="revisionsCount" class="num">Revisões</th>
+                  </tr>
+                </thead>
+                <tbody id="pRows"></tbody>
+              </table>
+            </div>
+            <div class="empty" id="pEmpty">Nenhum cliente encontrado para os filtros selecionados.</div>
+            <div class="pagination">
+              <div id="pPageInfo"></div>
+              <div>
+                <button class="btn" id="pPrev" type="button">Anterior</button>
+                <button class="btn" id="pNext" type="button">Próxima</button>
+              </div>
+            </div>
           </section>
         </div>
       </section>
@@ -516,6 +584,7 @@
       general: document.querySelector('#view-general'),
       journey: document.querySelector('#view-journey'),
       meetings: document.querySelector('#view-meetings'),
+      plan: document.querySelector('#view-plan'),
       quality: document.querySelector('#view-quality')
     };
     document.querySelectorAll('[data-nav]').forEach(btn => btn.addEventListener('click', () => {
@@ -525,6 +594,7 @@
       if (btn.dataset.nav === 'meetings' && !meetingsState.payload) loadMeetings();
       if (btn.dataset.nav === 'quality' && !qualityData.length) loadQuality();
       if (btn.dataset.nav === 'journey' && !onboardingState.payload) loadOnboarding();
+      if (btn.dataset.nav === 'plan' && !planState.payload) loadPlan();
     }));
 
     const hasValue = value => value !== null && value !== undefined && value !== '' && value !== 'Não informado';
@@ -566,6 +636,21 @@
       ['Quantidade de reuniões canceladas', 'Parcial', 'Campo de cancelamento quando disponível nas fontes de reuniões', clients => coverage(clients, c => c.cancelledMeetings != null)],
       ['Cliente realizou primeira reunião?', 'Sim', 'Primeira reunião encontrada para o cliente', clients => coverage(clients, c => c.firstMeetingCompleted != null)],
     ];
+    function planViabilityRows() {
+      const indicators = planState.payload?.indicators || [
+        { indicator: 'Plano entregue', value: 0, total: 0, coverage: 0, metric: 'QV360 + App Pharus' },
+        { indicator: 'Plano aprovado', value: 0, total: 0, coverage: 0, metric: 'QV360 + App Pharus' },
+        { indicator: 'Dias até aprovação', value: 0, total: 0, coverage: 0, metric: 'QV360 + App Pharus' },
+        { indicator: 'Plano revisado posteriormente', value: 0, total: 0, coverage: 0, metric: 'QV360 + App Pharus' },
+        { indicator: 'Quantidade de revisões', value: 0, total: 0, coverage: 0, metric: 'QV360 + App Pharus' },
+      ];
+      return indicators.map(item => [
+        item.indicator,
+        'Sim',
+        item.metric,
+        () => ({ count: item.value || 0, total: item.total || 0, percent: item.coverage || 0 }),
+      ]);
+    }
     function renderViabilityMatrix(target, rows, clients) {
       target.innerHTML = `
         <div class="indicator-row">
@@ -623,6 +708,7 @@
       renderViabilityMatrix(document.querySelector('#qGeneralMatrix'), generalViability, generalState.payload?.clients || []);
       renderViabilityMatrix(document.querySelector('#qJourneyMatrix'), journeyViability, onboardingState.payload?.clients || []);
       renderViabilityMatrix(document.querySelector('#qMeetingsMatrix'), meetingsViability, meetingsState.payload?.clients || []);
+      renderViabilityMatrix(document.querySelector('#qPlanMatrix'), planViabilityRows(), []);
       qEls.cards.innerHTML = data.map(d => {
         const p = getPct(d), filled = getFilled(d), s = sev(p);
         const consistency = (d.consistencyNotes || []).map(n => `<div class="field-consistency">${escapeHtml(n)}</div>`).join('');
@@ -666,6 +752,11 @@
           const meetingsResponse = await fetch(`/api/meetings?t=${Date.now()}`, { cache: 'no-store' });
           const meetingsPayload = await meetingsResponse.json().catch(() => ({}));
           if (meetingsResponse.ok) meetingsState.payload = meetingsPayload;
+        }
+        if (!planState.payload) {
+          const planResponse = await fetch(`/api/patrimonial-plan?t=${Date.now()}`, { cache: 'no-store' });
+          const planPayload = await planResponse.json().catch(() => ({}));
+          if (planResponse.ok) planState.payload = planPayload;
         }
         fillDomains(); renderQuality();
         status.textContent = payload.errors?.length ? '● Supabase conectado com alertas' : '● Supabase conectado';
@@ -1041,6 +1132,119 @@
       }
     }
 
+    /* -------- Plano Patrimonial -------- */
+    const planState = {
+      payload: null, page: 1, pageSize: 25, sortKey: 'clientName', sortDir: 'asc',
+      loading: false, requestId: 0
+    };
+    const pFilters = {
+      search: document.querySelector('#pSearch'),
+      source: document.querySelector('#pSource'),
+      delivered: document.querySelector('#pDelivered'),
+      approved: document.querySelector('#pApproved')
+    };
+    const yesNoBadge = value => value ? '<span class="badge high">Sim</span>' : '<span class="badge unavailable">Não</span>';
+    function filteredPlanClients() {
+      const clients = planState.payload?.clients || [];
+      const q = pFilters.search.value.trim().toLowerCase();
+      return clients.filter(c => {
+        if (pFilters.source.value !== 'all' && c.source !== pFilters.source.value) return false;
+        if (pFilters.delivered.value === 'yes' && !c.planDelivered) return false;
+        if (pFilters.delivered.value === 'no' && c.planDelivered) return false;
+        if (pFilters.approved.value === 'yes' && !c.planApproved) return false;
+        if (pFilters.approved.value === 'no' && c.planApproved) return false;
+        if (q) {
+          const hay = `${c.clientName} ${c.clientCode || ''} ${c.clientId}`.toLowerCase();
+          if (!hay.includes(q)) return false;
+        }
+        return true;
+      }).sort((a, b) => {
+        const key = planState.sortKey;
+        const av = a[key], bv = b[key];
+        let cmp = 0;
+        if (av == null && bv == null) cmp = 0;
+        else if (av == null) cmp = 1;
+        else if (bv == null) cmp = -1;
+        else if (typeof av === 'number' && typeof bv === 'number') cmp = av - bv;
+        else if (typeof av === 'boolean' && typeof bv === 'boolean') cmp = Number(av) - Number(bv);
+        else cmp = String(av).localeCompare(String(bv), 'pt-BR', { numeric: true });
+        return planState.sortDir === 'asc' ? cmp : -cmp;
+      });
+    }
+    function renderPlan() {
+      if (!planState.payload) return;
+      const payload = planState.payload;
+      const summary = payload.summary || {};
+      const data = filteredPlanClients();
+      document.querySelector('#pKpis').innerHTML = `
+        <article class="metric highlight"><div class="metric-label">Clientes QV360</div><div class="metric-value">${fmt.format(summary.qv360Clients || 0)}</div><div class="metric-note">Projeto qvtqufdivpbmubooawdm</div></article>
+        <article class="metric highlight"><div class="metric-label">Clientes App Pharus</div><div class="metric-value">${fmt.format(summary.appPharusClients || 0)}</div><div class="metric-note">Projeto sfxbzfaxbbdjzuhzzrjc</div></article>
+        <article class="metric"><div class="metric-label">Plano entregue</div><div class="metric-value">${fmt.format(summary.planDelivered || 0)}</div><div class="metric-note">${pct((summary.planDelivered || 0) / (summary.totalClients || 1) * 100)} da base somada</div></article>
+        <article class="metric"><div class="metric-label">Plano aprovado</div><div class="metric-value">${fmt.format(summary.planApproved || 0)}</div><div class="metric-note">${pct((summary.planApproved || 0) / (summary.totalClients || 1) * 100)} da base somada</div></article>
+        <article class="metric"><div class="metric-label">Dias até aprovação</div><div class="metric-value">${dayValue(summary.averageDaysToApproval)}</div><div class="metric-note">Média entre contratação e aprovação</div></article>
+        <article class="metric"><div class="metric-label">Planos revisados</div><div class="metric-value">${fmt.format(summary.revisedLater || 0)}</div><div class="metric-note">${fmt.format(summary.revisionsTotal || 0)} revisões totais</div></article>`;
+
+      document.querySelector('#pSourceChart').innerHTML = hBars((payload.sources?.databases || []).map(db => ({ label: db.source, count: db.clientCount || 0, percent: (summary.totalClients ? (db.clientCount || 0) / summary.totalClients * 100 : 0) })));
+      document.querySelector('#pStatusChart').innerHTML = hBars([
+        { label: 'Plano entregue', count: summary.planDelivered || 0, percent: summary.totalClients ? (summary.planDelivered || 0) / summary.totalClients * 100 : 0 },
+        { label: 'Plano aprovado', count: summary.planApproved || 0, percent: summary.totalClients ? (summary.planApproved || 0) / summary.totalClients * 100 : 0 },
+        { label: 'Revisado posteriormente', count: summary.revisedLater || 0, percent: summary.totalClients ? (summary.revisedLater || 0) / summary.totalClients * 100 : 0 },
+      ]);
+
+      const pages = Math.max(1, Math.ceil(data.length / planState.pageSize));
+      if (planState.page > pages) planState.page = pages;
+      const start = (planState.page - 1) * planState.pageSize;
+      const pageRows = data.slice(start, start + planState.pageSize);
+      document.querySelector('#pRows').innerHTML = pageRows.map(c => `
+        <tr>
+          <td>${escapeHtml(c.source)}</td>
+          <td class="truncate" title="${escapeHtml(c.clientName)}">${escapeHtml(c.clientName)}</td>
+          <td>${escapeHtml(c.clientCode || 'Não informado')}</td>
+          <td>${yesNoBadge(c.planDelivered)}</td>
+          <td>${yesNoBadge(c.planApproved)}</td>
+          <td class="num">${dayValue(c.daysToApproval)}</td>
+          <td>${yesNoBadge(c.revisedLater)}</td>
+          <td class="num">${fmt.format(c.revisionsCount || 0)}</td>
+        </tr>`).join('');
+      document.querySelector('#pEmpty').style.display = data.length ? 'none' : 'block';
+      document.querySelector('#pCounter').textContent = `${data.length} de ${(payload.clients || []).length} clientes`;
+      document.querySelector('#pPageInfo').textContent = `Página ${planState.page} de ${pages}`;
+      document.querySelector('#pPrev').disabled = planState.page <= 1;
+      document.querySelector('#pNext').disabled = planState.page >= pages;
+    }
+    async function loadPlan() {
+      if (planState.loading) return;
+      planState.loading = true;
+      const requestId = ++planState.requestId;
+      const refresh = document.querySelector('#pRefresh');
+      const status = document.querySelector('#pStatus');
+      refresh.disabled = true; refresh.textContent = 'Atualizando…';
+      status.textContent = '● Atualizando dados'; status.style.color = 'var(--color-warning)';
+      try {
+        const response = await fetch(`/api/patrimonial-plan?t=${Date.now()}`, { cache: 'no-store' });
+        const payload = await response.json();
+        if (requestId !== planState.requestId) return;
+        if (!response.ok) throw new Error(payload.error || 'Falha ao consultar plano patrimonial');
+        planState.payload = payload;
+        planState.page = 1;
+        fillSelect(pFilters.source, (payload.sources?.databases || []).map(db => db.source), 'Todas');
+        renderPlan();
+        status.textContent = payload.sources?.warnings?.length ? '● Fontes conectadas com alertas' : '● Fontes conectadas';
+        status.style.color = payload.sources?.warnings?.length ? 'var(--color-warning)' : 'var(--color-success)';
+        document.querySelector('#pUpdated').textContent = `Atualizado em ${new Date(payload.generatedAt).toLocaleString('pt-BR')}`;
+      } catch (error) {
+        if (requestId !== planState.requestId) return;
+        status.textContent = '● Falha na atualização'; status.style.color = 'var(--color-danger)';
+        document.querySelector('#pUpdated').textContent = error.message;
+        document.querySelector('#pEmpty').style.display = 'block';
+        document.querySelector('#pEmpty').textContent = 'Não foi possível carregar o plano patrimonial.';
+      } finally {
+        if (requestId === planState.requestId) {
+          planState.loading = false; refresh.disabled = false; refresh.textContent = 'Atualizar';
+        }
+      }
+    }
+
     /* -------- Jornada e onboarding -------- */
     const onboardingState = {
       payload: null, page: 1, pageSize: 25, sortKey: 'clientName', sortDir: 'asc',
@@ -1211,6 +1415,23 @@
       const client = generalState.payload.clients.find(c => c.clientId === tr.dataset.id);
       if (client) openDrawer(client);
     });
+    Object.values(pFilters).forEach(el => el.addEventListener('input', () => { planState.page = 1; renderPlan(); }));
+    document.querySelector('#pClear').addEventListener('click', () => {
+      pFilters.search.value = '';
+      pFilters.source.value = 'all';
+      pFilters.delivered.value = 'all';
+      pFilters.approved.value = 'all';
+      planState.page = 1; renderPlan();
+    });
+    document.querySelector('#pRefresh').addEventListener('click', loadPlan);
+    document.querySelector('#pPrev').addEventListener('click', () => { planState.page -= 1; renderPlan(); });
+    document.querySelector('#pNext').addEventListener('click', () => { planState.page += 1; renderPlan(); });
+    document.querySelectorAll('#view-plan th[data-psort]').forEach(th => th.addEventListener('click', () => {
+      const key = th.dataset.psort;
+      if (planState.sortKey === key) planState.sortDir = planState.sortDir === 'asc' ? 'desc' : 'asc';
+      else { planState.sortKey = key; planState.sortDir = 'asc'; }
+      renderPlan();
+    }));
     Object.values(jFilters).forEach(el => el.addEventListener('input', () => { onboardingState.page = 1; renderOnboarding(); }));
     document.querySelector('#jClear').addEventListener('click', () => {
       jFilters.search.value = '';
@@ -1595,6 +1816,7 @@
       if (views.meetings.classList.contains('active')) loadMeetings();
       if (views.quality.classList.contains('active')) loadQuality();
       if (views.journey.classList.contains('active')) loadOnboarding();
+      if (views.plan.classList.contains('active')) loadPlan();
     }, 5 * 60 * 1000);
   </script>
 </body>

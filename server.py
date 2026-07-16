@@ -17,7 +17,7 @@ ENV_FILE = ROOT / "exemplo.env"
 if not ENV_FILE.exists():
     ENV_FILE = ROOT / ".env"
 
-# (domain, table, column, include_blank)
+# (domain, table, column, include_blank) — uniqueness: public.{table}.{column}
 FIELDS = [
     ("Cliente", "clients", "id", False),
     ("Cliente", "clients", "codigo", True),
@@ -33,12 +33,14 @@ FIELDS = [
     ("Cliente", "clients", "objetivo_principal", True),
     ("Cancelamento", "clients", "data_churn", False),
     ("Cancelamento", "clients", "motivo_churn", True),
+    ("Financeiro", "client_financial_data", "client_id", False),
     ("Financeiro", "client_financial_data", "ultima_renda_mensal", False),
     ("Financeiro", "client_financial_data", "ultimo_aporte", False),
     ("Financeiro", "client_financial_data", "reserva_liquidez", False),
     ("Financeiro", "client_financial_data", "possui_imovel", False),
     ("Financeiro", "client_financial_data", "possui_carro", False),
     ("Financeiro", "client_financial_data", "possui_consorcio", False),
+    ("Financeiro", "client_financial_data", "updated_at", False),
     ("Jornada", "client_journeys", "started_at", False),
     ("Jornada", "client_journeys", "current_stage_id", False),
     ("Reuniões", "client_meetings", "id", False),
@@ -55,16 +57,32 @@ FIELDS = [
     ("Reuniões", "manual_meetings", "start_time", False),
     ("Reuniões", "manual_meetings", "end_time", False),
     ("Reuniões", "manual_meetings", "google_event_id", True),
-    ("Reuniões", "manual_meetings", "recurrence_group_id", True),
+    ("Reuniões", "manual_meetings", "recurrence_group_id", False),
     ("Reuniões", "meeting_attendance", "calendly_event_uri", True),
     ("Reuniões", "meeting_attendance", "status", True),
     ("Reuniões", "meeting_attendance", "remarcado", False),
+    ("Reuniões", "meeting_attendance", "link_gravacao", True),
     ("Reuniões", "meeting_attendance", "created_at", False),
+    ("Reuniões", "meeting_attendance", "updated_at", False),
     ("Reuniões", "client_implementation_meeting_date", "client_id", False),
     ("Reuniões", "client_implementation_meeting_date", "meeting_date", False),
     ("Reuniões", "client_implementation_meeting_date", "source", True),
+    ("Mecanismos", "client_mecanismos", "id", False),
+    ("Mecanismos", "client_mecanismos", "client_id", False),
+    ("Mecanismos", "client_mecanismos", "mecanismo_id", False),
     ("Mecanismos", "client_mecanismos", "status", True),
     ("Mecanismos", "client_mecanismos", "implemented_at", False),
+    ("Mecanismos", "client_mecanismos", "created_at", False),
+    ("Mecanismos", "client_mecanismos", "no_plano", False),
+    ("Mecanismos", "client_mecanismos", "sequence", False),
+    ("Mecanismos", "client_mecanismos", "source", True),
+    ("Mecanismos", "client_mecanismos", "valor_aplicado", False),
+    ("Mecanismos", "mecanismos", "id", False),
+    ("Mecanismos", "mecanismos", "name", True),
+    ("Mecanismos", "mecanismos", "categoria", True),
+    ("Mecanismos", "mecanismos", "mercado", True),
+    ("Mecanismos", "mecanismos", "programa", True),
+    ("Mecanismos", "mecanismos", "status", True),
     ("Satisfação", "nps_responses", "score", False),
     ("Satisfação", "nps_responses", "submitted_at", False),
     ("Satisfação", "csat_responses", "score", False),
@@ -72,43 +90,155 @@ FIELDS = [
     ("Cancelamento", "cancellations", "client_id", False),
     ("Cancelamento", "cancellations", "motivo", True),
     ("Cancelamento", "cancellations", "motivo_categoria", False),
+    ("Cancelamento", "cancellations", "distrato_assinado_at", False),
+    ("Cancelamento", "cancellations", "data_pedido", False),
+    ("Cancelamento", "cancellations", "intencao_registrada_at", False),
+    ("Cancelamento", "cancellations", "archived_at", False),
     ("Cancelamento", "cancellations", "churn_efetivado_at", False),
+    ("Cancelamento", "cancellations", "updated_at", False),
+    ("Cancelamento", "cancellations", "created_at", False),
+    ("Aquisição", "vw_info_cliente", "id_cliente", False),
+    ("Aquisição", "vw_info_cliente", "data_assinatura_contrato", False),
 ]
 
 FIELD_DESCRIPTIONS = {
-    ("clients", "id"): "Identificador técnico único do cliente",
-    ("clients", "codigo"): "Código de identificação do cliente na Quarta Via",
-    ("clients", "name"): "Nome do cliente",
-    ("clients", "data_inicio_ciclo"): "Data de início do vínculo ou ciclo do cliente",
-    ("clients", "data_churn"): "Data de churn registrada no cadastro do cliente",
-    ("clients", "status"): "Situação atual do cliente",
-    ("clients", "segmentacao"): "Segmento atribuído ao cliente",
-    ("clients", "engenheiro_patrimonial"): "Engenheiro Patrimonial responsável pelo acompanhamento",
-    ("cancellations", "client_id"): "Vínculo do cancelamento com o cliente",
-    ("cancellations", "churn_efetivado_at"): "Data em que o cancelamento foi efetivamente concluído",
-    ("client_financial_data", "reserva_liquidez"): "Reserva de liquidez informada pelo cliente",
-    ("client_financial_data", "ultimo_aporte"): "Valor do último aporte registrado",
-    ("client_financial_data", "ultima_renda_mensal"): "Última renda mensal registrada",
-    ("client_financial_data", "possui_imovel"): "Indica se o cliente possui imóvel",
-    ("client_financial_data", "possui_carro"): "Indica se o cliente possui carro",
-    ("client_financial_data", "possui_consorcio"): "Indica se o cliente possui consórcio",
-    ("client_meetings", "start_time"): "Data e horário de início da reunião",
-    ("client_meetings", "end_time"): "Data e horário de término da reunião",
-    ("client_meetings", "calendly_event_uri"): "Identificador externo do evento no Calendly",
-    ("client_meetings", "event_name"): "Título ou nome do evento de reunião",
-    ("client_meetings", "host_email"): "E-mail do anfitrião da reunião",
-    ("client_meetings", "manually_linked"): "Indica vínculo manual da reunião ao cliente",
-    ("client_meetings", "client_id"): "Cliente vinculado à reunião Calendly",
-    ("manual_meetings", "title"): "Título da reunião registrada manualmente",
-    ("manual_meetings", "start_time"): "Data e horário de início da reunião",
-    ("manual_meetings", "client_id"): "Cliente vinculado à reunião manual",
-    ("manual_meetings", "google_event_id"): "Identificador do evento no Google Calendar",
-    ("meeting_attendance", "status"): "Situação de presença ou realização da reunião",
-    ("meeting_attendance", "remarcado"): "Indica se a reunião foi remarcada",
-    ("meeting_attendance", "calendly_event_uri"): "Identificador externo do evento no Calendly",
-    ("client_implementation_meeting_date", "meeting_date"): "Data registrada para a reunião de implementação",
-    ("client_implementation_meeting_date", "client_id"): "Cliente com data de reunião de implementação",
-    ("client_implementation_meeting_date", "source"): "Origem do registro da reunião de implementação",
+    ("clients", "id"): "Identificador técnico único do cliente.",
+    ("clients", "codigo"): "Código de identificação do cliente na Quarta Via.",
+    ("clients", "name"): "Nome do cliente.",
+    ("clients", "created_at"): "Data de criação do cadastro, usada como último fallback quando as datas de contratação não estão disponíveis.",
+    ("clients", "data_inicio_ciclo"): "Data de início do ciclo do cliente, usada como fallback da aquisição.",
+    ("clients", "data_churn"): "Data de churn registrada no cadastro do cliente.",
+    ("clients", "status"): "Situação atual do cliente, usada na classificação entre ativo, cancelado e congelado.",
+    ("clients", "segmentacao"): "Segmento atribuído ao cliente.",
+    ("clients", "engenheiro_patrimonial"): "Engenheiro Patrimonial responsável pelo acompanhamento do cliente.",
+    ("cancellations", "client_id"): "Cliente vinculado ao registro de cancelamento.",
+    ("cancellations", "distrato_assinado_at"): "Data em que o distrato do cliente foi assinado.",
+    ("cancellations", "data_pedido"): "Data em que o pedido de cancelamento foi registrado.",
+    ("cancellations", "intencao_registrada_at"): "Data em que a intenção de cancelamento foi registrada.",
+    ("cancellations", "archived_at"): "Data de arquivamento lógico do processo de cancelamento; registros arquivados são ignorados na consolidação.",
+    ("cancellations", "churn_efetivado_at"): "Data em que o cancelamento foi efetivamente concluído (legado; a consolidação analítica usa distrato/pedido/intenção).",
+    ("cancellations", "updated_at"): "Data de atualização do cancelamento, usada para escolher o registro mais recente.",
+    ("cancellations", "created_at"): "Data de criação do registro de cancelamento, usada como apoio na consolidação.",
+    ("vw_info_cliente", "id_cliente"): "Identificador do cliente na visão de informações cadastrais.",
+    ("vw_info_cliente", "data_assinatura_contrato"): "Data em que o contrato do cliente foi assinado, usada como referência principal de aquisição.",
+    ("client_financial_data", "client_id"): "Cliente vinculado ao registro de diagnóstico financeiro.",
+    ("client_financial_data", "reserva_liquidez"): "Valor informado como reserva de liquidez do cliente.",
+    ("client_financial_data", "ultimo_aporte"): "Valor do último aporte financeiro registrado.",
+    ("client_financial_data", "ultima_renda_mensal"): "Última renda mensal registrada para o cliente.",
+    ("client_financial_data", "possui_imovel"): "Indica se o cliente informou possuir imóvel.",
+    ("client_financial_data", "possui_carro"): "Indica se o cliente informou possuir carro.",
+    ("client_financial_data", "possui_consorcio"): "Indica se o cliente informou possuir consórcio.",
+    ("client_financial_data", "updated_at"): "Data de atualização do diagnóstico financeiro, usada para escolher o registro mais recente.",
+    ("client_meetings", "id"): "Identificador único da reunião registrada.",
+    ("client_meetings", "client_id"): "Cliente vinculado à reunião.",
+    ("client_meetings", "calendly_event_uri"): "Identificador externo do evento no Calendly.",
+    ("client_meetings", "event_name"): "Título ou nome da reunião.",
+    ("client_meetings", "start_time"): "Data e horário de início da reunião.",
+    ("client_meetings", "end_time"): "Data e horário de término da reunião.",
+    ("client_meetings", "host_email"): "E-mail do anfitrião responsável pela reunião.",
+    ("client_meetings", "manually_linked"): "Indica se a reunião foi vinculada manualmente ao cliente.",
+    ("manual_meetings", "id"): "Identificador único da reunião criada manualmente.",
+    ("manual_meetings", "client_id"): "Cliente vinculado à reunião manual.",
+    ("manual_meetings", "title"): "Título da reunião manual.",
+    ("manual_meetings", "start_time"): "Data e horário de início da reunião manual.",
+    ("manual_meetings", "end_time"): "Data e horário de término da reunião manual.",
+    ("manual_meetings", "google_event_id"): "Identificador do evento relacionado no Google Calendar.",
+    ("manual_meetings", "recurrence_group_id"): "Identificador usado para agrupar reuniões recorrentes.",
+    ("meeting_attendance", "calendly_event_uri"): "Identificador da reunião associado ao registro de presença.",
+    ("meeting_attendance", "status"): "Situação de presença do cliente na reunião.",
+    ("meeting_attendance", "remarcado"): "Indica se a reunião foi remarcada.",
+    ("meeting_attendance", "link_gravacao"): "Link da gravação associado ao registro de presença.",
+    ("meeting_attendance", "created_at"): "Data de criação do registro de presença.",
+    ("meeting_attendance", "updated_at"): "Data de atualização do registro de presença, usada para escolher o mais recente.",
+    ("client_implementation_meeting_date", "meeting_date"): "Data registrada para a primeira reunião de implementação.",
+    ("client_implementation_meeting_date", "client_id"): "Cliente vinculado à reunião de implementação.",
+    ("client_implementation_meeting_date", "source"): "Fonte da data registrada para a reunião de implementação.",
+    ("client_mecanismos", "id"): "Identificador técnico do vínculo cliente-mecanismo.",
+    ("client_mecanismos", "client_id"): "Cliente vinculado ao mecanismo.",
+    ("client_mecanismos", "mecanismo_id"): "Mecanismo vinculado ao cliente.",
+    ("client_mecanismos", "status"): "Etapa atual do mecanismo: apto, iniciado ou concluído.",
+    ("client_mecanismos", "implemented_at"): "Data e horário em que a implementação foi concluída.",
+    ("client_mecanismos", "created_at"): "Data de criação do registro do mecanismo.",
+    ("client_mecanismos", "no_plano"): "Indica se o mecanismo faz parte do plano do cliente.",
+    ("client_mecanismos", "sequence"): "Ordem do mecanismo na jornada do cliente.",
+    ("client_mecanismos", "source"): "Origem do registro do mecanismo.",
+    ("client_mecanismos", "valor_aplicado"): "Valor aplicado associado à implementação do mecanismo.",
+    ("mecanismos", "id"): "Identificador do mecanismo no catálogo.",
+    ("mecanismos", "name"): "Nome do mecanismo no catálogo.",
+    ("mecanismos", "categoria"): "Categoria cadastral do mecanismo (baixa cobertura nesta base).",
+    ("mecanismos", "mercado"): "Mercado associado ao mecanismo, usado como dimensão analítica.",
+    ("mecanismos", "programa"): "Programa ao qual o mecanismo está vinculado.",
+    ("mecanismos", "status"): "Status cadastral do mecanismo no catálogo.",
+}
+
+FIELD_USED_IN = {
+    ("clients", "id"): ["Dados Gerais", "Reuniões", "Implementação de Mecanismos"],
+    ("clients", "codigo"): ["Dados Gerais", "Reuniões", "Implementação de Mecanismos"],
+    ("clients", "name"): ["Dados Gerais", "Reuniões", "Implementação de Mecanismos"],
+    ("clients", "created_at"): ["Dados Gerais", "Implementação de Mecanismos"],
+    ("clients", "data_inicio_ciclo"): ["Dados Gerais", "Implementação de Mecanismos"],
+    ("clients", "data_churn"): ["Dados Gerais"],
+    ("clients", "status"): ["Dados Gerais", "Implementação de Mecanismos"],
+    ("clients", "segmentacao"): ["Dados Gerais"],
+    ("clients", "engenheiro_patrimonial"): ["Dados Gerais", "Reuniões", "Implementação de Mecanismos"],
+    ("client_mecanismos", "id"): ["Implementação de Mecanismos"],
+    ("client_mecanismos", "client_id"): ["Implementação de Mecanismos"],
+    ("client_mecanismos", "mecanismo_id"): ["Implementação de Mecanismos"],
+    ("client_mecanismos", "status"): ["Implementação de Mecanismos"],
+    ("client_mecanismos", "implemented_at"): ["Implementação de Mecanismos"],
+    ("client_mecanismos", "created_at"): ["Implementação de Mecanismos"],
+    ("client_mecanismos", "no_plano"): ["Implementação de Mecanismos"],
+    ("client_mecanismos", "sequence"): ["Implementação de Mecanismos"],
+    ("client_mecanismos", "source"): ["Implementação de Mecanismos"],
+    ("client_mecanismos", "valor_aplicado"): ["Implementação de Mecanismos"],
+    ("mecanismos", "id"): ["Implementação de Mecanismos"],
+    ("mecanismos", "name"): ["Implementação de Mecanismos"],
+    ("mecanismos", "categoria"): ["Implementação de Mecanismos"],
+    ("mecanismos", "mercado"): ["Implementação de Mecanismos"],
+    ("mecanismos", "programa"): ["Implementação de Mecanismos"],
+    ("mecanismos", "status"): ["Implementação de Mecanismos"],
+    ("cancellations", "client_id"): ["Dados Gerais"],
+    ("cancellations", "distrato_assinado_at"): ["Dados Gerais"],
+    ("cancellations", "data_pedido"): ["Dados Gerais"],
+    ("cancellations", "intencao_registrada_at"): ["Dados Gerais"],
+    ("cancellations", "archived_at"): ["Dados Gerais"],
+    ("cancellations", "churn_efetivado_at"): ["Dados Gerais"],
+    ("cancellations", "updated_at"): ["Dados Gerais"],
+    ("cancellations", "created_at"): ["Dados Gerais"],
+    ("vw_info_cliente", "id_cliente"): ["Dados Gerais"],
+    ("vw_info_cliente", "data_assinatura_contrato"): ["Dados Gerais"],
+    ("client_financial_data", "client_id"): ["Dados Gerais"],
+    ("client_financial_data", "reserva_liquidez"): ["Dados Gerais"],
+    ("client_financial_data", "ultimo_aporte"): ["Dados Gerais"],
+    ("client_financial_data", "ultima_renda_mensal"): ["Dados Gerais"],
+    ("client_financial_data", "possui_imovel"): ["Dados Gerais"],
+    ("client_financial_data", "possui_carro"): ["Dados Gerais"],
+    ("client_financial_data", "possui_consorcio"): ["Dados Gerais"],
+    ("client_financial_data", "updated_at"): ["Dados Gerais"],
+    ("client_meetings", "id"): ["Reuniões"],
+    ("client_meetings", "client_id"): ["Reuniões"],
+    ("client_meetings", "calendly_event_uri"): ["Reuniões"],
+    ("client_meetings", "event_name"): ["Reuniões"],
+    ("client_meetings", "start_time"): ["Reuniões"],
+    ("client_meetings", "end_time"): ["Reuniões"],
+    ("client_meetings", "host_email"): ["Reuniões"],
+    ("client_meetings", "manually_linked"): ["Reuniões"],
+    ("manual_meetings", "id"): ["Reuniões"],
+    ("manual_meetings", "client_id"): ["Reuniões"],
+    ("manual_meetings", "title"): ["Reuniões"],
+    ("manual_meetings", "start_time"): ["Reuniões"],
+    ("manual_meetings", "end_time"): ["Reuniões"],
+    ("manual_meetings", "google_event_id"): ["Reuniões"],
+    ("manual_meetings", "recurrence_group_id"): ["Reuniões"],
+    ("meeting_attendance", "calendly_event_uri"): ["Reuniões"],
+    ("meeting_attendance", "status"): ["Reuniões"],
+    ("meeting_attendance", "remarcado"): ["Reuniões"],
+    ("meeting_attendance", "link_gravacao"): ["Reuniões"],
+    ("meeting_attendance", "created_at"): ["Reuniões"],
+    ("meeting_attendance", "updated_at"): ["Reuniões"],
+    ("client_implementation_meeting_date", "client_id"): ["Reuniões"],
+    ("client_implementation_meeting_date", "meeting_date"): ["Reuniões"],
+    ("client_implementation_meeting_date", "source"): ["Reuniões"],
 }
 
 CLIENT_SELECT = "id,codigo,name,data_inicio_ciclo,created_at,status,segmentacao,engenheiro_patrimonial,data_churn"
@@ -154,12 +284,16 @@ USED_FIELDS = [
     {"table": "clients", "column": "data_churn", "role": "cancellationDateFallback"},
     {"table": "cancellations", "column": "client_id", "role": "cancellationJoin"},
     {"table": "cancellations", "column": "churn_efetivado_at", "role": "cancellationDatePrimary"},
+    {"table": "cancellations", "column": "updated_at", "role": "cancellationRecency"},
+    {"table": "cancellations", "column": "created_at", "role": "cancellationCreatedFallback"},
+    {"table": "client_financial_data", "column": "client_id", "role": "financialJoin"},
     {"table": "client_financial_data", "column": "reserva_liquidez", "role": "liquidityReserve"},
     {"table": "client_financial_data", "column": "ultimo_aporte", "role": "lastContribution"},
     {"table": "client_financial_data", "column": "ultima_renda_mensal", "role": "monthlyIncome"},
     {"table": "client_financial_data", "column": "possui_imovel", "role": "hasProperty"},
     {"table": "client_financial_data", "column": "possui_carro", "role": "hasCar"},
     {"table": "client_financial_data", "column": "possui_consorcio", "role": "hasConsortium"},
+    {"table": "client_financial_data", "column": "updated_at", "role": "financialRecency"},
 ]
 
 
@@ -183,9 +317,15 @@ def supabase_headers():
     }
 
 
+TABLE_COUNT_SELECT = {
+    "client_implementation_meeting_date": "client_id",
+    "vw_info_cliente": "id_cliente",
+}
+
+
 def count_rows(table, column=None, include_blank=False):
     base = os.environ["SUPABASE_URL"].rstrip("/")
-    select_col = "client_id" if table == "client_implementation_meeting_date" else "id"
+    select_col = TABLE_COUNT_SELECT.get(table, "id")
     params = {"select": select_col, "limit": "1"}
     if column:
         params[column] = "is.null"
@@ -214,12 +354,20 @@ def measure(field):
         "domain": domain,
         "table": table,
         "column": column,
-        "totalRows": count_rows(table),
-        "missingRows": count_rows(table, column, include_blank),
     }
+    try:
+        item["totalRows"] = count_rows(table)
+        item["missingRows"] = count_rows(table, column, include_blank)
+    except Exception as exc:
+        item["totalRows"] = None
+        item["missingRows"] = None
+        item["measureError"] = str(exc)[:180]
     description = FIELD_DESCRIPTIONS.get((table, column))
     if description:
         item["description"] = description
+    used_in = FIELD_USED_IN.get((table, column))
+    if used_in:
+        item["usedIn"] = used_in
     return item
 
 
@@ -511,188 +659,20 @@ def build_financial_map(financial_rows):
 
 
 def general_data_payload():
-    clients = fetch_all("clients", CLIENT_SELECT)
-    cancellations = fetch_all("cancellations", CANCEL_SELECT)
-    financial_rows = fetch_all("client_financial_data", FINANCIAL_SELECT)
-    cancel_map, multiples = build_cancellation_map(cancellations)
-    financial_map = build_financial_map(financial_rows)
-    now = datetime.now(timezone.utc)
-    rows = []
-
-    for client in clients:
-        data_warnings = []
-        contract_date = parse_date(client.get("data_inicio_ciclo"))
-        created_at = parse_date(client.get("created_at"))
-        stay_start_date = contract_date or created_at
-        used_created_fallback = not contract_date and bool(created_at)
-        cancel_primary = (cancel_map.get(client.get("id")) or {}).get("date")
-        cancel_fallback = parse_date(client.get("data_churn"))
-        cancellation_date = cancel_primary or cancel_fallback
-        raw_status = blank_to_null(client.get("status"))
-        status = normalize_client_status(raw_status)
-        cancelled = status == "Cancelado"
-        financial = financial_map.get(client.get("id"))
-
-        if not contract_date:
-            data_warnings.append("Sem data de contratação")
-        if used_created_fallback:
-            data_warnings.append(
-                "Permanência calculada com data de criação do cliente por ausência de data de contratação."
-            )
-        if cancelled and not cancellation_date:
-            data_warnings.append("Cancelado sem data de cancelamento")
-        if not cancelled and cancellation_date:
-            data_warnings.append("Cliente ativo/congelado com data de cancelamento")
-        if not raw_status:
-            data_warnings.append("Cliente sem status")
-        if not blank_to_null(client.get("segmentacao")):
-            data_warnings.append("Cliente sem segmento")
-        if not blank_to_null(client.get("engenheiro_patrimonial")):
-            data_warnings.append("Cliente sem engenheiro responsável")
-        if not financial:
-            data_warnings.append("Sem diagnóstico financeiro")
-        else:
-            if financial["monthlyIncome"] is None:
-                data_warnings.append("Renda mensal ausente")
-            if financial["lastContribution"] is None:
-                data_warnings.append("Último aporte ausente")
-            if financial["liquidityReserve"] is None:
-                data_warnings.append("Reserva de liquidez ausente")
-        if client.get("id") in multiples:
-            data_warnings.append("Múltiplos cancelamentos efetivados para o mesmo cliente")
-
-        stay_days = None
-        stay_months = None
-        stay_range = "Sem data de referência"
-        inconsistent = False
-        if stay_start_date:
-            end_date = cancellation_date or now
-            if stay_start_date.tzinfo is None:
-                stay_start_date = stay_start_date.replace(tzinfo=timezone.utc)
-            if end_date.tzinfo is None:
-                end_date = end_date.replace(tzinfo=timezone.utc)
-            days = days_between(stay_start_date, end_date)
-            if days < 0:
-                inconsistent = True
-                data_warnings.append("Cancelamento anterior à contratação")
-            else:
-                stay_days = days
-                stay_months = round(days / 30.4375, 1)
-                stay_range = stay_range_from_months(stay_months)
-
-        monthly_income = financial["monthlyIncome"] if financial else None
-        last_contribution = financial["lastContribution"] if financial else None
-        liquidity_reserve = financial["liquidityReserve"] if financial else None
-
-        rows.append(
-            {
-                "clientId": str(client.get("id")),
-                "clientCode": blank_to_null(client.get("codigo")),
-                "clientName": blank_to_null(client.get("name")) or "Não informado",
-                "contractDate": contract_date.isoformat() if contract_date else None,
-                "cancellationDate": cancellation_date.isoformat() if cancellation_date else None,
-                "stayDays": None if inconsistent else stay_days,
-                "stayMonths": None if inconsistent else stay_months,
-                "stayRange": stay_range,
-                "stayUsedCreatedAtFallback": used_created_fallback,
-                "status": status,
-                "rawStatus": raw_status,
-                "segment": label_or_unknown(client.get("segmentacao")),
-                "engineer": label_or_unknown(client.get("engenheiro_patrimonial")),
-                "hasFinancialProfile": bool(financial),
-                "monthlyIncome": monthly_income,
-                "lastContribution": last_contribution,
-                "liquidityReserve": liquidity_reserve,
-                "hasProperty": financial["hasProperty"] if financial else None,
-                "hasCar": financial["hasCar"] if financial else None,
-                "hasConsortium": financial["hasConsortium"] if financial else None,
-                "incomeBand": income_band(monthly_income),
-                "liquidityBand": liquidity_band(liquidity_reserve),
-                "dataWarnings": data_warnings,
-            }
-        )
-
-    liquidity_values = [row["liquidityReserve"] for row in rows if row["liquidityReserve"] is not None]
-    contribution_values = [row["lastContribution"] for row in rows if row["lastContribution"] is not None]
-    income_values = [row["monthlyIncome"] for row in rows if row["monthlyIncome"] is not None]
-    with_financial = sum(1 for row in rows if row["hasFinancialProfile"])
-    total = len(rows) or 1
-    active_clients = sum(1 for row in rows if row["status"] == "Ativo")
-    cancelled_clients = sum(1 for row in rows if row["status"] == "Cancelado")
-    frozen_clients = sum(1 for row in rows if row["status"] == "Congelado")
-
-    raw_by_normalized = {}
-    for row in rows:
-        raw_by_normalized.setdefault(row["status"], set())
-        if row["rawStatus"]:
-            raw_by_normalized[row["status"]].add(str(row["rawStatus"]))
-    status_consistency_notes = [
-        f"{len(variants)} variações de escrita encontradas para o status {label}."
-        for label, variants in raw_by_normalized.items()
-        if len(variants) > 1
-    ]
-    distinct_raw_statuses = sorted(
-        {row["rawStatus"] for row in rows if row["rawStatus"]},
-        key=lambda value: str(value).lower(),
+    """Reaproveita a consolidação do Netlify Function via Node (fonte única)."""
+    result = subprocess.run(
+        ["node", str(ROOT / "run_general_data_api.mjs")],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        env=os.environ.copy(),
+        timeout=300,
     )
-
-    summary = {
-        "totalClients": len(rows),
-        "activeClients": active_clients,
-        "cancelledClients": cancelled_clients,
-        "frozenClients": frozen_clients,
-        "averageStayDays": average([row["stayDays"] for row in rows if row["stayDays"] is not None]),
-        "averageLiquidityReserve": average(liquidity_values),
-        "liquidityReserveFilledCount": len(liquidity_values),
-        "averageLastContribution": average(contribution_values),
-        "lastContributionFilledCount": len(contribution_values),
-        "averageMonthlyIncome": average(income_values),
-        "monthlyIncomeFilledCount": len(income_values),
-        "clientsWithFinancialProfile": with_financial,
-        "financialProfilePercent": round(with_financial / total * 1000) / 10,
-    }
-
-    financial_profile = [
-        {"label": "Imóvel", "count": sum(1 for row in rows if row["hasProperty"] is True)},
-        {"label": "Carro", "count": sum(1 for row in rows if row["hasCar"] is True)},
-        {"label": "Consórcio", "count": sum(1 for row in rows if row["hasConsortium"] is True)},
-        {
-            "label": "Reserva de liquidez",
-            "count": sum(1 for row in rows if row["liquidityReserve"] is not None),
-        },
-    ]
-    for item in financial_profile:
-        item["percent"] = round(item["count"] / total * 1000) / 10
-
-    status_dist = [
-        item
-        for item in distribution_from(rows, lambda row: row["status"], STATUS_LABELS)
-        if item["count"] > 0
-    ]
-    distributions = {
-        "status": status_dist,
-        "segments": distribution_from(rows, lambda row: row["segment"]),
-        "engineers": distribution_from(rows, lambda row: row["engineer"]),
-        "stayRanges": distribution_from(rows, lambda row: row["stayRange"], STAY_RANGES),
-        "financialProfile": financial_profile,
-        "monthlyIncome": distribution_from(rows, lambda row: row["incomeBand"], INCOME_BANDS),
-        "liquidityReserve": distribution_from(rows, lambda row: row["liquidityBand"], LIQUIDITY_BANDS),
-    }
-    return {
-        "generatedAt": datetime.now(timezone.utc).isoformat(),
-        "summary": summary,
-        "distributions": distributions,
-        "clients": rows,
-        "quality": {
-            "usedFields": USED_FIELDS,
-            "warnings": [],
-            "statusConsistency": {
-                "distinctRawValues": distinct_raw_statuses,
-                "distinctRawCount": len(distinct_raw_statuses),
-                "notes": status_consistency_notes,
-            },
-        },
-    }
+    if result.returncode != 0:
+        detail = (result.stderr or result.stdout or "falha ao gerar general-data").strip()
+        raise RuntimeError(detail[:240])
+    return json.loads(result.stdout)
 
 
 def meetings_payload():
@@ -708,6 +688,23 @@ def meetings_payload():
     )
     if result.returncode != 0:
         detail = (result.stderr or result.stdout or "falha ao gerar meetings").strip()
+        raise RuntimeError(detail[:240])
+    return json.loads(result.stdout)
+
+
+def mechanisms_payload():
+    """Reaproveita a consolidação do Netlify Function via Node (fonte única)."""
+    result = subprocess.run(
+        ["node", str(ROOT / "run_mechanisms_api.mjs")],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        env=os.environ.copy(),
+        timeout=180,
+    )
+    if result.returncode != 0:
+        detail = (result.stderr or result.stdout or "falha ao gerar mechanisms").strip()
         raise RuntimeError(detail[:240])
     return json.loads(result.stdout)
 
@@ -751,6 +748,20 @@ class Handler(SimpleHTTPRequestHandler):
                 body = json.dumps({"error": "Não foi possível consolidar os dados de reuniões"}, ensure_ascii=False).encode()
                 self.send_response(500)
                 print(f"meetings error: {exc}")
+            self.send_header("Content-Type", "application/json; charset=utf-8")
+            self.send_header("Cache-Control", "no-store")
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+            return
+        if path == "/api/mechanisms":
+            try:
+                body = json.dumps(mechanisms_payload(), ensure_ascii=False).encode()
+                self.send_response(200)
+            except Exception as exc:
+                body = json.dumps({"error": "Não foi possível consolidar a implementação de mecanismos"}, ensure_ascii=False).encode()
+                self.send_response(500)
+                print(f"mechanisms error: {exc}")
             self.send_header("Content-Type", "application/json; charset=utf-8")
             self.send_header("Cache-Control", "no-store")
             self.send_header("Content-Length", str(len(body)))

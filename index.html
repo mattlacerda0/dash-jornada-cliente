@@ -54,7 +54,9 @@
     .missing{display:flex;justify-content:space-between;align-items:end;margin:20px 0 12px}.missing strong{font-size:27px}.missing span{font-size:13px;color:var(--color-text-muted)}
     .percent{text-align:right}.percent b{display:block;font-size:20px;color:var(--color-primary)}
     .track{height:7px;background:#303030;border-radius:999px;overflow:hidden}.track div{height:100%;border-radius:999px;background:linear-gradient(90deg,var(--color-primary),#ff9b50)}
-    .card-footer{display:flex;justify-content:space-between;margin-top:10px;font-size:11px;color:var(--color-text-subtle)}
+    .card-footer{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-top:10px;font-size:11px;color:var(--color-text-subtle)}
+    .field-used{margin-top:8px;font-size:11px;color:var(--color-text-subtle)}
+    .field-used b{font-weight:600;color:var(--color-text-muted)}
     .charts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.chart-card{padding:18px}.chart-card h3{margin:0 0 4px;font-size:15px}.chart-card p{margin:0 0 14px;font-size:12px;color:var(--color-text-muted)}
     .hbar{display:grid;grid-template-columns:minmax(158px,42%) minmax(72px,1fr) minmax(108px,118px);gap:12px;align-items:center;margin:11px 0;min-width:0}
     .hbar-label{font-size:12px;color:var(--color-text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.35;min-width:0}
@@ -80,7 +82,16 @@
     .warnings{margin-top:16px}.warnings li{margin:6px 0;color:#ffb4b8;font-size:12px}
     .engineers-toggle{margin-top:10px}
     .summary.kpis-8{grid-template-columns:repeat(4,1fr)}
-    .filters.meetings{grid-template-columns:repeat(4,minmax(0,1fr))}
+    .filters.meetings,.filters.mechanisms{grid-template-columns:repeat(4,minmax(0,1fr))}
+    .pct-badge{display:inline-flex;align-items:center;padding:3px 8px;border-radius:999px;font-size:11px;font-weight:700}
+    .pct-badge.ok{background:rgba(66,201,133,.14);color:#75dca9}
+    .pct-badge.warn{background:rgba(246,189,75,.14);color:#ffd37b}
+    .pct-badge.alert{background:rgba(239,107,115,.14);color:#ff9399}
+    .pct-badge.muted{background:rgba(129,129,129,.16);color:var(--color-text-muted)}
+    .mech-list{display:grid;gap:10px;margin-top:12px}
+    .mech-item{border:1px solid var(--color-border);border-radius:var(--radius-md);padding:12px;background:#171717}
+    .mech-item strong{display:block;margin-bottom:4px}
+    .mech-item .meta{font-size:12px;color:var(--color-text-muted)}
     tr.warn-stale{background:rgba(246,189,75,.06)}tr.warn-absence{background:rgba(239,107,115,.05)}tr.warn-nofirst{outline:1px solid rgba(239,107,115,.25)}
     .month-chart-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:10px}
     .month-chart-head h3{margin:0 0 4px;font-size:15px}.month-chart-head p{margin:0;font-size:12px;color:var(--color-text-muted)}
@@ -105,9 +116,35 @@
     .month-track .fill-done{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,var(--color-primary),#ff9b50);max-width:100%}
     .month-val{font-size:12px;text-align:right;color:var(--color-text);white-space:nowrap;font-variant-numeric:tabular-nums;line-height:1.35}
     .month-val b{color:#ffab6f;font-weight:600}
+    /* Aquisição mensal — colunas verticais (não reutilizar month-bars) */
+    .acquisition-chart{display:grid;gap:14px;margin-top:4px}
+    .acquisition-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+    .acquisition-summary-item{background:#171717;border:1px solid var(--color-border);border-radius:10px;padding:10px 12px;min-width:0}
+    .acquisition-summary-item .k{font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--color-text-subtle);margin-bottom:4px}
+    .acquisition-summary-item .v{font-size:18px;font-weight:600;color:var(--color-text);font-variant-numeric:tabular-nums;line-height:1.2}
+    .acquisition-summary-item .v.up{color:#7ddea8}.acquisition-summary-item .v.down{color:#ef6b73}.acquisition-summary-item .v.flat{color:var(--color-text-muted)}
+    .acquisition-chart-scroll{overflow-x:auto;overflow-y:hidden;padding-bottom:4px;scrollbar-width:thin}
+    .acquisition-chart-grid{position:relative;display:flex;align-items:flex-end;justify-content:space-between;gap:10px;min-height:260px;min-width:100%;padding:8px 4px 0;border-bottom:1px solid #3a3a3a;background:
+      repeating-linear-gradient(to top,transparent 0,transparent calc(25% - 1px),rgba(255,255,255,.04) calc(25% - 1px),rgba(255,255,255,.04) 25%)}
+    .acquisition-chart-grid[data-cols="12"],.acquisition-chart-grid[data-cols="24"]{gap:6px}
+    .acquisition-chart-grid[data-cols="24"]{min-width:920px;gap:4px}
+    .acquisition-chart-grid[data-cols="12"]{min-width:640px}
+    .acquisition-column{flex:1 1 0;min-width:36px;max-width:72px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:6px;height:240px}
+    .acquisition-chart-grid[data-cols="12"] .acquisition-column{min-width:42px;max-width:56px}
+    .acquisition-chart-grid[data-cols="24"] .acquisition-column{min-width:28px;max-width:40px}
+    .acquisition-column-value{font-size:12px;font-weight:600;color:#ffab6f;font-variant-numeric:tabular-nums;line-height:1;text-align:center;min-height:14px}
+    .acquisition-chart-grid[data-cols="12"] .acquisition-column-value{font-size:11px}
+    .acquisition-chart-grid[data-cols="24"] .acquisition-column-value{font-size:10px}
+    .acquisition-column-bar-wrap{flex:1 1 auto;width:100%;display:flex;align-items:flex-end;justify-content:center;min-height:0}
+    .acquisition-column-bar{width:56%;min-width:10px;max-width:28px;border-radius:6px 6px 2px 2px;background:linear-gradient(180deg,#ff9b50,var(--color-primary));box-shadow:inset 0 1px 0 rgba(255,255,255,.12);transition:height .2s ease}
+    .acquisition-chart-grid[data-cols="24"] .acquisition-column-bar{width:70%;min-width:8px;max-width:18px}
+    .acquisition-column-label{font-size:11px;color:var(--color-text-muted);text-align:center;white-space:nowrap;line-height:1.2;padding-bottom:2px}
+    .acquisition-chart-grid[data-cols="24"] .acquisition-column-label{font-size:10px;transform:rotate(-35deg);transform-origin:center top;height:28px;margin-top:4px}
+    @media(max-width:1100px){.acquisition-summary{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    @media(max-width:780px){.acquisition-summary{grid-template-columns:1fr 1fr}.acquisition-chart-grid[data-cols="6"]{min-width:420px}}
     .timeline{display:grid;gap:10px;margin-top:12px}.timeline-item{border:1px solid var(--color-border);border-radius:10px;padding:12px;background:#1a1a1a}.timeline-item .meta{font-size:11px;color:var(--color-text-subtle);margin-top:4px}
-    @media(max-width:1100px){.cards,.charts{grid-template-columns:1fr}.summary,.summary.kpis-8{grid-template-columns:repeat(2,1fr)}.filters,.filters.general,.filters.meetings{grid-template-columns:1fr 1fr}.month-row{grid-template-columns:64px minmax(100px,1fr) minmax(160px,1fr)}.month-val{white-space:normal}}
-    @media(max-width:780px){.layout{grid-template-columns:1fr}.sidebar{display:none}main{padding:20px}.page-header{display:block}.status{text-align:left;margin-top:12px}.filters,.filters.general,.summary,.cards,.charts{grid-template-columns:1fr}.topbar{padding:0 20px}.status-actions{align-items:flex-start;justify-content:space-between}.hbar{grid-template-columns:minmax(108px,36%) minmax(48px,1fr) minmax(96px,104px);gap:8px;margin:9px 0}.hbar-val{font-size:11px}.month-row{grid-template-columns:1fr;gap:8px}.month-val{text-align:left}.month-count{margin-left:0;width:100%}}
+    @media(max-width:1100px){.cards,.charts{grid-template-columns:1fr}.summary,.summary.kpis-8{grid-template-columns:repeat(2,1fr)}.filters,.filters.general,.filters.meetings,.filters.mechanisms{grid-template-columns:1fr 1fr}.month-row{grid-template-columns:64px minmax(100px,1fr) minmax(160px,1fr)}.month-val{white-space:normal}}
+    @media(max-width:780px){.layout{grid-template-columns:1fr}.sidebar{display:none}main{padding:20px}.page-header{display:block}.status{text-align:left;margin-top:12px}.filters,.filters.general,.filters.mechanisms,.summary,.cards,.charts{grid-template-columns:1fr}.topbar{padding:0 20px}.status-actions{align-items:flex-start;justify-content:space-between}.hbar{grid-template-columns:minmax(108px,36%) minmax(48px,1fr) minmax(96px,104px);gap:8px;margin:9px 0}.hbar-val{font-size:11px}.month-row{grid-template-columns:1fr;gap:8px}.month-val{text-align:left}.month-count{margin-left:0;width:100%}}
   </style>
 </head>
 <body>
@@ -118,6 +155,7 @@
       <nav class="nav" aria-label="Navegação principal">
         <button type="button" class="active" data-nav="general"><span class="nav-icon">◎</span>Dados Gerais</button>
         <button type="button" data-nav="meetings"><span class="nav-icon">◎</span>Reuniões</button>
+        <button type="button" data-nav="mechanisms"><span class="nav-icon">◎</span>Mecanismos</button>
         <button type="button" data-nav="quality"><span class="nav-icon">▦</span>Qualidade</button>
         <button type="button" disabled><span class="nav-icon">⇢</span>Jornada<span class="soon">em breve</span></button>
         <button type="button" disabled><span class="nav-icon">$</span>Financeiro<span class="soon">em breve</span></button>
@@ -184,12 +222,28 @@
 
           <div class="section-head"><div><h2>Distribuições</h2><p>Leitura rápida do perfil da carteira.</p></div></div>
           <section class="charts">
-            <article class="chart-card"><h3>Clientes por status</h3><p>Quantidade e percentual da carteira</p><div id="chartStatus"></div></article>
+            <article class="chart-card"><h3>Clientes por status</h3><p>Quantidade e percentual da carteira (status analítico)</p><div id="chartStatus"></div></article>
             <article class="chart-card"><h3>Tempo de permanência</h3><p>Da contratação (ou criação) até o cancelamento ou hoje</p><div id="chartStay"></div></article>
             <article class="chart-card"><h3>Engenheiro Patrimonial</h3><p>Principais responsáveis</p><div id="chartEngineers"></div><button class="btn engineers-toggle" id="toggleEngineers" type="button">Ver todos</button></article>
             <article class="chart-card"><h3>Perfil Financeiro</h3><p>Clientes com imóvel, carro, consórcio ou reserva de liquidez informada</p><div id="chartFinancialProfile"></div></article>
             <article class="chart-card"><h3>Distribuição da renda mensal</h3><p>Faixas da última renda registrada</p><div id="chartIncome"></div></article>
             <article class="chart-card"><h3>Distribuição da reserva de liquidez</h3><p>Faixas da reserva informada</p><div id="chartLiquidity"></div></article>
+          </section>
+
+          <section class="acquisition-panel" style="margin:18px 0 8px">
+            <div class="month-chart-head">
+              <div>
+                <h3>Evolução mensal da aquisição de clientes</h3>
+                <p id="gAcqSubtitle">Quantidade de novos clientes adquiridos em cada mês, com base na data oficial de contratação.</p>
+              </div>
+              <div class="seg" id="gAcqRangeSeg" role="group" aria-label="Período da aquisição mensal">
+                <button type="button" class="active" data-acq-range="6">Últimos 6 meses</button>
+                <button type="button" data-acq-range="12">Últimos 12 meses</button>
+                <button type="button" data-acq-range="24">Últimos 24 meses</button>
+              </div>
+            </div>
+            <div id="gAcqSummary" class="acquisition-summary" aria-live="polite"></div>
+            <div id="gAcqChart" class="acquisition-chart"></div>
           </section>
 
           <section class="table-panel">
@@ -353,6 +407,146 @@
         </div>
       </section>
 
+      <section class="view" id="view-mechanisms">
+        <div class="container">
+          <header class="page-header">
+            <div>
+              <div class="eyebrow">Portal · Jornada do Cliente</div>
+              <h1>Implementação de Mecanismos</h1>
+              <p>Acompanhamento da disponibilidade, andamento e conclusão dos mecanismos previstos para os clientes.</p>
+            </div>
+            <div class="status-actions">
+              <div class="status"><b id="kStatus" style="color:var(--color-warning)">● Conectando ao Supabase</b><span id="kUpdated">Calculando indicadores…</span></div>
+              <button class="btn" id="kRefresh" type="button">Atualizar</button>
+            </div>
+          </header>
+
+          <section class="filters mechanisms" aria-label="Filtros de mecanismos">
+            <label>Busca<input id="kSearch" placeholder="Nome, código ou ID" /></label>
+            <div class="status-filter-block">
+              <label for="kClientStatus">Status do cliente</label>
+              <div class="status-filter-row">
+                <select id="kClientStatus">
+                  <option value="all">Todos</option>
+                  <option value="active">Ativos</option>
+                  <option value="cancelled">Cancelados</option>
+                  <option value="frozen">Congelados</option>
+                  <option value="unknown">Não informados</option>
+                </select>
+                <button type="button" class="chip-btn" id="kActiveOnly" aria-pressed="false">
+                  <span class="chip-dot" aria-hidden="true"></span>
+                  <span class="chip-label">Somente clientes ativos</span>
+                </button>
+              </div>
+            </div>
+            <label>Engenheiro Patrimonial<select id="kEngineer"><option value="all">Todos</option></select></label>
+            <label>Status do mecanismo<select id="kMechStatus">
+              <option value="all">Todos</option>
+              <option value="Apto">Apto</option>
+              <option value="Em andamento">Em andamento</option>
+              <option value="Implementado">Implementado</option>
+            </select></label>
+            <label>Mecanismo<select id="kMechanism"><option value="all">Todos</option></select></label>
+            <label>Mercado / dimensão<select id="kCategory"><option value="all">Todos</option></select></label>
+            <label>Período de implementação<select id="kPeriod">
+              <option value="all">Todo o histórico</option>
+              <option value="30">Últimos 30 dias</option>
+              <option value="90">Últimos 90 dias</option>
+              <option value="180">Últimos 6 meses</option>
+              <option value="365">Últimos 12 meses</option>
+            </select></label>
+            <label>Possui implementação<select id="kHasImpl">
+              <option value="all">Todos</option>
+              <option value="yes">Sim</option>
+              <option value="no">Não</option>
+            </select></label>
+            <label>Implementação nos últimos 30 dias<select id="kRecent">
+              <option value="all">Todos</option>
+              <option value="yes">Sim</option>
+              <option value="no">Não</option>
+            </select></label>
+            <label>Faixa de percentual<select id="kPctRange"><option value="all">Todas</option></select></label>
+            <button class="btn" id="kClear" type="button">Limpar filtros</button>
+          </section>
+
+          <section class="summary kpis-8" id="kKpis1"></section>
+          <section class="summary kpis-8" id="kKpis2"></section>
+
+          <div class="section-head"><div><h2>Distribuições</h2><p>Leitura do andamento e da conclusão dos mecanismos.</p></div></div>
+          <section class="charts">
+            <article class="chart-card"><h3>Status dos mecanismos</h3><p>Quantidade e percentual na carteira filtrada</p><div id="kChartStatus"></div></article>
+            <article class="chart-card"><h3>Percentual implementado por cliente</h3><p>Faixas de conclusão</p><div id="kChartPct"></div></article>
+            <article class="chart-card" style="grid-column:1/-1">
+              <div class="month-chart-head">
+                <div>
+                  <h3>Implementações por mês</h3>
+                  <p>Somente mecanismos concluídos com data válida</p>
+                </div>
+                <div class="seg" id="kMonthRangeSeg" role="group" aria-label="Período do gráfico mensal">
+                  <button type="button" data-k-month-range="6" class="active">Últimos 6 meses</button>
+                  <button type="button" data-k-month-range="12">Últimos 12 meses</button>
+                </div>
+              </div>
+              <div class="month-legend"><span class="month-count" id="kMonthCount"></span></div>
+              <div id="kChartMonths"></div>
+            </article>
+            <article class="chart-card"><h3>Tempo até a primeira implementação</h3><p>Da entrada do cliente à primeira conclusão</p><div id="kChartFirst"></div></article>
+            <article class="chart-card"><h3>Dias desde a última implementação</h3><p>Recência da última conclusão</p><div id="kChartSince"></div></article>
+            <article class="chart-card" style="grid-column:1/-1">
+              <h3 id="kCatTitle">Mecanismos implementados por mercado</h3>
+              <p>Somente status Implementado</p>
+              <div id="kChartCats"></div>
+              <button class="btn engineers-toggle" id="kToggleCats" type="button">Ver todos</button>
+            </article>
+            <article class="chart-card" style="grid-column:1/-1">
+              <h3>Mecanismos mais implementados</h3>
+              <p>Clientes distintos que concluíram cada mecanismo</p>
+              <div id="kChartTop"></div>
+              <button class="btn engineers-toggle" id="kToggleTop" type="button">Ver todos</button>
+            </article>
+          </section>
+
+          <section class="table-panel">
+            <div class="section-head" style="margin:0">
+              <div><h2>Detalhamento por cliente</h2><p>Clique em uma linha para ver os mecanismos.</p></div>
+              <span class="counter" id="kCounter"></span>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th data-ksort="clientName">Cliente</th>
+                    <th data-ksort="clientCode">Código</th>
+                    <th data-ksort="clientStatus">Status</th>
+                    <th data-ksort="engineer">Engenheiro Patrimonial</th>
+                    <th data-ksort="available" class="num">Disponíveis</th>
+                    <th data-ksort="eligible" class="num">Aptos</th>
+                    <th data-ksort="inProgress" class="num">Em andamento</th>
+                    <th data-ksort="implemented" class="num">Implementados</th>
+                    <th data-ksort="implementationPercent" class="num">% implementado</th>
+                    <th data-ksort="firstMechanismName">Primeiro mecanismo</th>
+                    <th data-ksort="firstImplementationDate">Primeira implementação</th>
+                    <th data-ksort="daysToFirstImplementation" class="num">Dias até a 1ª</th>
+                    <th data-ksort="lastImplementationDate">Última implementação</th>
+                    <th data-ksort="daysSinceLastImplementation" class="num">Dias desde a última</th>
+                    <th data-ksort="hasImplementationLast30Days">Últimos 30 dias</th>
+                  </tr>
+                </thead>
+                <tbody id="kRows"></tbody>
+              </table>
+            </div>
+            <div class="empty" id="kEmpty">Nenhum cliente encontrado para os filtros selecionados.</div>
+            <div class="pagination">
+              <div id="kPageInfo"></div>
+              <div>
+                <button class="btn" id="kPrev" type="button">Anterior</button>
+                <button class="btn" id="kNext" type="button">Próxima</button>
+              </div>
+            </div>
+          </section>
+        </div>
+      </section>
+
       <section class="view" id="view-quality">
         <div class="container">
           <header class="page-header">
@@ -431,6 +625,7 @@
     const views = {
       general: document.querySelector('#view-general'),
       meetings: document.querySelector('#view-meetings'),
+      mechanisms: document.querySelector('#view-mechanisms'),
       quality: document.querySelector('#view-quality')
     };
     document.querySelectorAll('[data-nav]').forEach(btn => btn.addEventListener('click', () => {
@@ -438,6 +633,7 @@
       Object.entries(views).forEach(([key, el]) => el.classList.toggle('active', key === btn.dataset.nav));
       if (btn.dataset.nav === 'general' && !generalState.payload) loadGeneral();
       if (btn.dataset.nav === 'meetings' && !meetingsState.payload) loadMeetings();
+      if (btn.dataset.nav === 'mechanisms' && !mechanismsState.payload) loadMechanisms();
       if (btn.dataset.nav === 'quality' && !qualityData.length) loadQuality();
     }));
 
@@ -476,7 +672,13 @@
       qEls.cards.innerHTML = data.map(d => {
         const p = getPct(d), filled = getFilled(d), s = sev(p);
         const consistency = (d.consistencyNotes || []).map(n => `<div class="field-consistency">${escapeHtml(n)}</div>`).join('');
-        return `<article class="field-card"><div class="card-top"><div><div class="field">${escapeHtml(d.column)}</div><div class="table-name">public.${escapeHtml(d.table)}</div>${d.description ? `<div class="field-desc">${escapeHtml(d.description)}</div>` : ''}${consistency}</div><span class="badge ${s}">${sevLabel[s]}</span></div>
+        const usedLabel = Array.isArray(d.usedIn) && d.usedIn.length
+          ? (d.usedIn.length === 1
+            ? d.usedIn[0]
+            : `${d.usedIn.slice(0, -1).join(', ')} e ${d.usedIn[d.usedIn.length - 1]}`)
+          : '';
+        const usedIn = usedLabel ? `<div class="field-used"><b>Usado em:</b> ${escapeHtml(usedLabel)}</div>` : '';
+        return `<article class="field-card"><div class="card-top"><div><div class="field">${escapeHtml(d.column)}</div><div class="table-name">public.${escapeHtml(d.table)}</div>${d.description ? `<div class="field-desc">${escapeHtml(d.description)}</div>` : ''}${usedIn}${consistency}</div><span class="badge ${s}">${sevLabel[s]}</span></div>
           <div class="missing"><div><span>Preenchidos</span><br><strong>${fmt.format(filled)}</strong></div><div class="percent"><b>${pct(p)}</b><span>de ${fmt.format(d.totalRows)} linhas</span></div></div>
           <div class="track" title="${pct(p)} preenchido"><div style="width:${Math.min(p, 100)}%"></div></div>
           <div class="card-footer"><span>${escapeHtml(d.domain)}</span><span>${fmt.format(d.totalRows)} linhas</span></div></article>`;
@@ -534,12 +736,12 @@
       unknown: 'Não informado'
     };
     const STATUS_ORDER = ['Ativo', 'Cancelado', 'Congelado', 'Não informado'];
-    const STAY_ORDER = ['Até 3 meses', 'De 4 a 6 meses', 'De 7 a 12 meses', 'De 13 a 24 meses', 'Mais de 24 meses', 'Sem data de referência'];
+    const STAY_ORDER = ['Até 3 meses', 'De 4 a 6 meses', 'De 7 a 12 meses', 'De 13 a 24 meses', 'Mais de 24 meses', 'Sem dados suficientes'];
     const INCOME_ORDER = ['Até R$ 5 mil', '5 a 10 mil', '10 a 20 mil', '20 a 50 mil', 'Acima de 50 mil', 'Não informado'];
     const LIQUIDITY_ORDER = ['Até R$ 50 mil', '50 a 100 mil', '100 a 250 mil', '250 a 500 mil', '500 mil a 1 milhão', 'Acima de 1 milhão', 'Não informado'];
     const generalState = {
       payload: null, page: 1, pageSize: 25, sortKey: 'clientName', sortDir: 'asc',
-      statusFilter: 'all', showAllEngineers: false, loading: false, requestId: 0
+      statusFilter: 'all', showAllEngineers: false, acqRange: '6', loading: false, requestId: 0
     };
     const gFilters = {
       search: document.querySelector('#gSearch'), status: document.querySelector('#gStatusFilter'),
@@ -576,7 +778,76 @@
       return 'Não informado';
     }
     function clientStatusLabel(client) {
+      if (client?.analyticalStatus) return normalizeStatus(client.analyticalStatus);
+      if (client?.status === 'Ativo' || client?.status === 'Cancelado' || client?.status === 'Congelado' || client?.status === 'Não informado') {
+        return client.status;
+      }
       return normalizeStatus(client?.status ?? client?.rawStatus);
+    }
+
+    function percentileSorted(sorted, p) {
+      if (!sorted.length) return null;
+      if (sorted.length === 1) return sorted[0];
+      const idx = (p / 100) * (sorted.length - 1);
+      const lo = Math.floor(idx);
+      const hi = Math.ceil(idx);
+      if (lo === hi) return sorted[lo];
+      const w = idx - lo;
+      return sorted[lo] * (1 - w) + sorted[hi] * w;
+    }
+
+    function robustStatsClient(values, allowNegative = false) {
+      const filled = values.filter(v => v != null && Number.isFinite(v));
+      const valid = filled.filter(v => allowNegative || v >= 0).sort((a, b) => a - b);
+      if (!valid.length) {
+        return { mean: null, median: null, trimmedMean: null, p5: null, p95: null, trimmedExcludedCount: 0, extremeImpact: false, validCount: 0 };
+      }
+      const mean = avgNums(valid);
+      const median = Math.round(percentileSorted(valid, 50) * 100) / 100;
+      const p5 = Math.round(percentileSorted(valid, 5) * 100) / 100;
+      const p95 = Math.round(percentileSorted(valid, 95) * 100) / 100;
+      let trimmed = valid;
+      let trimmedExcludedCount = 0;
+      if (valid.length >= 20) {
+        const low = percentileSorted(valid, 5);
+        const high = percentileSorted(valid, 95);
+        trimmed = valid.filter(v => v >= low && v <= high);
+        trimmedExcludedCount = valid.length - trimmed.length;
+      }
+      const trimmedMean = avgNums(trimmed);
+      const extremeImpact = median != null && median !== 0 && mean != null && Math.abs(mean - median) / Math.abs(median) >= 0.3;
+      return { mean, median, trimmedMean, p5, p95, trimmedExcludedCount, extremeImpact, validCount: valid.length };
+    }
+
+    function moneyStatsTooltip(stats) {
+      if (!stats || stats.validCount === 0) return 'Sem valores preenchidos.';
+      const parts = [
+        `Mediana: ${moneyAvg(stats.median)}`,
+        `Média: ${moneyAvg(stats.mean)}`,
+        `Média sem extremos: ${moneyAvg(stats.trimmedMean)}`,
+        `Faixa P5–P95: ${moneyAvg(stats.p5)} a ${moneyAvg(stats.p95)}`,
+        `Registros: ${fmt.format(stats.validCount)}`,
+        stats.extremeImpact ? 'Distribuição impactada por valores extremos' : null,
+        'A mediana representa o valor central e sofre menos influência de extremos. Média sem extremos usa P5–P95.'
+      ].filter(Boolean);
+      return parts.join(' · ');
+    }
+
+    function daysStatsTooltip(stats, summary) {
+      if (!stats || stats.validCount === 0) return 'Sem valores preenchidos.';
+      return [
+        `Mediana: ${stats.median == null ? '—' : Math.round(stats.median) + ' d'}`,
+        `Média: ${stats.mean == null ? '—' : Math.round(stats.mean) + ' d'}`,
+        `Média sem extremos: ${stats.trimmedMean == null ? '—' : Math.round(stats.trimmedMean) + ' d'}`,
+        summary?.stayCalculatedClients != null
+          ? `Calculáveis: ${fmt.format(summary.stayCalculatedClients)} · Excluídos: ${fmt.format(summary.stayExcludedClients || 0)} · Cobertura: ${pct(summary.stayCoveragePercent || 0)}`
+          : null,
+        summary?.closedWithoutCancellationDate != null
+          ? `Encerrados sem data de cancelamento: ${fmt.format(summary.closedWithoutCancellationDate)}`
+          : null,
+        'Para clientes ativos e congelados, considera a data atual. Para encerrados, considera apenas registros com data de cancelamento preenchida.',
+        stats.extremeImpact ? 'Distribuição impactada por valores extremos' : null
+      ].filter(Boolean).join(' · ');
     }
 
     function fillSelect(select, values, allLabel) {
@@ -639,23 +910,54 @@
       }));
     }
 
+    function applyGeneralDataFilters() {
+      return filteredClients();
+    }
+    function calculateGeneralDataSummary(rows) {
+      return summarizeFiltered(rows);
+    }
     function summarizeFiltered(rows) {
       const total = rows.length || 1;
       const liquidityValues = rows.map(r => r.liquidityReserve).filter(v => v != null);
       const contributionValues = rows.map(r => r.lastContribution).filter(v => v != null);
       const incomeValues = rows.map(r => r.monthlyIncome).filter(v => v != null);
+      const stayValues = rows.map(r => r.stayDays).filter(v => v != null && Number.isFinite(v) && v >= 0);
+      const stayStats = robustStatsClient(stayValues);
+      const stayCalculatedClients = stayValues.length;
+      const stayExcludedClients = rows.length - stayCalculatedClients;
+      const stayCoveragePercent = rows.length
+        ? Math.round((stayCalculatedClients / rows.length) * 1000) / 10
+        : 0;
+      const closedWithoutCancellationDate = rows.filter(
+        r => clientStatusLabel(r) === 'Cancelado' && !r.cancellationDate
+      ).length;
       const withFinancial = rows.filter(r => r.hasFinancialProfile).length;
+      const liquidityStats = robustStatsClient(liquidityValues);
+      const contributionStats = robustStatsClient(contributionValues, true);
+      const incomeStats = robustStatsClient(incomeValues);
       return {
         totalClients: rows.length,
         activeClients: rows.filter(r => clientStatusLabel(r) === 'Ativo').length,
         cancelledClients: rows.filter(r => clientStatusLabel(r) === 'Cancelado').length,
         frozenClients: rows.filter(r => clientStatusLabel(r) === 'Congelado').length,
-        averageStayDays: avgNums(rows.map(r => r.stayDays).filter(v => v != null)),
-        averageLiquidityReserve: avgNums(liquidityValues),
+        averageStayDays: stayStats.mean,
+        typicalStayDays: stayStats.median,
+        stayDaysStats: stayStats,
+        stayCalculatedClients,
+        stayExcludedClients,
+        stayCoveragePercent,
+        closedWithoutCancellationDate,
+        averageLiquidityReserve: liquidityStats.mean,
+        typicalLiquidityReserve: liquidityStats.median,
+        liquidityReserveStats: liquidityStats,
         liquidityReserveFilledCount: liquidityValues.length,
-        averageLastContribution: avgNums(contributionValues),
+        averageLastContribution: contributionStats.mean,
+        typicalLastContribution: contributionStats.median,
+        lastContributionStats: contributionStats,
         lastContributionFilledCount: contributionValues.length,
-        averageMonthlyIncome: avgNums(incomeValues),
+        averageMonthlyIncome: incomeStats.mean,
+        typicalMonthlyIncome: incomeStats.median,
+        monthlyIncomeStats: incomeStats,
         monthlyIncomeFilledCount: incomeValues.length,
         clientsWithFinancialProfile: withFinancial,
         financialProfilePercent: Math.round((withFinancial / total) * 1000) / 10
@@ -742,23 +1044,161 @@
       return `<div class="donut-wrap"><svg class="donut" viewBox="0 0 120 120">${arcs}<circle cx="60" cy="60" r="28" fill="#141414"></circle></svg><div class="legend">${legend}</div></div>`;
     }
 
+    function shiftMonthKey(ym, delta) {
+      const [y, m] = String(ym).split('-').map(Number);
+      const d = new Date(Date.UTC(y, m - 1 + delta, 1));
+      return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}`;
+    }
+
+    function buildAcquisitionMonthSeries(rows, limit) {
+      const nowKey = (() => {
+        const d = new Date();
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      })();
+      const byMonth = new Map();
+      for (const row of rows) {
+        const raw = row.acquisitionDate || row.contractDate;
+        if (!raw) continue;
+        const d = new Date(raw);
+        if (Number.isNaN(d.getTime())) continue;
+        const key = `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}`;
+        if (key > nowKey) continue;
+        if (!byMonth.has(key)) {
+          byMonth.set(key, {
+            month: key,
+            acquiredClients: 0,
+            contractSignatureCount: 0,
+            cycleStartFallbackCount: 0,
+            createdAtFallbackCount: 0
+          });
+        }
+        const bucket = byMonth.get(key);
+        bucket.acquiredClients += 1;
+        const src = row.acquisitionDateSource;
+        if (src === 'contract_signature') bucket.contractSignatureCount += 1;
+        else if (src === 'cycle_start') bucket.cycleStartFallbackCount += 1;
+        else if (src === 'client_created') bucket.createdAtFallbackCount += 1;
+      }
+
+      // Janela contínua: mês mais antigo à esquerda → mais recente à direita
+      const series = [];
+      for (let i = limit - 1; i >= 0; i -= 1) {
+        const key = shiftMonthKey(nowKey, -i);
+        if (key > nowKey) continue;
+        const current = byMonth.get(key) || {
+          month: key,
+          acquiredClients: 0,
+          contractSignatureCount: 0,
+          cycleStartFallbackCount: 0,
+          createdAtFallbackCount: 0
+        };
+        const prevKey = shiftMonthKey(key, -1);
+        const prev = byMonth.get(prevKey);
+        let change = null;
+        if (prev && prev.acquiredClients > 0) {
+          change = Math.round(((current.acquiredClients - prev.acquiredClients) / prev.acquiredClients) * 1000) / 10;
+        }
+        series.push({ ...current, previousMonthChangePercent: change });
+      }
+      return series;
+    }
+
+    function renderAcquisitionChart(rows) {
+      const subtitle = document.querySelector('#gAcqSubtitle');
+      const summaryEl = document.querySelector('#gAcqSummary');
+      const el = document.querySelector('#gAcqChart');
+      if (!el) return;
+
+      const activeOnly = generalState.statusFilter === 'active';
+      if (subtitle) {
+        subtitle.textContent = activeOnly
+          ? 'Clientes adquiridos por mês que permanecem ativos atualmente'
+          : 'Novos clientes adquiridos por mês';
+      }
+
+      const limit = Number(generalState.acqRange) === 24 ? 24 : Number(generalState.acqRange) === 12 ? 12 : 6;
+      document.querySelectorAll('#gAcqRangeSeg [data-acq-range]').forEach(btn => {
+        btn.classList.toggle('active', String(btn.dataset.acqRange) === String(generalState.acqRange));
+      });
+
+      const series = buildAcquisitionMonthSeries(rows, limit);
+
+      const counts = series.map(v => v.acquiredClients);
+      const latest = series[series.length - 1] || null;
+      const avg = counts.length ? Math.round((counts.reduce((a, b) => a + b, 0) / counts.length) * 10) / 10 : null;
+      const medSorted = [...counts].sort((a, b) => a - b);
+      const median = medSorted.length
+        ? (medSorted.length % 2
+          ? medSorted[(medSorted.length - 1) / 2]
+          : (medSorted[medSorted.length / 2 - 1] + medSorted[medSorted.length / 2]) / 2)
+        : null;
+      const change = latest?.previousMonthChangePercent;
+      const changeClass = change == null || change === 0 ? 'flat' : change > 0 ? 'up' : 'down';
+      const changeText = change == null ? '—' : `${change > 0 ? '↑' : change < 0 ? '↓' : '–'} ${Math.abs(change).toLocaleString('pt-BR')}%`;
+
+      if (summaryEl) {
+        summaryEl.innerHTML = `
+          <div class="acquisition-summary-item"><div class="k">Mês mais recente</div><div class="v">${latest ? fmt.format(latest.acquiredClients) : '—'}</div></div>
+          <div class="acquisition-summary-item"><div class="k">Média mensal</div><div class="v">${avg == null ? '—' : fmt.format(avg)}</div></div>
+          <div class="acquisition-summary-item"><div class="k">Mediana mensal</div><div class="v">${median == null ? '—' : fmt.format(median)}</div></div>
+          <div class="acquisition-summary-item"><div class="k">Variação</div><div class="v ${changeClass}">${changeText}</div></div>`;
+      }
+
+      if (!series.length) {
+        el.innerHTML = '<div class="empty" style="display:block">Sem meses históricos de aquisição para exibir.</div>';
+        return;
+      }
+
+      const maxValue = Math.max(...series.map(i => i.acquiredClients), 0);
+      const plotH = 180;
+      el.innerHTML = `<div class="acquisition-chart-scroll"><div class="acquisition-chart-grid" data-cols="${series.length}" role="img" aria-label="Aquisição mensal de clientes em colunas">${series.map(i => {
+        const heightPct = maxValue > 0 ? (i.acquiredClients / maxValue) * 100 : 0;
+        const barPx = i.acquiredClients > 0 ? Math.max(Math.round((heightPct / 100) * plotH), 6) : 0;
+        const changeTip = i.previousMonthChangePercent == null
+          ? 'não calculável'
+          : `${i.previousMonthChangePercent > 0 ? '+' : ''}${i.previousMonthChangePercent}%`;
+        const tip = [
+          formatMonthLabel(i.month),
+          `Clientes adquiridos: ${fmt.format(i.acquiredClients)}`,
+          `Variação vs. mês anterior: ${changeTip}`,
+          `Assinatura de contrato: ${fmt.format(i.contractSignatureCount || 0)}`,
+          `Início do ciclo: ${fmt.format(i.cycleStartFallbackCount || 0)}`,
+          `Data de criação: ${fmt.format(i.createdAtFallbackCount || 0)}`
+        ].join('\n');
+        const shortLabel = (() => {
+          const [y, m] = String(i.month).split('-');
+          const names = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+          const idx = Number(m) - 1;
+          if (!y || idx < 0 || idx > 11) return i.month;
+          return limit >= 12 ? `${names[idx]}/${String(y).slice(2)}` : names[idx];
+        })();
+        return `<div class="acquisition-column" title="${escapeHtml(tip)}" data-month="${escapeHtml(i.month)}" data-value="${i.acquiredClients}">
+          <div class="acquisition-column-value">${fmt.format(i.acquiredClients)}</div>
+          <div class="acquisition-column-bar-wrap">
+            <div class="acquisition-column-bar" style="height:${barPx}px"></div>
+          </div>
+          <div class="acquisition-column-label">${escapeHtml(shortLabel)}</div>
+        </div>`;
+      }).join('')}</div></div>`;
+    }
+
     function renderGeneral() {
       if (!generalState.payload) return;
       // Fonte única: KPIs, gráficos, tabela e paginação usam a mesma coleção
-      const filteredClientsList = filteredClients();
-      const summary = summarizeFiltered(filteredClientsList);
+      const filteredClientsList = applyGeneralDataFilters();
+      const summary = calculateGeneralDataSummary(filteredClientsList);
       const dist = distributionsFrom(filteredClientsList);
       gFilters.status.value = generalState.statusFilter;
       syncActiveOnlyButton();
       document.querySelector('#gKpis1').innerHTML = `
         <article class="metric highlight"><div class="metric-label">Total de clientes</div><div class="metric-value">${fmt.format(summary.totalClients)}</div><div class="metric-note">Carteira filtrada</div></article>
-        <article class="metric"><div class="metric-label">Clientes ativos</div><div class="metric-value">${fmt.format(summary.activeClients)}</div><div class="metric-note">Status normalizado: Ativo</div></article>
-        <article class="metric"><div class="metric-label">Clientes cancelados</div><div class="metric-value">${fmt.format(summary.cancelledClients)}</div><div class="metric-note">Status normalizado: Cancelado</div></article>
-        <article class="metric"><div class="metric-label">Tempo médio de permanência <span class="help" title="Período entre a contratação e o cancelamento. Para clientes ativos, considera a data atual.">?</span></div><div class="metric-value">${summary.averageStayDays == null ? '—' : fmt.format(Math.round(summary.averageStayDays)) + ' d'}</div><div class="metric-note">Média em dias</div></article>`;
+        <article class="metric"><div class="metric-label">Clientes ativos</div><div class="metric-value">${fmt.format(summary.activeClients)}</div><div class="metric-note">Status analítico: Ativo</div></article>
+        <article class="metric"><div class="metric-label">Clientes cancelados</div><div class="metric-value">${fmt.format(summary.cancelledClients)}</div><div class="metric-note">Status analítico: Cancelado</div></article>
+        <article class="metric"><div class="metric-label">Permanência típica <span class="help" title="${escapeHtml(daysStatsTooltip(summary.stayDaysStats, summary))}">?</span></div><div class="metric-value">${summary.typicalStayDays == null ? '—' : fmt.format(Math.round(summary.typicalStayDays)) + ' d'}</div><div class="metric-note">Mediana de ${fmt.format(summary.stayCalculatedClients || 0)} clientes com datas válidas</div></article>`;
       document.querySelector('#gKpis2').innerHTML = `
-        <article class="metric"><div class="metric-label">Reserva de liquidez média <span class="help" title="Média da reserva de liquidez informada pelos clientes.">?</span></div><div class="metric-value" style="font-size:22px">${moneyAvg(summary.averageLiquidityReserve)}</div><div class="metric-note">${fmt.format(summary.liquidityReserveFilledCount || 0)} clientes preenchidos</div></article>
-        <article class="metric"><div class="metric-label">Último aporte médio <span class="help" title="Valor médio do último aporte registrado.">?</span></div><div class="metric-value" style="font-size:22px">${moneyAvg(summary.averageLastContribution)}</div><div class="metric-note">${fmt.format(summary.lastContributionFilledCount || 0)} clientes preenchidos</div></article>
-        <article class="metric"><div class="metric-label">Renda mensal média <span class="help" title="Última renda mensal registrada.">?</span></div><div class="metric-value" style="font-size:22px">${moneyAvg(summary.averageMonthlyIncome)}</div><div class="metric-note">${fmt.format(summary.monthlyIncomeFilledCount || 0)} clientes preenchidos</div></article>
+        <article class="metric"><div class="metric-label">Reserva de liquidez típica <span class="help" title="${escapeHtml(moneyStatsTooltip(summary.liquidityReserveStats))}">?</span></div><div class="metric-value" style="font-size:22px">${moneyAvg(summary.typicalLiquidityReserve)}</div><div class="metric-note">Mediana de ${fmt.format(summary.liquidityReserveFilledCount || 0)} clientes</div></article>
+        <article class="metric"><div class="metric-label">Último aporte típico <span class="help" title="${escapeHtml(moneyStatsTooltip(summary.lastContributionStats))}">?</span></div><div class="metric-value" style="font-size:22px">${moneyAvg(summary.typicalLastContribution)}</div><div class="metric-note">Mediana de ${fmt.format(summary.lastContributionFilledCount || 0)} clientes</div></article>
+        <article class="metric"><div class="metric-label">Renda mensal típica <span class="help" title="${escapeHtml(moneyStatsTooltip(summary.monthlyIncomeStats))}">?</span></div><div class="metric-value" style="font-size:22px">${moneyAvg(summary.typicalMonthlyIncome)}</div><div class="metric-note">Mediana de ${fmt.format(summary.monthlyIncomeFilledCount || 0)} clientes</div></article>
         <article class="metric highlight"><div class="metric-label">Clientes com diagnóstico financeiro</div><div class="metric-value">${fmt.format(summary.clientsWithFinancialProfile || 0)}</div><div class="metric-note">${pct(summary.financialProfilePercent || 0)} da carteira</div></article>`;
 
       document.querySelector('#chartStatus').innerHTML = donut(dist.status);
@@ -768,6 +1208,7 @@
       document.querySelector('#chartFinancialProfile').innerHTML = hBars(dist.financialProfile || []);
       document.querySelector('#chartIncome').innerHTML = hBars(dist.monthlyIncome || []);
       document.querySelector('#chartLiquidity').innerHTML = hBars(dist.liquidityReserve || []);
+      renderAcquisitionChart(filteredClientsList);
 
       const pages = Math.max(1, Math.ceil(filteredClientsList.length / generalState.pageSize));
       if (generalState.page > pages) generalState.page = pages;
@@ -804,14 +1245,24 @@
       const items = [
         ['Contratação', dateBR(client.contractDate)],
         ['Cancelamento', dateBR(client.cancellationDate)],
-        ['Permanência', client.stayDays == null ? 'Não informado' : `${fmt.format(client.stayDays)} dias (${client.stayRange})`],
+        ['Permanência', client.stayDays == null ? 'Não calculável' : `${fmt.format(client.stayDays)} dias (${client.stayRange})`],
+        ...(client.stayCalculationStatus
+          ? [['Status do cálculo de permanência', client.stayCalculationStatus]]
+          : []),
         ...(client.stayUsedCreatedAtFallback || (client.dataWarnings || []).some(w => w.includes('data de criação'))
           ? [['Observação de permanência', 'Permanência calculada com data de criação do cliente por ausência de data de contratação.']]
           : []),
-        ['Status', clientStatusLabel(client)],
+        ...(client.stayUsedCurrentDate
+          ? [['Data final da permanência', 'Data atual (cliente ativo ou congelado)']]
+          : client.stayCalculationStatus === 'calculated_cancellation_date'
+            ? [['Data final da permanência', 'Data de cancelamento consolidada']]
+            : []),
+        ['Status analítico', clientStatusLabel(client)],
         ...(client.rawStatus && client.rawStatus !== clientStatusLabel(client)
-          ? [['Status original', client.rawStatus]]
+          ? [['Status bruto', client.rawStatus]]
           : []),
+        ...(client.cancellationStage ? [['Etapa do cancelamento', client.cancellationStage]] : []),
+        ...(client.acquisitionDate ? [['Aquisição', `${dateBR(client.acquisitionDate)} (${client.acquisitionDateSource || 'n/d'})`]] : []),
         ['Segmento', client.segment],
         ['Engenheiro Patrimonial', client.engineer],
       ];
@@ -901,6 +1352,16 @@
     document.querySelector('#gPrev').addEventListener('click', () => { generalState.page -= 1; renderGeneral(); });
     document.querySelector('#gNext').addEventListener('click', () => { generalState.page += 1; renderGeneral(); });
     document.querySelector('#toggleEngineers').addEventListener('click', () => { generalState.showAllEngineers = !generalState.showAllEngineers; renderGeneral(); });
+    const acqRangeSeg = document.querySelector('#gAcqRangeSeg');
+    if (acqRangeSeg) {
+      acqRangeSeg.addEventListener('click', (event) => {
+        const btn = event.target.closest('[data-acq-range]');
+        if (!btn) return;
+        const next = String(btn.dataset.acqRange);
+        generalState.acqRange = next === '24' ? '24' : next === '12' ? '12' : '6';
+        renderGeneral();
+      });
+    }
     document.querySelectorAll('#view-general th[data-sort]').forEach(th => th.addEventListener('click', () => {
       const key = th.dataset.sort;
       if (generalState.sortKey === key) generalState.sortDir = generalState.sortDir === 'asc' ? 'desc' : 'asc';
@@ -938,6 +1399,10 @@
       reschedule: document.querySelector('#mHasReschedule')
     };
 
+    const M_FREQ_BANDS = ['Nenhuma', '1 reunião', '2 a 3', '4 a 6', '7 a 12', 'Mais de 12'];
+    const M_DAYS_BANDS = ['Até 30 dias', '31 a 60 dias', '61 a 90 dias', '91 a 180 dias', 'Mais de 180 dias', 'Nunca realizou reunião'];
+    const M_INTERVAL_BANDS = ['Até 30 dias', '31 a 60 dias', '61 a 90 dias', 'Mais de 90 dias', 'Sem intervalo calculável'];
+
     function periodStart() {
       const p = mFilters.period.value;
       if (p === 'all') return null;
@@ -952,9 +1417,26 @@
       if (mFilters.period.value !== 'custom') return null;
       return mFilters.to.value ? new Date(mFilters.to.value + 'T23:59:59Z') : null;
     }
+    function hasActiveMeetingFilters() {
+      return Boolean(
+        mFilters.search.value.trim() ||
+        mFilters.engineer.value !== 'all' ||
+        mFilters.period.value !== 'all' ||
+        mFilters.attendance.value !== 'all' ||
+        mFilters.freq.value !== 'all' ||
+        mFilters.first.value !== 'all' ||
+        mFilters.absence.value !== 'all' ||
+        mFilters.reschedule.value !== 'all' ||
+        mFilters.from.value ||
+        mFilters.to.value
+      );
+    }
+    function isAnalyticMeeting(m) {
+      return m && m.meetingDateStatus !== 'before_client_entry' && m.meetingDateStatus !== 'invalid';
+    }
     function meetingInPeriod(m) {
       const start = m.startTime ? new Date(m.startTime) : null;
-      if (!start) return false;
+      if (!start || Number.isNaN(start.getTime())) return false;
       const from = periodStart();
       const to = periodEnd();
       if (from && start < from) return false;
@@ -962,9 +1444,123 @@
       return true;
     }
     function clientMeetingsInPeriod(c) {
-      const all = c.meetings || [];
+      const all = (c.meetings || []).filter(isAnalyticMeeting);
       if (mFilters.period.value === 'all') return all;
       return all.filter(meetingInPeriod);
+    }
+    function meetingDaysBetween(a, b) {
+      return Math.floor((Date.UTC(b.getUTCFullYear(), b.getUTCMonth(), b.getUTCDate()) -
+        Date.UTC(a.getUTCFullYear(), a.getUTCMonth(), a.getUTCDate())) / 86400000);
+    }
+    function meetingMonthsSpan(a, b) {
+      if (!a || !b) return 1;
+      return Math.max(1, (b.getUTCFullYear() - a.getUTCFullYear()) * 12 + (b.getUTCMonth() - a.getUTCMonth()) + 1);
+    }
+    function periodMonthDivisor() {
+      const p = mFilters.period.value;
+      if (p === 'all') return null;
+      if (p === '30') return 1;
+      if (p === '90') return 3;
+      if (p === '180') return 6;
+      if (p === '365') return 12;
+      if (p === 'custom') {
+        const from = periodStart();
+        const to = periodEnd() || new Date();
+        if (!from) return null;
+        return meetingMonthsSpan(from, to);
+      }
+      return Math.max(1, Math.round(Number(p) / 30));
+    }
+    function mFreqBand(total) {
+      if (!total) return 'Nenhuma';
+      if (total === 1) return '1 reunião';
+      if (total <= 3) return '2 a 3';
+      if (total <= 6) return '4 a 6';
+      if (total <= 12) return '7 a 12';
+      return 'Mais de 12';
+    }
+    function mDaysBand(days) {
+      if (days == null) return 'Nunca realizou reunião';
+      if (days <= 30) return 'Até 30 dias';
+      if (days <= 60) return '31 a 60 dias';
+      if (days <= 90) return '61 a 90 dias';
+      if (days <= 180) return '91 a 180 dias';
+      return 'Mais de 180 dias';
+    }
+    function mIntervalBand(days) {
+      if (days == null) return 'Sem intervalo calculável';
+      if (days <= 30) return 'Até 30 dias';
+      if (days <= 60) return '31 a 60 dias';
+      if (days <= 90) return '61 a 90 dias';
+      return 'Mais de 90 dias';
+    }
+    function enrichMeetingClientMetrics(client, meetings, periodActive) {
+      const now = new Date();
+      const completed = meetings.filter(m => {
+        const start = m.startTime ? new Date(m.startTime) : null;
+        return start && start <= now && m.attendanceStatus === 'compareceu';
+      }).sort((a, b) => new Date(a.startTime) - new Date(b.startTime));
+      const pastAny = meetings.filter(m => {
+        const start = m.startTime ? new Date(m.startTime) : null;
+        return start && start <= now && m.attendanceStatus !== 'cancelada';
+      }).sort((a, b) => new Date(a.startTime) - new Date(b.startTime));
+
+      let lastMeetingDate = null;
+      let daysSinceLastMeeting = null;
+      const lastSrc = completed.length ? completed : pastAny;
+      if (lastSrc.length) {
+        lastMeetingDate = lastSrc[lastSrc.length - 1].startTime;
+        const lastDate = new Date(lastMeetingDate);
+        if (!Number.isNaN(lastDate.getTime()) && lastDate <= now) {
+          const days = meetingDaysBetween(lastDate, now);
+          if (days >= 0) daysSinceLastMeeting = days;
+        }
+      }
+
+      const intervals = [];
+      const seen = new Set();
+      const deduped = [];
+      for (const m of completed) {
+        const t = new Date(m.startTime).getTime();
+        if (seen.has(t)) continue;
+        seen.add(t);
+        deduped.push(m);
+      }
+      for (let i = 1; i < deduped.length; i += 1) {
+        const diff = meetingDaysBetween(new Date(deduped[i - 1].startTime), new Date(deduped[i].startTime));
+        if (diff > 0) intervals.push(diff);
+      }
+      const intervalStats = robustStatsClient(intervals);
+      const absences = meetings.filter(m => m.attendanceStatus === 'nao_compareceu').length;
+      const reschedules = meetings.filter(m => m.rescheduled).length;
+      let meetingsPerMonth = null;
+      if (meetings.length) {
+        if (periodActive) {
+          const div = periodMonthDivisor();
+          if (div) meetingsPerMonth = Math.round((meetings.length / div) * 10) / 10;
+        } else {
+          const dated = meetings.map(m => new Date(m.startTime)).filter(d => !Number.isNaN(d.getTime())).sort((a, b) => a - b);
+          if (dated.length) {
+            meetingsPerMonth = Math.round((meetings.length / meetingMonthsSpan(dated[0], dated[dated.length - 1])) * 10) / 10;
+          }
+        }
+      }
+      return {
+        ...client,
+        meetings,
+        totalMeetings: meetings.length,
+        absences,
+        reschedules,
+        lastMeetingDate,
+        daysSinceLastMeeting,
+        averageIntervalDays: intervalStats.mean,
+        typicalIntervalDays: intervalStats.median,
+        meetingsPerMonth,
+        frequencyBand: mFreqBand(meetings.length),
+        daysSinceBand: mDaysBand(daysSinceLastMeeting),
+        intervalBand: mIntervalBand(intervalStats.median ?? intervalStats.mean),
+        _periodScoped: periodActive
+      };
     }
     function firstBadge(v) {
       if (v === true) return '<span class="badge active">Realizou</span>';
@@ -988,28 +1584,28 @@
       if (!m) return '';
       return `${m[1]}-${String(Number(m[2])).padStart(2, '0')}`;
     }
-    function rebuildMonthsAll() {
-      // 1) obter dados mensais da API; 2) chave YYYY-MM; 3) só histórico (<= mês atual)
+    function rebuildMonthsAll(meetings) {
       const current = currentMonthKey();
       const byMonth = new Map();
-      for (const i of (meetingsState.payload?.distributions?.meetingsByMonth || [])) {
-        const month = normalizeMonthKey(i.month || i.label);
+      const source = Array.isArray(meetings) ? meetings : [];
+      for (const m of source) {
+        if (!isAnalyticMeeting(m)) continue;
+        const start = m.startTime ? new Date(m.startTime) : null;
+        if (!start || Number.isNaN(start.getTime())) continue;
+        const month = normalizeMonthKey(`${start.getUTCFullYear()}-${start.getUTCMonth() + 1}`);
         if (!month || month > current) continue;
-        const scheduled = Number(i.scheduled ?? i.count ?? 0);
-        const completed = Number(i.completed || 0);
-        const noShows = Number(i.noShows || 0);
-        byMonth.set(month, {
-          month,
-          scheduled,
-          completed,
-          noShows,
-          completionRate: scheduled > 0
-            ? (i.completionRate == null ? Math.round((completed / scheduled) * 1000) / 10 : i.completionRate)
-            : null
-        });
+        if (!byMonth.has(month)) byMonth.set(month, { month, scheduled: 0, completed: 0, noShows: 0 });
+        const item = byMonth.get(month);
+        item.scheduled += 1;
+        if (m.attendanceStatus === 'compareceu') item.completed += 1;
+        if (m.attendanceStatus === 'nao_compareceu') item.noShows += 1;
       }
-      // 4) mais recente → mais antigo (só meses do conjunto consolidado)
-      meetingsState.monthsAll = [...byMonth.values()].sort((a, b) => b.month.localeCompare(a.month));
+      meetingsState.monthsAll = [...byMonth.values()]
+        .map(i => ({
+          ...i,
+          completionRate: i.scheduled > 0 ? Math.round((i.completed / i.scheduled) * 1000) / 10 : null
+        }))
+        .sort((a, b) => b.month.localeCompare(a.month));
     }
     function deriveVisibleMonths() {
       // 5) aplicar limite 6 / 12 depois do filtro e da ordenação
@@ -1058,8 +1654,8 @@
         </div>`;
       }).join('')}</div>`;
     }
-    function renderMonthChart() {
-      rebuildMonthsAll();
+    function renderMonthChart(meetings) {
+      rebuildMonthsAll(meetings);
       const visible = deriveVisibleMonths();
       syncMonthRangeButtons();
       const el = document.querySelector('#mChartMonths');
@@ -1067,26 +1663,33 @@
       const bars = el?.querySelector('.month-bars');
       if (bars) bars.scrollTop = 0;
     }
-    function filteredMeetingClients() {
-      const clients = meetingsState.payload?.clients || [];
+
+    /** Fonte única filtrada do dashboard Reuniões. */
+    function applyMeetingFilters(clients) {
+      const source = clients || meetingsState.payload?.clients || [];
       const q = mFilters.search.value.trim().toLowerCase();
-      return clients.filter(c => {
+      const periodActive = mFilters.period.value !== 'all';
+      return source.filter(c => {
         const meetings = clientMeetingsInPeriod(c);
-        if (mFilters.period.value !== 'all' && !meetings.length && mFilters.period.value !== 'all') {
-          // keep clients with no meetings in period only if looking at first-meeting etc? Prefer hide if period filter and zero meetings unless all-time metrics needed
-        }
         if (mFilters.engineer.value !== 'all' && c.engineer !== mFilters.engineer.value) return false;
-        if (mFilters.freq.value !== 'all' && c.frequencyBand !== mFilters.freq.value) return false;
         if (mFilters.first.value === 'yes' && c.firstMeetingCompleted !== true) return false;
         if (mFilters.first.value === 'no' && c.firstMeetingCompleted !== false) return false;
-        if (mFilters.absence.value === 'yes' && !(c.absences > 0)) return false;
-        if (mFilters.absence.value === 'no' && c.absences > 0) return false;
-        if (mFilters.reschedule.value === 'yes' && !(c.reschedules > 0)) return false;
-        if (mFilters.reschedule.value === 'no' && c.reschedules > 0) return false;
         if (mFilters.attendance.value !== 'all') {
           if (!meetings.some(m => m.attendanceStatus === mFilters.attendance.value)) return false;
         }
-        if (mFilters.period.value !== 'all' && !meetings.length) return false;
+        if (periodActive && !meetings.length) return false;
+        const scopedAbsences = periodActive
+          ? meetings.filter(m => m.attendanceStatus === 'nao_compareceu').length
+          : c.absences;
+        const scopedReschedules = periodActive
+          ? meetings.filter(m => m.rescheduled).length
+          : c.reschedules;
+        const scopedFreq = periodActive ? mFreqBand(meetings.length) : c.frequencyBand;
+        if (mFilters.freq.value !== 'all' && scopedFreq !== mFilters.freq.value) return false;
+        if (mFilters.absence.value === 'yes' && !(scopedAbsences > 0)) return false;
+        if (mFilters.absence.value === 'no' && scopedAbsences > 0) return false;
+        if (mFilters.reschedule.value === 'yes' && !(scopedReschedules > 0)) return false;
+        if (mFilters.reschedule.value === 'no' && scopedReschedules > 0) return false;
         if (q) {
           const hay = `${c.clientName} ${c.clientCode || ''} ${c.clientId}`.toLowerCase();
           if (!hay.includes(q)) return false;
@@ -1094,15 +1697,14 @@
         return true;
       }).map(c => {
         const meetings = clientMeetingsInPeriod(c);
-        if (mFilters.period.value === 'all') return c;
-        const total = meetings.length;
-        return {
-          ...c,
-          totalMeetings: total,
-          absences: meetings.filter(m => m.attendanceStatus === 'nao_compareceu').length,
-          reschedules: meetings.filter(m => m.rescheduled).length,
-          _periodMeetings: meetings
-        };
+        if (!periodActive) {
+          return {
+            ...c,
+            meetings: (c.meetings || []).filter(isAnalyticMeeting),
+            _periodScoped: false
+          };
+        }
+        return enrichMeetingClientMetrics(c, meetings, true);
       }).sort((a, b) => {
         const key = meetingsState.sortKey;
         const av = a[key], bv = b[key];
@@ -1116,24 +1718,120 @@
         return meetingsState.sortDir === 'asc' ? cmp : -cmp;
       });
     }
+    const filteredMeetingClients = applyMeetingFilters;
+
+    function calculateMeetingSummary(rows) {
+      const periodActive = mFilters.period.value !== 'all';
+      const meetings = rows.flatMap(c => (c.meetings || []).filter(isAnalyticMeeting));
+      const uniqueIds = new Set();
+      let totalMeetings = 0;
+      for (const m of meetings) {
+        const key = m.meetingId || `${m.source}|${m.startTime}|${m.title || ''}`;
+        if (uniqueIds.has(key)) continue;
+        uniqueIds.add(key);
+        totalMeetings += 1;
+      }
+      let averageMeetingsPerMonth = null;
+      if (totalMeetings) {
+        if (periodActive) {
+          const div = periodMonthDivisor();
+          if (div) averageMeetingsPerMonth = Math.round((totalMeetings / div) * 10) / 10;
+        } else {
+          const dated = meetings.map(m => new Date(m.startTime)).filter(d => !Number.isNaN(d.getTime())).sort((a, b) => a - b);
+          if (dated.length) {
+            averageMeetingsPerMonth = Math.round((totalMeetings / meetingMonthsSpan(dated[0], dated[dated.length - 1])) * 10) / 10;
+          }
+        }
+      }
+      const daysSinceStats = robustStatsClient(rows.map(c => c.daysSinceLastMeeting).filter(v => v != null));
+      const intervalValues = rows
+        .map(c => c.typicalIntervalDays ?? c.averageIntervalDays)
+        .filter(v => v != null && v >= 0);
+      const intervalStats = robustStatsClient(intervalValues);
+      const totalNoShows = rows.reduce((a, c) => a + (c.absences || 0), 0);
+      const totalReschedules = rows.reduce((a, c) => a + (c.reschedules || 0), 0);
+      const now = new Date();
+      const classifiable = meetings.filter(m => {
+        const start = m.startTime ? new Date(m.startTime) : null;
+        if (!start || start > now) return false;
+        return m.attendanceStatus === 'compareceu' || m.attendanceStatus === 'nao_compareceu';
+      });
+      const attended = classifiable.filter(m => m.attendanceStatus === 'compareceu').length;
+      const attendanceRate = classifiable.length
+        ? Math.round((attended / classifiable.length) * 1000) / 10
+        : null;
+      const withFirst = rows.filter(c => c.firstMeetingCompleted === true).length;
+      const portfolio = rows.length || 1;
+      return {
+        totalMeetings,
+        averageMeetingsPerMonth,
+        averageDaysSinceLastMeeting: daysSinceStats.mean,
+        typicalDaysSinceLastMeeting: daysSinceStats.median,
+        daysSinceLastMeetingStats: daysSinceStats,
+        averageIntervalDays: intervalStats.mean,
+        typicalIntervalDays: intervalStats.median,
+        intervalDaysStats: intervalStats,
+        totalNoShows,
+        totalAbsences: totalNoShows,
+        totalReschedules,
+        attendanceRate,
+        clientsWithFirstMeeting: withFirst,
+        clientsWithoutFirstMeeting: rows.filter(c => c.firstMeetingCompleted === false).length,
+        firstMeetingCompletionRate: Math.round((withFirst / portfolio) * 1000) / 10,
+        filteredClients: rows.length,
+        periodScoped: periodActive
+      };
+    }
+
+    function calculateMeetingDistributions(rows) {
+      const meetings = rows.flatMap(c => (c.meetings || []).filter(isAnalyticMeeting));
+      const engCounts = new Map();
+      for (const c of rows) {
+        if (!c.totalMeetings) continue;
+        engCounts.set(c.engineer, (engCounts.get(c.engineer) || 0) + c.totalMeetings);
+      }
+      const engTotal = [...engCounts.values()].reduce((a, b) => a + b, 0) || 1;
+      return {
+        attendanceStatus: distFrom(meetings, m => {
+          if (m.attendanceStatus === 'compareceu') return 'Compareceu';
+          if (m.attendanceStatus === 'nao_compareceu') return 'No-show';
+          if (m.attendanceStatus === 'cancelada') return 'Cancelada';
+          return 'Sem confirmação';
+        }, ['Compareceu', 'No-show', 'Cancelada', 'Sem confirmação']),
+        meetingFrequency: distFrom(rows, c => c.frequencyBand, M_FREQ_BANDS),
+        daysSinceLastMeeting: distFrom(rows, c => c.daysSinceBand, M_DAYS_BANDS),
+        intervalRanges: distFrom(rows, c => c.intervalBand, M_INTERVAL_BANDS),
+        meetingsByEngineer: [...engCounts.entries()]
+          .map(([label, count]) => ({ label, count, percent: Math.round((count / engTotal) * 1000) / 10 }))
+          .sort((a, b) => b.count - a.count || a.label.localeCompare(b.label, 'pt-BR'))
+      };
+    }
+
     function renderMeetings() {
       if (!meetingsState.payload) return;
-      const summary = meetingsState.payload.summary;
-      const dist = meetingsState.payload.distributions;
-      const data = filteredMeetingClients();
+      const data = applyMeetingFilters();
+      const summary = calculateMeetingSummary(data);
+      const dist = calculateMeetingDistributions(data);
+      const meetings = data.flatMap(c => (c.meetings || []).filter(isAnalyticMeeting));
       const noShows = summary.totalNoShows ?? summary.totalAbsences ?? 0;
       const attendanceRateText = summary.attendanceRate == null ? 'Não calculável' : pct(summary.attendanceRate);
+      const scopeNote = summary.periodScoped
+        ? 'Considerando o período selecionado'
+        : (hasActiveMeetingFilters() ? `Sobre ${fmt.format(summary.filteredClients)} clientes filtrados` : 'Carteira completa');
+      const daysTip = summary.periodScoped
+        ? 'Calculado considerando as reuniões do período selecionado. Mediana dos dias desde a última reunião válida no recorte.'
+        : 'Mediana dos dias entre hoje e a última reunião válida da jornada (exclui reuniões anteriores à entrada).';
       document.querySelector('#mKpis').innerHTML = `
-        <article class="metric highlight"><div class="metric-label">Total de reuniões</div><div class="metric-value">${fmt.format(summary.totalMeetings)}</div><div class="metric-note">Reuniões únicas consolidadas</div></article>
-        <article class="metric"><div class="metric-label">Média de reuniões/mês</div><div class="metric-value">${summary.averageMeetingsPerMonth == null ? '—' : fmt.format(summary.averageMeetingsPerMonth)}</div><div class="metric-note">Sobre o histórico consolidado</div></article>
-        <article class="metric"><div class="metric-label">Dias desde a última reunião <span class="help" title="Quantidade de dias entre hoje e a última reunião realizada do cliente.">?</span></div><div class="metric-value">${summary.averageDaysSinceLastMeeting == null ? '—' : fmt.format(Math.round(summary.averageDaysSinceLastMeeting))}</div><div class="metric-note">Média da carteira</div></article>
-        <article class="metric"><div class="metric-label">Intervalo médio <span class="help" title="Média de dias entre reuniões realizadas consecutivas.">?</span></div><div class="metric-value">${summary.averageIntervalDays == null ? '—' : fmt.format(Math.round(summary.averageIntervalDays)) + ' d'}</div><div class="metric-note">Entre presenças confirmadas</div></article>
-        <article class="metric"><div class="metric-label">Total de no-shows <span class="help" title="Quantidade de reuniões com ausência confirmada do cliente.">?</span></div><div class="metric-value">${fmt.format(noShows)}</div><div class="metric-note">Reuniões em que o cliente não compareceu</div></article>
-        <article class="metric"><div class="metric-label">Total de remarcações</div><div class="metric-value">${fmt.format(summary.totalReschedules)}</div><div class="metric-note">Campo remarcado = verdadeiro</div></article>
-        <article class="metric"><div class="metric-label">Taxa de comparecimento <span class="help" title="Percentual de reuniões com comparecimento confirmado entre aquelas que possuem status de presença válido.">?</span></div><div class="metric-value" style="font-size:${summary.attendanceRate == null ? '22px' : '30px'}">${attendanceRateText}</div><div class="metric-note">Presenças sobre reuniões com status confirmado</div></article>
-        <article class="metric"><div class="metric-label">Clientes com primeira reunião <span class="help" title="Clientes que possuem pelo menos uma reunião realizada com presença confirmada.">?</span></div><div class="metric-value">${fmt.format(summary.clientsWithFirstMeeting)}</div><div class="metric-note">${pct(summary.firstMeetingCompletionRate || 0)} da carteira · ao menos uma presença confirmada</div></article>`;
+        <article class="metric highlight"><div class="metric-label">Total de reuniões</div><div class="metric-value">${fmt.format(summary.totalMeetings)}</div><div class="metric-note">${scopeNote}</div></article>
+        <article class="metric"><div class="metric-label">Média de reuniões/mês</div><div class="metric-value">${summary.averageMeetingsPerMonth == null ? '—' : fmt.format(summary.averageMeetingsPerMonth)}</div><div class="metric-note">${summary.periodScoped ? 'Divisor do período filtrado' : 'Sobre o histórico do recorte'}</div></article>
+        <article class="metric"><div class="metric-label">Dias desde a última reunião <span class="help" title="${escapeHtml(daysTip)}">?</span></div><div class="metric-value">${(summary.typicalDaysSinceLastMeeting ?? summary.averageDaysSinceLastMeeting) == null ? '—' : fmt.format(Math.round(summary.typicalDaysSinceLastMeeting ?? summary.averageDaysSinceLastMeeting))}</div><div class="metric-note">Mediana · média ${summary.averageDaysSinceLastMeeting == null ? '—' : fmt.format(Math.round(summary.averageDaysSinceLastMeeting))}</div></article>
+        <article class="metric"><div class="metric-label">Intervalo típico <span class="help" title="Mediana de intervalos positivos entre reuniões válidas consecutivas do recorte. Valores negativos e pré-entrada são excluídos.">?</span></div><div class="metric-value">${(summary.typicalIntervalDays ?? summary.averageIntervalDays) == null ? '—' : fmt.format(Math.round(summary.typicalIntervalDays ?? summary.averageIntervalDays)) + ' d'}</div><div class="metric-note">Mediana · média ${summary.averageIntervalDays == null ? '—' : fmt.format(Math.round(summary.averageIntervalDays)) + ' d'}</div></article>
+        <article class="metric"><div class="metric-label">Total de no-shows <span class="help" title="Quantidade de reuniões com ausência confirmada no recorte filtrado.">?</span></div><div class="metric-value">${fmt.format(noShows)}</div><div class="metric-note">${scopeNote}</div></article>
+        <article class="metric"><div class="metric-label">Total de remarcações</div><div class="metric-value">${fmt.format(summary.totalReschedules)}</div><div class="metric-note">${scopeNote}</div></article>
+        <article class="metric"><div class="metric-label">Taxa de comparecimento <span class="help" title="Numerador e denominador do mesmo conjunto filtrado (presenças sobre status confirmado).">?</span></div><div class="metric-value" style="font-size:${summary.attendanceRate == null ? '22px' : '30px'}">${attendanceRateText}</div><div class="metric-note">${scopeNote}</div></article>
+        <article class="metric"><div class="metric-label">Clientes com primeira reunião <span class="help" title="Clientes do recorte com pelo menos uma presença confirmada válida na jornada.">?</span></div><div class="metric-value">${fmt.format(summary.clientsWithFirstMeeting)}</div><div class="metric-note">${pct(summary.firstMeetingCompletionRate || 0)} da carteira filtrada</div></article>`;
 
-      renderMonthChart();
+      renderMonthChart(meetings);
       document.querySelector('#mChartStatus').innerHTML = donut(dist.attendanceStatus || []);
       document.querySelector('#mChartFreq').innerHTML = hBars(dist.meetingFrequency || []);
       document.querySelector('#mChartDays').innerHTML = hBars(dist.daysSinceLastMeeting || []);
@@ -1151,6 +1849,7 @@
           c.absences > 0 ? 'warn-absence' : '',
           c.firstMeetingCompleted === false ? 'warn-nofirst' : ''
         ].filter(Boolean).join(' ');
+        const intervalShow = c.typicalIntervalDays ?? c.averageIntervalDays;
         return `<tr class="${classes}" data-mid="${escapeHtml(c.clientId)}">
           <td class="truncate" title="${escapeHtml(c.clientName)}">${escapeHtml(c.clientName)}</td>
           <td>${escapeHtml(c.clientCode || 'Não informado')}</td>
@@ -1159,7 +1858,7 @@
           <td class="num">${c.meetingsPerMonth == null ? '—' : fmt.format(c.meetingsPerMonth)}</td>
           <td>${dateBR(c.lastMeetingDate)}</td>
           <td class="num">${c.daysSinceLastMeeting == null ? '—' : fmt.format(c.daysSinceLastMeeting)}</td>
-          <td class="num">${c.averageIntervalDays == null ? '—' : fmt.format(Math.round(c.averageIntervalDays)) + ' d'}</td>
+          <td class="num">${intervalShow == null ? '—' : fmt.format(Math.round(intervalShow)) + ' d'}</td>
           <td class="num">${fmt.format(c.absences)}</td>
           <td class="num">${fmt.format(c.reschedules)}</td>
           <td class="num">${c.cancelledMeetings == null ? 'Não informado' : fmt.format(c.cancelledMeetings)}</td>
@@ -1192,9 +1891,14 @@
         const statusLabel = m.attendanceStatus === 'compareceu' ? 'Compareceu'
           : m.attendanceStatus === 'nao_compareceu' ? 'Não compareceu'
           : m.attendanceStatus === 'cancelada' ? 'Cancelada' : 'Sem confirmação';
+        const dateFlag = m.meetingDateStatus === 'before_client_entry'
+          ? ' · Antes da entrada'
+          : m.meetingDateStatus === 'future'
+            ? ' · Futura'
+            : '';
         return `<div class="timeline-item">
           <strong>${escapeHtml(m.title || 'Reunião')}</strong>
-          <div class="meta">${dateBR(m.startTime)} · ${escapeHtml(m.source)} · ${statusLabel}${m.rescheduled ? ' · Remarcada' : ''}</div>
+          <div class="meta">${dateBR(m.startTime)} · ${escapeHtml(m.source)} · ${statusLabel}${m.rescheduled ? ' · Remarcada' : ''}${dateFlag}</div>
           ${m.recordingUrl ? `<div class="meta"><a href="${escapeHtml(m.recordingUrl)}" target="_blank" rel="noopener" style="color:var(--color-info)">Link da gravação</a></div>` : ''}
         </div>`;
       }).join('') || '<div class="timeline-item">Sem histórico de reuniões</div>';
@@ -1258,7 +1962,7 @@
         event.preventDefault();
         const next = btn.getAttribute('data-month-range');
         meetingsState.monthRange = next === '12' ? '12' : '6';
-        renderMonthChart();
+        renderMeetings();
       });
     }
     document.querySelectorAll('#view-meetings th[data-msort]').forEach(th => th.addEventListener('click', () => {
@@ -1274,10 +1978,416 @@
       if (client) openMeetingDrawer(client);
     });
 
+    /* -------- Implementação de Mecanismos -------- */
+    const K_STATUS_FILTER = { active: 'Ativo', cancelled: 'Cancelado', frozen: 'Congelado', unknown: 'Não informado' };
+    const mechanismsState = {
+      payload: null, page: 1, pageSize: 25, sortKey: 'clientName', sortDir: 'asc',
+      clientStatusFilter: 'all', monthRange: '6', showAllCats: false, showAllTop: false,
+      loading: false, requestId: 0
+    };
+    const kFilters = {
+      search: document.querySelector('#kSearch'),
+      clientStatus: document.querySelector('#kClientStatus'),
+      engineer: document.querySelector('#kEngineer'),
+      mechStatus: document.querySelector('#kMechStatus'),
+      mechanism: document.querySelector('#kMechanism'),
+      category: document.querySelector('#kCategory'),
+      period: document.querySelector('#kPeriod'),
+      hasImpl: document.querySelector('#kHasImpl'),
+      recent: document.querySelector('#kRecent'),
+      pctRange: document.querySelector('#kPctRange')
+    };
+    const kActiveOnly = document.querySelector('#kActiveOnly');
+
+    function setKClientStatus(next) {
+      const allowed = new Set(['all', 'active', 'cancelled', 'frozen', 'unknown']);
+      mechanismsState.clientStatusFilter = allowed.has(next) ? next : 'all';
+      kFilters.clientStatus.value = mechanismsState.clientStatusFilter;
+      const on = mechanismsState.clientStatusFilter === 'active';
+      kActiveOnly.classList.toggle('is-active', on);
+      kActiveOnly.classList.remove('active');
+      kActiveOnly.setAttribute('aria-pressed', on ? 'true' : 'false');
+      const label = kActiveOnly.querySelector('.chip-label');
+      if (label) label.textContent = on ? '✓ Somente clientes ativos' : 'Somente clientes ativos';
+    }
+
+    function pctBadge(value) {
+      if (value == null) return '<span class="pct-badge muted">Não informado</span>';
+      const cls = value >= 100 ? 'ok' : value >= 50 ? 'warn' : 'alert';
+      return `<span class="pct-badge ${cls}">${pct(value)}</span>`;
+    }
+
+    function clientMechsInPeriod(client) {
+      const days = kFilters.period.value;
+      if (days === 'all') return client.mechanisms || [];
+      const from = new Date();
+      from.setDate(from.getDate() - Number(days));
+      return (client.mechanisms || []).filter(m => {
+        if (!m.implementedAt || m.status !== 'Implementado') return false;
+        const d = new Date(m.implementedAt);
+        return d >= from && d <= new Date();
+      });
+    }
+
+    function filteredMechanismClients() {
+      const clients = mechanismsState.payload?.clients || [];
+      const q = kFilters.search.value.trim().toLowerCase();
+      const statusLabel = K_STATUS_FILTER[mechanismsState.clientStatusFilter] || null;
+      return clients.filter(c => {
+        if (statusLabel && c.clientStatus !== statusLabel) return false;
+        if (kFilters.engineer.value !== 'all' && c.engineer !== kFilters.engineer.value) return false;
+        if (kFilters.hasImpl.value === 'yes' && !(c.implemented > 0)) return false;
+        if (kFilters.hasImpl.value === 'no' && c.implemented > 0) return false;
+        if (kFilters.recent.value === 'yes' && !c.hasImplementationLast30Days) return false;
+        if (kFilters.recent.value === 'no' && c.hasImplementationLast30Days) return false;
+        if (kFilters.pctRange.value !== 'all' && c.percentRange !== kFilters.pctRange.value) return false;
+        if (kFilters.mechStatus.value !== 'all') {
+          const has = (c.mechanisms || []).some(m => m.status === kFilters.mechStatus.value);
+          if (!has) return false;
+        }
+        if (kFilters.mechanism.value !== 'all') {
+          const has = (c.mechanisms || []).some(m => m.mechanismId === kFilters.mechanism.value || m.name === kFilters.mechanism.value);
+          if (!has) return false;
+        }
+        if (kFilters.category.value !== 'all') {
+          const has = (c.mechanisms || []).some(m => (m.dimension || m.market || m.category || 'Não informado') === kFilters.category.value);
+          if (!has) return false;
+        }
+        if (kFilters.period.value !== 'all') {
+          if (!clientMechsInPeriod(c).length && kFilters.period.value !== 'all') {
+            // keep clients with impl in period OR if filtering "has period impl" - require at least one
+            return false;
+          }
+        }
+        if (q) {
+          const hay = `${c.clientName} ${c.clientCode || ''} ${c.clientId}`.toLowerCase();
+          if (!hay.includes(q)) return false;
+        }
+        return true;
+      }).sort((a, b) => {
+        const key = mechanismsState.sortKey;
+        const av = a[key], bv = b[key];
+        let cmp = 0;
+        if (av == null && bv == null) cmp = 0;
+        else if (av == null) cmp = 1;
+        else if (bv == null) cmp = -1;
+        else if (typeof av === 'number' && typeof bv === 'number') cmp = av - bv;
+        else if (typeof av === 'boolean' && typeof bv === 'boolean') cmp = Number(av) - Number(bv);
+        else cmp = String(av).localeCompare(String(bv), 'pt-BR', { numeric: true });
+        return mechanismsState.sortDir === 'asc' ? cmp : -cmp;
+      });
+    }
+
+    function applyMechanismFilters() {
+      return filteredMechanismClients();
+    }
+    function calculateMechanismSummary(rows) {
+      return summarizeMechanisms(rows);
+    }
+    function summarizeMechanisms(rows) {
+      const available = rows.reduce((a, c) => a + c.available, 0);
+      const implemented = rows.reduce((a, c) => a + c.implemented, 0);
+      const inProgress = rows.reduce((a, c) => a + c.inProgress, 0);
+      const eligible = rows.reduce((a, c) => a + c.eligible, 0);
+      const firstStats = robustStatsClient(rows.map(c => c.daysToFirstImplementation).filter(v => v != null && v >= 0));
+      const sinceStats = robustStatsClient(rows.map(c => c.daysSinceLastImplementation).filter(v => v != null && v >= 0));
+      const recent = rows.filter(c => c.hasImplementationLast30Days);
+      return {
+        clientsWithMechanisms: rows.length,
+        availableMechanisms: available,
+        implementedMechanisms: implemented,
+        inProgressMechanisms: inProgress,
+        eligibleMechanisms: eligible,
+        implementationPercent: available ? Math.min(100, Math.round((implemented / available) * 1000) / 10) : null,
+        averageDaysToFirstImplementation: firstStats.mean == null ? null : Math.round(firstStats.mean),
+        typicalDaysToFirstImplementation: firstStats.median == null ? null : Math.round(firstStats.median),
+        clientsWithRecentImplementation: recent.length,
+        recentImplementationPercent: rows.length ? Math.round((recent.length / rows.length) * 1000) / 10 : null,
+        averageDaysSinceLastImplementation: sinceStats.mean == null ? null : Math.round(sinceStats.mean),
+        typicalDaysSinceLastImplementation: sinceStats.median == null ? null : Math.round(sinceStats.median)
+      };
+    }
+
+    function distCount(rows, keyFn, ordered) {
+      const counts = new Map();
+      if (ordered) ordered.forEach(l => counts.set(l, 0));
+      for (const row of rows) {
+        const key = keyFn(row);
+        counts.set(key, (counts.get(key) || 0) + 1);
+      }
+      const total = rows.length || 1;
+      const list = ordered
+        ? ordered.map(label => [label, counts.get(label) || 0]).filter(([, n]) => n > 0)
+        : [...counts.entries()].sort((a, b) => b[1] - a[1] || String(a[0]).localeCompare(String(b[0]), 'pt-BR'));
+      return list.map(([label, count]) => ({ label, count, percent: Math.round((count / total) * 1000) / 10 }));
+    }
+
+    function mechanismMonthBars(items) {
+      if (!items.length) return '<div class="empty" style="display:block">Sem implementações no período.</div>';
+      const max = Math.max(...items.map(i => i.count), 1);
+      const useScroll = items.length > 6;
+      return `<div class="month-bars${useScroll ? ' scroll' : ''}">${items.map(i => {
+        const w = i.count > 0 ? Math.max(4, (i.count / max) * 100) : 0;
+        return `<div class="month-row" title="${escapeHtml(formatMonthLabel(i.month))}: ${fmt.format(i.count)} implementações">
+          <div class="month-label">${escapeHtml(formatMonthLabel(i.month))}</div>
+          <div class="month-dual"><div class="month-line"><em>Concl.</em><div class="month-track"><span class="fill-done" style="width:${w}%"></span></div></div></div>
+          <div class="month-val">${fmt.format(i.count)} implementações</div>
+        </div>`;
+      }).join('')}</div>`;
+    }
+
+    function renderMechanismMonths(rows) {
+      const now = new Date();
+      const current = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+      const map = new Map();
+      for (const c of rows) {
+        for (const m of (c.mechanisms || [])) {
+          if (m.status !== 'Implementado' || !m.implementedAt) continue;
+          const d = new Date(m.implementedAt);
+          if (Number.isNaN(d.getTime()) || d > now) continue;
+          const key = `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}`;
+          if (key > current) continue;
+          map.set(key, (map.get(key) || 0) + 1);
+        }
+      }
+      const all = [...map.entries()].map(([month, count]) => ({ month, count })).sort((a, b) => b.month.localeCompare(a.month));
+      const limit = mechanismsState.monthRange === '12' ? 12 : 6;
+      const visible = all.slice(0, limit);
+      const countEl = document.querySelector('#kMonthCount');
+      if (countEl) {
+        countEl.textContent = visible.length
+          ? (visible.length < limit || all.length < limit
+            ? `Exibindo ${visible.length} meses disponíveis`
+            : `Exibindo os ${limit} meses mais recentes`)
+          : 'Sem meses históricos';
+      }
+      document.querySelectorAll('#kMonthRangeSeg [data-k-month-range]').forEach(btn => {
+        const on = btn.getAttribute('data-k-month-range') === String(mechanismsState.monthRange);
+        btn.classList.toggle('active', on);
+      });
+      document.querySelector('#kChartMonths').innerHTML = mechanismMonthBars(visible);
+      const bars = document.querySelector('#kChartMonths .month-bars');
+      if (bars) bars.scrollTop = 0;
+    }
+
+    function renderMechanisms() {
+      if (!mechanismsState.payload) return;
+      const rows = applyMechanismFilters();
+      const summary = calculateMechanismSummary(rows);
+      const allMechs = rows.flatMap(c => c.mechanisms || []);
+      const statusDist = distCount(allMechs, m => m.status, ['Apto', 'Em andamento', 'Implementado', 'Não informado']);
+      const pctDist = distCount(rows, c => c.percentRange, ['0%', 'De 1% a 25%', 'De 26% a 50%', 'De 51% a 75%', 'De 76% a 99%', '100%', 'Sem mecanismos disponíveis']);
+      const firstDist = distCount(rows, c => c.daysToFirstRange, ['Até 7 dias', 'De 8 a 15 dias', 'De 16 a 30 dias', 'De 31 a 60 dias', 'De 61 a 90 dias', 'Mais de 90 dias', 'Sem implementação']);
+      const sinceDist = distCount(rows, c => c.daysSinceLastRange, ['Até 30 dias', 'De 31 a 60 dias', 'De 61 a 90 dias', 'De 91 a 180 dias', 'Mais de 180 dias', 'Nunca implementou']);
+
+      const catMap = new Map();
+      for (const m of allMechs) {
+        if (m.status !== 'Implementado') continue;
+        const label = m.dimension || m.market || m.category || 'Não informado';
+        catMap.set(label, (catMap.get(label) || 0) + 1);
+      }
+      const catTotal = [...catMap.values()].reduce((a, b) => a + b, 0) || 1;
+      const cats = [...catMap.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], 'pt-BR'))
+        .map(([label, count]) => ({ label, count, percent: Math.round((count / catTotal) * 1000) / 10 }));
+
+      const topMap = new Map();
+      for (const m of allMechs) {
+        if (m.status !== 'Implementado') continue;
+        const key = m.mechanismId || m.name;
+        const cur = topMap.get(key) || { label: m.name, count: 0 };
+        cur.count += 1;
+        topMap.set(key, cur);
+      }
+      const withImpl = rows.filter(c => c.implemented > 0).length || 1;
+      const tops = [...topMap.values()].sort((a, b) => b.count - a.count || a.label.localeCompare(b.label, 'pt-BR'))
+        .map(i => ({ label: i.label, count: i.count, percent: Math.round((i.count / withImpl) * 1000) / 10 }));
+
+      const dim = mechanismsState.payload.summary?.dimensionLabel || 'mercado';
+      document.querySelector('#kCatTitle').textContent = `Mecanismos implementados por ${dim}`;
+
+      document.querySelector('#kKpis1').innerHTML = `
+        <article class="metric highlight"><div class="metric-label">Clientes com mecanismos</div><div class="metric-value">${fmt.format(summary.clientsWithMechanisms)}</div><div class="metric-note">Carteira filtrada</div></article>
+        <article class="metric"><div class="metric-label">Mecanismos disponíveis <span class="help" title="Quantidade de mecanismos distintos cadastrados para os clientes da carteira selecionada.">?</span></div><div class="metric-value">${fmt.format(summary.availableMechanisms)}</div><div class="metric-note">Após deduplicação cliente+mecanismo</div></article>
+        <article class="metric"><div class="metric-label">Mecanismos implementados <span class="help" title="Mecanismos que chegaram ao estado concluído.">?</span></div><div class="metric-value">${fmt.format(summary.implementedMechanisms)}</div><div class="metric-note">Status normalizado: Implementado</div></article>
+        <article class="metric"><div class="metric-label">Percentual implementado <span class="help" title="Proporção dos mecanismos concluídos em relação ao total de mecanismos cadastrados.">?</span></div><div class="metric-value">${summary.implementationPercent == null ? '—' : pct(summary.implementationPercent)}</div><div class="metric-note">Soma implementados / soma disponíveis</div></article>`;
+      document.querySelector('#kKpis2').innerHTML = `
+        <article class="metric"><div class="metric-label">Em andamento</div><div class="metric-value">${fmt.format(summary.inProgressMechanisms)}</div><div class="metric-note">Status: iniciado</div></article>
+        <article class="metric"><div class="metric-label">Aptos para iniciar</div><div class="metric-value">${fmt.format(summary.eligibleMechanisms)}</div><div class="metric-note">Status: apto</div></article>
+        <article class="metric"><div class="metric-label">Tempo típico até a primeira implementação <span class="help" title="Mediana de dias entre a entrada do cliente e a primeira implementação concluída. A mediana sofre menos influência de extremos.">?</span></div><div class="metric-value">${(summary.typicalDaysToFirstImplementation ?? summary.averageDaysToFirstImplementation) == null ? '—' : fmt.format(summary.typicalDaysToFirstImplementation ?? summary.averageDaysToFirstImplementation) + ' d'}</div><div class="metric-note">Mediana · média ${summary.averageDaysToFirstImplementation == null ? '—' : fmt.format(summary.averageDaysToFirstImplementation) + ' d'}</div></article>
+        <article class="metric highlight"><div class="metric-label">Clientes com implementação recente <span class="help" title="Implementação concluída nos últimos 30 dias.">?</span></div><div class="metric-value">${fmt.format(summary.clientsWithRecentImplementation)}</div><div class="metric-note">${summary.recentImplementationPercent == null ? '—' : pct(summary.recentImplementationPercent)} da carteira filtrada</div></article>`;
+
+      document.querySelector('#kChartStatus').innerHTML = donut(statusDist);
+      document.querySelector('#kChartPct').innerHTML = hBars(pctDist);
+      renderMechanismMonths(rows);
+      document.querySelector('#kChartFirst').innerHTML = hBars(firstDist);
+      document.querySelector('#kChartSince').innerHTML = hBars(sinceDist);
+      document.querySelector('#kChartCats').innerHTML = hBars(cats, mechanismsState.showAllCats ? null : 8);
+      document.querySelector('#kToggleCats').textContent = mechanismsState.showAllCats ? 'Ver principais' : 'Ver todos';
+      document.querySelector('#kChartTop').innerHTML = hBars(tops, mechanismsState.showAllTop ? null : 8);
+      document.querySelector('#kToggleTop').textContent = mechanismsState.showAllTop ? 'Ver principais' : 'Ver todos';
+
+      const pages = Math.max(1, Math.ceil(rows.length / mechanismsState.pageSize));
+      if (mechanismsState.page > pages) mechanismsState.page = pages;
+      const start = (mechanismsState.page - 1) * mechanismsState.pageSize;
+      const pageRows = rows.slice(start, start + mechanismsState.pageSize);
+      document.querySelector('#kRows').innerHTML = pageRows.map(c => {
+        const stale = c.daysSinceLastImplementation != null && c.daysSinceLastImplementation > 90;
+        const never = c.implemented === 0;
+        return `<tr data-kid="${escapeHtml(c.clientId)}" class="${never ? 'row-alert' : stale ? 'row-warn' : ''}">
+          <td class="truncate" title="${escapeHtml(c.clientName)}">${escapeHtml(c.clientName)}</td>
+          <td>${escapeHtml(c.clientCode || 'Não informado')}</td>
+          <td>${statusBadge(c.clientStatus)}</td>
+          <td class="truncate" title="${escapeHtml(c.engineer)}">${escapeHtml(c.engineer)}</td>
+          <td class="num">${fmt.format(c.available)}</td>
+          <td class="num">${fmt.format(c.eligible)}</td>
+          <td class="num">${fmt.format(c.inProgress)}</td>
+          <td class="num">${fmt.format(c.implemented)}</td>
+          <td class="num">${pctBadge(c.implementationPercent)}</td>
+          <td class="truncate" title="${escapeHtml(c.firstMechanismName || '')}">${escapeHtml(c.firstMechanismName || 'Não informado')}</td>
+          <td>${dateBR(c.firstImplementationDate)}</td>
+          <td class="num">${c.daysToFirstImplementation == null ? '—' : fmt.format(c.daysToFirstImplementation) + ' d'}</td>
+          <td>${dateBR(c.lastImplementationDate)}</td>
+          <td class="num">${c.daysSinceLastImplementation == null ? (never ? 'Nunca' : '—') : fmt.format(c.daysSinceLastImplementation) + ' d'}</td>
+          <td>${c.hasImplementationLast30Days ? '<span class="badge active">Sim</span>' : '<span class="badge unavailable">Não</span>'}</td>
+        </tr>`;
+      }).join('');
+      document.querySelector('#kEmpty').style.display = rows.length ? 'none' : 'block';
+      document.querySelector('#kCounter').textContent = `${rows.length} de ${mechanismsState.payload.clients.length} clientes`;
+      document.querySelector('#kPageInfo').textContent = `Página ${mechanismsState.page} de ${pages}`;
+      document.querySelector('#kPrev').disabled = mechanismsState.page <= 1;
+      document.querySelector('#kNext').disabled = mechanismsState.page >= pages;
+    }
+
+    function openMechanismDrawer(client) {
+      document.querySelector('#drawerTitle').textContent = client.clientName;
+      document.querySelector('#drawerSub').textContent = `Código ${client.clientCode || 'Não informado'} · ID ${client.clientId}`;
+      const items = [
+        ['Status', client.clientStatus],
+        ['Engenheiro Patrimonial', client.engineer],
+        ['Disponíveis', fmt.format(client.available)],
+        ['Aptos', fmt.format(client.eligible)],
+        ['Em andamento', fmt.format(client.inProgress)],
+        ['Implementados', fmt.format(client.implemented)],
+        ['Percentual implementado', client.implementationPercent == null ? 'Não informado' : pct(client.implementationPercent)],
+        ['Primeiro mecanismo', client.firstMechanismName || 'Não informado'],
+        ['Primeira implementação', dateBR(client.firstImplementationDate)],
+        ['Dias até a primeira', client.daysToFirstImplementation == null ? 'Não informado' : `${fmt.format(client.daysToFirstImplementation)} dias`],
+        ['Última implementação', dateBR(client.lastImplementationDate)],
+        ['Dias desde a última', client.daysSinceLastImplementation == null ? 'Nunca implementou' : `${fmt.format(client.daysSinceLastImplementation)} dias`],
+        ['Implementação nos últimos 30 dias', client.hasImplementationLast30Days ? 'Sim' : 'Não'],
+      ];
+      const list = (client.mechanisms || []).map(m => `
+        <div class="mech-item">
+          <strong>${escapeHtml(m.name)}</strong>
+          <div class="meta">${escapeHtml(m.status)} · ${escapeHtml(m.dimension || m.market || m.category || 'Sem dimensão')} · ${dateBR(m.implementedAt)}</div>
+          <div class="meta">Valor aplicado: ${m.appliedValue == null ? 'Não informado' : money(m.appliedValue)} · Fonte: ${escapeHtml(m.source || 'Não informado')}</div>
+        </div>`).join('') || '<div class="empty" style="display:block">Sem mecanismos</div>';
+      document.querySelector('#drawerGrid').innerHTML =
+        items.map(([k, v]) => `<div class="drawer-item"><span>${k}</span><strong>${escapeHtml(String(v))}</strong></div>`).join('') +
+        `<div class="drawer-section" style="grid-column:1/-1"><h3>Mecanismos do cliente</h3><div class="mech-list">${list}</div></div>`;
+      document.querySelector('#drawerWarnings').innerHTML = (client.dataWarnings || []).map(w => `<li>${escapeHtml(w)}</li>`).join('') || '<li style="color:var(--color-text-muted)">Nenhum alerta</li>';
+      document.querySelector('#drawer').classList.add('open');
+      document.querySelector('#drawer').setAttribute('aria-hidden', 'false');
+    }
+
+    async function loadMechanisms() {
+      if (mechanismsState.loading) return;
+      mechanismsState.loading = true;
+      const requestId = ++mechanismsState.requestId;
+      const refresh = document.querySelector('#kRefresh');
+      const status = document.querySelector('#kStatus');
+      refresh.disabled = true; refresh.textContent = 'Atualizando…';
+      status.textContent = '● Atualizando dados'; status.style.color = 'var(--color-warning)';
+      try {
+        const response = await fetch(`/api/mechanisms?t=${Date.now()}`, { cache: 'no-store' });
+        const payload = await response.json();
+        if (requestId !== mechanismsState.requestId) return;
+        if (!response.ok) throw new Error(payload.error || 'Falha ao consultar o banco');
+        mechanismsState.payload = payload;
+        mechanismsState.page = 1;
+        setKClientStatus('all');
+        const clients = payload.clients || [];
+        fillSelect(kFilters.engineer, [...new Set(clients.map(c => c.engineer))].sort((a, b) => a.localeCompare(b, 'pt-BR')), 'Todos');
+        fillSelect(kFilters.mechanism, (payload.catalog?.mechanisms || []).map(m => m.name), 'Todos');
+        // use ids in options - rebuild manually
+        const mechSelect = kFilters.mechanism;
+        const curMech = mechSelect.value;
+        mechSelect.innerHTML = '<option value="all">Todos</option>' + (payload.catalog?.mechanisms || []).map(m =>
+          `<option value="${escapeHtml(m.id)}">${escapeHtml(m.name)}</option>`).join('');
+        if ([...mechSelect.options].some(o => o.value === curMech)) mechSelect.value = curMech;
+        const dims = [...new Set(clients.flatMap(c => (c.mechanisms || []).map(m => m.dimension || m.market || m.category || 'Não informado')))].sort((a, b) => a.localeCompare(b, 'pt-BR'));
+        fillSelect(kFilters.category, dims, 'Todos');
+        fillSelect(kFilters.pctRange, ['0%', 'De 1% a 25%', 'De 26% a 50%', 'De 51% a 75%', 'De 76% a 99%', '100%', 'Sem mecanismos disponíveis'], 'Todas');
+        renderMechanisms();
+        const hasWarnings = Boolean(payload.quality?.warnings?.length);
+        status.textContent = hasWarnings ? '● Supabase conectado com alertas' : '● Supabase conectado';
+        status.style.color = hasWarnings ? 'var(--color-warning)' : 'var(--color-success)';
+        document.querySelector('#kUpdated').textContent = `Atualizado em ${new Date(payload.generatedAt).toLocaleString('pt-BR')}`;
+      } catch (error) {
+        if (requestId !== mechanismsState.requestId) return;
+        status.textContent = '● Falha na atualização'; status.style.color = 'var(--color-danger)';
+        document.querySelector('#kUpdated').textContent = error.message;
+        document.querySelector('#kEmpty').style.display = 'block';
+        document.querySelector('#kEmpty').textContent = 'Não foi possível carregar os dados de mecanismos.';
+      } finally {
+        if (requestId === mechanismsState.requestId) {
+          mechanismsState.loading = false; refresh.disabled = false; refresh.textContent = 'Atualizar';
+        }
+      }
+    }
+
+    Object.entries(kFilters).forEach(([key, el]) => {
+      if (!el) return;
+      const evt = key === 'search' ? 'input' : 'change';
+      el.addEventListener(evt, () => {
+        if (key === 'clientStatus') setKClientStatus(el.value);
+        mechanismsState.page = 1;
+        renderMechanisms();
+      });
+    });
+    kActiveOnly.addEventListener('click', (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      setKClientStatus(mechanismsState.clientStatusFilter === 'active' ? 'all' : 'active');
+      mechanismsState.page = 1;
+      renderMechanisms();
+    });
+    document.querySelector('#kClear').addEventListener('click', () => {
+      kFilters.search.value = '';
+      ['engineer', 'mechStatus', 'mechanism', 'category', 'period', 'hasImpl', 'recent', 'pctRange'].forEach(k => kFilters[k].value = 'all');
+      setKClientStatus('all');
+      mechanismsState.page = 1;
+      renderMechanisms();
+    });
+    document.querySelector('#kRefresh').addEventListener('click', loadMechanisms);
+    document.querySelector('#kPrev').addEventListener('click', () => { mechanismsState.page -= 1; renderMechanisms(); });
+    document.querySelector('#kNext').addEventListener('click', () => { mechanismsState.page += 1; renderMechanisms(); });
+    document.querySelector('#kToggleCats').addEventListener('click', () => { mechanismsState.showAllCats = !mechanismsState.showAllCats; renderMechanisms(); });
+    document.querySelector('#kToggleTop').addEventListener('click', () => { mechanismsState.showAllTop = !mechanismsState.showAllTop; renderMechanisms(); });
+    document.querySelector('#kMonthRangeSeg')?.addEventListener('click', (event) => {
+      const btn = event.target.closest('[data-k-month-range]');
+      if (!btn) return;
+      mechanismsState.monthRange = btn.getAttribute('data-k-month-range') === '12' ? '12' : '6';
+      renderMechanisms();
+    });
+    document.querySelectorAll('#view-mechanisms th[data-ksort]').forEach(th => th.addEventListener('click', () => {
+      const key = th.dataset.ksort;
+      if (mechanismsState.sortKey === key) mechanismsState.sortDir = mechanismsState.sortDir === 'asc' ? 'desc' : 'asc';
+      else { mechanismsState.sortKey = key; mechanismsState.sortDir = 'desc'; }
+      renderMechanisms();
+    }));
+    document.querySelector('#kRows').addEventListener('click', e => {
+      const tr = e.target.closest('tr[data-kid]');
+      if (!tr || !mechanismsState.payload) return;
+      const client = mechanismsState.payload.clients.find(c => c.clientId === tr.dataset.kid);
+      if (client) openMechanismDrawer(client);
+    });
+
     loadGeneral();
     setInterval(() => {
       if (views.general.classList.contains('active')) loadGeneral();
       if (views.meetings.classList.contains('active')) loadMeetings();
+      if (views.mechanisms.classList.contains('active')) loadMechanisms();
       if (views.quality.classList.contains('active')) loadQuality();
     }, 5 * 60 * 1000);
   </script>

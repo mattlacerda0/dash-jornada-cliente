@@ -1,0 +1,102 @@
+{
+  "colCount": 12,
+  "hasHorizontal": false,
+  "leftMonth": "2025-08",
+  "rightMonth": "2026-07",
+  "values": [
+    {
+      "month": "2025-08",
+      "value": 70,
+      "barH": 18,
+      "hasValueText": true,
+      "hasLabel": true
+    },
+    {
+      "month": "2025-09",
+      "value": 150,
+      "barH": 38,
+      "hasValueText": true,
+      "hasLabel": true
+    },
+    {
+      "month": "2025-10",
+      "value": 237,
+      "barH": 60,
+      "hasValueText": true,
+      "hasLabel": true
+    },
+    {
+      "month": "2025-11",
+      "value": 60,
+      "barH": 15,
+      "hasValueText": true,
+      "hasLabel": true
+    },
+    {
+      "month": "2025-12",
+      "value": 43,
+      "barH": 11,
+      "hasValueText": true,
+      "hasLabel": true
+    },
+    {
+      "month": "2026-01",
+      "value": 43,
+      "barH": 11,
+      "hasValueText": true,
+      "hasLabel": true
+    },
+    {
+      "month": "2026-02",
+      "value": 715,
+      "barH": 180,
+      "hasValueText": true,
+      "hasLabel": true
+    },
+    {
+      "month": "2026-03",
+      "value": 155,
+      "barH": 39,
+      "hasValueText": true,
+      "hasLabel": true
+    },
+    {
+      "month": "2026-04",
+      "value": 130,
+      "barH": 33,
+      "hasValueText": true,
+      "hasLabel": true
+    },
+    {
+      "month": "2026-05",
+      "value": 149,
+      "barH": 38,
+      "hasValueText": true,
+      "hasLabel": true
+    },
+    {
+      "month": "2026-06",
+      "value": 210,
+      "barH": 53,
+      "hasValueText": true,
+      "hasLabel": true
+    },
+    {
+      "month": "2026-07",
+      "value": 36,
+      "barH": 9,
+      "hasValueText": true,
+      "hasLabel": true
+    }
+  ],
+  "feb": {
+    "month": "2026-02",
+    "value": 715,
+    "barH": 180,
+    "hasValueText": true,
+    "hasLabel": true
+  },
+  "febIsTallestBar": true,
+  "summary": "MÊS MAIS RECENTE\n36\nMÉDIA MENSAL\n166,5\nMEDIANA MENSAL\n139,5\nVARIAÇÃO\n↓ 82,9%",
+  "gridClass": "acquisition-chart-grid"
+}

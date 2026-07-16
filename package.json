@@ -1,0 +1,21 @@
+{
+  "name": "analytics_jornada_cliente",
+  "version": "1.0.0",
+  "description": "Primeira aba do dashboard Quarta Via conectada ao Supabase.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mattlacerda0/dash-jornada-cliente.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/mattlacerda0/dash-jornada-cliente/issues"
+  },
+  "homepage": "https://github.com/mattlacerda0/dash-jornada-cliente#readme"
+}

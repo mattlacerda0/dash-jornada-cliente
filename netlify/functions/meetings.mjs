@@ -1,4 +1,4 @@
-const CLIENT_SELECT = "id,codigo,name,engenheiro_patrimonial";
+const CLIENT_SELECT = "id,codigo,name,engenheiro_patrimonial,data_inicio_ciclo,created_at";
 const CALENDLY_SELECT =
   "id,client_id,calendly_event_uri,event_name,start_time,end_time,host_email,manually_linked";
 const MANUAL_SELECT =
@@ -12,6 +12,8 @@ const USED_FIELDS = [
   { table: "clients", column: "codigo", role: "clientCode" },
   { table: "clients", column: "name", role: "clientName" },
   { table: "clients", column: "engenheiro_patrimonial", role: "engineer" },
+  { table: "clients", column: "data_inicio_ciclo", role: "entryDateCycleStart" },
+  { table: "clients", column: "created_at", role: "entryDateFallback" },
   { table: "client_meetings", column: "id", role: "meetingId" },
   { table: "client_meetings", column: "client_id", role: "meetingClient" },
   { table: "client_meetings", column: "calendly_event_uri", role: "externalUri" },
@@ -30,7 +32,9 @@ const USED_FIELDS = [
   { table: "meeting_attendance", column: "calendly_event_uri", role: "attendanceJoin" },
   { table: "meeting_attendance", column: "status", role: "attendanceStatus" },
   { table: "meeting_attendance", column: "remarcado", role: "rescheduled" },
+  { table: "meeting_attendance", column: "link_gravacao", role: "recordingUrl" },
   { table: "meeting_attendance", column: "created_at", role: "attendanceCreated" },
+  { table: "meeting_attendance", column: "updated_at", role: "attendanceRecency" },
   { table: "client_implementation_meeting_date", column: "client_id", role: "implClient" },
   { table: "client_implementation_meeting_date", column: "meeting_date", role: "implDate" },
   { table: "client_implementation_meeting_date", column: "source", role: "implSource" },
@@ -147,6 +151,26 @@ function daysBetween(a, b) {
   return Math.floor(ms / 86400000);
 }
 
+function startOfUtcDay(date) {
+  return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
+}
+
+/** Mesma prioridade de entrada usada no restante do portal (sem view de assinatura). */
+function resolveClientEntry(client) {
+  const cycle = parseDate(client.data_inicio_ciclo);
+  const created = parseDate(client.created_at);
+  if (cycle) return { date: cycle, source: "cycle_start" };
+  if (created) return { date: created, source: "created_at_fallback" };
+  return { date: null, source: "unavailable" };
+}
+
+function classifyMeetingDate(meetingDate, entryDate, now) {
+  if (!meetingDate) return "invalid";
+  if (meetingDate > now) return "future";
+  if (entryDate && startOfUtcDay(meetingDate) < startOfUtcDay(entryDate)) return "before_client_entry";
+  return "valid";
+}
+
 function monthsBetween(a, b) {
   if (!a || !b) return 1;
   const months = (b.getUTCFullYear() - a.getUTCFullYear()) * 12 + (b.getUTCMonth() - a.getUTCMonth()) + 1;
@@ -156,6 +180,40 @@ function monthsBetween(a, b) {
 function average(nums) {
   if (!nums.length) return null;
   return Math.round((nums.reduce((a, b) => a + b, 0) / nums.length) * 10) / 10;
+}
+
+function percentile(sorted, p) {
+  if (!sorted.length) return null;
+  if (sorted.length === 1) return sorted[0];
+  const idx = (p / 100) * (sorted.length - 1);
+  const lo = Math.floor(idx);
+  const hi = Math.ceil(idx);
+  if (lo === hi) return sorted[lo];
+  const w = idx - lo;
+  return sorted[lo] * (1 - w) + sorted[hi] * w;
+}
+
+function robustStats(values) {
+  const sorted = values.filter((v) => v != null && Number.isFinite(v) && v >= 0).sort((a, b) => a - b);
+  if (!sorted.length) {
+    return { mean: null, median: null, trimmedMean: null, p5: null, p95: null, trimmedExcludedCount: 0, extremeImpact: false, validCount: 0 };
+  }
+  const mean = average(sorted);
+  const median = Math.round(percentile(sorted, 50) * 10) / 10;
+  const p5 = Math.round(percentile(sorted, 5) * 10) / 10;
+  const p95 = Math.round(percentile(sorted, 95) * 10) / 10;
+  let trimmed = sorted;
+  let trimmedExcludedCount = 0;
+  if (sorted.length >= 20) {
+    const low = percentile(sorted, 5);
+    const high = percentile(sorted, 95);
+    trimmed = sorted.filter((v) => v >= low && v <= high);
+    trimmedExcludedCount = sorted.length - trimmed.length;
+  }
+  const trimmedMean = average(trimmed);
+  const extremeImpact =
+    median != null && median !== 0 && mean != null && Math.abs(mean - median) / Math.abs(median) >= 0.3;
+  return { mean, median, trimmedMean, p5, p95, trimmedExcludedCount, extremeImpact, validCount: sorted.length };
 }
 
 function distributionFrom(items, keyFn, orderedLabels) {
@@ -382,32 +440,94 @@ function buildPayload(clients, calendlyRows, manualRows, attendanceRows, implRow
   }
 
   const clientRows = [];
+  let preEntryMeetingsCount = 0;
+  const clientsWithPreEntry = new Set();
+  let preEntryExcludedFromFirst = 0;
+
   for (const client of clients) {
     const clientId = String(client.id);
-    const clientMeetings = (byClient.get(clientId) || [])
+    const entry = resolveClientEntry(client);
+    const entryDate = entry.date;
+    const rawMeetings = (byClient.get(clientId) || [])
       .slice()
       .sort((a, b) => (parseDate(a.startTime)?.getTime() || 0) - (parseDate(b.startTime)?.getTime() || 0));
+
     const dataWarnings = [];
-    const completedPast = clientMeetings.filter((m) => isCompletedPast(m, now));
-    const pastAny = clientMeetings.filter((m) => isPastMeeting(m, now) && m.attendanceStatus !== "cancelada");
-    const absences = clientMeetings.filter((m) => m.attendanceStatus === "nao_compareceu").length;
-    const reschedules = clientMeetings.filter((m) => m.rescheduled).length;
-    const cancelledCount = null; // fonte não confiável
+    const annotatedMeetings = rawMeetings.map((m) => {
+      const start = parseDate(m.startTime);
+      const meetingDateStatus = classifyMeetingDate(start, entryDate, now);
+      if (meetingDateStatus === "before_client_entry") {
+        preEntryMeetingsCount += 1;
+        clientsWithPreEntry.add(clientId);
+      }
+      return { ...m, meetingDateStatus };
+    });
+
+    const journeyMeetings = annotatedMeetings.filter((m) => m.meetingDateStatus === "valid");
+    const preEntryOnly =
+      annotatedMeetings.length > 0 &&
+      journeyMeetings.length === 0 &&
+      annotatedMeetings.every((m) => m.meetingDateStatus === "before_client_entry" || m.meetingDateStatus === "future")
+        ? annotatedMeetings.some((m) => m.meetingDateStatus === "before_client_entry")
+        : false;
+
+    const completedPast = journeyMeetings.filter((m) => isCompletedPast(m, now));
+    const pastAny = journeyMeetings.filter((m) => isPastMeeting(m, now) && m.attendanceStatus !== "cancelada");
+    const absences = journeyMeetings.filter((m) => m.attendanceStatus === "nao_compareceu").length;
+    const reschedules = journeyMeetings.filter((m) => m.rescheduled).length;
+    const cancelledCount = null;
 
     let firstMeetingCompleted = null;
     let firstMeetingDate = null;
+    let firstMeetingStatus = null;
+    let daysFromEntryToFirstMeeting = null;
+
+    const completedPastRaw = annotatedMeetings.filter((m) => isCompletedPast(m, now));
+    const rawFirstBeforeEntry = completedPastRaw.find((m) => m.meetingDateStatus === "before_client_entry");
+
     if (completedPast.length) {
       firstMeetingCompleted = true;
       firstMeetingDate = completedPast[0].startTime;
+      firstMeetingStatus = "calculated";
+      if (entryDate) {
+        const days = daysBetween(entryDate, parseDate(firstMeetingDate));
+        if (days >= 0) daysFromEntryToFirstMeeting = days;
+        else {
+          daysFromEntryToFirstMeeting = null;
+          dataWarnings.push("Reunião registrada antes da data de entrada do cliente");
+        }
+      }
+      if (rawFirstBeforeEntry) {
+        preEntryExcludedFromFirst += 1;
+        dataWarnings.push("Reunião registrada antes da data de entrada do cliente");
+      }
     } else if (implByClient.has(clientId)) {
-      firstMeetingCompleted = true;
-      firstMeetingDate = implByClient.get(clientId).toISOString();
-      dataWarnings.push("Primeira reunião inferida via client_implementation_meeting_date sem presença confirmada em meeting_attendance.");
-    } else if (clientMeetings.length) {
+      const implDate = implByClient.get(clientId);
+      if (!entryDate || startOfUtcDay(implDate) >= startOfUtcDay(entryDate)) {
+        firstMeetingCompleted = true;
+        firstMeetingDate = implDate.toISOString();
+        firstMeetingStatus = "inferred_implementation_date";
+        dataWarnings.push(
+          "Primeira reunião inferida via client_implementation_meeting_date sem presença confirmada em meeting_attendance.",
+        );
+        if (entryDate) daysFromEntryToFirstMeeting = daysBetween(entryDate, implDate);
+      } else {
+        firstMeetingCompleted = false;
+        firstMeetingStatus = "only_pre_entry_meetings";
+        dataWarnings.push("Reunião registrada antes da data de entrada do cliente");
+        dataWarnings.push("Cliente possui reuniões registradas somente antes da entrada na jornada.");
+      }
+    } else if (preEntryOnly || (annotatedMeetings.length && !journeyMeetings.length && clientsWithPreEntry.has(clientId))) {
       firstMeetingCompleted = false;
+      firstMeetingStatus = "only_pre_entry_meetings";
+      dataWarnings.push("Cliente possui reuniões registradas somente antes da entrada na jornada.");
+    } else if (annotatedMeetings.length) {
+      firstMeetingCompleted = false;
+      firstMeetingStatus = "no_confirmed_attendance";
       dataWarnings.push("Cliente com reuniões, mas sem presença confirmada (compareceu).");
     } else {
       firstMeetingCompleted = false;
+      firstMeetingStatus = "no_meetings";
     }
 
     let lastMeetingDate = null;
@@ -415,60 +535,94 @@ function buildPayload(clients, calendlyRows, manualRows, attendanceRows, implRow
     let lastMeetingStatusConfirmed = true;
     if (completedPast.length) {
       lastMeetingDate = completedPast[completedPast.length - 1].startTime;
-      daysSinceLastMeeting = daysBetween(parseDate(lastMeetingDate), now);
+      const lastDate = parseDate(lastMeetingDate);
+      if (lastDate && lastDate <= now) {
+        const days = daysBetween(lastDate, now);
+        if (days >= 0) daysSinceLastMeeting = days;
+      }
     } else if (pastAny.length) {
       lastMeetingDate = pastAny[pastAny.length - 1].startTime;
-      daysSinceLastMeeting = daysBetween(parseDate(lastMeetingDate), now);
+      const lastDate = parseDate(lastMeetingDate);
+      if (lastDate && lastDate <= now) {
+        const days = daysBetween(lastDate, now);
+        if (days >= 0) daysSinceLastMeeting = days;
+      }
       lastMeetingStatusConfirmed = false;
       dataWarnings.push("Última reunião considerada com status não confirmado.");
     }
 
     const intervals = [];
-    for (let i = 1; i < completedPast.length; i += 1) {
-      const prev = parseDate(completedPast[i - 1].startTime);
-      const curr = parseDate(completedPast[i].startTime);
+    const dedupedCompleted = [];
+    const seen = new Set();
+    for (const m of completedPast) {
+      const curr = parseDate(m.startTime);
+      if (!curr) continue;
+      const key = String(curr.getTime());
+      if (seen.has(key)) continue;
+      seen.add(key);
+      dedupedCompleted.push(m);
+    }
+    for (let i = 1; i < dedupedCompleted.length; i += 1) {
+      const prev = parseDate(dedupedCompleted[i - 1].startTime);
+      const curr = parseDate(dedupedCompleted[i].startTime);
       if (!prev || !curr) continue;
       const diff = daysBetween(prev, curr);
-      if (diff >= 0) intervals.push(diff);
-      else dataWarnings.push("Intervalo negativo detectado e ignorado.");
+      if (diff > 0) intervals.push(diff);
+      else if (diff < 0) dataWarnings.push("Intervalo negativo detectado e ignorado.");
     }
     const averageIntervalDays = intervals.length ? average(intervals) : null;
+    const typicalIntervalDays = intervals.length
+      ? Math.round(percentile([...intervals].sort((a, b) => a - b), 50) * 10) / 10
+      : null;
 
     let meetingsPerMonth = null;
-    if (clientMeetings.length) {
-      const dated = clientMeetings.map((m) => parseDate(m.startTime)).filter(Boolean).sort((a, b) => a - b);
+    if (journeyMeetings.length) {
+      const dated = journeyMeetings.map((m) => parseDate(m.startTime)).filter(Boolean).sort((a, b) => a - b);
       if (dated.length) {
-        meetingsPerMonth = Math.round((clientMeetings.length / monthsBetween(dated[0], dated[dated.length - 1])) * 10) / 10;
+        meetingsPerMonth =
+          Math.round((journeyMeetings.length / monthsBetween(dated[0], dated[dated.length - 1])) * 10) / 10;
       }
     }
 
-    if (clientMeetings.some((m) => m.attendanceStatus === "desconhecido")) {
+    if (annotatedMeetings.some((m) => m.attendanceStatus === "desconhecido")) {
       dataWarnings.push("Há reunião sem status de presença confirmado.");
     }
-    if (firstMeetingCompleted === false) dataWarnings.push("Cliente ainda não realizou a primeira reunião.");
+    if (firstMeetingCompleted === false && firstMeetingStatus !== "only_pre_entry_meetings") {
+      dataWarnings.push("Cliente ainda não realizou a primeira reunião.");
+    }
     if (absences) dataWarnings.push("Cliente possui falta(s) registrada(s).");
+    if (entry.source === "created_at_fallback") {
+      dataWarnings.push("Entrada calculada com created_at por ausência de data_inicio_ciclo.");
+    }
 
     clientRows.push({
       clientId,
       clientCode: blankToNull(client.codigo),
       clientName: blankToNull(client.name) || "Não informado",
       engineer: labelOrUnknown(client.engenheiro_patrimonial),
-      totalMeetings: clientMeetings.length,
+      entryDate: entryDate ? entryDate.toISOString() : null,
+      entryDateSource: entry.source,
+      totalMeetings: annotatedMeetings.filter((m) => m.meetingDateStatus !== "before_client_entry" && m.meetingDateStatus !== "invalid").length,
+      journeyMeetingsCount: journeyMeetings.length,
+      preEntryMeetingsCount: annotatedMeetings.filter((m) => m.meetingDateStatus === "before_client_entry").length,
       meetingsPerMonth,
       lastMeetingDate,
       daysSinceLastMeeting,
       lastMeetingStatusConfirmed,
       averageIntervalDays,
+      typicalIntervalDays,
+      daysFromEntryToFirstMeeting,
       absences,
       reschedules,
       cancelledMeetings: cancelledCount,
       firstMeetingCompleted,
       firstMeetingDate,
-      frequencyBand: freqBand(clientMeetings.length),
+      firstMeetingStatus,
+      frequencyBand: freqBand(journeyMeetings.length),
       daysSinceBand: daysSinceBand(daysSinceLastMeeting),
       intervalBand: intervalBand(averageIntervalDays),
-      dataWarnings,
-      meetings: clientMeetings.map((m) => ({
+      dataWarnings: [...new Set(dataWarnings)],
+      meetings: annotatedMeetings.map((m) => ({
         meetingId: m.meetingId,
         source: m.source,
         title: m.title,
@@ -477,25 +631,43 @@ function buildPayload(clients, calendlyRows, manualRows, attendanceRows, implRow
         attendanceStatus: m.attendanceStatus,
         rescheduled: m.rescheduled,
         recordingUrl: m.recordingUrl,
+        meetingDateStatus: m.meetingDateStatus,
       })),
     });
   }
 
-  const datedMeetings = meetings
+  if (preEntryMeetingsCount) {
+    qualityWarnings.push(
+      `${preEntryMeetingsCount} reuniões anteriores à entrada do cliente (${clientsWithPreEntry.size} clientes). Excluídas de primeira reunião, intervalo e dias desde a última.`,
+    );
+  }
+
+  /** Reuniões usadas em KPIs/gráficos: exclui anteriores à entrada e inválidas. */
+  const analyticMeetings = [];
+  for (const client of clientRows) {
+    for (const meeting of client.meetings || []) {
+      if (meeting.meetingDateStatus === "before_client_entry" || meeting.meetingDateStatus === "invalid") continue;
+      analyticMeetings.push(meeting);
+    }
+  }
+
+  const datedMeetings = analyticMeetings
     .map((m) => parseDate(m.startTime))
     .filter(Boolean)
     .sort((a, b) => a - b);
   const averageMeetingsPerMonth = datedMeetings.length
-    ? Math.round((meetings.length / monthsBetween(datedMeetings[0], datedMeetings[datedMeetings.length - 1])) * 10) / 10
+    ? Math.round((analyticMeetings.length / monthsBetween(datedMeetings[0], datedMeetings[datedMeetings.length - 1])) * 10) / 10
     : null;
 
   const withFirst = clientRows.filter((c) => c.firstMeetingCompleted === true).length;
   const withoutFirst = clientRows.filter((c) => c.firstMeetingCompleted === false).length;
   const portfolio = clientRows.length || 1;
+  const relatedMeetings = meetings.length || 1;
+  const preEntryPercent = Math.round((preEntryMeetingsCount / relatedMeetings) * 1000) / 10;
 
   const monthMap = new Map();
   let monthInconsistencies = 0;
-  for (const meeting of meetings) {
+  for (const meeting of analyticMeetings) {
     const start = parseDate(meeting.startTime);
     if (!start) continue;
     const key = `${start.getUTCFullYear()}-${String(start.getUTCMonth() + 1).padStart(2, "0")}`;
@@ -533,7 +705,7 @@ function buildPayload(clients, calendlyRows, manualRows, attendanceRows, implRow
     );
   }
 
-  const classifiablePast = meetings.filter((m) => {
+  const classifiablePast = analyticMeetings.filter((m) => {
     const start = parseDate(m.startTime);
     if (!start || start > now) return false;
     return m.attendanceStatus === "compareceu" || m.attendanceStatus === "nao_compareceu";
@@ -544,15 +716,22 @@ function buildPayload(clients, calendlyRows, manualRows, attendanceRows, implRow
       ? Math.round((attendedClassifiable / classifiablePast.length) * 1000) / 10
       : null;
 
+  const daysSinceValues = clientRows.map((c) => c.daysSinceLastMeeting).filter((v) => v != null && v >= 0);
+  const intervalValues = clientRows
+    .map((c) => c.typicalIntervalDays ?? c.averageIntervalDays)
+    .filter((v) => v != null && v >= 0);
+  const daysSinceStats = robustStats(daysSinceValues);
+  const intervalStats = robustStats(intervalValues);
+
   const summary = {
-    totalMeetings: meetings.length,
+    totalMeetings: analyticMeetings.length,
     averageMeetingsPerMonth,
-    averageDaysSinceLastMeeting: average(
-      clientRows.map((c) => c.daysSinceLastMeeting).filter((v) => v != null),
-    ),
-    averageIntervalDays: average(
-      clientRows.map((c) => c.averageIntervalDays).filter((v) => v != null),
-    ),
+    averageDaysSinceLastMeeting: daysSinceStats.mean,
+    typicalDaysSinceLastMeeting: daysSinceStats.median,
+    daysSinceLastMeetingStats: daysSinceStats,
+    averageIntervalDays: intervalStats.mean,
+    typicalIntervalDays: intervalStats.median,
+    intervalDaysStats: intervalStats,
     totalAbsences: clientRows.reduce((a, c) => a + c.absences, 0),
     totalNoShows: clientRows.reduce((a, c) => a + c.absences, 0),
     totalReschedules: clientRows.reduce((a, c) => a + c.reschedules, 0),
@@ -560,12 +739,14 @@ function buildPayload(clients, calendlyRows, manualRows, attendanceRows, implRow
     clientsWithFirstMeeting: withFirst,
     clientsWithoutFirstMeeting: withoutFirst,
     firstMeetingCompletionRate: Math.round((withFirst / portfolio) * 1000) / 10,
+    preEntryMeetingsExcluded: preEntryMeetingsCount,
+    clientsWithPreEntryMeetings: clientsWithPreEntry.size,
   };
 
   const distributions = {
     meetingsByMonth,
     attendanceStatus: distributionFrom(
-      meetings,
+      analyticMeetings,
       (m) => {
         if (m.attendanceStatus === "compareceu") return "Compareceu";
         if (m.attendanceStatus === "nao_compareceu") return "No-show";
@@ -599,7 +780,18 @@ function buildPayload(clients, calendlyRows, manualRows, attendanceRows, implRow
     summary,
     distributions,
     clients: clientRows,
-    quality: { usedFields: USED_FIELDS, warnings: qualityWarnings },
+    quality: {
+      usedFields: USED_FIELDS,
+      warnings: qualityWarnings,
+      preEntryMeetings: {
+        count: preEntryMeetingsCount,
+        percentOfRelated: preEntryPercent,
+        clientsImpacted: clientsWithPreEntry.size,
+        excludedFromFirstMeetingCandidates: preEntryExcludedFromFirst,
+        impact:
+          "Excluídas de primeira reunião, intervalo típico, dias desde a última, médias/medianas e faixas de distribuição.",
+      },
+    },
   };
 }
 

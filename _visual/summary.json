@@ -1,0 +1,14 @@
+{
+  "apiLogSample": "acquisitionsByMonth recebidos: 31 [array Array]",
+  "cols": {
+    "6": 6,
+    "12": 12,
+    "24": 24
+  },
+  "noHorizontal": true,
+  "febTallestOn6": true,
+  "order6": {
+    "left": "2026-02",
+    "right": "2026-07"
+  }
+}

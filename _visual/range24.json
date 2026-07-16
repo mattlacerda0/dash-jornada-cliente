@@ -1,0 +1,186 @@
+{
+  "colCount": 24,
+  "hasHorizontal": false,
+  "leftMonth": "2024-08",
+  "rightMonth": "2026-07",
+  "values": [
+    {
+      "month": "2024-08",
+      "value": 24,
+      "barH": 6,
+      "hasValueText": true,
+      "hasLabel": true
+    },
+    {
+      "month": "2024-09",
+      "value": 34,
+      "barH": 9,
+      "hasValueText": true,
+      "hasLabel": true
+    },
+    {
+      "month": "2024-10",
+      "value": 110,
+      "barH": 28,
+      "hasValueText": true,
+      "hasLabel": true
+    },
+    {
+      "month": "2024-11",
+      "value": 44,
+      "barH": 11,
+      "hasValueText": true,
+      "hasLabel": true
+    },
+    {
+      "month": "2024-12",
+      "value": 23,
+      "barH": 6,
+      "hasValueText": true,
+      "hasLabel": true
+    },
+    {
+      "month": "2025-01",
+      "value": 65,
+      "barH": 16,
+      "hasValueText": true,
+      "hasLabel": true
+    },
+    {
+      "month": "2025-02",
+      "value": 58,
+      "barH": 15,
+      "hasValueText": true,
+      "hasLabel": true
+    },
+    {
+      "month": "2025-03",
+      "value": 236,
+      "barH": 59,
+      "hasValueText": true,
+      "hasLabel": true
+    },
+    {
+      "month": "2025-04",
+      "value": 85,
+      "barH": 21,
+      "hasValueText": true,
+      "hasLabel": true
+    },
+    {
+      "month": "2025-05",
+      "value": 124,
+      "barH": 31,
+      "hasValueText": true,
+      "hasLabel": true
+    },
+    {
+      "month": "2025-06",
+      "value": 186,
+      "barH": 47,
+      "hasValueText": true,
+      "hasLabel": true
+    },
+    {
+      "month": "2025-07",
+      "value": 107,
+      "barH": 27,
+      "hasValueText": true,
+      "hasLabel": true
+    },
+    {
+      "month": "2025-08",
+      "value": 70,
+      "barH": 18,
+      "hasValueText": true,
+      "hasLabel": true
+    },
+    {
+      "month": "2025-09",
+      "value": 150,
+      "barH": 38,
+      "hasValueText": true,
+      "hasLabel": true
+    },
+    {
+      "month": "2025-10",
+      "value": 237,
+      "barH": 60,
+      "hasValueText": true,
+      "hasLabel": true
+    },
+    {
+      "month": "2025-11",
+      "value": 60,
+      "barH": 15,
+      "hasValueText": true,
+      "hasLabel": true
+    },
+    {
+      "month": "2025-12",
+      "value": 43,
+      "barH": 11,
+      "hasValueText": true,
+      "hasLabel": true
+    },
+    {
+      "month": "2026-01",
+      "value": 43,
+      "barH": 11,
+      "hasValueText": true,
+      "hasLabel": true
+    },
+    {
+      "month": "2026-02",
+      "value": 715,
+      "barH": 180,
+      "hasValueText": true,
+      "hasLabel": true
+    },
+    {
+      "month": "2026-03",
+      "value": 155,
+      "barH": 39,
+      "hasValueText": true,
+      "hasLabel": true
+    },
+    {
+      "month": "2026-04",
+      "value": 130,
+      "barH": 33,
+      "hasValueText": true,
+      "hasLabel": true
+    },
+    {
+      "month": "2026-05",
+      "value": 149,
+      "barH": 38,
+      "hasValueText": true,
+      "hasLabel": true
+    },
+    {
+      "month": "2026-06",
+      "value": 210,
+      "barH": 53,
+      "hasValueText": true,
+      "hasLabel": true
+    },
+    {
+      "month": "2026-07",
+      "value": 36,
+      "barH": 9,
+      "hasValueText": true,
+      "hasLabel": true
+    }
+  ],
+  "feb": {
+    "month": "2026-02",
+    "value": 715,
+    "barH": 180,
+    "hasValueText": true,
+    "hasLabel": true
+  },
+  "febIsTallestBar": true,
+  "summary": "MÊS MAIS RECENTE\n36\nMÉDIA MENSAL\n128,9\nMEDIANA MENSAL\n96\nVARIAÇÃO\n↓ 82,9%",
+  "gridClass": "acquisition-chart-grid"
+}

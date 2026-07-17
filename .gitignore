@@ -3,3 +3,9 @@ exemplo.env
 .server.stdout.log
 .server.stderr.log
 .netlify
+node_modules/
+__pycache__/
+*.pyc
+_visual/
+_v.json
+_visual_acq.mjs

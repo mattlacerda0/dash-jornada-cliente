@@ -22,6 +22,7 @@ if (Bun.env.SUPABASE_SERVICE_ROLE_KEY) process.env.SUPABASE_SERVICE_ROLE_KEY = B
 const generalDataHandler = (await import("./netlify/functions/general-data.mjs")).default;
 const onboardingHandler = (await import("./netlify/functions/onboarding.mjs")).default;
 const meetingsHandler = (await import("./netlify/functions/meetings.mjs")).default;
+const mechanismsHandler = (await import("./netlify/functions/mechanisms.mjs")).default;
 const qualityHandler = (await import("./netlify/functions/quality.mjs")).default;
 const patrimonialPlanHandler = (await import("./netlify/functions/patrimonial-plan.mjs")).default;
 
@@ -196,6 +197,7 @@ const server = Bun.serve({
     if (url.pathname === "/api/onboarding") return onboardingHandler();
     if (url.pathname === "/api/meetings") return meetingsHandler();
     if (url.pathname === "/api/patrimonial-plan") return patrimonialPlanHandler();
+    if (url.pathname === "/api/mechanisms") return mechanismsHandler();
     if (url.pathname !== "/" && url.pathname !== "/index.html") return new Response("Não encontrado", { status: 404 });
     return new Response(Bun.file(`${ROOT}/index.html`), { headers: { "Content-Type": "text/html; charset=utf-8" } });
   },

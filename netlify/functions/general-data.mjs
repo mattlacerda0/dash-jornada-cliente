@@ -1,3 +1,6 @@
+import { requireCorporateAuth } from "./_shared/auth.mjs";
+import { dataConfigurationError } from "./_shared/env.mjs";
+
 const CLIENT_SELECT =
   "id,codigo,name,data_inicio_ciclo,created_at,status,segmentacao,engenheiro_patrimonial,data_churn";
 const CANCEL_SELECT =
@@ -114,15 +117,7 @@ const MEASURE_CONFIG = {
 };
 
 function configurationError() {
-  if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
-    return "Configuração do Supabase ausente no Netlify";
-  }
-  try {
-    if (new URL(process.env.SUPABASE_URL).protocol !== "https:") return "SUPABASE_URL deve usar HTTPS";
-  } catch {
-    return "SUPABASE_URL inválida";
-  }
-  return null;
+  return dataConfigurationError();
 }
 
 function blankToNull(value) {
@@ -478,10 +473,10 @@ async function fetchAll(table, select, options = {}) {
   const pageSize = options.pageSize || 1000;
   let offset = 0;
   const rows = [];
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const key = process.env.DATA_SUPABASE_SERVICE_ROLE_KEY;
   const order = options.order === null ? null : options.order || "id.asc";
   while (true) {
-    const url = new URL(`/rest/v1/${table}`, process.env.SUPABASE_URL);
+    const url = new URL(`/rest/v1/${table}`, process.env.DATA_SUPABASE_URL);
     url.searchParams.set("select", select);
     if (order) url.searchParams.set("order", order);
     if (options.filters) {
@@ -958,7 +953,9 @@ function buildPayload(clients, cancellations, financialRows, signatureMap, signa
   };
 }
 
-export default async () => {
+export default async (request) => {
+  const denied = await requireCorporateAuth(request);
+  if (denied) return denied;
   const configError = configurationError();
   if (configError) {
     return Response.json(
@@ -966,6 +963,10 @@ export default async () => {
       { status: 503, headers: { "Cache-Control": "no-store" } },
     );
   }
+  console.error(
+    "[Data] projeto:",
+    String(process.env.DATA_SUPABASE_URL || "").replace(/^https:\/\//, "").split(".")[0],
+  );
   try {
     const [clients, cancellations, financialRows, signatureResult] = await Promise.all([
       fetchAll("clients", CLIENT_SELECT),
@@ -987,9 +988,14 @@ export default async () => {
       },
     );
     return Response.json(payload, { headers: { "Cache-Control": "no-store" } });
-  } catch {
+  } catch (error) {
+    console.error("[Data] general-data failed:", error instanceof Error ? error.message : error);
     return Response.json(
-      { error: "Não foi possível consolidar os dados gerais" },
+      {
+        error: "Não foi possível consultar a base de dados.",
+        code: "data_query_failed",
+        detail: error instanceof Error ? error.message : String(error),
+      },
       { status: 500, headers: { "Cache-Control": "no-store" } },
     );
   }

@@ -1,3 +1,6 @@
+import { requireCorporateAuth } from "./_shared/auth.mjs";
+import { dataConfigurationError } from "./_shared/env.mjs";
+
 const CLIENT_SELECT = "id,codigo,name,engenheiro_patrimonial,data_inicio_ciclo,created_at";
 const CALENDLY_SELECT =
   "id,client_id,calendly_event_uri,event_name,start_time,end_time,host_email,manually_linked";
@@ -58,15 +61,7 @@ const INTERVAL_BANDS = [
 ];
 
 function configurationError() {
-  if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
-    return "Configuração do Supabase ausente no Netlify";
-  }
-  try {
-    if (new URL(process.env.SUPABASE_URL).protocol !== "https:") return "SUPABASE_URL deve usar HTTPS";
-  } catch {
-    return "SUPABASE_URL inválida";
-  }
-  return null;
+  return dataConfigurationError();
 }
 
 function blankToNull(value) {
@@ -264,9 +259,9 @@ async function fetchAll(table, select, order = "id.asc") {
   const pageSize = 1000;
   let offset = 0;
   const rows = [];
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const key = process.env.DATA_SUPABASE_SERVICE_ROLE_KEY;
   while (true) {
-    const url = new URL(`/rest/v1/${table}`, process.env.SUPABASE_URL);
+    const url = new URL(`/rest/v1/${table}`, process.env.DATA_SUPABASE_URL);
     url.searchParams.set("select", select);
     if (order) url.searchParams.set("order", order);
     const response = await fetch(url, {
@@ -795,7 +790,9 @@ function buildPayload(clients, calendlyRows, manualRows, attendanceRows, implRow
   };
 }
 
-export default async () => {
+export default async (request) => {
+  const denied = await requireCorporateAuth(request);
+  if (denied) return denied;
   const configError = configurationError();
   if (configError) {
     return Response.json(

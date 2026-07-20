@@ -7,13 +7,7 @@
     { "src": "favicon.ico", "use": "@vercel/static" }
   ],
   "routes": [
-    { "src": "/api/general-data", "dest": "/api/general-data.mjs" },
-    { "src": "/api/meetings", "dest": "/api/meetings.mjs" },
-    { "src": "/api/mechanisms", "dest": "/api/mechanisms.mjs" },
-    { "src": "/api/onboarding", "dest": "/api/onboarding.mjs" },
-    { "src": "/api/patrimonial-plan", "dest": "/api/patrimonial-plan.mjs" },
-    { "src": "/api/quality", "dest": "/api/quality.mjs" },
-    { "src": "/favicon.ico", "dest": "/favicon.ico" },
+    { "handle": "filesystem" },
     { "src": "/(.*)", "dest": "/index.html" }
   ]
 }

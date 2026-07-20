@@ -1,3 +1,6 @@
+import { requireCorporateAuth } from "./_shared/auth.mjs";
+import { dataConfigurationError } from "./_shared/env.mjs";
+
 // domain, table, column, includeBlank
 // Uniqueness key: public.{table}.{column}
 const FIELDS = [
@@ -16,13 +19,14 @@ const FIELDS = [
   ["Cancelamento", "clients", "data_churn", false],
   ["Cancelamento", "clients", "motivo_churn", true],
   ["Financeiro", "client_financial_data", "client_id", false],
+  ["Financeiro", "client_financial_data", "created_at", false],
+  ["Financeiro", "client_financial_data", "updated_at", false],
   ["Financeiro", "client_financial_data", "ultima_renda_mensal", false],
   ["Financeiro", "client_financial_data", "ultimo_aporte", false],
   ["Financeiro", "client_financial_data", "reserva_liquidez", false],
   ["Financeiro", "client_financial_data", "possui_imovel", false],
   ["Financeiro", "client_financial_data", "possui_carro", false],
   ["Financeiro", "client_financial_data", "possui_consorcio", false],
-  ["Financeiro", "client_financial_data", "updated_at", false],
   ["Jornada", "client_journeys", "started_at", false],
   ["Jornada", "client_journeys", "current_stage_id", false],
   ["Reuniões", "client_meetings", "id", false],
@@ -103,14 +107,15 @@ const FIELD_DESCRIPTIONS = {
   "cancellations.created_at": "Data de criação do registro de cancelamento, usada como apoio na consolidação.",
   "vw_info_cliente.id_cliente": "Identificador do cliente na visão de informações cadastrais.",
   "vw_info_cliente.data_assinatura_contrato": "Data em que o contrato do cliente foi assinado, usada como referência principal de aquisição.",
-  "client_financial_data.client_id": "Cliente vinculado ao registro de diagnóstico financeiro.",
+  "client_financial_data.client_id": "Cliente vinculado às informações financeiras.",
+  "client_financial_data.created_at": "Data de criação do registro financeiro do cliente.",
+  "client_financial_data.updated_at": "Data da última atualização conhecida do registro financeiro.",
   "client_financial_data.reserva_liquidez": "Valor informado como reserva de liquidez do cliente.",
   "client_financial_data.ultimo_aporte": "Valor do último aporte financeiro registrado.",
   "client_financial_data.ultima_renda_mensal": "Última renda mensal registrada para o cliente.",
   "client_financial_data.possui_imovel": "Indica se o cliente informou possuir imóvel.",
   "client_financial_data.possui_carro": "Indica se o cliente informou possuir carro.",
   "client_financial_data.possui_consorcio": "Indica se o cliente informou possuir consórcio.",
-  "client_financial_data.updated_at": "Data de atualização do diagnóstico financeiro, usada para escolher o registro mais recente.",
   "client_meetings.id": "Identificador único da reunião registrada.",
   "client_meetings.client_id": "Cliente vinculado à reunião.",
   "client_meetings.calendly_event_uri": "Identificador externo do evento no Calendly.",
@@ -155,15 +160,15 @@ const FIELD_DESCRIPTIONS = {
 
 /** Dashboards que consomem a coluna (sem incluir campos só da própria página de qualidade). */
 const FIELD_USED_IN = {
-  "clients.id": ["Dados Gerais", "Reuniões", "Implementação de Mecanismos"],
-  "clients.codigo": ["Dados Gerais", "Reuniões", "Implementação de Mecanismos"],
-  "clients.name": ["Dados Gerais", "Reuniões", "Implementação de Mecanismos"],
+  "clients.id": ["Dados Gerais", "Reuniões", "Implementação de Mecanismos", "Atualização Financeira"],
+  "clients.codigo": ["Dados Gerais", "Reuniões", "Implementação de Mecanismos", "Atualização Financeira"],
+  "clients.name": ["Dados Gerais", "Reuniões", "Implementação de Mecanismos", "Atualização Financeira"],
   "clients.created_at": ["Dados Gerais", "Reuniões", "Implementação de Mecanismos"],
   "clients.data_inicio_ciclo": ["Dados Gerais", "Reuniões", "Implementação de Mecanismos"],
   "clients.data_churn": ["Dados Gerais"],
-  "clients.status": ["Dados Gerais", "Implementação de Mecanismos"],
+  "clients.status": ["Dados Gerais", "Implementação de Mecanismos", "Atualização Financeira"],
   "clients.segmentacao": ["Dados Gerais"],
-  "clients.engenheiro_patrimonial": ["Dados Gerais", "Reuniões", "Implementação de Mecanismos"],
+  "clients.engenheiro_patrimonial": ["Dados Gerais", "Reuniões", "Implementação de Mecanismos", "Atualização Financeira"],
   "client_mecanismos.id": ["Implementação de Mecanismos"],
   "client_mecanismos.client_id": ["Implementação de Mecanismos"],
   "client_mecanismos.mecanismo_id": ["Implementação de Mecanismos"],
@@ -190,14 +195,15 @@ const FIELD_USED_IN = {
   "cancellations.created_at": ["Dados Gerais"],
   "vw_info_cliente.id_cliente": ["Dados Gerais"],
   "vw_info_cliente.data_assinatura_contrato": ["Dados Gerais"],
-  "client_financial_data.client_id": ["Dados Gerais"],
-  "client_financial_data.reserva_liquidez": ["Dados Gerais"],
-  "client_financial_data.ultimo_aporte": ["Dados Gerais"],
-  "client_financial_data.ultima_renda_mensal": ["Dados Gerais"],
-  "client_financial_data.possui_imovel": ["Dados Gerais"],
-  "client_financial_data.possui_carro": ["Dados Gerais"],
-  "client_financial_data.possui_consorcio": ["Dados Gerais"],
-  "client_financial_data.updated_at": ["Dados Gerais"],
+  "client_financial_data.client_id": ["Dados Gerais", "Atualização Financeira"],
+  "client_financial_data.created_at": ["Atualização Financeira"],
+  "client_financial_data.updated_at": ["Dados Gerais", "Atualização Financeira"],
+  "client_financial_data.reserva_liquidez": ["Dados Gerais", "Atualização Financeira"],
+  "client_financial_data.ultimo_aporte": ["Dados Gerais", "Atualização Financeira"],
+  "client_financial_data.ultima_renda_mensal": ["Dados Gerais", "Atualização Financeira"],
+  "client_financial_data.possui_imovel": ["Dados Gerais", "Atualização Financeira"],
+  "client_financial_data.possui_carro": ["Dados Gerais", "Atualização Financeira"],
+  "client_financial_data.possui_consorcio": ["Dados Gerais", "Atualização Financeira"],
   "client_meetings.id": ["Reuniões"],
   "client_meetings.client_id": ["Reuniões"],
   "client_meetings.calendly_event_uri": ["Reuniões"],
@@ -230,11 +236,7 @@ const TABLE_COUNT_SELECT = {
 };
 
 function configurationError() {
-  if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) return "Configuração do Supabase ausente no Netlify";
-  try {
-    if (new URL(process.env.SUPABASE_URL).protocol !== "https:") return "SUPABASE_URL deve usar HTTPS";
-  } catch { return "SUPABASE_URL inválida"; }
-  return null;
+  return dataConfigurationError();
 }
 
 function countSelectColumn(table) {
@@ -242,7 +244,7 @@ function countSelectColumn(table) {
 }
 
 async function countRows(table, column, includeBlank = false) {
-  const url = new URL(`/rest/v1/${table}`, process.env.SUPABASE_URL);
+  const url = new URL(`/rest/v1/${table}`, process.env.DATA_SUPABASE_URL);
   const selectCol = countSelectColumn(table);
   url.searchParams.set("select", selectCol);
   url.searchParams.set("limit", "1");
@@ -250,7 +252,7 @@ async function countRows(table, column, includeBlank = false) {
     if (includeBlank) url.searchParams.set("or", `(${column}.is.null,${column}.eq.)`);
     else url.searchParams.set(column, "is.null");
   }
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const key = process.env.DATA_SUPABASE_SERVICE_ROLE_KEY;
   const response = await fetch(url, {
     headers: {
       apikey: key,
@@ -260,7 +262,34 @@ async function countRows(table, column, includeBlank = false) {
       Range: "0-0",
     },
   });
-  if (!response.ok) throw new Error(`${table}.${column || "*"}: HTTP ${response.status}`);
+  if (!response.ok) {
+    const detail = await response.text().catch(() => "");
+    let code = "";
+    let message = detail.slice(0, 200);
+    try {
+      const parsed = JSON.parse(detail);
+      code = parsed.code || "";
+      message = parsed.message || message;
+    } catch {
+      /* keep raw */
+    }
+    console.error("[Quality]", {
+      table,
+      column: column || null,
+      httpStatus: response.status,
+      code: code || null,
+      message: message.slice(0, 160),
+    });
+    const err = new Error(`${table}.${column || "*"}: HTTP ${response.status}${code ? ` [${code}]` : ""} ${message}`.trim());
+    err.meta = {
+      table,
+      column: column || null,
+      httpStatus: response.status,
+      code: code || null,
+      message,
+    };
+    throw err;
+  }
   const range = response.headers.get("content-range") || "*/0";
   return Number(range.slice(range.lastIndexOf("/") + 1));
 }
@@ -293,9 +322,9 @@ async function fetchClientStatuses() {
   const pageSize = 1000;
   let offset = 0;
   const rows = [];
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const key = process.env.DATA_SUPABASE_SERVICE_ROLE_KEY;
   while (true) {
-    const url = new URL("/rest/v1/clients", process.env.SUPABASE_URL);
+    const url = new URL("/rest/v1/clients", process.env.DATA_SUPABASE_URL);
     url.searchParams.set("select", "status");
     url.searchParams.set("order", "id.asc");
     const response = await fetch(url, {
@@ -353,9 +382,9 @@ async function fetchAllRows(table, select, order = "id.asc") {
   const pageSize = 1000;
   let offset = 0;
   const rows = [];
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const key = process.env.DATA_SUPABASE_SERVICE_ROLE_KEY;
   while (true) {
-    const url = new URL(`/rest/v1/${table}`, process.env.SUPABASE_URL);
+    const url = new URL(`/rest/v1/${table}`, process.env.DATA_SUPABASE_URL);
     url.searchParams.set("select", select);
     if (order) url.searchParams.set("order", order);
     const response = await fetch(url, {
@@ -476,7 +505,62 @@ async function closedWithoutCancellationAudit() {
   };
 }
 
-export default async () => {
+const OPTIONAL_QUALITY_TABLES = new Set(["vw_info_cliente"]);
+
+function humanizePostgrestFailure(meta = {}, fallbackMessage = "") {
+  const code = meta.code || "";
+  const message = meta.message || fallbackMessage || "";
+  if (code === "57014" || /timeout|canceling statement/i.test(message)) {
+    return "Consulta expirou (timeout no banco).";
+  }
+  if (code === "42703" || /column .* does not exist/i.test(message)) {
+    return "Coluna não encontrada.";
+  }
+  if (responseNotFound(meta.httpStatus, message)) {
+    return "Tabela ou view não encontrada.";
+  }
+  if (meta.httpStatus) {
+    return `Falha HTTP ${meta.httpStatus}${code ? ` [${code}]` : ""}.`;
+  }
+  return message.slice(0, 160) || "Falha desconhecida na consulta.";
+}
+
+function responseNotFound(status, message) {
+  return status === 404 || /does not exist|not find/i.test(message || "");
+}
+
+function warningImpact(table, column) {
+  const usedIn = FIELD_USED_IN[`${table}.${column}`] || [];
+  if (table === "vw_info_cliente") {
+    return "Indicador de aquisição/assinatura em Dados Gerais usa fallback (sem bloquear o restante da página).";
+  }
+  if (usedIn.length) {
+    return `Afeta: ${usedIn.join(", ")}. Demais indicadores da página de Qualidade seguem válidos.`;
+  }
+  return "Demais indicadores da página de Qualidade seguem válidos.";
+}
+
+function buildFieldWarning(reason, fieldHint = {}) {
+  const meta = reason?.meta || {};
+  const table = meta.table || fieldHint.table || "desconhecida";
+  const column = meta.column ?? fieldHint.column ?? null;
+  const optional = OPTIONAL_QUALITY_TABLES.has(table);
+  return {
+    table,
+    column,
+    httpStatus: meta.httpStatus || null,
+    code: meta.code || null,
+    reason: humanizePostgrestFailure(meta, reason instanceof Error ? reason.message : String(reason || "")),
+    impact: warningImpact(table, column),
+    optional,
+    usedIn: FIELD_USED_IN[`${table}.${column}`] || [],
+    message: reason instanceof Error ? reason.message : String(reason || "Falha desconhecida"),
+  };
+}
+
+export default async (request) => {
+  const denied = await requireCorporateAuth(request);
+  if (denied) return denied;
   const configError = configurationError();
   if (configError) return Response.json({ error: configError }, { status: 503, headers: { "Cache-Control": "no-store" } });
   try {
@@ -504,8 +588,20 @@ export default async () => {
   }));
   const data = settled.filter((item) => item.status === "fulfilled").map((item) => item.value)
     .sort((a, b) => `${a.domain}.${a.table}.${a.column}`.localeCompare(`${b.domain}.${b.table}.${b.column}`));
-  const errors = settled.filter((item) => item.status === "rejected")
-    .map((item) => item.reason instanceof Error ? item.reason.message : "Falha desconhecida");
+
+  const warnings = [];
+  const hardErrors = [];
+  settled.forEach((item, index) => {
+    if (item.status !== "rejected") return;
+    const field = FIELDS[index];
+    const warning = buildFieldWarning(item.reason, {
+      table: field?.[1],
+      column: field?.[2],
+    });
+    warnings.push(warning);
+    if (!warning.optional) hardErrors.push(warning.message);
+  });
+
   try {
     const consistency = clientsStatusConsistency(await fetchClientStatuses());
     const statusField = data.find((item) => item.table === "clients" && item.column === "status");
@@ -515,7 +611,12 @@ export default async () => {
       statusField.distinctRawCount = consistency.distinctRawCount;
     }
   } catch (error) {
-    errors.push(error instanceof Error ? error.message : "Falha na consistência de status");
+    const warning = buildFieldWarning(error, { table: "clients", column: "status" });
+    warning.reason = "Falha na auditoria de consistência de status.";
+    warning.impact = "Normalização de status pode ficar incompleta nos dashboards.";
+    warning.optional = false;
+    warnings.push(warning);
+    hardErrors.push(warning.message);
   }
   try {
     const stayAudit = await closedWithoutCancellationAudit();
@@ -530,7 +631,12 @@ export default async () => {
       }
     }
   } catch (error) {
-    errors.push(error instanceof Error ? error.message : "Falha na auditoria de permanência");
+    const warning = buildFieldWarning(error, { table: "cancellations", column: null });
+    warning.reason = "Falha na auditoria de permanência.";
+    warning.impact = "Notas de permanência podem ficar incompletas.";
+    warning.optional = false;
+    warnings.push(warning);
+    hardErrors.push(warning.message);
   }
   try {
     const preEntryAudit = await preEntryMeetingsAudit();
@@ -546,7 +652,30 @@ export default async () => {
       }
     }
   } catch (error) {
-    errors.push(error instanceof Error ? error.message : "Falha na auditoria de reuniões pré-entrada");
+    const warning = buildFieldWarning(error, { table: "client_meetings", column: "start_time" });
+    warning.reason = "Falha na auditoria de reuniões pré-entrada.";
+    warning.impact = "Notas de reuniões pré-entrada podem ficar incompletas.";
+    warning.optional = false;
+    warnings.push(warning);
+    hardErrors.push(warning.message);
   }
-  return Response.json({ data, errors, generatedAt: new Date().toISOString() }, { headers: { "Cache-Control": "no-store" } });
+
+  const failedTables = [...new Set(warnings.map((w) => w.table).filter(Boolean))];
+  const connectionStatus = !data.length && warnings.length
+    ? "failed"
+    : warnings.length
+      ? "connected_with_alerts"
+      : "connected";
+
+  return Response.json(
+    {
+      data,
+      warnings,
+      errors: hardErrors.length ? hardErrors : warnings.map((w) => w.message),
+      failedTables,
+      connectionStatus,
+      generatedAt: new Date().toISOString(),
+    },
+    { headers: { "Cache-Control": "no-store" } },
+  );
 };

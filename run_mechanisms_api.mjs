@@ -3,7 +3,7 @@ import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
 
 const root = dirname(fileURLToPath(import.meta.url));
-for (const name of ["exemplo.env", ".env"]) {
+for (const name of [".env", "exemplo.env"]) {
   const path = resolve(root, name);
   if (!existsSync(path)) continue;
   for (const raw of readFileSync(path, "utf8").split(/\r?\n/)) {
@@ -16,9 +16,11 @@ for (const name of ["exemplo.env", ".env"]) {
   }
 }
 
+process.env.PORTAL_INTERNAL_DATA_RUN = "1";
+
 import handler from "./netlify/functions/mechanisms.mjs";
 
-const response = await handler();
+const response = await handler(new Request("http://127.0.0.1/api/mechanisms"));
 const body = await response.text();
 process.stdout.write(body);
 if (!response.ok) process.exit(1);

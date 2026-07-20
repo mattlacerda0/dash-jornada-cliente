@@ -16,13 +16,17 @@ async function loadEnvFile(path: string) {
 await loadEnvFile(`${ROOT}/exemplo.env`);
 await loadEnvFile(`${ROOT}/.env`);
 
-if (Bun.env.SUPABASE_URL) process.env.SUPABASE_URL = Bun.env.SUPABASE_URL;
-if (Bun.env.SUPABASE_SERVICE_ROLE_KEY) process.env.SUPABASE_SERVICE_ROLE_KEY = Bun.env.SUPABASE_SERVICE_ROLE_KEY;
+if (Bun.env.AUTH_SUPABASE_URL) process.env.AUTH_SUPABASE_URL = Bun.env.AUTH_SUPABASE_URL;
+if (Bun.env.AUTH_SUPABASE_ANON_KEY) process.env.AUTH_SUPABASE_ANON_KEY = Bun.env.AUTH_SUPABASE_ANON_KEY;
+if (Bun.env.DATA_SUPABASE_URL) process.env.DATA_SUPABASE_URL = Bun.env.DATA_SUPABASE_URL;
+if (Bun.env.DATA_SUPABASE_SERVICE_ROLE_KEY) process.env.DATA_SUPABASE_SERVICE_ROLE_KEY = Bun.env.DATA_SUPABASE_SERVICE_ROLE_KEY;
 
 const generalDataHandler = (await import("./netlify/functions/general-data.mjs")).default;
 const meetingsHandler = (await import("./netlify/functions/meetings.mjs")).default;
 const mechanismsHandler = (await import("./netlify/functions/mechanisms.mjs")).default;
+const financialUpdatesHandler = (await import("./netlify/functions/financial-updates.mjs")).default;
 const qualityHandler = (await import("./netlify/functions/quality.mjs")).default;
+const authConfigHandler = (await import("./netlify/functions/auth-config.mjs")).default;
 
 const PORT = Number(Bun.env.PORT || 4173);
 
@@ -122,20 +126,20 @@ const FIELDS: Field[] = [
 ];
 
 function configurationError(): string | null {
-  if (!Bun.env.SUPABASE_URL || !Bun.env.SUPABASE_SERVICE_ROLE_KEY) {
-    return "Configuração do Supabase ausente no servidor local";
+  if (!Bun.env.DATA_SUPABASE_URL || !Bun.env.DATA_SUPABASE_SERVICE_ROLE_KEY) {
+    return "Configure DATA_SUPABASE_URL e DATA_SUPABASE_SERVICE_ROLE_KEY.";
   }
   try {
-    const url = new URL(Bun.env.SUPABASE_URL);
-    if (url.protocol !== "https:") return "SUPABASE_URL deve usar HTTPS";
+    const url = new URL(Bun.env.DATA_SUPABASE_URL);
+    if (url.protocol !== "https:") return "DATA_SUPABASE_URL deve usar HTTPS";
   } catch {
-    return "SUPABASE_URL inválida";
+    return "DATA_SUPABASE_URL inválida";
   }
   return null;
 }
 
 async function countRows(table: string, column?: string, includeBlank = false) {
-  const url = new URL(`/rest/v1/${table}`, Bun.env.SUPABASE_URL!);
+  const url = new URL(`/rest/v1/${table}`, Bun.env.DATA_SUPABASE_URL!);
   const selectCol = table === "client_implementation_meeting_date" ? "client_id" : "id";
   url.searchParams.set("select", selectCol);
   url.searchParams.set("limit", "1");
@@ -143,7 +147,7 @@ async function countRows(table: string, column?: string, includeBlank = false) {
     if (includeBlank) url.searchParams.set("or", `(${column}.is.null,${column}.eq.)`);
     else url.searchParams.set(column, "is.null");
   }
-  const key = Bun.env.SUPABASE_SERVICE_ROLE_KEY!;
+  const key = Bun.env.DATA_SUPABASE_SERVICE_ROLE_KEY!;
   const response = await fetch(url, {
     headers: {
       apikey: key,
@@ -190,11 +194,21 @@ const server = Bun.serve({
   port: PORT,
   async fetch(request) {
     const url = new URL(request.url);
-    if (url.pathname === "/api/quality") return qualityHandler();
-    if (url.pathname === "/api/general-data") return generalDataHandler();
-    if (url.pathname === "/api/meetings") return meetingsHandler();
-    if (url.pathname === "/api/mechanisms") return mechanismsHandler();
-    if (url.pathname !== "/" && url.pathname !== "/index.html") return new Response("Não encontrado", { status: 404 });
+    if (url.pathname === "/api/auth-config") return authConfigHandler(request);
+    if (url.pathname === "/api/quality") return qualityHandler(request);
+    if (url.pathname === "/api/general-data") return generalDataHandler(request);
+    if (url.pathname === "/api/meetings") return meetingsHandler(request);
+    if (url.pathname === "/api/mechanisms") return mechanismsHandler(request);
+    if (url.pathname === "/api/financial-updates") return financialUpdatesHandler(request);
+    if (url.pathname.startsWith("/js/")) {
+      const file = Bun.file(`${ROOT}${url.pathname}`);
+      if (await file.exists()) {
+        const type = url.pathname.endsWith('.mjs') || url.pathname.endsWith('.js')
+          ? 'text/javascript; charset=utf-8'
+          : 'application/octet-stream';
+        return new Response(file, { headers: { 'Content-Type': type } });
+      }
+    }    if (url.pathname !== "/" && url.pathname !== "/index.html") return new Response("Não encontrado", { status: 404 });
     return new Response(Bun.file(`${ROOT}/index.html`), { headers: { "Content-Type": "text/html; charset=utf-8" } });
   },
 });

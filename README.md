@@ -1,37 +1,61 @@
-# Dashboard de Qualidade dos Dados
+# Analytics Jornada do Cliente
 
-Primeira aba do dashboard Quarta Via conectada ao Supabase.
+Portal Quarta Via (HTML/CSS/JS vanilla) com **dois projetos Supabase**:
+
+| Papel | Projeto | Uso |
+|--------|---------|-----|
+| **Auth** | `rckpuebaiswrxzmywllv` | Google OAuth, sessão, validação de token |
+| **Dados** | BASE QV (atual) | Consultas dos dashboards (somente servidor) |
+
+## Autenticação (Google OAuth)
+
+Acesso via **Continuar com Google** no projeto Auth. Regra: e-mail `@quartavia.com.br`.
+
+### Configurar no Supabase Auth (`rckpuebaiswrxzmywllv`)
+
+1. **Authentication → Providers → Google** — ative e informe Client ID/Secret do Google Cloud.
+2. **Authentication → URL Configuration**
+   - Site URL: `http://localhost:4173`
+   - Redirect URLs: `http://localhost:4173/`, `http://localhost:4173/**`, URL Netlify e `/**`
+
+### Google Cloud
+
+Authorized redirect URI (callback do projeto **Auth**, não da BASE QV):
+
+```text
+https://rckpuebaiswrxzmywllv.supabase.co/auth/v1/callback
+```
+
+### Variáveis de ambiente
+
+```env
+AUTH_SUPABASE_URL=https://rckpuebaiswrxzmywllv.supabase.co
+AUTH_SUPABASE_ANON_KEY=<anon do projeto Auth>
+
+DATA_SUPABASE_URL=https://<base-qv>.supabase.co
+DATA_SUPABASE_SERVICE_ROLE_KEY=<service role da BASE QV>
+```
+
+- Navegador recebe só Auth via `/api/auth-config` (`authSupabaseUrl` + `authSupabaseAnonKey`).
+- Service role da BASE QV **nunca** vai ao browser.
 
 ## Executar em localhost
 
-1. Salve as credenciais em `exemplo.env` dentro desta pasta (há fallback para `.env`).
-2. Execute `bun run server.ts` (ou `python3 server.py`, quando Python estiver disponível).
-3. Acesse `http://localhost:4173`.
+1. Preencha `.env` (veja `.env.example`).
+2. `python server.py` (ou `bun run server.ts`).
+3. Abra `http://localhost:4173/` (prefira `localhost`, não `127.0.0.1`, se só localhost estiver nas Redirect URLs).
+4. **Continuar com Google** com conta `@quartavia.com.br`.
 
-O backend consulta o schema `public` explicitamente e mantém a `service_role` fora do navegador.
+## APIs protegidas
 
-## Regra de cálculo
+Validam o Bearer no projeto **Auth**; consultam dados na **BASE QV**:
 
-- Não preenchidos: `NULL`, string vazia ou apenas espaços.
-- Preenchidos: `total de linhas - não preenchidos`.
-- Percentual preenchido: `preenchidos / total de linhas da tabela * 100`.
-
-## Contrato da fonte de dados
-
-A tela espera uma lista de objetos no formato:
-
-```js
-{ domain, table, column, totalRows, missingRows }
-```
-
-O endpoint local `/api/quality` retorna os totais calculados diretamente no Supabase. Não exponha `service_role` no navegador.
+- `/api/quality`
+- `/api/general-data`
+- `/api/meetings`
+- `/api/mechanisms`
+- `/api/financial-updates`
 
 ## Publicar no Netlify
 
-O arquivo `netlify.toml` publica a raiz do projeto e encaminha `/api/quality` para uma Netlify Function. No painel do Netlify, cadastre as variáveis de ambiente `SUPABASE_URL` e `SUPABASE_SERVICE_ROLE_KEY`.
-
-O dashboard consulta os dados ao abrir, atualiza automaticamente a cada 5 minutos enquanto estiver aberto e também permite uma atualização imediata pelo botão **Atualizar**.
-
-## Próximas abas previstas
-
-Jornada, Reuniões, Financeiro, NPS e CSAT, Cancelamentos e Renovação.
+Cadastre as quatro variáveis no painel. Inclua a URL da Netlify nas Redirect URLs do projeto Auth.

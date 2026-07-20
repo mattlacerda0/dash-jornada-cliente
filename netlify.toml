@@ -3,6 +3,11 @@
   functions = "netlify/functions"
 
 [[redirects]]
+  from = "/api/auth-config"
+  to = "/.netlify/functions/auth-config"
+  status = 200
+
+[[redirects]]
   from = "/api/quality"
   to = "/.netlify/functions/quality"
   status = 200
@@ -20,4 +25,9 @@
 [[redirects]]
   from = "/api/mechanisms"
   to = "/.netlify/functions/mechanisms"
+  status = 200
+
+[[redirects]]
+  from = "/api/financial-updates"
+  to = "/.netlify/functions/financial-updates"
   status = 200

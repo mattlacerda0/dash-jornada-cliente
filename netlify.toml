@@ -41,3 +41,8 @@
   from = "/api/financial-updates"
   to = "/.netlify/functions/financial-updates"
   status = 200
+
+[[redirects]]
+  from = "/api/platform-usage"
+  to = "/.netlify/functions/platform-usage"
+  status = 200

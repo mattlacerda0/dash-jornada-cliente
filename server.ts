@@ -27,6 +27,7 @@ const mechanismsHandler = (await import("./netlify/functions/mechanisms.mjs")).d
 const financialUpdatesHandler = (await import("./netlify/functions/financial-updates.mjs")).default;
 const qualityHandler = (await import("./netlify/functions/quality.mjs")).default;
 const authConfigHandler = (await import("./netlify/functions/auth-config.mjs")).default;
+const platformUsageHandler = (await import("./netlify/functions/platform-usage.mjs")).default;
 
 const PORT = Number(Bun.env.PORT || 4173);
 
@@ -200,6 +201,7 @@ const server = Bun.serve({
     if (url.pathname === "/api/meetings") return meetingsHandler(request);
     if (url.pathname === "/api/mechanisms") return mechanismsHandler(request);
     if (url.pathname === "/api/financial-updates") return financialUpdatesHandler(request);
+    if (url.pathname === "/api/platform-usage") return platformUsageHandler(request);
     if (url.pathname.startsWith("/js/")) {
       const file = Bun.file(`${ROOT}${url.pathname}`);
       if (await file.exists()) {

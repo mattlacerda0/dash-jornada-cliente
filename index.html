@@ -161,6 +161,7 @@
     @media(max-width:1100px){.acquisition-summary{grid-template-columns:repeat(2,minmax(0,1fr))}}
     @media(max-width:780px){.acquisition-summary{grid-template-columns:1fr 1fr}.acquisition-chart-grid[data-cols="6"]{min-width:420px}}
     .timeline{display:grid;gap:10px;margin-top:12px}.timeline-item{border:1px solid var(--color-border);border-radius:10px;padding:12px;background:#1a1a1a}.timeline-item .meta{font-size:11px;color:var(--color-text-subtle);margin-top:4px}
+    .indicator-matrix{display:grid;gap:12px}.indicator-row{display:grid;grid-template-columns:minmax(210px,1.15fr) 132px minmax(150px,.7fr) minmax(260px,1.55fr) 120px;gap:0;border:1px solid var(--color-border);border-radius:var(--radius-md);overflow:hidden;background:#202020}.indicator-cell{padding:13px 14px;border-right:1px solid var(--color-border);font-size:13px}.indicator-cell:last-child{border-right:0}.indicator-head{background:#2b2f34;color:var(--color-text);font-weight:700;text-transform:uppercase;letter-spacing:.04em}.indicator-status{display:flex;align-items:center;font-weight:700}.indicator-status.sim{background:rgba(66,201,133,.14);color:#c7f5dd}.indicator-status.no{background:rgba(239,107,115,.16);color:#ffb9bd}.indicator-status.base{background:rgba(246,189,75,.13);color:#ffe0a1}.indicator-coverage{font-weight:700;color:var(--color-text)}.indicator-coverage span{display:block;margin-top:2px;color:var(--color-text-muted);font-size:11px;font-weight:500}.viability-stack{grid-template-columns:1fr}
     @media(max-width:1100px){.cards,.charts{grid-template-columns:1fr}.summary,.summary.kpis-8{grid-template-columns:repeat(2,1fr)}.filters,.filters.general,.filters.meetings,.filters.mechanisms,.filters.financial{grid-template-columns:1fr 1fr}.month-row{grid-template-columns:64px minmax(100px,1fr) minmax(160px,1fr)}.month-val{white-space:normal}}
     @media(max-width:780px){.layout{grid-template-columns:1fr}.sidebar{display:none}main{padding:20px}.page-header{display:block}.status{text-align:left;margin-top:12px}.filters,.filters.general,.filters.mechanisms,.filters.financial,.summary,.cards,.charts{grid-template-columns:1fr}.topbar{padding:0 20px}.status-actions{align-items:flex-start;justify-content:space-between}.hbar{grid-template-columns:minmax(108px,36%) minmax(48px,1fr) minmax(96px,104px);gap:8px;margin:9px 0}.hbar-val{font-size:11px}.month-row{grid-template-columns:1fr;gap:8px}.month-val{text-align:left}.month-count{margin-left:0;width:100%}}
     #portal-root[hidden],#auth-root[hidden]{display:none!important}
@@ -250,6 +251,7 @@
         <button type="button" data-nav="meetings"><span class="nav-icon">◎</span>Reuniões</button>
         <button type="button" data-nav="mechanisms"><span class="nav-icon">◎</span>Mecanismos</button>
         <button type="button" data-nav="financial"><span class="nav-icon">$</span>Atualização Financeira</button>
+        <button type="button" data-nav="platform"><span class="nav-icon">◫</span>Uso da Plataforma</button>
         <button type="button" data-nav="quality"><span class="nav-icon">▦</span>Qualidade</button>
         <button type="button" disabled><span class="nav-icon">⇢</span>Jornada<span class="soon">em breve</span></button>
       </nav>
@@ -777,6 +779,50 @@
         </div>
       </section>
 
+      <section class="view" id="view-platform">
+        <div class="container">
+          <header class="page-header">
+            <div>
+              <div class="eyebrow">QV360 · Uso da Plataforma</div>
+              <h1>Uso da Plataforma</h1>
+              <p>Acompanhamento de logins, sessões e frequência de acesso dos usuários.</p>
+            </div>
+            <div class="status-actions">
+              <div class="status"><b id="uStatus" style="color:var(--color-warning)">● Aguardando consulta</b><span id="uUpdated">Fonte: QV360.login_history</span></div>
+              <button class="btn" id="uRefresh" type="button">Atualizar</button>
+            </div>
+          </header>
+          <section class="filters general" aria-label="Filtros de uso da plataforma">
+            <label>Busca<input id="uSearch" placeholder="Nome, e-mail ou ID" /></label>
+            <label>Realizou login<select id="uLogged"><option value="all">Todos</option><option value="yes">Sim</option><option value="no">Não</option></select></label>
+            <label>Último acesso<select id="uLastRange"><option value="all">Todas</option><option value="0-7">0-7 dias</option><option value="8-30">8-30 dias</option><option value="31-90">31-90 dias</option><option value="90+">Mais de 90 dias</option><option value="none">Sem acesso</option></select></label>
+            <button class="btn" id="uClear" type="button">Limpar filtros</button>
+          </section>
+          <section class="summary kpis-8" id="uKpis"></section>
+          <div class="section-head"><div><h2>Distribuições de acesso</h2><p>Frequência calculada a partir do QV360.</p></div></div>
+          <section class="charts">
+            <article class="chart-card"><h3>Realizaram login</h3><p>Usuários com histórico de acesso</p><div id="uChartLogin"></div></article>
+            <article class="chart-card"><h3>Dias desde o último acesso</h3><p>Faixas de recência</p><div id="uChartLast"></div></article>
+            <article class="chart-card"><h3>Logins por mês</h3><p>Distribuição média por usuário</p><div id="uChartMonthly"></div></article>
+            <article class="chart-card"><h3>Fonte dos dados</h3><p>Disponibilidade por banco</p><div id="uChartSources"></div></article>
+          </section>
+          <section class="table-panel">
+            <div class="section-head" style="margin:0">
+              <div><h2>Detalhamento por usuário</h2><p>Clique nos cabeçalhos para ordenar.</p></div>
+              <span class="counter" id="uCounter"></span>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th data-usort="userName">Usuário</th><th data-usort="email">E-mail</th><th data-usort="realizedLogin">Realizou login</th><th data-usort="totalLogins" class="num">Total de logins</th><th data-usort="loginsPerMonth" class="num">Logins/mês</th><th data-usort="daysSinceLastAccess" class="num">Dias desde último acesso</th><th data-usort="averageDaysBetweenAccesses" class="num">Tempo médio entre acessos</th><th data-usort="totalSessions" class="num">Sessões</th><th data-usort="weeklyAccessFrequency" class="num">Freq. semanal</th><th data-usort="monthlyAccessFrequency" class="num">Freq. mensal</th><th data-usort="lastAccessAt">Último acesso</th></tr></thead>
+                <tbody id="uRows"></tbody>
+              </table>
+            </div>
+            <div class="empty" id="uEmpty">Nenhum usuário encontrado para os filtros selecionados.</div>
+            <div class="pagination"><div id="uPageInfo"></div><div><button class="btn" id="uPrev" type="button">Anterior</button><button class="btn" id="uNext" type="button">Próxima</button></div></div>
+          </section>
+        </div>
+      </section>
+
       <section class="view" id="view-quality">
         <div class="container">
           <header class="page-header">
@@ -802,6 +848,16 @@
             <button class="btn" id="clear">Limpar filtros</button>
           </section>
           <section class="summary" id="summary"></section>
+          <div class="section-head">
+            <div><h2>Matrizes de viabilidade</h2><p>Leitura técnica dos indicadores construídos nas abas ativas do dashboard.</p></div>
+          </div>
+          <section class="charts viability-stack">
+            <article class="chart-card"><h3>Dados Gerais</h3><p>Indicadores usados na primeira aba</p><div class="indicator-matrix" id="qGeneralMatrix"></div></article>
+            <article class="chart-card"><h3>Reuniões</h3><p>Indicadores usados na tela de reuniões</p><div class="indicator-matrix" id="qMeetingsMatrix"></div></article>
+            <article class="chart-card"><h3>Mecanismos</h3><p>Indicadores usados na tela de mecanismos</p><div class="indicator-matrix" id="qMechanismsMatrix"></div></article>
+            <article class="chart-card"><h3>Atualização Financeira</h3><p>Indicadores novos da tela financeira</p><div class="indicator-matrix" id="qFinancialMatrix"></div></article>
+            <article class="chart-card"><h3>Uso da Plataforma</h3><p>Indicadores novos calculados pelo QV360</p><div class="indicator-matrix" id="qPlatformMatrix"></div></article>
+          </section>
           <div class="section-head"><div><h2>Preenchimento por coluna</h2><p>Cada cartão compara valores vazios ou nulos com o total de registros da tabela.</p></div><span class="counter" id="counter"></span></div>
           <section class="cards" id="cards"></section>
           <div class="empty" id="empty">Nenhuma coluna encontrada para os filtros selecionados.</div>
@@ -891,6 +947,7 @@
       meetings: document.querySelector('#view-meetings'),
       mechanisms: document.querySelector('#view-mechanisms'),
       financial: document.querySelector('#view-financial'),
+      platform: document.querySelector('#view-platform'),
       quality: document.querySelector('#view-quality')
     };
     document.querySelectorAll('[data-nav]').forEach(btn => btn.addEventListener('click', () => {
@@ -901,6 +958,7 @@
       if (btn.dataset.nav === 'meetings' && !meetingsState.payload) loadMeetings();
       if (btn.dataset.nav === 'mechanisms' && !mechanismsState.payload) loadMechanisms();
       if (btn.dataset.nav === 'financial' && !financialState.payload) loadFinancial();
+      if (btn.dataset.nav === 'platform' && !platformState.payload) loadPlatform();
       if (btn.dataset.nav === 'quality' && !qualityData.length) loadQuality();
     }));
 
@@ -927,6 +985,56 @@
         (!q || `${d.table} ${d.column}`.toLowerCase().includes(q))
       ).sort((a, b) => getPct(b) - getPct(a) || getFilled(b) - getFilled(a) || `${a.table}.${a.column}`.localeCompare(`${b.table}.${b.column}`, 'pt-BR'));
     }
+    const viabilityClass = value => value === 'Sem dados' || value === 'Não identificado' ? 'no' : String(value).startsWith('Parcial') ? 'base' : 'sim';
+    const coverageText = item => item?.total ? `${fmt.format(item.count || 0)} / ${fmt.format(item.total)}<span>${pct(item.percent || 0)}</span>` : 'Sem dados';
+    const fixedCoverage = (count, total, percent) => ({ count: count || 0, total: total || 0, percent: percent || 0 });
+    function renderViabilityMatrix(target, rows) {
+      if (!target) return;
+      target.innerHTML = `<div class="indicator-row"><div class="indicator-cell indicator-head">Indicador</div><div class="indicator-cell indicator-head">Viabilidade</div><div class="indicator-cell indicator-head">Cobertura</div><div class="indicator-cell indicator-head">Fonte / cálculo</div><div class="indicator-cell indicator-head">Base</div></div>${rows.map(item => `<div class="indicator-row"><div class="indicator-cell">${escapeHtml(item.indicator)}</div><div class="indicator-cell indicator-status ${viabilityClass(item.viability)}">${escapeHtml(item.viability)}</div><div class="indicator-cell indicator-coverage">${coverageText(item.coverage)}</div><div class="indicator-cell">${escapeHtml(item.metric)}</div><div class="indicator-cell">${escapeHtml(item.base || 'public')}</div></div>`).join('')}`;
+    }
+    function indicatorRowsFromPayload(payload, fallback, base) {
+      const indicators = payload?.indicators || [];
+      if (!indicators.length) return fallback.map(item => ({ ...item, coverage: fixedCoverage(0, 0, 0), base }));
+      return indicators.map(item => ({ indicator: item.indicator, viability: item.viability || 'Sim', metric: item.metric || item.calculation || base, coverage: fixedCoverage(item.value, item.total, item.coverage), base }));
+    }
+    function renderQualityMatrices() {
+      renderViabilityMatrix(document.querySelector('#qGeneralMatrix'), [
+        { indicator: 'ID do cliente', viability: 'Sim', metric: 'clients.id', coverage: fixedCoverage(0, 0, 0), base: 'BASE QV' },
+        { indicator: 'Data de contratação', viability: 'Sim', metric: 'vw_info_cliente.data_assinatura_contrato; fallback clients.data_inicio_ciclo/created_at', coverage: fixedCoverage(0, 0, 0), base: 'BASE QV' },
+        { indicator: 'Status atual', viability: 'Sim', metric: 'clients.status normalizado com cancelamentos', coverage: fixedCoverage(0, 0, 0), base: 'BASE QV' },
+        { indicator: 'Perfil financeiro', viability: 'Sim', metric: 'client_financial_data por client_id', coverage: fixedCoverage(0, 0, 0), base: 'BASE QV' },
+      ]);
+      renderViabilityMatrix(document.querySelector('#qMeetingsMatrix'), [
+        { indicator: 'Quantidade total de reuniões', viability: 'Sim', metric: 'client_meetings + manual_meetings por cliente', coverage: fixedCoverage(0, 0, 0), base: 'BASE QV' },
+        { indicator: 'Média de reuniões por mês', viability: 'Sim', metric: 'Total de reuniões / meses desde início', coverage: fixedCoverage(0, 0, 0), base: 'BASE QV' },
+        { indicator: 'Dias desde a última reunião', viability: 'Sim', metric: 'Data atual - última reunião', coverage: fixedCoverage(0, 0, 0), base: 'BASE QV' },
+        { indicator: 'Quantidade de faltas/remarcações/cancelamentos', viability: 'Parcial', metric: 'meeting_attendance quando disponível', coverage: fixedCoverage(0, 0, 0), base: 'BASE QV' },
+      ]);
+      renderViabilityMatrix(document.querySelector('#qMechanismsMatrix'), [
+        { indicator: 'Quantidade total de mecanismos disponíveis', viability: 'Sim', metric: 'client_mecanismos + mecanismos', coverage: fixedCoverage(0, 0, 0), base: 'BASE QV' },
+        { indicator: 'Quantidade implementada', viability: 'Sim', metric: 'client_mecanismos.status implementado/concluído', coverage: fixedCoverage(0, 0, 0), base: 'BASE QV' },
+        { indicator: 'Percentual implementado', viability: 'Sim', metric: 'Implementados / disponíveis', coverage: fixedCoverage(0, 0, 0), base: 'BASE QV' },
+        { indicator: 'Implementação nos últimos 30 dias', viability: 'Sim', metric: 'implemented_at nos últimos 30 dias', coverage: fixedCoverage(0, 0, 0), base: 'BASE QV' },
+      ]);
+      renderViabilityMatrix(document.querySelector('#qFinancialMatrix'), [
+        { indicator: 'Dados financeiros cadastrados', viability: 'Sim', metric: 'client_financial_data por client_id', coverage: fixedCoverage(financialState.payload?.summary?.clientsWithFinancialData, financialState.payload?.summary?.totalClients, financialState.payload?.summary?.financialDataCoveragePercent), base: 'BASE QV' },
+        { indicator: 'Dados atualizados nos últimos 30 dias', viability: 'Sim', metric: 'updated_at/created_at dentro dos últimos 30 dias', coverage: fixedCoverage(financialState.payload?.summary?.updatedLast30Days, financialState.payload?.summary?.clientsWithFinancialData, financialState.payload?.summary?.updatedLast30DaysPercentOfFinancial), base: 'BASE QV' },
+        { indicator: 'Dias desde a última atualização financeira', viability: 'Sim', metric: 'Data atual - data financeira normalizada', coverage: fixedCoverage(financialState.payload?.summary?.clientsWithFinancialData, financialState.payload?.summary?.totalClients, financialState.payload?.summary?.financialDataCoveragePercent), base: 'BASE QV' },
+        { indicator: 'Quantidade de atualizações financeiras', viability: 'Parcial', metric: 'Base atual registra o estado financeiro mais recente; sem histórico completo de eventos', coverage: fixedCoverage(financialState.payload?.summary?.clientsWithFinancialData, financialState.payload?.summary?.totalClients, financialState.payload?.summary?.financialDataCoveragePercent), base: 'BASE QV' },
+        { indicator: 'Patrimônio atualizado recentemente (Sim/Não)', viability: 'Parcial', metric: 'Proxy por recência dos dados financeiros', coverage: fixedCoverage(financialState.payload?.summary?.updatedLast30Days, financialState.payload?.summary?.totalClients, financialState.payload?.summary?.updatedLast30DaysPercentOfPortfolio), base: 'BASE QV' },
+      ]);
+      renderViabilityMatrix(document.querySelector('#qPlatformMatrix'), indicatorRowsFromPayload(platformState.payload, [
+        { indicator: 'Realizou login? (Sim/Não)', viability: 'Viável somente no QV360', metric: 'login_history por user_id ou core_user.last_login' },
+        { indicator: 'Número total de logins', viability: 'Viável somente no QV360', metric: 'Contagem de login_history' },
+        { indicator: 'Média de logins por mês', viability: 'Viável somente no QV360', metric: 'Logins / meses desde primeiro acesso' },
+        { indicator: 'Dias desde o último acesso', viability: 'Viável somente no QV360', metric: 'Hoje - último acesso' },
+        { indicator: 'Tempo médio entre acessos', viability: 'Viável somente no QV360', metric: 'Intervalo médio entre logins consecutivos' },
+        { indicator: 'Tempo médio de sessão', viability: 'Sem dados', metric: 'Sem logout/duração confiável' },
+        { indicator: 'Quantidade de sessões', viability: 'Viável somente no QV360', metric: 'Distinct session_id/core_session' },
+        { indicator: 'Frequência semanal de acesso', viability: 'Viável somente no QV360', metric: 'Logins / semanas' },
+        { indicator: 'Frequência mensal de acesso', viability: 'Viável somente no QV360', metric: 'Logins / meses' },
+      ], 'QV360 / public'));
+    }
     function renderQuality() {
       const data = filteredQuality();
       const totals = data.reduce((a, d) => (a.rows += d.totalRows, a.filled += getFilled(d), a), { rows: 0, filled: 0 });
@@ -936,6 +1044,7 @@
         <article class="metric"><div class="metric-label">Colunas auditadas</div><div class="metric-value">${fmt.format(data.length)}</div><div class="metric-note">Em ${new Set(data.map(d => d.table)).size} tabelas</div></article>
         <article class="metric"><div class="metric-label">Valores preenchidos</div><div class="metric-value">${fmt.format(totals.filled)}</div><div class="metric-note">Células com informação registrada</div></article>
         <article class="metric"><div class="metric-label">Completude geral*</div><div class="metric-value">${pct(completion)}</div><div class="metric-note">Sobre todas as células auditadas</div></article>`;
+      renderQualityMatrices();
       qEls.cards.innerHTML = data.map(d => {
         const p = getPct(d), filled = getFilled(d), s = sev(p);
         const consistency = (d.consistencyNotes || []).map(n => `<div class="field-consistency">${escapeHtml(n)}</div>`).join('');
@@ -1051,6 +1160,16 @@
         if (requestId !== qualityRequestId) return;
         if (!response.ok) throw Object.assign(new Error(friendlyApiError(response.status, payload)), { status: response.status, payload });
         qualityData = payload.data || [];
+        if (!financialState.payload) {
+          const financialResponse = await apiFetch(`/api/financial-updates?t=${Date.now()}`, { cache: 'no-store' });
+          const financialPayload = await financialResponse.json().catch(() => ({}));
+          if (financialResponse.ok) financialState.payload = financialPayload;
+        }
+        if (!platformState.payload) {
+          const platformResponse = await apiFetch(`/api/platform-usage?t=${Date.now()}`, { cache: 'no-store' });
+          const platformPayload = await platformResponse.json().catch(() => ({}));
+          if (platformResponse.ok) platformState.payload = platformPayload;
+        }
         fillDomains(); renderQuality();
         setQualityConnectionStatus(payload);
         console.debug('[Quality API]', {
@@ -2762,6 +2881,152 @@
       if (client) openMechanismDrawer(client);
     });
 
+    /* -------- Uso da Plataforma -------- */
+    const platformState = {
+      payload: null, page: 1, pageSize: 25, sortKey: 'userName', sortDir: 'asc',
+      loading: false, requestId: 0
+    };
+    const uFilters = {
+      search: document.querySelector('#uSearch'),
+      logged: document.querySelector('#uLogged'),
+      lastRange: document.querySelector('#uLastRange')
+    };
+    function accessRange(days) {
+      if (days == null) return 'Sem acesso';
+      if (days <= 7) return '0-7 dias';
+      if (days <= 30) return '8-30 dias';
+      if (days <= 90) return '31-90 dias';
+      return 'Mais de 90 dias';
+    }
+    function monthlyLoginRange(value) {
+      if (value == null || value <= 0) return 'Sem login';
+      if (value < 1) return 'Até 1/mês';
+      if (value < 4) return '1-3/mês';
+      if (value < 8) return '4-7/mês';
+      return '8+/mês';
+    }
+    function filteredPlatformClients() {
+      const clients = platformState.payload?.clients || [];
+      const q = uFilters.search.value.trim().toLowerCase();
+      return clients.filter(c => {
+        if (uFilters.logged.value === 'yes' && !c.realizedLogin) return false;
+        if (uFilters.logged.value === 'no' && c.realizedLogin) return false;
+        const days = c.daysSinceLastAccess;
+        const range = uFilters.lastRange.value;
+        if (range === 'none' && days != null) return false;
+        if (range === '0-7' && !(days != null && days <= 7)) return false;
+        if (range === '8-30' && !(days >= 8 && days <= 30)) return false;
+        if (range === '31-90' && !(days >= 31 && days <= 90)) return false;
+        if (range === '90+' && !(days > 90)) return false;
+        if (q && !`${c.userName || ''} ${c.email || ''} ${c.userId || ''}`.toLowerCase().includes(q)) return false;
+        return true;
+      }).sort((a, b) => {
+        const key = platformState.sortKey;
+        const av = a[key], bv = b[key];
+        let cmp = 0;
+        if (av == null && bv == null) cmp = 0;
+        else if (av == null) cmp = 1;
+        else if (bv == null) cmp = -1;
+        else if (typeof av === 'number' && typeof bv === 'number') cmp = av - bv;
+        else if (typeof av === 'boolean' && typeof bv === 'boolean') cmp = Number(av) - Number(bv);
+        else cmp = String(av).localeCompare(String(bv), 'pt-BR', { numeric: true });
+        return platformState.sortDir === 'asc' ? cmp : -cmp;
+      });
+    }
+    function renderPlatform() {
+      if (!platformState.payload) return;
+      const payload = platformState.payload;
+      const rows = filteredPlatformClients();
+      const summary = payload.summary || {};
+      const total = summary.totalUsers || 0;
+      const usersWithLogin = summary.usersWithLogin || 0;
+      document.querySelector('#uKpis').innerHTML = `
+        <article class="metric highlight"><div class="metric-label">Usuários QV360</div><div class="metric-value">${fmt.format(total)}</div><div class="metric-note">Tabela core_user</div></article>
+        <article class="metric highlight"><div class="metric-label">Realizaram login</div><div class="metric-value">${fmt.format(usersWithLogin)}</div><div class="metric-note">${pct(summary.loginCoverage || 0)} da base QV360</div></article>
+        <article class="metric"><div class="metric-label">Número total de logins</div><div class="metric-value">${fmt.format(summary.totalLogins || 0)}</div><div class="metric-note">Registros em login_history</div></article>
+        <article class="metric"><div class="metric-label">Média de logins por mês</div><div class="metric-value">${summary.averageLoginsPerMonth == null ? '-' : fmt.format(summary.averageLoginsPerMonth)}</div><div class="metric-note">Por usuário desde o primeiro acesso</div></article>
+        <article class="metric"><div class="metric-label">Dias desde o último acesso</div><div class="metric-value">${summary.typicalDaysSinceLastAccess == null ? '-' : fmt.format(Math.round(summary.typicalDaysSinceLastAccess)) + ' d'}</div><div class="metric-note">Mediana da base com acesso</div></article>
+        <article class="metric"><div class="metric-label">Tempo médio entre acessos</div><div class="metric-value">${summary.averageDaysBetweenAccesses == null ? '-' : fmt.format(Math.round(summary.averageDaysBetweenAccesses)) + ' d'}</div><div class="metric-note">Intervalos entre logins consecutivos</div></article>
+        <article class="metric"><div class="metric-label">Quantidade de sessões</div><div class="metric-value">${fmt.format(summary.totalSessions || 0)}</div><div class="metric-note">session_id ou core_session</div></article>
+        <article class="metric"><div class="metric-label">Tempo médio de sessão</div><div class="metric-value">-</div><div class="metric-note">Sem campo confiável de duração</div></article>`;
+      const loginDist = [{ label: 'Sim', count: usersWithLogin, percent: total ? usersWithLogin / total * 100 : 0 }, { label: 'Não', count: Math.max(0, total - usersWithLogin), percent: total ? (total - usersWithLogin) / total * 100 : 0 }];
+      const lastDist = ['0-7 dias', '8-30 dias', '31-90 dias', 'Mais de 90 dias', 'Sem acesso'].map(label => {
+        const count = (payload.clients || []).filter(c => accessRange(c.daysSinceLastAccess) === label).length;
+        return { label, count, percent: total ? count / total * 100 : 0 };
+      });
+      const monthlyDist = ['Sem login', 'Até 1/mês', '1-3/mês', '4-7/mês', '8+/mês'].map(label => {
+        const count = (payload.clients || []).filter(c => monthlyLoginRange(c.loginsPerMonth) === label).length;
+        return { label, count, percent: total ? count / total * 100 : 0 };
+      });
+      const sourceDist = (payload.sources?.databases || []).map(db => ({ label: db.source, count: db.userCount || 0, percent: total ? (db.userCount || 0) / total * 100 : 0 }));
+      document.querySelector('#uChartLogin').innerHTML = donut(loginDist);
+      document.querySelector('#uChartLast').innerHTML = hBars(lastDist);
+      document.querySelector('#uChartMonthly').innerHTML = hBars(monthlyDist);
+      document.querySelector('#uChartSources').innerHTML = hBars(sourceDist);
+      const pages = Math.max(1, Math.ceil(rows.length / platformState.pageSize));
+      if (platformState.page > pages) platformState.page = pages;
+      const start = (platformState.page - 1) * platformState.pageSize;
+      const pageRows = rows.slice(start, start + platformState.pageSize);
+      document.querySelector('#uRows').innerHTML = pageRows.map(c => `<tr><td class="truncate" title="${escapeHtml(c.userName)}">${escapeHtml(c.userName)}</td><td class="truncate" title="${escapeHtml(c.email)}">${escapeHtml(c.email)}</td><td>${boolLabel(c.realizedLogin)}</td><td class="num">${fmt.format(c.totalLogins || 0)}</td><td class="num">${c.loginsPerMonth == null ? '-' : fmt.format(c.loginsPerMonth)}</td><td class="num">${c.daysSinceLastAccess == null ? 'Nunca' : fmt.format(c.daysSinceLastAccess) + ' d'}</td><td class="num">${c.averageDaysBetweenAccesses == null ? '-' : fmt.format(Math.round(c.averageDaysBetweenAccesses)) + ' d'}</td><td class="num">${fmt.format(c.totalSessions || 0)}</td><td class="num">${c.weeklyAccessFrequency == null ? '-' : fmt.format(c.weeklyAccessFrequency)}</td><td class="num">${c.monthlyAccessFrequency == null ? '-' : fmt.format(c.monthlyAccessFrequency)}</td><td>${dateBR(c.lastAccessAt)}</td></tr>`).join('');
+      document.querySelector('#uEmpty').style.display = rows.length ? 'none' : 'block';
+      document.querySelector('#uCounter').textContent = `${rows.length} de ${(payload.clients || []).length} usuários`;
+      document.querySelector('#uPageInfo').textContent = `Página ${platformState.page} de ${pages}`;
+      document.querySelector('#uPrev').disabled = platformState.page <= 1;
+      document.querySelector('#uNext').disabled = platformState.page >= pages;
+    }
+    async function loadPlatform() {
+      if (!isPortalAuthenticated()) return;
+      if (platformState.loading) return;
+      platformState.loading = true;
+      const requestId = ++platformState.requestId;
+      const refresh = document.querySelector('#uRefresh');
+      const status = document.querySelector('#uStatus');
+      refresh.disabled = true; refresh.textContent = 'Atualizando...';
+      status.textContent = '● Atualizando dados'; status.style.color = 'var(--color-warning)';
+      try {
+        const response = await apiFetch(`/api/platform-usage?t=${Date.now()}`, { cache: 'no-store' });
+        const payload = await response.json().catch(() => ({}));
+        if (requestId !== platformState.requestId) return;
+        if (!response.ok) throw Object.assign(new Error(friendlyApiError(response.status, payload)), { status: response.status, payload });
+        platformState.payload = payload;
+        platformState.page = 1;
+        renderPlatform();
+        renderQualityMatrices();
+        const hasWarnings = Boolean(payload.sources?.warnings?.length);
+        status.textContent = hasWarnings ? '● QV360 conectado com alertas' : '● QV360 conectado';
+        status.style.color = hasWarnings ? 'var(--color-warning)' : 'var(--color-success)';
+        document.querySelector('#uUpdated').textContent = `Atualizado em ${new Date(payload.generatedAt).toLocaleString('pt-BR')}`;
+      } catch (error) {
+        if (requestId !== platformState.requestId) return;
+        if (error?.code === 'AUTH_REQUIRED' || error?.code === 'AUTH_FORBIDDEN' || error?.message === 'AUTH_REQUIRED') return;
+        status.textContent = '● Falha na atualização'; status.style.color = 'var(--color-danger)';
+        document.querySelector('#uUpdated').textContent = error.message;
+        document.querySelector('#uEmpty').style.display = 'block';
+        document.querySelector('#uEmpty').textContent = 'Não foi possível carregar uso da plataforma.';
+      } finally {
+        if (requestId === platformState.requestId) {
+          platformState.loading = false; refresh.disabled = false; refresh.textContent = 'Atualizar';
+        }
+      }
+    }
+    Object.values(uFilters).forEach(el => el?.addEventListener('input', () => { platformState.page = 1; renderPlatform(); }));
+    document.querySelector('#uClear')?.addEventListener('click', () => {
+      uFilters.search.value = '';
+      uFilters.logged.value = 'all';
+      uFilters.lastRange.value = 'all';
+      platformState.page = 1;
+      renderPlatform();
+    });
+    document.querySelector('#uRefresh')?.addEventListener('click', loadPlatform);
+    document.querySelector('#uPrev')?.addEventListener('click', () => { platformState.page -= 1; renderPlatform(); });
+    document.querySelector('#uNext')?.addEventListener('click', () => { platformState.page += 1; renderPlatform(); });
+    document.querySelectorAll('#view-platform th[data-usort]').forEach(th => th.addEventListener('click', () => {
+      const key = th.dataset.usort;
+      if (platformState.sortKey === key) platformState.sortDir = platformState.sortDir === 'asc' ? 'desc' : 'asc';
+      else { platformState.sortKey = key; platformState.sortDir = key === 'userName' || key === 'email' ? 'asc' : 'desc'; }
+      renderPlatform();
+    }));
+
     /* -------- Atualização Financeira -------- */
     const F_STATUS_FILTER = { active: 'Ativo', cancelled: 'Cancelado', frozen: 'Congelado', unknown: 'Não informado' };
     const F_RECENCY_ORDER = [
@@ -3229,6 +3494,7 @@
         if (views.meetings.classList.contains('active')) loadMeetings();
         if (views.mechanisms.classList.contains('active')) loadMechanisms();
         if (views.financial.classList.contains('active')) loadFinancial();
+        if (views.platform.classList.contains('active')) loadPlatform();
         if (views.quality.classList.contains('active')) loadQuality();
       }, 5 * 60 * 1000);
     }
@@ -3243,6 +3509,7 @@
       if (typeof meetingsState !== 'undefined') meetingsState.payload = null;
       if (typeof mechanismsState !== 'undefined') mechanismsState.payload = null;
       if (typeof financialState !== 'undefined') financialState.payload = null;
+      if (typeof platformState !== 'undefined') platformState.payload = null;
     }
     window.startPortalApp = startPortalApp;
     window.resetPortalApp = resetPortalApp;

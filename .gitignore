@@ -9,3 +9,5 @@ __pycache__/
 _visual/
 _v.json
 _visual_acq.mjs
+.vercel
+.env*

@@ -12,7 +12,7 @@
     :root{--color-bg:#0d0d0d;--color-surface:#1a1a1a;--color-surface-2:#222;--color-border:#303030;--color-border-strong:#444;--color-primary:#f47920;--color-primary-soft:rgba(244,121,32,.13);--color-primary-tint:rgba(244,121,32,.08);--color-text:#f7f7f7;--color-text-muted:#b7b7b7;--color-text-subtle:#818181;--color-success:#42c985;--color-warning:#f6bd4b;--color-danger:#ef6b73;--color-info:#69a8ff;--radius-md:8px;--radius-lg:12px;--radius-xl:16px;--space-1:4px;--space-2:8px;--space-3:12px;--space-4:16px;--space-5:24px;--space-6:32px;--shadow-card:0 14px 34px rgba(0,0,0,.18)}
     *{box-sizing:border-box}body{margin:0;background:var(--color-bg);color:var(--color-text);font-family:Inter,system-ui,sans-serif;line-height:1.5;color-scheme:dark}button,input,select{font:inherit}
     .topbar{position:sticky;top:0;z-index:10;height:64px;border-bottom:1px solid var(--color-border);background:rgba(13,13,13,.88);backdrop-filter:blur(14px);display:flex;align-items:center;padding:0 28px}
-    .brand{display:flex;align-items:center;gap:12px;font-weight:700}.brand-mark{width:30px;height:30px;border-radius:9px;object-fit:contain;display:block;flex-shrink:0}.brand span:last-child{color:var(--color-text-muted);font-weight:500}
+    .brand{display:flex;align-items:center;gap:12px;font-weight:700}.brand-mark{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;flex-shrink:0;background:var(--color-primary);color:#111;font-size:12px;font-weight:800;letter-spacing:0}.brand span:last-child{color:var(--color-text-muted);font-weight:500}
     .layout{display:grid;grid-template-columns:238px minmax(0,1fr);min-height:calc(100vh - 64px)}
     .sidebar{border-right:1px solid var(--color-border);padding:24px 16px;background:#111}
     .sidebar-label,.eyebrow{font-size:11px;letter-spacing:.11em;text-transform:uppercase;color:var(--color-text-subtle);font-weight:700}
@@ -171,7 +171,7 @@
     #auth-root{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:32px 20px;background:radial-gradient(1200px 500px at 50% -10%,rgba(244,121,32,.16),transparent 55%),linear-gradient(180deg,#121212,#0d0d0d 40%,#0a0a0a)}
     .auth-card{width:min(440px,100%);background:linear-gradient(160deg,#1a1a1a,#141414);border:1px solid var(--color-border);border-radius:var(--radius-xl);padding:32px 28px;box-shadow:var(--shadow-card)}
     .auth-brand{display:flex;align-items:center;gap:12px;margin-bottom:22px}
-    .auth-brand img{width:36px;height:36px;border-radius:10px;object-fit:contain}
+    .auth-brand .brand-mark{width:36px;height:36px;border-radius:10px}
     .auth-brand strong{display:block;font-size:15px}
     .auth-brand span{font-size:12px;color:var(--color-text-muted)}
     .auth-card h1{margin:0 0 8px;font-size:24px;line-height:1.25}
@@ -206,7 +206,7 @@
   <div id="auth-root" aria-live="polite">
     <div class="auth-card">
       <div class="auth-brand">
-        <img src="/favicon.ico" alt="Quarta Via" width="36" height="36" />
+        <div class="brand-mark" aria-label="Quarta Via">QV</div>
         <div>
           <strong>Quarta Via</strong>
           <span>Dados & Inteligência</span>
@@ -233,7 +233,7 @@
 
   <div id="portal-root" hidden>
   <header class="topbar">
-    <div class="brand"><img class="brand-mark" src="/favicon.ico" alt="Quarta Via" width="30" height="30"><div>Quartavia</div><span>Dados & Inteligência</span></div>
+    <div class="brand"><div class="brand-mark" aria-label="Quarta Via">QV</div><div>Quartavia</div><span>Dados & Inteligência</span></div>
     <div class="topbar-user">
       <img id="auth-user-avatar" alt="" width="32" height="32" hidden />
       <div class="topbar-user-meta">
@@ -248,12 +248,13 @@
       <div class="sidebar-label">Analytics</div>
       <nav class="nav" aria-label="Navegação principal">
         <button type="button" class="active" data-nav="general"><span class="nav-icon">◎</span>Dados Gerais</button>
+        <button type="button" data-nav="journey"><span class="nav-icon">→</span>Jornada</button>
+        <button type="button" data-nav="plan"><span class="nav-icon">□</span>Plano Patrimonial</button>
         <button type="button" data-nav="meetings"><span class="nav-icon">◎</span>Reuniões</button>
         <button type="button" data-nav="mechanisms"><span class="nav-icon">◎</span>Mecanismos</button>
         <button type="button" data-nav="financial"><span class="nav-icon">$</span>Atualização Financeira</button>
         <button type="button" data-nav="platform"><span class="nav-icon">◫</span>Uso da Plataforma</button>
         <button type="button" data-nav="quality"><span class="nav-icon">▦</span>Qualidade</button>
-        <button type="button" disabled><span class="nav-icon">⇢</span>Jornada<span class="soon">em breve</span></button>
       </nav>
     </aside>
     <main>
@@ -376,6 +377,144 @@
               <div>
                 <button class="btn" id="gPrev" type="button">Anterior</button>
                 <button class="btn" id="gNext" type="button">Próxima</button>
+              </div>
+            </div>
+          </section>
+        </div>
+      </section>
+
+<section class="view" id="view-plan">
+        <div class="container">
+          <header class="page-header">
+            <div>
+              <div class="eyebrow">QV360 + App Pharus</div>
+              <h1>Plano Patrimonial</h1>
+              <p>Indicadores consolidados somando os registros dos dois bancos de dados, sem priorizar uma fonte sobre a outra.</p>
+            </div>
+            <div class="status-actions">
+              <div class="status"><b id="pStatus" style="color:var(--color-warning)">● Aguardando consulta</b><span id="pUpdated">Fontes: QV360 e App Pharus</span></div>
+              <button class="btn" id="pRefresh" type="button">Atualizar</button>
+            </div>
+          </header>
+
+          <section class="filters general" aria-label="Filtros de plano patrimonial">
+            <label>Busca<input id="pSearch" placeholder="Nome, código ou ID" /></label>
+            <label>Fonte<select id="pSource"><option value="all">Todas</option></select></label>
+            <label>Entrega<select id="pDelivered"><option value="all">Todos</option><option value="yes">Entregue</option><option value="no">Não entregue</option></select></label>
+            <label>Aprovação<select id="pApproved"><option value="all">Todos</option><option value="yes">Aprovado</option><option value="no">Não aprovado</option></select></label>
+            <button class="btn" id="pClear" type="button">Limpar filtros</button>
+          </section>
+
+          <section class="summary" id="pKpis"></section>
+
+          <div class="section-head">
+            <div><h2>Indicadores do plano</h2><p>Resultados complementares: QV360 + App Pharus.</p></div>
+          </div>
+          <section class="charts">
+            <article class="chart-card"><h3>Clientes por fonte</h3><p>Quantidade registrada em cada banco</p><div id="pSourceChart"></div></article>
+            <article class="chart-card"><h3>Status do plano</h3><p>Entrega, aprovação e revisão</p><div id="pStatusChart"></div></article>
+          </section>
+
+          <section class="table-panel">
+            <div class="section-head" style="margin:0">
+              <div><h2>Clientes e plano patrimonial</h2><p>Clique nos cabeçalhos para ordenar.</p></div>
+              <span class="counter" id="pCounter"></span>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th data-psort="source">Fonte</th>
+                    <th data-psort="clientName">Cliente</th>
+                    <th data-psort="clientCode">Código</th>
+                    <th data-psort="planDelivered">Plano entregue</th>
+                    <th data-psort="planApproved">Plano aprovado</th>
+                    <th data-psort="daysToApproval" class="num">Dias até aprovação</th>
+                    <th data-psort="revisedLater">Revisado?</th>
+                    <th data-psort="revisionsCount" class="num">Revisões</th>
+                  </tr>
+                </thead>
+                <tbody id="pRows"></tbody>
+              </table>
+            </div>
+            <div class="empty" id="pEmpty">Nenhum cliente encontrado para os filtros selecionados.</div>
+            <div class="pagination">
+              <div id="pPageInfo"></div>
+              <div>
+                <button class="btn" id="pPrev" type="button">Anterior</button>
+                <button class="btn" id="pNext" type="button">Próxima</button>
+              </div>
+            </div>
+          </section>
+        </div>
+      </section>
+
+      <section class="view" id="view-journey">
+        <div class="container">
+          <header class="page-header">
+            <div>
+              <div class="eyebrow">Portal · Jornada do Cliente</div>
+              <h1>Jornada e onboarding</h1>
+              <p>Construção da tela do tópico 2 com foco em prazos entre contratação, reunião, plano patrimonial, implementação e conclusão do onboarding.</p>
+            </div>
+            <div class="status-actions">
+              <div class="status"><b id="jStatus" style="color:var(--color-warning)">● Aguardando consulta</b><span id="jUpdated">Fonte única: BASE QV</span></div>
+              <button class="btn" id="jRefresh" type="button">Atualizar</button>
+            </div>
+          </header>
+
+          <section class="filters general" aria-label="Filtros de jornada e onboarding">
+            <label>Busca<input id="jSearch" placeholder="Nome, código ou ID" /></label>
+            <label>Status<select id="jStatusFilter"><option value="all">Todos</option></select></label>
+            <label>Engenheiro Patrimonial<select id="jEngineer"><option value="all">Todos</option></select></label>
+            <label>Onboarding<select id="jCompletion"><option value="all">Todos</option><option value="complete">Concluído</option><option value="open">Não concluído</option></select></label>
+            <button class="btn" id="jClear" type="button">Limpar filtros</button>
+          </section>
+
+          <section class="summary" id="jKpis"></section>
+
+          <div class="section-head">
+            <div><h2>Indicadores de prazo e conclusão</h2><p>Médias e distribuições calculadas a partir da BASE QV.</p></div>
+          </div>
+          <section class="journey-grid">
+            <article class="chart-card"><h3>Dias até a primeira reunião</h3><p>Quantidade de clientes por faixa de dias</p><div id="jFirstMeetingChart"></div></article>
+            <article class="chart-card"><h3>Dias até entrega do plano patrimonial</h3><p>clients.data_inicio_ciclo → client_implementation_meeting_date.meeting_date</p><div id="jPlanDeliveryChart"></div></article>
+            <article class="chart-card"><h3>Dias até primeiro mecanismo implementado</h3><p>clients.data_inicio_ciclo → client_mecanismos.implemented_at</p><div id="jFirstImplementationChart"></div></article>
+            <article class="chart-card"><h3>Tempo total de onboarding</h3><p>Estágio inicial → próxima mudança em client_journeys</p><div id="jTotalOnboardingChart"></div></article>
+            <article class="chart-card"><h3>Concluiu onboarding</h3><p>Sim/Não pelo estágio atual do cliente</p><div id="jCompletionChart"></div></article>
+            <article class="chart-card"><h3>Tempo médio por etapa</h3><p>Eixo por journey_stages.name</p><div id="jStageDurationChart"></div></article>
+          </section>
+
+          <section class="table-panel">
+            <div class="section-head" style="margin:0">
+              <div><h2>Clientes e prazos de onboarding</h2><p>Clique nos cabeçalhos para ordenar.</p></div>
+              <span class="counter" id="jCounter"></span>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th data-jsort="clientName">Cliente</th>
+                    <th data-jsort="clientCode">Código</th>
+                    <th data-jsort="status">Status</th>
+                    <th data-jsort="engineer">EP</th>
+                    <th data-jsort="contractDate">Contratação</th>
+                    <th data-jsort="daysToFirstMeeting" class="num">1ª reunião</th>
+                    <th data-jsort="daysToPlanDelivery" class="num">Entrega plano</th>
+                    <th data-jsort="daysToFirstImplementation" class="num">1º mecanismo</th>
+                    <th data-jsort="totalOnboardingDays" class="num">Onboarding total</th>
+                    <th data-jsort="completedOnboarding">Concluiu?</th>
+                  </tr>
+                </thead>
+                <tbody id="jRows"></tbody>
+              </table>
+            </div>
+            <div class="empty" id="jEmpty">Nenhum cliente encontrado para os filtros selecionados.</div>
+            <div class="pagination">
+              <div id="jPageInfo"></div>
+              <div>
+                <button class="btn" id="jPrev" type="button">Anterior</button>
+                <button class="btn" id="jNext" type="button">Próxima</button>
               </div>
             </div>
           </section>
@@ -1868,6 +2007,344 @@
       const client = generalState.payload.clients.find(c => c.clientId === tr.dataset.id);
       if (client) openDrawer(client);
     });
+    document.querySelector('#drawerClose').addEventListener('click', () => {
+      document.querySelector('#drawer').classList.remove('open');
+      document.querySelector('#drawer').setAttribute('aria-hidden', 'true');
+    });
+    document.querySelector('#drawer').addEventListener('click', e => {
+      if (e.target.id === 'drawer') {
+        document.querySelector('#drawer').classList.remove('open');
+        document.querySelector('#drawer').setAttribute('aria-hidden', 'true');
+      }
+    });
+
+    /* -------- Plano Patrimonial -------- */
+    const planState = {
+      payload: null, page: 1, pageSize: 25, sortKey: 'clientName', sortDir: 'asc',
+      loading: false, requestId: 0
+    };
+    const pFilters = {
+      search: document.querySelector('#pSearch'),
+      source: document.querySelector('#pSource'),
+      delivered: document.querySelector('#pDelivered'),
+      approved: document.querySelector('#pApproved')
+    };
+    const yesNoBadge = value => value ? '<span class="badge high">Sim</span>' : '<span class="badge unavailable">Não</span>';
+    function filteredPlanClients() {
+      const clients = planState.payload?.clients || [];
+      const q = pFilters.search.value.trim().toLowerCase();
+      return clients.filter(c => {
+        if (pFilters.source.value !== 'all' && c.source !== pFilters.source.value) return false;
+        if (pFilters.delivered.value === 'yes' && !c.planDelivered) return false;
+        if (pFilters.delivered.value === 'no' && c.planDelivered) return false;
+        if (pFilters.approved.value === 'yes' && !c.planApproved) return false;
+        if (pFilters.approved.value === 'no' && c.planApproved) return false;
+        if (q) {
+          const hay = `${c.clientName} ${c.clientCode || ''} ${c.clientId}`.toLowerCase();
+          if (!hay.includes(q)) return false;
+        }
+        return true;
+      }).sort((a, b) => {
+        const key = planState.sortKey;
+        const av = a[key], bv = b[key];
+        let cmp = 0;
+        if (av == null && bv == null) cmp = 0;
+        else if (av == null) cmp = 1;
+        else if (bv == null) cmp = -1;
+        else if (typeof av === 'number' && typeof bv === 'number') cmp = av - bv;
+        else if (typeof av === 'boolean' && typeof bv === 'boolean') cmp = Number(av) - Number(bv);
+        else cmp = String(av).localeCompare(String(bv), 'pt-BR', { numeric: true });
+        return planState.sortDir === 'asc' ? cmp : -cmp;
+      });
+    }
+    function renderPlan() {
+      if (!planState.payload) return;
+      const payload = planState.payload;
+      const summary = payload.summary || {};
+      const data = filteredPlanClients();
+      document.querySelector('#pKpis').innerHTML = `
+        <article class="metric highlight"><div class="metric-label">Clientes QV360</div><div class="metric-value">${fmt.format(summary.qv360Clients || 0)}</div><div class="metric-note">Projeto qvtqufdivpbmubooawdm</div></article>
+        <article class="metric highlight"><div class="metric-label">Clientes App Pharus</div><div class="metric-value">${fmt.format(summary.appPharusClients || 0)}</div><div class="metric-note">Projeto sfxbzfaxbbdjzuhzzrjc</div></article>
+        <article class="metric"><div class="metric-label">Plano entregue</div><div class="metric-value">${fmt.format(summary.planDelivered || 0)}</div><div class="metric-note">${pct((summary.planDelivered || 0) / (summary.totalClients || 1) * 100)} da base somada</div></article>
+        <article class="metric"><div class="metric-label">Plano aprovado</div><div class="metric-value">${fmt.format(summary.planApproved || 0)}</div><div class="metric-note">${pct((summary.planApproved || 0) / (summary.totalClients || 1) * 100)} da base somada</div></article>
+        <article class="metric"><div class="metric-label">Dias até aprovação</div><div class="metric-value">${dayValue(summary.averageDaysToApproval)}</div><div class="metric-note">Média entre contratação e aprovação</div></article>
+        <article class="metric"><div class="metric-label">Planos revisados</div><div class="metric-value">${fmt.format(summary.revisedLater || 0)}</div><div class="metric-note">${fmt.format(summary.revisionsTotal || 0)} revisões totais</div></article>`;
+
+      document.querySelector('#pSourceChart').innerHTML = hBars((payload.sources?.databases || []).map(db => ({ label: db.source, count: db.clientCount || 0, percent: (summary.totalClients ? (db.clientCount || 0) / summary.totalClients * 100 : 0) })));
+      document.querySelector('#pStatusChart').innerHTML = hBars([
+        { label: 'Plano entregue', count: summary.planDelivered || 0, percent: summary.totalClients ? (summary.planDelivered || 0) / summary.totalClients * 100 : 0 },
+        { label: 'Plano aprovado', count: summary.planApproved || 0, percent: summary.totalClients ? (summary.planApproved || 0) / summary.totalClients * 100 : 0 },
+        { label: 'Revisado posteriormente', count: summary.revisedLater || 0, percent: summary.totalClients ? (summary.revisedLater || 0) / summary.totalClients * 100 : 0 },
+      ]);
+
+      const pages = Math.max(1, Math.ceil(data.length / planState.pageSize));
+      if (planState.page > pages) planState.page = pages;
+      const start = (planState.page - 1) * planState.pageSize;
+      const pageRows = data.slice(start, start + planState.pageSize);
+      document.querySelector('#pRows').innerHTML = pageRows.map(c => `
+        <tr>
+          <td>${escapeHtml(c.source)}</td>
+          <td class="truncate" title="${escapeHtml(c.clientName)}">${escapeHtml(c.clientName)}</td>
+          <td>${escapeHtml(c.clientCode || 'Não informado')}</td>
+          <td>${yesNoBadge(c.planDelivered)}</td>
+          <td>${yesNoBadge(c.planApproved)}</td>
+          <td class="num">${dayValue(c.daysToApproval)}</td>
+          <td>${yesNoBadge(c.revisedLater)}</td>
+          <td class="num">${fmt.format(c.revisionsCount || 0)}</td>
+        </tr>`).join('');
+      document.querySelector('#pEmpty').style.display = data.length ? 'none' : 'block';
+      document.querySelector('#pCounter').textContent = `${data.length} de ${(payload.clients || []).length} clientes`;
+      document.querySelector('#pPageInfo').textContent = `Página ${planState.page} de ${pages}`;
+      document.querySelector('#pPrev').disabled = planState.page <= 1;
+      document.querySelector('#pNext').disabled = planState.page >= pages;
+    }
+    async function loadPlan() {
+      if (planState.loading) return;
+      planState.loading = true;
+      const requestId = ++planState.requestId;
+      const refresh = document.querySelector('#pRefresh');
+      const status = document.querySelector('#pStatus');
+      refresh.disabled = true; refresh.textContent = 'Atualizando…';
+      status.textContent = '● Atualizando dados'; status.style.color = 'var(--color-warning)';
+      try {
+        const response = await fetch(`/api/patrimonial-plan?t=${Date.now()}`, { cache: 'no-store' });
+        const payload = await response.json();
+        if (requestId !== planState.requestId) return;
+        if (!response.ok) throw new Error(payload.error || 'Falha ao consultar plano patrimonial');
+        planState.payload = payload;
+        planState.page = 1;
+        fillSelect(pFilters.source, (payload.sources?.databases || []).map(db => db.source), 'Todas');
+        renderPlan();
+        status.textContent = payload.sources?.warnings?.length ? '● Fontes conectadas com alertas' : '● Fontes conectadas';
+        status.style.color = payload.sources?.warnings?.length ? 'var(--color-warning)' : 'var(--color-success)';
+        document.querySelector('#pUpdated').textContent = `Atualizado em ${new Date(payload.generatedAt).toLocaleString('pt-BR')}`;
+      } catch (error) {
+        if (requestId !== planState.requestId) return;
+        status.textContent = '● Falha na atualização'; status.style.color = 'var(--color-danger)';
+        document.querySelector('#pUpdated').textContent = error.message;
+        document.querySelector('#pEmpty').style.display = 'block';
+        document.querySelector('#pEmpty').textContent = 'Não foi possível carregar o plano patrimonial.';
+      } finally {
+        if (requestId === planState.requestId) {
+          planState.loading = false; refresh.disabled = false; refresh.textContent = 'Atualizar';
+        }
+      }
+    }
+
+    /* -------- Jornada e onboarding -------- */
+    const onboardingState = {
+      payload: null, page: 1, pageSize: 25, sortKey: 'clientName', sortDir: 'asc',
+      loading: false, requestId: 0
+    };
+    const jFilters = {
+      search: document.querySelector('#jSearch'),
+      status: document.querySelector('#jStatusFilter'),
+      engineer: document.querySelector('#jEngineer'),
+      completion: document.querySelector('#jCompletion')
+    };
+    const dayValue = value => value == null ? '—' : `${fmt.format(Math.round(value))} d`;
+    const percentValue = value => value == null ? '—' : pct(value);
+    function viabilityClass(value) {
+      if (value === 'Sim') return 'sim';
+      if (value === 'Não identificado') return 'no';
+      return 'base';
+    }
+    function hBarsMetric(items) {
+      const list = (items || []).filter(i => i.value != null);
+      const max = Math.max(...list.map(i => i.value || 0), 1);
+      return list.map(i => `
+        <div class="hbar" title="${escapeHtml(i.label)}: ${dayValue(i.value)} · ${fmt.format(i.count || 0)} registros">
+          <div class="hbar-label" title="${escapeHtml(i.label)}">${escapeHtml(i.label)}</div>
+          <div class="hbar-track"><span style="width:${((i.value || 0) / max) * 100}%"></span></div>
+          <div class="hbar-val">${dayValue(i.value)} · ${fmt.format(i.count || 0)}</div>
+        </div>`).join('') || '<div class="empty" style="display:block">Sem dados</div>';
+    }
+    function filteredOnboardingClients() {
+      const clients = onboardingState.payload?.clients || [];
+      const q = jFilters.search.value.trim().toLowerCase();
+      return clients.filter(c => {
+        if (jFilters.status.value !== 'all' && c.status !== jFilters.status.value) return false;
+        if (jFilters.engineer.value !== 'all' && c.engineer !== jFilters.engineer.value) return false;
+        if (jFilters.completion.value === 'complete' && !c.completedOnboarding) return false;
+        if (jFilters.completion.value === 'open' && c.completedOnboarding) return false;
+        if (q) {
+          const hay = `${c.clientName} ${c.clientCode || ''} ${c.clientId}`.toLowerCase();
+          if (!hay.includes(q)) return false;
+        }
+        return true;
+      }).sort((a, b) => {
+        const key = onboardingState.sortKey;
+        const av = a[key], bv = b[key];
+        let cmp = 0;
+        if (av == null && bv == null) cmp = 0;
+        else if (av == null) cmp = 1;
+        else if (bv == null) cmp = -1;
+        else if (typeof av === 'number' && typeof bv === 'number') cmp = av - bv;
+        else if (typeof av === 'boolean' && typeof bv === 'boolean') cmp = Number(av) - Number(bv);
+        else cmp = String(av).localeCompare(String(bv), 'pt-BR', { numeric: true });
+        return onboardingState.sortDir === 'asc' ? cmp : -cmp;
+      });
+    }
+    function renderOnboarding() {
+      if (!onboardingState.payload) return;
+      const payload = onboardingState.payload;
+      const summary = payload.summary || {};
+      const data = filteredOnboardingClients();
+      document.querySelector('#jKpis').innerHTML = `
+        <article class="metric highlight"><div class="metric-label">Média até 1ª reunião</div><div class="metric-value">${dayValue(summary.averageFirstMeetingDays)}</div><div class="metric-note">Contratação → primeira reunião</div></article>
+        <article class="metric"><div class="metric-label">Média até entrega do plano</div><div class="metric-value">${dayValue(summary.averagePlanDeliveryDays)}</div><div class="metric-note">Contratação → reunião de implementação</div></article>
+        <article class="metric"><div class="metric-label">Média até 1º mecanismo</div><div class="metric-value">${dayValue(summary.averageFirstImplementationDays)}</div><div class="metric-note">Contratação → implementação</div></article>
+        <article class="metric"><div class="metric-label">Média onboarding total</div><div class="metric-value">${dayValue(summary.averageTotalOnboardingDays)}</div><div class="metric-note">Estágio inicial → próxima etapa</div></article>
+        <article class="metric highlight"><div class="metric-label">Concluíram onboarding</div><div class="metric-value">${fmt.format(summary.completedOnboarding || 0)}</div><div class="metric-note">${pct(summary.completedPercent || 0)} dos clientes com jornada - ${fmt.format(summary.totalClients || 0)} clientes total</div></article>`;
+
+      document.querySelector('#jFirstMeetingChart').innerHTML = donut(payload.distributions?.firstMeetingRanges || []);
+      document.querySelector('#jPlanDeliveryChart').innerHTML = donut(payload.distributions?.planDeliveryRanges || []);
+      document.querySelector('#jFirstImplementationChart').innerHTML = donut(payload.distributions?.firstImplementationRanges || []);
+      document.querySelector('#jTotalOnboardingChart').innerHTML = donut(payload.distributions?.totalOnboardingRanges || []);
+      document.querySelector('#jCompletionChart').innerHTML = donut(payload.distributions?.completion || []);
+      document.querySelector('#jStageDurationChart').innerHTML = hBarsMetric(payload.distributions?.stageDurations || []);
+
+      const pages = Math.max(1, Math.ceil(data.length / onboardingState.pageSize));
+      if (onboardingState.page > pages) onboardingState.page = pages;
+      const start = (onboardingState.page - 1) * onboardingState.pageSize;
+      const pageRows = data.slice(start, start + onboardingState.pageSize);
+      document.querySelector('#jRows').innerHTML = pageRows.map(c => `
+        <tr>
+          <td class="truncate" title="${escapeHtml(c.clientName)}">${escapeHtml(c.clientName)}</td>
+          <td>${escapeHtml(c.clientCode || 'Não informado')}</td>
+          <td>${statusBadge(c.status)}</td>
+          <td class="truncate" title="${escapeHtml(c.engineer)}">${escapeHtml(c.engineer)}</td>
+          <td>${dateBR(c.contractDate)}</td>
+          <td class="num">${dayValue(c.daysToFirstMeeting)}</td>
+          <td class="num">${dayValue(c.daysToPlanDelivery)}</td>
+          <td class="num">${dayValue(c.daysToFirstImplementation)}</td>
+          <td class="num">${dayValue(c.totalOnboardingDays)}</td>
+          <td>${c.completedOnboarding === true ? '<span class="badge high">Sim</span>' : c.completedOnboarding === false ? '<span class="badge unavailable">Não</span>' : '<span class="badge medium">Sem base</span>'}</td>
+        </tr>`).join('');
+      document.querySelector('#jEmpty').style.display = data.length ? 'none' : 'block';
+      document.querySelector('#jCounter').textContent = `${data.length} de ${(payload.clients || []).length} clientes`;
+      document.querySelector('#jPageInfo').textContent = `Página ${onboardingState.page} de ${pages}`;
+      document.querySelector('#jPrev').disabled = onboardingState.page <= 1;
+      document.querySelector('#jNext').disabled = onboardingState.page >= pages;
+    }
+    async function loadOnboarding() {
+      if (onboardingState.loading) return;
+      onboardingState.loading = true;
+      const requestId = ++onboardingState.requestId;
+      const refresh = document.querySelector('#jRefresh');
+      const status = document.querySelector('#jStatus');
+      refresh.disabled = true; refresh.textContent = 'Atualizando…';
+      status.textContent = '● Atualizando dados'; status.style.color = 'var(--color-warning)';
+      try {
+        const response = await fetch(`/api/onboarding?t=${Date.now()}`, { cache: 'no-store' });
+        const payload = await response.json();
+        if (requestId !== onboardingState.requestId) return;
+        if (!response.ok) throw new Error(payload.error || 'Falha ao consultar jornada');
+        onboardingState.payload = payload;
+        onboardingState.page = 1;
+        const clients = payload.clients || [];
+        fillSelect(jFilters.status, [...new Set(clients.map(c => c.status))].sort((a, b) => a.localeCompare(b, 'pt-BR')), 'Todos');
+        fillSelect(jFilters.engineer, [...new Set(clients.map(c => c.engineer))].sort((a, b) => a.localeCompare(b, 'pt-BR')), 'Todos');
+        renderOnboarding();
+        status.textContent = payload.sources?.warnings?.length ? '● Portal conectado com alertas' : '● Portal conectado';
+        status.style.color = payload.sources?.warnings?.length ? 'var(--color-warning)' : 'var(--color-success)';
+        document.querySelector('#jUpdated').textContent = `Atualizado em ${new Date(payload.generatedAt).toLocaleString('pt-BR')}`;
+      } catch (error) {
+        if (requestId !== onboardingState.requestId) return;
+        status.textContent = '● Falha na atualização'; status.style.color = 'var(--color-danger)';
+        document.querySelector('#jUpdated').textContent = error.message;
+        document.querySelector('#jEmpty').style.display = 'block';
+        document.querySelector('#jEmpty').textContent = 'Não foi possível carregar jornada e onboarding.';
+      } finally {
+        if (requestId === onboardingState.requestId) {
+          onboardingState.loading = false; refresh.disabled = false; refresh.textContent = 'Atualizar';
+        }
+      }
+    }
+
+    Object.entries(gFilters).forEach(([key, el]) => el.addEventListener('change', () => {
+      if (key === 'status') setStatusFilter(el.value);
+      generalState.page = 1;
+      renderGeneral();
+    }));
+    gFilters.search.addEventListener('input', () => {
+      generalState.page = 1;
+      renderGeneral();
+    });
+    gActiveOnly.addEventListener('click', (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      setStatusFilter(generalState.statusFilter === 'active' ? 'all' : 'active');
+      generalState.page = 1;
+      renderGeneral();
+    });
+    document.querySelector('#gClear').addEventListener('click', () => {
+      gFilters.search.value = '';
+      ['segment', 'engineer', 'contract', 'cancel', 'stay'].forEach(k => gFilters[k].value = 'all');
+      setStatusFilter('all');
+      generalState.page = 1;
+      renderGeneral();
+    });
+    document.querySelector('#gRefresh').addEventListener('click', loadGeneral);
+    document.querySelector('#gPrev').addEventListener('click', () => { generalState.page -= 1; renderGeneral(); });
+    document.querySelector('#gNext').addEventListener('click', () => { generalState.page += 1; renderGeneral(); });
+    document.querySelector('#toggleEngineers').addEventListener('click', () => { generalState.showAllEngineers = !generalState.showAllEngineers; renderGeneral(); });
+    const acqRangeSeg = document.querySelector('#gAcqRangeSeg');
+    if (acqRangeSeg) {
+      acqRangeSeg.addEventListener('click', (event) => {
+        const btn = event.target.closest('[data-acq-range]');
+        if (!btn) return;
+        const next = String(btn.dataset.acqRange);
+        generalState.acqRange = next === '24' ? '24' : next === '12' ? '12' : '6';
+        renderGeneral();
+      });
+    }
+    document.querySelectorAll('#view-general th[data-sort]').forEach(th => th.addEventListener('click', () => {
+      const key = th.dataset.sort;
+      if (generalState.sortKey === key) generalState.sortDir = generalState.sortDir === 'asc' ? 'desc' : 'asc';
+      else { generalState.sortKey = key; generalState.sortDir = 'asc'; }
+      renderGeneral();
+    }));
+    document.querySelector('#gRows').addEventListener('click', e => {
+      const tr = e.target.closest('tr[data-id]');
+      if (!tr || !generalState.payload) return;
+      const client = generalState.payload.clients.find(c => c.clientId === tr.dataset.id);
+      if (client) openDrawer(client);
+    });
+    Object.values(pFilters).forEach(el => el.addEventListener('input', () => { planState.page = 1; renderPlan(); }));
+    document.querySelector('#pClear').addEventListener('click', () => {
+      pFilters.search.value = '';
+      pFilters.source.value = 'all';
+      pFilters.delivered.value = 'all';
+      pFilters.approved.value = 'all';
+      planState.page = 1; renderPlan();
+    });
+    document.querySelector('#pRefresh').addEventListener('click', loadPlan);
+    document.querySelector('#pPrev').addEventListener('click', () => { planState.page -= 1; renderPlan(); });
+    document.querySelector('#pNext').addEventListener('click', () => { planState.page += 1; renderPlan(); });
+    document.querySelectorAll('#view-plan th[data-psort]').forEach(th => th.addEventListener('click', () => {
+      const key = th.dataset.psort;
+      if (planState.sortKey === key) planState.sortDir = planState.sortDir === 'asc' ? 'desc' : 'asc';
+      else { planState.sortKey = key; planState.sortDir = 'asc'; }
+      renderPlan();
+    }));
+    Object.values(jFilters).forEach(el => el.addEventListener('input', () => { onboardingState.page = 1; renderOnboarding(); }));
+    document.querySelector('#jClear').addEventListener('click', () => {
+      jFilters.search.value = '';
+      jFilters.status.value = 'all';
+      jFilters.engineer.value = 'all';
+      jFilters.completion.value = 'all';
+      onboardingState.page = 1; renderOnboarding();
+    });
+    document.querySelector('#jRefresh').addEventListener('click', loadOnboarding);
+    document.querySelector('#jPrev').addEventListener('click', () => { onboardingState.page -= 1; renderOnboarding(); });
+    document.querySelector('#jNext').addEventListener('click', () => { onboardingState.page += 1; renderOnboarding(); });
+    document.querySelectorAll('#view-journey th[data-jsort]').forEach(th => th.addEventListener('click', () => {
+      const key = th.dataset.jsort;
+      if (onboardingState.sortKey === key) onboardingState.sortDir = onboardingState.sortDir === 'asc' ? 'desc' : 'asc';
+      else { onboardingState.sortKey = key; onboardingState.sortDir = 'asc'; }
+      renderOnboarding();
+    }));
     document.querySelector('#drawerClose').addEventListener('click', () => {
       document.querySelector('#drawer').classList.remove('open');
       document.querySelector('#drawer').setAttribute('aria-hidden', 'true');

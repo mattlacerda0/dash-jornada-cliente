@@ -22,6 +22,8 @@ if (Bun.env.DATA_SUPABASE_URL) process.env.DATA_SUPABASE_URL = Bun.env.DATA_SUPA
 if (Bun.env.DATA_SUPABASE_SERVICE_ROLE_KEY) process.env.DATA_SUPABASE_SERVICE_ROLE_KEY = Bun.env.DATA_SUPABASE_SERVICE_ROLE_KEY;
 
 const generalDataHandler = (await import("./netlify/functions/general-data.mjs")).default;
+const onboardingHandler = (await import("./netlify/functions/onboarding.mjs")).default;
+const patrimonialPlanHandler = (await import("./netlify/functions/patrimonial-plan.mjs")).default;
 const meetingsHandler = (await import("./netlify/functions/meetings.mjs")).default;
 const mechanismsHandler = (await import("./netlify/functions/mechanisms.mjs")).default;
 const financialUpdatesHandler = (await import("./netlify/functions/financial-updates.mjs")).default;
@@ -198,6 +200,8 @@ const server = Bun.serve({
     if (url.pathname === "/api/auth-config") return authConfigHandler(request);
     if (url.pathname === "/api/quality") return qualityHandler(request);
     if (url.pathname === "/api/general-data") return generalDataHandler(request);
+    if (url.pathname === "/api/onboarding") return onboardingHandler(request);
+    if (url.pathname === "/api/patrimonial-plan") return patrimonialPlanHandler(request);
     if (url.pathname === "/api/meetings") return meetingsHandler(request);
     if (url.pathname === "/api/mechanisms") return mechanismsHandler(request);
     if (url.pathname === "/api/financial-updates") return financialUpdatesHandler(request);
@@ -210,7 +214,8 @@ const server = Bun.serve({
           : 'application/octet-stream';
         return new Response(file, { headers: { 'Content-Type': type } });
       }
-    }    if (url.pathname !== "/" && url.pathname !== "/index.html") return new Response("Não encontrado", { status: 404 });
+    }
+    if (url.pathname !== "/" && url.pathname !== "/index.html") return new Response("Não encontrado", { status: 404 });
     return new Response(Bun.file(`${ROOT}/index.html`), { headers: { "Content-Type": "text/html; charset=utf-8" } });
   },
 });

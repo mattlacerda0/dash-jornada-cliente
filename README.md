@@ -55,6 +55,7 @@ Validam o Bearer no projeto **Auth**; consultam dados na **BASE QV**:
 - `/api/meetings`
 - `/api/mechanisms`
 - `/api/financial-updates`
+- `/api/support`
 
 ## Publicar no Netlify
 

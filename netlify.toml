@@ -31,3 +31,8 @@
   from = "/api/financial-updates"
   to = "/.netlify/functions/financial-updates"
   status = 200
+
+[[redirects]]
+  from = "/api/support"
+  to = "/.netlify/functions/support"
+  status = 200

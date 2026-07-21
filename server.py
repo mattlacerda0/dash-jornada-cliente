@@ -84,9 +84,14 @@ FIELDS = [
     ("Financeiro", "client_financial_data", "ultima_renda_mensal", False),
     ("Financeiro", "client_financial_data", "ultimo_aporte", False),
     ("Financeiro", "client_financial_data", "reserva_liquidez", False),
+    ("Financeiro", "client_financial_data", "valor_imoveis_quitados", False),
     ("Financeiro", "client_financial_data", "possui_imovel", False),
     ("Financeiro", "client_financial_data", "possui_carro", False),
     ("Financeiro", "client_financial_data", "possui_consorcio", False),
+    ("Financeiro", "client_financial_data", "cheque_especial", False),
+    ("Financeiro", "client_financial_data", "parcelamento_cartao", False),
+    ("Financeiro", "client_financial_data", "credito_pessoal", False),
+    ("Financeiro", "client_financial_data", "credito_consignado", False),
     ("Jornada", "client_journeys", "started_at", False),
     ("Jornada", "client_journeys", "current_stage_id", False),
     ("Reuniões", "client_meetings", "id", False),
@@ -145,6 +150,18 @@ FIELDS = [
     ("Cancelamento", "cancellations", "created_at", False),
     ("Aquisição", "vw_info_cliente", "id_cliente", False),
     ("Aquisição", "vw_info_cliente", "data_assinatura_contrato", False),
+    ("Atendimento", "demands", "id", False),
+    ("Atendimento", "demands", "client_id", False),
+    ("Atendimento", "demands", "title", True),
+    ("Atendimento", "demands", "type", True),
+    ("Atendimento", "demands", "priority", True),
+    ("Atendimento", "demands", "status", True),
+    ("Atendimento", "demands", "requested_by_client", False),
+    ("Atendimento", "demands", "assigned_to", False),
+    ("Atendimento", "demands", "resolved_at", False),
+    ("Atendimento", "demands", "resolved_by", False),
+    ("Atendimento", "demands", "created_at", False),
+    ("Atendimento", "demands", "updated_at", False),
 ]
 
 FIELD_DESCRIPTIONS = {
@@ -171,11 +188,16 @@ FIELD_DESCRIPTIONS = {
     ("client_financial_data", "created_at"): "Data de criação do registro financeiro do cliente.",
     ("client_financial_data", "updated_at"): "Data da última atualização conhecida do registro financeiro.",
     ("client_financial_data", "reserva_liquidez"): "Valor informado como reserva de liquidez do cliente.",
+    ("client_financial_data", "valor_imoveis_quitados"): "Valor total dos imóveis quitados informado pelo cliente.",
     ("client_financial_data", "ultimo_aporte"): "Valor do último aporte financeiro registrado.",
     ("client_financial_data", "ultima_renda_mensal"): "Última renda mensal registrada para o cliente.",
     ("client_financial_data", "possui_imovel"): "Indica se o cliente informou possuir imóvel.",
     ("client_financial_data", "possui_carro"): "Indica se o cliente informou possuir carro.",
     ("client_financial_data", "possui_consorcio"): "Indica se o cliente informou possuir consórcio.",
+    ("client_financial_data", "cheque_especial"): "Indica se o cliente possui cheque especial (usado para identificar dívidas).",
+    ("client_financial_data", "parcelamento_cartao"): "Indica se o cliente possui parcelamento de cartão (usado para identificar dívidas).",
+    ("client_financial_data", "credito_pessoal"): "Indica se o cliente possui crédito pessoal (usado para identificar dívidas).",
+    ("client_financial_data", "credito_consignado"): "Indica se o cliente possui crédito consignado (usado para identificar dívidas).",
     ("client_meetings", "id"): "Identificador único da reunião registrada.",
     ("client_meetings", "client_id"): "Cliente vinculado à reunião.",
     ("client_meetings", "calendly_event_uri"): "Identificador externo do evento no Calendly.",
@@ -216,6 +238,18 @@ FIELD_DESCRIPTIONS = {
     ("mecanismos", "mercado"): "Mercado associado ao mecanismo, usado como dimensão analítica.",
     ("mecanismos", "programa"): "Programa ao qual o mecanismo está vinculado.",
     ("mecanismos", "status"): "Status cadastral do mecanismo no catálogo.",
+    ("demands", "id"): "Identificador único do chamado de atendimento.",
+    ("demands", "client_id"): "Cliente vinculado ao chamado de atendimento.",
+    ("demands", "title"): "Título do chamado de atendimento.",
+    ("demands", "type"): "Tipo/origem do chamado (não representa reclamação/elogio sem categoria confirmada).",
+    ("demands", "priority"): "Prioridade informada para o chamado.",
+    ("demands", "status"): "Status do chamado (aberto, em andamento, resolvido etc.).",
+    ("demands", "requested_by_client"): "Indica se o chamado foi solicitado pelo cliente.",
+    ("demands", "assigned_to"): "Responsável designado pelo chamado.",
+    ("demands", "resolved_at"): "Data de resolução do chamado, usada para tempo de resolução.",
+    ("demands", "resolved_by"): "Usuário que resolveu o chamado.",
+    ("demands", "created_at"): "Data de abertura do chamado.",
+    ("demands", "updated_at"): "Data da última atualização do chamado.",
 }
 
 FIELD_USED_IN = {
@@ -254,15 +288,32 @@ FIELD_USED_IN = {
     ("cancellations", "created_at"): ["Dados Gerais"],
     ("vw_info_cliente", "id_cliente"): ["Dados Gerais"],
     ("vw_info_cliente", "data_assinatura_contrato"): ["Dados Gerais"],
+    ("demands", "id"): ["Atendimento"],
+    ("demands", "client_id"): ["Atendimento"],
+    ("demands", "title"): ["Atendimento"],
+    ("demands", "type"): ["Atendimento"],
+    ("demands", "priority"): ["Atendimento"],
+    ("demands", "status"): ["Atendimento"],
+    ("demands", "requested_by_client"): ["Atendimento"],
+    ("demands", "assigned_to"): ["Atendimento"],
+    ("demands", "resolved_at"): ["Atendimento"],
+    ("demands", "resolved_by"): ["Atendimento"],
+    ("demands", "created_at"): ["Atendimento"],
+    ("demands", "updated_at"): ["Atendimento"],
     ("client_financial_data", "client_id"): ["Dados Gerais", "Atualização Financeira"],
     ("client_financial_data", "created_at"): ["Atualização Financeira"],
     ("client_financial_data", "updated_at"): ["Dados Gerais", "Atualização Financeira"],
-    ("client_financial_data", "reserva_liquidez"): ["Dados Gerais", "Atualização Financeira"],
-    ("client_financial_data", "ultimo_aporte"): ["Dados Gerais", "Atualização Financeira"],
-    ("client_financial_data", "ultima_renda_mensal"): ["Dados Gerais", "Atualização Financeira"],
+    ("client_financial_data", "reserva_liquidez"): ["Dados Gerais", "Atualização Financeira", "Segmentação por capacidade financeira"],
+    ("client_financial_data", "valor_imoveis_quitados"): ["Segmentação por capacidade financeira"],
+    ("client_financial_data", "ultimo_aporte"): ["Dados Gerais", "Atualização Financeira", "Segmentação por capacidade financeira"],
+    ("client_financial_data", "ultima_renda_mensal"): ["Dados Gerais", "Atualização Financeira", "Segmentação por capacidade financeira"],
     ("client_financial_data", "possui_imovel"): ["Dados Gerais", "Atualização Financeira"],
     ("client_financial_data", "possui_carro"): ["Dados Gerais", "Atualização Financeira"],
     ("client_financial_data", "possui_consorcio"): ["Dados Gerais", "Atualização Financeira"],
+    ("client_financial_data", "cheque_especial"): ["Segmentação por capacidade financeira"],
+    ("client_financial_data", "parcelamento_cartao"): ["Segmentação por capacidade financeira"],
+    ("client_financial_data", "credito_pessoal"): ["Segmentação por capacidade financeira"],
+    ("client_financial_data", "credito_consignado"): ["Segmentação por capacidade financeira"],
     ("client_meetings", "id"): ["Reuniões"],
     ("client_meetings", "client_id"): ["Reuniões"],
     ("client_meetings", "calendly_event_uri"): ["Reuniões"],
@@ -834,6 +885,25 @@ def financial_updates_payload():
     return json.loads(result.stdout)
 
 
+def support_payload():
+    """Reaproveita a consolidação do Netlify Function via Node (fonte única)."""
+    env = os.environ.copy()
+    env["PORTAL_INTERNAL_DATA_RUN"] = "1"
+    result = subprocess.run(
+        ["node", str(ROOT / "run_support_api.mjs")],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        env=env,
+        timeout=180,
+    )
+    if result.returncode != 0:
+        detail = (result.stderr or result.stdout or "falha ao gerar support").strip()
+        raise RuntimeError(detail[:240])
+    return json.loads(result.stdout)
+
+
 class Handler(SimpleHTTPRequestHandler):
     def do_GET(self):
         path = urlparse(self.path).path
@@ -851,6 +921,7 @@ class Handler(SimpleHTTPRequestHandler):
             "/api/meetings": ("meetings", meetings_payload, "Não foi possível consolidar os dados de reuniões"),
             "/api/mechanisms": ("mechanisms", mechanisms_payload, "Não foi possível consolidar a implementação de mecanismos"),
             "/api/financial-updates": ("financial-updates", financial_updates_payload, "Não foi possível consolidar a atualização financeira"),
+            "/api/support": ("support", support_payload, "Não foi possível consolidar o atendimento"),
         }
         if path in protected:
             denied = require_corporate_auth(self)

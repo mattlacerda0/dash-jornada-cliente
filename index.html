@@ -64,6 +64,20 @@
     .badge.medium,.badge.stable{color:#ffd37b;background:rgba(246,189,75,.12)}
     .badge.low,.badge.negative,.badge.cancelled{color:#ff9399;background:rgba(239,107,115,.12)}
     .badge.unavailable{color:var(--color-text-muted);background:rgba(129,129,129,.16)}
+    .badge.seg-apex{color:#c9b3ff;background:rgba(148,108,255,.16)}
+    .badge.seg-private{color:#7cc6ff;background:rgba(105,168,255,.14)}
+    .badge.seg-principal{color:#75dca9;background:rgba(66,201,133,.12)}
+    .badge.seg-debts{color:#ff9399;background:rgba(239,107,115,.14)}
+    .badge.seg-over{color:#ffd37b;background:rgba(246,189,75,.12)}
+    .alert-banner{display:flex;gap:14px;align-items:flex-start;background:rgba(246,189,75,.10);border:1px solid rgba(246,189,75,.35);border-radius:12px;padding:16px 18px;margin-bottom:20px}
+    .alert-banner .alert-icon{font-size:22px;line-height:1;color:#f6bd4b;flex-shrink:0}
+    .alert-banner h3{margin:0 0 4px;font-size:15px;color:#ffd37b}
+    .alert-banner p{margin:0 0 6px;font-size:13px;color:var(--color-text);line-height:1.5}
+    .alert-banner .alert-note{font-size:12px;color:var(--color-text-muted)}
+    .alert-banner .alert-meta{display:flex;flex-wrap:wrap;gap:14px;margin-top:10px;font-size:12px}
+    .alert-banner .alert-meta span{color:var(--color-text-muted)}
+    .alert-banner .alert-meta b{color:var(--color-text)}
+    @media (max-width:640px){.alert-banner{flex-direction:column}}
     .missing{display:flex;justify-content:space-between;align-items:end;margin:20px 0 12px}.missing strong{font-size:27px}.missing span{font-size:13px;color:var(--color-text-muted)}
     .percent{text-align:right}.percent b{display:block;font-size:20px;color:var(--color-primary)}
     .track{height:7px;background:#303030;border-radius:999px;overflow:hidden}.track div{height:100%;border-radius:999px;background:linear-gradient(90deg,var(--color-primary),#ff9b50)}
@@ -250,6 +264,7 @@
         <button type="button" data-nav="meetings"><span class="nav-icon">◎</span>Reuniões</button>
         <button type="button" data-nav="mechanisms"><span class="nav-icon">◎</span>Mecanismos</button>
         <button type="button" data-nav="financial"><span class="nav-icon">$</span>Atualização Financeira</button>
+        <button type="button" data-nav="support"><span class="nav-icon">☎</span>Atendimento</button>
         <button type="button" data-nav="quality"><span class="nav-icon">▦</span>Qualidade</button>
         <button type="button" disabled><span class="nav-icon">⇢</span>Jornada<span class="soon">em breve</span></button>
       </nav>
@@ -777,6 +792,126 @@
         </div>
       </section>
 
+      <section class="view" id="view-support">
+        <div class="container">
+          <header class="page-header">
+            <div>
+              <div class="eyebrow">Portal · Jornada do Cliente</div>
+              <h1>Atendimento</h1>
+              <p>Acompanhamento dos chamados, solicitações e interações de atendimento registradas para os clientes.</p>
+            </div>
+            <div class="status-actions">
+              <div class="status"><b id="sStatus" style="color:var(--color-warning)">● Conectando ao Supabase</b><span id="sUpdated">Calculando indicadores…</span></div>
+              <button class="btn" id="sRefresh" type="button">Atualizar</button>
+            </div>
+          </header>
+
+          <div class="alert-banner" id="sAlert" hidden>
+            <span class="alert-icon" aria-hidden="true">⚠</span>
+            <div>
+              <h3 id="sAlertTitle">Base de atendimento ainda insuficiente para análise</h3>
+              <p id="sAlertText"></p>
+              <p class="alert-note" id="sAlertNote">Algumas métricas permanecerão como não calculáveis até que exista maior volume e histórico de resolução.</p>
+              <div class="alert-meta" id="sAlertMeta"></div>
+            </div>
+          </div>
+
+          <section class="filters financial" aria-label="Filtros de atendimento">
+            <label>Busca<input id="sSearch" placeholder="Cliente, código, título ou ID" /></label>
+            <label>Status do chamado<select id="sStatusFilter"><option value="all">Todos</option></select></label>
+            <label>Prioridade<select id="sPriority"><option value="all">Todas</option></select></label>
+            <label>Solicitado pelo cliente<select id="sRequested">
+              <option value="all">Todos</option>
+              <option value="yes">Sim</option>
+              <option value="no">Não</option>
+            </select></label>
+            <label>Engenheiro Patrimonial<select id="sEngineer"><option value="all">Todos</option></select></label>
+            <label>Responsável<select id="sAssignee"><option value="all">Todos</option></select></label>
+            <label>Possui resolução<select id="sResolved">
+              <option value="all">Todos</option>
+              <option value="yes">Sim</option>
+              <option value="no">Não</option>
+            </select></label>
+            <label>Período<select id="sPeriodType">
+              <option value="created">Abertura</option>
+              <option value="resolved">Resolução</option>
+            </select></label>
+            <label>De<input id="sFrom" type="date" /></label>
+            <label>Até<input id="sTo" type="date" /></label>
+            <button class="btn" id="sClear" type="button">Limpar filtros</button>
+          </section>
+
+          <section class="summary kpis-8" id="sKpis"></section>
+
+          <div class="section-head"><div><h2>Distribuições</h2><p>Distribuição dos chamados por status, prioridade, período e responsável.</p></div></div>
+          <section class="charts">
+            <article class="chart-card"><h3>Chamados por status</h3><p>Quantidade e percentual</p><div id="sChartStatus"></div></article>
+            <article class="chart-card"><h3>Chamados por prioridade</h3><p>Quantidade e percentual</p><div id="sChartPriority"></div></article>
+            <article class="chart-card" style="grid-column:1/-1">
+              <div class="month-chart-head">
+                <div>
+                  <h3>Chamados por mês</h3>
+                  <p>Contagem por data de abertura</p>
+                </div>
+                <div class="seg" id="sMonthRangeSeg" role="group" aria-label="Período do gráfico mensal">
+                  <button type="button" data-s-month-range="6" class="active">Últimos 6 meses</button>
+                  <button type="button" data-s-month-range="12">Últimos 12 meses</button>
+                </div>
+              </div>
+              <div id="sChartMonths"></div>
+              <p class="note-muted" id="sMonthNote" hidden></p>
+            </article>
+            <article class="chart-card" style="grid-column:1/-1">
+              <h3>Resolução por mês</h3>
+              <p>Contagem por data de resolução</p>
+              <div id="sChartResolved"></div>
+            </article>
+            <article class="chart-card" style="grid-column:1/-1">
+              <h3>Chamados por Engenheiro Patrimonial</h3>
+              <p id="sEngineersNote">Quantidade de chamados por engenheiro</p>
+              <div id="sChartEngineers"></div>
+              <button class="btn engineers-toggle" id="sToggleEngineers" type="button">Ver todos</button>
+            </article>
+          </section>
+
+          <section class="table-panel">
+            <div class="section-head" style="margin:0">
+              <div><h2>Detalhamento dos chamados</h2><p>Clique em uma linha para ver o chamado.</p></div>
+              <span class="counter" id="sCounter"></span>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th data-ssort="title">Chamado</th>
+                    <th data-ssort="clientName">Cliente</th>
+                    <th data-ssort="clientCode">Código</th>
+                    <th data-ssort="status">Status</th>
+                    <th data-ssort="priority">Prioridade</th>
+                    <th data-ssort="requestedByClient">Solicitado pelo cliente</th>
+                    <th data-ssort="assignedTo">Responsável</th>
+                    <th data-ssort="createdAt">Abertura</th>
+                    <th data-ssort="resolvedAt">Resolução</th>
+                    <th data-ssort="resolutionHours" class="num">Tempo de resolução</th>
+                    <th data-ssort="classification">Classificação</th>
+                    <th data-ssort="escalated">Escalado</th>
+                  </tr>
+                </thead>
+                <tbody id="sRows"></tbody>
+              </table>
+            </div>
+            <div class="empty" id="sEmpty">Nenhum chamado encontrado para os filtros selecionados.</div>
+            <div class="pagination">
+              <div id="sPageInfo"></div>
+              <div>
+                <button class="btn" id="sPrev" type="button">Anterior</button>
+                <button class="btn" id="sNext" type="button">Próxima</button>
+              </div>
+            </div>
+          </section>
+        </div>
+      </section>
+
       <section class="view" id="view-quality">
         <div class="container">
           <header class="page-header">
@@ -891,6 +1026,7 @@
       meetings: document.querySelector('#view-meetings'),
       mechanisms: document.querySelector('#view-mechanisms'),
       financial: document.querySelector('#view-financial'),
+      support: document.querySelector('#view-support'),
       quality: document.querySelector('#view-quality')
     };
     document.querySelectorAll('[data-nav]').forEach(btn => btn.addEventListener('click', () => {
@@ -901,6 +1037,7 @@
       if (btn.dataset.nav === 'meetings' && !meetingsState.payload) loadMeetings();
       if (btn.dataset.nav === 'mechanisms' && !mechanismsState.payload) loadMechanisms();
       if (btn.dataset.nav === 'financial' && !financialState.payload) loadFinancial();
+      if (btn.dataset.nav === 'support' && !supportState.payload) loadSupport();
       if (btn.dataset.nav === 'quality' && !qualityData.length) loadQuality();
     }));
 
@@ -1105,6 +1242,23 @@
       unknown: 'Não informado'
     };
     const STATUS_ORDER = ['Ativo', 'Cancelado', 'Congelado', 'Não informado'];
+    const SEGMENT_ORDER = ['APEX', 'PRIVATE', 'PRINCIPAL', 'DEBTS', 'OVER', 'Dados insuficientes'];
+    const SEGMENT_BADGE_CLASS = {
+      APEX: 'seg-apex', PRIVATE: 'seg-private', PRINCIPAL: 'seg-principal',
+      DEBTS: 'seg-debts', OVER: 'seg-over', 'Dados insuficientes': 'unavailable'
+    };
+    function segmentLabelOf(client) {
+      return client?.segmentLabel || (client?.segment ?? 'Dados insuficientes');
+    }
+    function segmentBadge(client) {
+      const label = segmentLabelOf(client);
+      const cls = SEGMENT_BADGE_CLASS[label] || 'unavailable';
+      const reasons = Array.isArray(client?.segmentReasons) ? client.segmentReasons : [];
+      const tip = client?.segmentStatus === 'insufficient_data'
+        ? 'Não há renda nem outro critério financeiro suficiente para determinar o segmento.'
+        : (reasons.join(' · ') || client?.segmentReason || label);
+      return `<span class="badge ${cls}" title="${escapeHtml(tip)}">${escapeHtml(label)}</span>`;
+    }
     const STAY_ORDER = ['Até 3 meses', 'De 4 a 6 meses', 'De 7 a 12 meses', 'De 13 a 24 meses', 'Mais de 24 meses', 'Sem dados suficientes'];
     const INCOME_ORDER = ['Até R$ 5 mil', '5 a 10 mil', '10 a 20 mil', '20 a 50 mil', 'Acima de 50 mil', 'Não informado'];
     const LIQUIDITY_ORDER = ['Até R$ 50 mil', '50 a 100 mil', '100 a 250 mil', '250 a 500 mil', '500 mil a 1 milhão', 'Acima de 1 milhão', 'Não informado'];
@@ -1344,7 +1498,7 @@
       return {
         // Normaliza ao agregar (agrupa; não filtra outras categorias)
         status: distFrom(rows, r => clientStatusLabel(r), STATUS_ORDER),
-        segments: distFrom(rows, r => r.segment),
+        segments: distFrom(rows, r => segmentLabelOf(r)),
         engineers: distFrom(rows, r => r.engineer),
         stayRanges: distFrom(rows, r => r.stayRange, STAY_ORDER),
         financialProfile,
@@ -1359,7 +1513,7 @@
       const statusLabel = STATUS_FILTER_TO_LABEL[generalState.statusFilter] || null;
       return clients.filter(c => {
         if (statusLabel && clientStatusLabel(c) !== statusLabel) return false;
-        if (gFilters.segment.value !== 'all' && c.segment !== gFilters.segment.value) return false;
+        if (gFilters.segment.value !== 'all' && segmentLabelOf(c) !== gFilters.segment.value) return false;
         if (gFilters.engineer.value !== 'all' && c.engineer !== gFilters.engineer.value) return false;
         if (gFilters.stay.value !== 'all' && c.stayRange !== gFilters.stay.value) return false;
         if (!inDateBand(c.contractDate, gFilters.contract.value)) return false;
@@ -1592,7 +1746,7 @@
           <td>${dateBR(c.cancellationDate)}</td>
           <td class="num" title="${c.stayDays == null ? 'Não informado' : c.stayDays + ' dias'}">${c.stayDays == null ? '—' : fmt.format(c.stayDays) + ' d'}</td>
           <td>${statusBadge(clientStatusLabel(c))}</td>
-          <td class="truncate" title="${escapeHtml(c.segment)}">${escapeHtml(c.segment)}</td>
+          <td>${segmentBadge(c)}</td>
           <td class="truncate" title="${escapeHtml(c.engineer)}">${escapeHtml(c.engineer)}</td>
           <td class="num">${money(c.monthlyIncome)}</td>
           <td class="num">${money(c.lastContribution)}</td>
@@ -1632,7 +1786,7 @@
           : []),
         ...(client.cancellationStage ? [['Etapa do cancelamento', client.cancellationStage]] : []),
         ...(client.acquisitionDate ? [['Aquisição', `${dateBR(client.acquisitionDate)} (${client.acquisitionDateSource || 'n/d'})`]] : []),
-        ['Segmento', client.segment],
+        ['Segmento', segmentLabelOf(client)],
         ['Engenheiro Patrimonial', client.engineer],
       ];
       const financial = [
@@ -1643,8 +1797,30 @@
         ['Possui carro', boolLabel(client.hasCar)],
         ['Possui consórcio', boolLabel(client.hasConsortium)],
       ];
+      const segReasons = Array.isArray(client.segmentReasons) ? client.segmentReasons : [];
+      const segReasonText = segReasons.join(' · ') || client.segmentReason || '—';
+      const debtValue = client.segmentInputs && 'debtDataAvailable' in client.segmentInputs && !client.segmentInputs.debtDataAvailable
+        ? 'Não informado'
+        : (client.hasDebt == null ? 'Não informado' : (client.hasDebt ? 'Sim' : 'Não'));
+      const confidenceLabel = { high: 'Alta', medium: 'Média', low: 'Baixa' }[client.segmentConfidence] || '—';
+      const segment = [
+        ['Segmento', segmentLabelOf(client)],
+        ['Motivo', segReasonText],
+        ['Confiança', confidenceLabel],
+        ['Renda mensal', money(client.monthlyIncome)],
+        ['Reserva de liquidez', money(client.liquidityReserve)],
+        ['Último aporte', money(client.lastContribution)],
+        ['Imóveis quitados', money(client.paidPropertiesValue)],
+        ['Possui dívida', debtValue],
+      ];
+      const segWarnings = Array.isArray(client.segmentWarnings) ? client.segmentWarnings : [];
+      const missing = Array.isArray(client.missingFinancialData) ? client.missingFinancialData : [];
+      const missingBlock = missing.length
+        ? `<div style="grid-column:1/-1;margin-top:6px;font-size:12px;color:var(--color-text-muted)">Dados ausentes: ${missing.map(m => escapeHtml(m)).join(', ')}.</div>`
+        : '';
       document.querySelector('#drawerGrid').innerHTML =
         items.map(([k, v]) => `<div class="drawer-item"><span>${k}</span><strong>${escapeHtml(v)}</strong></div>`).join('') +
+        `<div class="drawer-section" style="grid-column:1/-1"><h3>Classificação por capacidade financeira</h3><div class="drawer-grid">${segment.map(([k, v]) => `<div class="drawer-item"><span>${k}</span><strong>${escapeHtml(v)}</strong></div>`).join('')}</div>${missingBlock}${segWarnings.length ? `<ul style="margin:8px 0 0;padding-left:18px;color:var(--color-warning);font-size:12px">${segWarnings.map(w => `<li>${escapeHtml(w)}</li>`).join('')}</ul>` : ''}</div>` +
         `<div class="drawer-section" style="grid-column:1/-1"><h3>Perfil Financeiro</h3><div class="drawer-grid">${financial.map(([k, v]) => `<div class="drawer-item"><span>${k}</span><strong>${escapeHtml(v)}</strong></div>`).join('')}</div></div>`;
       document.querySelector('#drawerWarnings').innerHTML = (client.dataWarnings || []).map(w => `<li>${escapeHtml(w)}</li>`).join('') || '<li style="color:var(--color-text-muted)">Nenhum alerta</li>';
       document.querySelector('#drawer').classList.add('open');
@@ -1673,7 +1849,7 @@
         generalState.statusFilter = 'all';
         const clients = payload.clients || [];
         fillStatusFilter(gFilters.status);
-        fillSelect(gFilters.segment, [...new Set(clients.map(c => c.segment))].sort((a, b) => a.localeCompare(b, 'pt-BR')), 'Todos');
+        fillSelect(gFilters.segment, SEGMENT_ORDER.filter(s => clients.some(c => segmentLabelOf(c) === s)), 'Todos');
         fillSelect(gFilters.engineer, [...new Set(clients.map(c => c.engineer))].sort((a, b) => a.localeCompare(b, 'pt-BR')), 'Todos');
         fillSelect(gFilters.stay, STAY_ORDER, 'Todas');
         renderGeneral();
@@ -3213,6 +3389,410 @@
       if (client) openFinancialDrawer(client);
     });
 
+    /* ===================== Atendimento (Support) ===================== */
+    const supportState = {
+      payload: null, page: 1, pageSize: 25, sortKey: 'createdAt', sortDir: 'desc',
+      monthRange: '6', showAllEngineers: false, loading: false, requestId: 0
+    };
+    const sFilters = {
+      search: document.querySelector('#sSearch'),
+      status: document.querySelector('#sStatusFilter'),
+      priority: document.querySelector('#sPriority'),
+      requested: document.querySelector('#sRequested'),
+      engineer: document.querySelector('#sEngineer'),
+      assignee: document.querySelector('#sAssignee'),
+      resolved: document.querySelector('#sResolved'),
+      periodType: document.querySelector('#sPeriodType'),
+      from: document.querySelector('#sFrom'),
+      to: document.querySelector('#sTo')
+    };
+    const S_SUFFICIENCY_LABEL = { critical: 'Confiabilidade crítica', low: 'Confiabilidade baixa', moderate: 'Confiabilidade moderada', good: 'Confiabilidade boa' };
+    const S_STATUS_BADGE = { 'Aberto': 'medium', 'Em andamento': 'medium', 'Pendente': 'medium', 'Resolvido': 'active', 'Não informado': 'unavailable' };
+    const S_PRIORITY_BADGE = { 'Baixa': 'unavailable', 'Média': 'medium', 'Alta': 'low', 'Urgente': 'low', 'Não informado': 'unavailable' };
+
+    function supportStatusBadge(label) {
+      const cls = S_STATUS_BADGE[label] || 'unavailable';
+      return `<span class="badge ${cls}">${escapeHtml(label || 'Não informado')}</span>`;
+    }
+    function supportPriorityBadge(label) {
+      const cls = S_PRIORITY_BADGE[label] || 'unavailable';
+      return `<span class="badge ${cls}">${escapeHtml(label || 'Não informado')}</span>`;
+    }
+    function formatResolutionHours(hours) {
+      if (hours == null || Number.isNaN(Number(hours))) return null;
+      if (hours < 48) return `${fmt.format(Math.round(hours * 10) / 10)} h`;
+      return `${fmt.format(Math.round((hours / 24) * 10) / 10)} d`;
+    }
+    function ticketResolutionCell(t) {
+      if (t.isResolved) {
+        const v = formatResolutionHours(t.resolutionHours);
+        return v || 'Não calculável';
+      }
+      return 'Não calculável';
+    }
+
+    function supportPeriodDate(t) {
+      return sFilters.periodType.value === 'resolved' ? t.resolvedAt : t.createdAt;
+    }
+    function supportInPeriod(t) {
+      if (!sFilters.from.value && !sFilters.to.value) return true;
+      const raw = supportPeriodDate(t);
+      if (!raw) return false;
+      const d = new Date(raw);
+      if (Number.isNaN(d.getTime())) return false;
+      if (sFilters.from.value && d < new Date(sFilters.from.value + 'T00:00:00Z')) return false;
+      if (sFilters.to.value && d > new Date(sFilters.to.value + 'T23:59:59Z')) return false;
+      return true;
+    }
+
+    function filteredSupportTickets() {
+      const tickets = supportState.payload?.tickets || [];
+      const q = sFilters.search.value.trim().toLowerCase();
+      return tickets.filter(t => {
+        if (sFilters.status.value !== 'all' && t.status !== sFilters.status.value) return false;
+        if (sFilters.priority.value !== 'all' && t.priority !== sFilters.priority.value) return false;
+        if (sFilters.requested.value === 'yes' && t.requestedByClient !== true) return false;
+        if (sFilters.requested.value === 'no' && t.requestedByClient === true) return false;
+        if (sFilters.engineer.value !== 'all' && t.engineer !== sFilters.engineer.value) return false;
+        if (sFilters.assignee.value !== 'all' && (t.assignedTo || '') !== sFilters.assignee.value) return false;
+        if (sFilters.resolved.value === 'yes' && !t.isResolved) return false;
+        if (sFilters.resolved.value === 'no' && t.isResolved) return false;
+        if (!supportInPeriod(t)) return false;
+        if (q) {
+          const hay = `${t.title || ''} ${t.clientName || ''} ${t.clientCode || ''} ${t.clientId || ''} ${t.ticketId || ''}`.toLowerCase();
+          if (!hay.includes(q)) return false;
+        }
+        return true;
+      });
+    }
+
+    function computeSupportSummary(rows) {
+      const totalTickets = rows.length;
+      const openTickets = rows.filter(t => t.isOpen).length;
+      const resolvedTickets = rows.filter(t => t.isResolved).length;
+      const resValues = rows.map(t => t.resolutionHours).filter(h => h != null && Number.isFinite(h) && h >= 0).sort((a, b) => a - b);
+      const median = resValues.length ? (resValues.length % 2 ? resValues[(resValues.length - 1) / 2] : (resValues[resValues.length / 2 - 1] + resValues[resValues.length / 2]) / 2) : null;
+      const average = resValues.length ? resValues.reduce((a, b) => a + b, 0) / resValues.length : null;
+      const clientsWithTickets = new Set(rows.map(t => t.clientId).filter(Boolean)).size;
+      const totalClients = supportState.payload?.summary?.totalClients || 0;
+      const p = (n, d) => d ? Math.round((n / d) * 1000) / 10 : 0;
+      const sufficiency = totalTickets >= 100 && resolvedTickets >= 20 ? 'good' : totalTickets >= 30 ? 'moderate' : totalTickets >= 10 ? 'low' : 'critical';
+      return {
+        totalTickets, openTickets, resolvedTickets,
+        resolutionCoveragePercent: p(resolvedTickets, totalTickets),
+        medianResolutionHours: median == null ? null : Math.round(median * 10) / 10,
+        averageResolutionHours: average == null ? null : Math.round(average * 10) / 10,
+        clientsWithTickets, clientsWithTicketsPercent: p(clientsWithTickets, totalClients),
+        totalClients, dataSufficiency: sufficiency
+      };
+    }
+
+    function computeSupportDistributions(rows) {
+      const total = rows.length || 1;
+      const statusOrder = ['Aberto', 'Em andamento', 'Pendente', 'Resolvido', 'Não informado'];
+      const statusMap = new Map();
+      rows.forEach(t => statusMap.set(t.status, (statusMap.get(t.status) || 0) + 1));
+      const byStatus = [...statusMap.keys()]
+        .sort((a, b) => (statusOrder.indexOf(a) + 1 || 99) - (statusOrder.indexOf(b) + 1 || 99))
+        .map(label => ({ label, count: statusMap.get(label), percent: Math.round((statusMap.get(label) / total) * 1000) / 10 }));
+      const byPriority = ['Baixa', 'Média', 'Alta', 'Urgente', 'Não informado']
+        .map(label => ({ label, count: rows.filter(t => t.priority === label).length }))
+        .filter(i => i.count > 0)
+        .map(i => ({ ...i, percent: Math.round((i.count / total) * 1000) / 10 }));
+      const byEngMap = new Map();
+      rows.forEach(t => { const e = t.engineer || 'Não informado'; byEngMap.set(e, (byEngMap.get(e) || 0) + 1); });
+      const byEngineer = [...byEngMap.entries()].map(([label, count]) => ({ label, count, percent: Math.round((count / total) * 1000) / 10 }))
+        .sort((a, b) => b.count - a.count || a.label.localeCompare(b.label, 'pt-BR'));
+
+      const monthsBack = Number(supportState.monthRange) || 6;
+      const buildMonths = (getDate) => {
+        const now = new Date();
+        const nowKey = `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, '0')}`;
+        const buckets = new Map();
+        for (let i = monthsBack - 1; i >= 0; i -= 1) {
+          const d = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - i, 1));
+          buckets.set(`${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}`, 0);
+        }
+        rows.forEach(t => {
+          const raw = getDate(t);
+          if (!raw) return;
+          const d = new Date(raw);
+          if (Number.isNaN(d.getTime()) || d > now) return;
+          const key = `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}`;
+          if (key > nowKey || !buckets.has(key)) return;
+          buckets.set(key, buckets.get(key) + 1);
+        });
+        return [...buckets.entries()].map(([month, count]) => ({ month, count }));
+      };
+      const byMonth = buildMonths(t => t.createdAt);
+      const resolvedRows = rows.filter(t => t.isResolved && t.resolvedAt);
+      const resolvedByMonth = resolvedRows.length ? buildMonths(t => (t.isResolved ? t.resolvedAt : null)) : [];
+      return { byStatus, byPriority, byEngineer, byMonth, resolvedByMonth };
+    }
+
+    function fillSupportFilters() {
+      const tickets = supportState.payload?.tickets || [];
+      const fill = (sel, values, allLabel) => {
+        if (!sel) return;
+        const current = sel.value;
+        sel.innerHTML = `<option value="all">${allLabel}</option>` + values.map(v => `<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`).join('');
+        sel.value = values.includes(current) ? current : 'all';
+      };
+      const statusOrder = ['Aberto', 'Em andamento', 'Pendente', 'Resolvido', 'Não informado'];
+      fill(sFilters.status, [...new Set(tickets.map(t => t.status))].sort((a, b) => (statusOrder.indexOf(a) + 1 || 99) - (statusOrder.indexOf(b) + 1 || 99)), 'Todos');
+      const prOrder = ['Baixa', 'Média', 'Alta', 'Urgente', 'Não informado'];
+      fill(sFilters.priority, prOrder.filter(p => tickets.some(t => t.priority === p)), 'Todas');
+      fill(sFilters.engineer, [...new Set(tickets.map(t => t.engineer).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'pt-BR')), 'Todos');
+      fill(sFilters.assignee, [...new Set(tickets.map(t => t.assignedTo).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'pt-BR')), 'Todos');
+    }
+
+    function renderSupportMonthChart(elId, items, emptyText) {
+      const el = document.querySelector(elId);
+      if (!el) return;
+      if (!items || !items.length) {
+        el.innerHTML = `<div class="empty" style="display:block">${escapeHtml(emptyText || 'Sem dados')}</div>`;
+        return;
+      }
+      const maxValue = Math.max(...items.map(i => i.count), 0);
+      const plotH = 180;
+      el.innerHTML = `<div class="acquisition-chart-scroll"><div class="acquisition-chart-grid" data-cols="${items.length}" role="img" aria-label="Chamados por mês">${items.map(i => {
+        const heightPct = maxValue > 0 ? (i.count / maxValue) * 100 : 0;
+        const barPx = i.count > 0 ? Math.max(Math.round((heightPct / 100) * plotH), 6) : 0;
+        const shortLabel = (() => {
+          const [y, m] = String(i.month).split('-');
+          const names = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+          const idx = Number(m) - 1;
+          if (!y || idx < 0 || idx > 11) return i.month;
+          return items.length >= 12 ? `${names[idx]}/${String(y).slice(2)}` : names[idx];
+        })();
+        return `<div class="acquisition-column" title="${escapeHtml(formatMonthLabel(i.month))}: ${fmt.format(i.count)} chamados" data-value="${i.count}">
+          <div class="acquisition-column-value">${fmt.format(i.count)}</div>
+          <div class="acquisition-column-bar-wrap"><div class="acquisition-column-bar" style="height:${barPx}px"></div></div>
+          <div class="acquisition-column-label">${escapeHtml(shortLabel)}</div>
+        </div>`;
+      }).join('')}</div></div>`;
+    }
+
+    function openSupportDrawer(ticket) {
+      document.querySelector('#drawerTitle').textContent = ticket.title || 'Chamado';
+      document.querySelector('#drawerSub').textContent = `${ticket.clientName || 'Não informado'} · Código ${ticket.clientCode || 'Não informado'}`;
+      const resolutionText = ticket.isResolved ? (formatResolutionHours(ticket.resolutionHours) || 'Não calculável') : 'Não calculável';
+      const items = [
+        ['Cliente', ticket.clientName || 'Não informado'],
+        ['Código', ticket.clientCode || 'Não informado'],
+        ['Status', ticket.status || 'Não informado'],
+        ['Prioridade', ticket.priority || 'Não informado'],
+        ['Solicitado pelo cliente', boolLabel(ticket.requestedByClient)],
+        ['Responsável', ticket.assignedTo || 'Não informado'],
+        ['Data de abertura', dateBR(ticket.createdAt)],
+        ['Data de resolução', dateBR(ticket.resolvedAt)],
+        ['Tempo de resolução', resolutionText],
+        ['Classificação', 'Não classificável'],
+        ['Escalado', 'Fonte não confirmada']
+      ];
+      const desc = ticket.description ? `<div class="drawer-section" style="grid-column:1/-1"><h3>Descrição</h3><p style="margin:0;color:var(--color-text);font-size:13px;white-space:pre-wrap">${escapeHtml(ticket.description)}</p></div>` : '';
+      const notes = ticket.resolutionNotes ? `<div class="drawer-section" style="grid-column:1/-1"><h3>Notas de resolução</h3><p style="margin:0;color:var(--color-text);font-size:13px;white-space:pre-wrap">${escapeHtml(ticket.resolutionNotes)}</p></div>` : '';
+      document.querySelector('#drawerGrid').innerHTML =
+        items.map(([k, v]) => `<div class="drawer-item"><span>${k}</span><strong>${escapeHtml(String(v))}</strong></div>`).join('') + desc + notes;
+      document.querySelector('#drawerWarnings').innerHTML = (ticket.dataWarnings || []).map(w => `<li>${escapeHtml(w)}</li>`).join('') || '<li style="color:var(--color-text-muted)">Nenhum alerta</li>';
+      document.querySelector('#drawer').classList.add('open');
+      document.querySelector('#drawer').setAttribute('aria-hidden', 'false');
+    }
+
+    function renderSupportAlert(summary) {
+      const banner = document.querySelector('#sAlert');
+      if (!banner) return;
+      const show = summary.totalTickets < 30 || summary.resolvedTickets < 10 || summary.resolutionCoveragePercent < 20;
+      banner.hidden = !show;
+      if (!show) return;
+      document.querySelector('#sAlertText').textContent =
+        `Atualmente há ${fmt.format(summary.totalTickets)} chamado(s) registrado(s) e ${fmt.format(summary.resolvedTickets)} atendimento(s) resolvido(s). Os indicadores abaixo são apresentados de forma provisória e podem não representar o comportamento real da operação.`;
+      document.querySelector('#sAlertMeta').innerHTML = [
+        ['Total de registros', fmt.format(summary.totalTickets)],
+        ['Registros resolvidos', fmt.format(summary.resolvedTickets)],
+        ['Cobertura de resolução', pct(summary.resolutionCoveragePercent)],
+        ['Nível de confiabilidade', S_SUFFICIENCY_LABEL[summary.dataSufficiency] || '—']
+      ].map(([k, v]) => `<span>${k}: <b>${escapeHtml(String(v))}</b></span>`).join('');
+    }
+
+    function renderSupport() {
+      if (!supportState.payload) return;
+      const rows = filteredSupportTickets();
+      const summary = computeSupportSummary(rows);
+      const dist = computeSupportDistributions(rows);
+      renderSupportAlert(summary);
+
+      const medianText = summary.medianResolutionHours == null
+        ? '<div class="metric-value" style="font-size:18px">Não calculável</div><div class="metric-note">Nenhum chamado resolvido com datas válidas</div>'
+        : `<div class="metric-value">${formatResolutionHours(summary.medianResolutionHours)}</div><div class="metric-note">Mediana · média ${summary.averageResolutionHours == null ? '—' : formatResolutionHours(summary.averageResolutionHours)}</div>`;
+
+      document.querySelector('#sKpis').innerHTML = `
+        <article class="metric"><div class="metric-label">Quantidade de chamados <span class="help" title="Total de chamados registrados no recorte filtrado.">?</span></div><div class="metric-value">${fmt.format(summary.totalTickets)}</div><div class="metric-note">${S_SUFFICIENCY_LABEL[summary.dataSufficiency]}</div></article>
+        <article class="metric"><div class="metric-label">Chamados abertos <span class="help" title="Status aberto, pendente ou em andamento.">?</span></div><div class="metric-value">${fmt.format(summary.openTickets)}</div><div class="metric-note">${pct(summary.totalTickets ? Math.round((summary.openTickets / summary.totalTickets) * 1000) / 10 : 0)} do total</div></article>
+        <article class="metric"><div class="metric-label">Chamados resolvidos <span class="help" title="Com resolved_at válido ou status resolvido/concluído/fechado.">?</span></div><div class="metric-value">${fmt.format(summary.resolvedTickets)}</div><div class="metric-note">${pct(summary.resolutionCoveragePercent)} de cobertura</div></article>
+        <article class="metric"><div class="metric-label">Tempo típico de resolução <span class="help" title="Mediana de horas entre abertura e resolução, apenas com datas válidas.">?</span></div>${medianText}</article>
+        <article class="metric"><div class="metric-label">Reclamações <span class="help" title="Categoria de reclamação ainda não confirmada.">?</span></div><div class="metric-value" style="font-size:18px">Não classificável</div><div class="metric-note">Categoria de reclamação ainda não confirmada</div></article>
+        <article class="metric"><div class="metric-label">Elogios <span class="help" title="Categoria de elogio ainda não confirmada.">?</span></div><div class="metric-value" style="font-size:18px">Não classificável</div><div class="metric-note">Categoria de elogio ainda não confirmada</div></article>
+        <article class="metric"><div class="metric-label">Chamados escalados <span class="help" title="Não há fonte confirmada de escalonamento.">?</span></div><div class="metric-value" style="font-size:18px">Fonte não confirmada</div><div class="metric-note">Sem evidência de escalonamento na base</div></article>
+        <article class="metric"><div class="metric-label">Clientes com chamado <span class="help" title="Clientes distintos com ao menos um chamado.">?</span></div><div class="metric-value">${fmt.format(summary.clientsWithTickets)}</div><div class="metric-note">${pct(summary.clientsWithTicketsPercent)} da carteira</div></article>`;
+
+      document.querySelector('#sChartStatus').innerHTML = hBars(dist.byStatus || []);
+      document.querySelector('#sChartPriority').innerHTML = hBars(dist.byPriority || []);
+      renderSupportMonthChart('#sChartMonths', dist.byMonth || [], 'Sem meses para exibir.');
+      const monthNote = document.querySelector('#sMonthNote');
+      if (monthNote) {
+        const nonZero = (dist.byMonth || []).filter(m => m.count > 0).length;
+        monthNote.hidden = nonZero > 1;
+        monthNote.textContent = 'Histórico ainda insuficiente para tendência.';
+      }
+      const resolvedEl = document.querySelector('#sChartResolved');
+      if ((dist.resolvedByMonth || []).length) {
+        renderSupportMonthChart('#sChartResolved', dist.resolvedByMonth, 'Nenhum chamado resolvido no período.');
+      } else if (resolvedEl) {
+        resolvedEl.innerHTML = '<div class="empty" style="display:block">Nenhum chamado resolvido no período.</div>';
+      }
+      const engLimit = supportState.showAllEngineers ? undefined : 8;
+      document.querySelector('#sChartEngineers').innerHTML = hBars(dist.byEngineer || [], engLimit);
+      const engNote = document.querySelector('#sEngineersNote');
+      if (engNote) engNote.textContent = summary.totalTickets < 30 ? 'Quantidade de chamados por engenheiro · baixa amostra' : 'Quantidade de chamados por engenheiro';
+      const engToggle = document.querySelector('#sToggleEngineers');
+      if (engToggle) engToggle.textContent = supportState.showAllEngineers ? 'Ver principais' : 'Ver todos';
+
+      const sorted = [...rows].sort((a, b) => {
+        const key = supportState.sortKey;
+        let av = a[key], bv = b[key];
+        let cmp = 0;
+        if (av == null && bv == null) cmp = 0;
+        else if (av == null) cmp = 1;
+        else if (bv == null) cmp = -1;
+        else if (typeof av === 'number' && typeof bv === 'number') cmp = av - bv;
+        else if (typeof av === 'boolean' && typeof bv === 'boolean') cmp = Number(av) - Number(bv);
+        else cmp = String(av).localeCompare(String(bv), 'pt-BR', { numeric: true });
+        return supportState.sortDir === 'asc' ? cmp : -cmp;
+      });
+
+      const pages = Math.max(1, Math.ceil(sorted.length / supportState.pageSize));
+      if (supportState.page > pages) supportState.page = pages;
+      if (supportState.page < 1) supportState.page = 1;
+      const start = (supportState.page - 1) * supportState.pageSize;
+      const pageRows = sorted.slice(start, start + supportState.pageSize);
+
+      document.querySelector('#sRows').innerHTML = pageRows.map(t => `
+        <tr data-sid="${escapeHtml(t.ticketId)}">
+          <td class="truncate" title="${escapeHtml(t.title)}">${escapeHtml(t.title)}</td>
+          <td class="truncate" title="${escapeHtml(t.clientName)}">${escapeHtml(t.clientName)}</td>
+          <td>${escapeHtml(t.clientCode || 'Não informado')}</td>
+          <td>${supportStatusBadge(t.status)}</td>
+          <td>${supportPriorityBadge(t.priority)}</td>
+          <td>${boolLabel(t.requestedByClient)}</td>
+          <td class="truncate" title="${escapeHtml(t.assignedTo || 'Não informado')}">${escapeHtml(t.assignedTo || 'Não informado')}</td>
+          <td>${dateBR(t.createdAt)}</td>
+          <td>${dateBR(t.resolvedAt)}</td>
+          <td class="num">${escapeHtml(ticketResolutionCell(t))}</td>
+          <td><span class="note-muted">Não classificável</span></td>
+          <td><span class="note-muted">Fonte não confirmada</span></td>
+        </tr>`).join('');
+
+      document.querySelector('#sCounter').textContent = `${sorted.length} de ${(supportState.payload.tickets || []).length} chamados`;
+      document.querySelector('#sPageInfo').textContent = `Página ${supportState.page} de ${pages}`;
+      document.querySelector('#sEmpty').style.display = sorted.length ? 'none' : 'block';
+      document.querySelector('#sPrev').disabled = supportState.page <= 1;
+      document.querySelector('#sNext').disabled = supportState.page >= pages;
+    }
+
+    async function loadSupport() {
+      if (!isPortalAuthenticated()) return;
+      if (supportState.loading) return;
+      supportState.loading = true;
+      const requestId = ++supportState.requestId;
+      const endpoint = '/api/support';
+      const refresh = document.querySelector('#sRefresh');
+      const status = document.querySelector('#sStatus');
+      const empty = document.querySelector('#sEmpty');
+      refresh.disabled = true; refresh.textContent = 'Atualizando…';
+      status.textContent = '● Atualizando dados'; status.style.color = 'var(--color-warning)';
+      try {
+        const response = await apiFetch(`${endpoint}?t=${Date.now()}`, { cache: 'no-store' });
+        const responseText = await response.text();
+        let payload = {};
+        try { payload = responseText ? JSON.parse(responseText) : {}; } catch { payload = {}; }
+        if (requestId !== supportState.requestId) return;
+        if (!response.ok) {
+          console.error('[Support API]', { status: response.status, body: responseText.slice(0, 800) });
+          throw Object.assign(new Error(friendlyApiError(response.status, payload)), { status: response.status, payload });
+        }
+        supportState.payload = {
+          ...payload,
+          summary: payload?.summary ?? {},
+          distributions: {
+            byStatus: payload?.distributions?.byStatus ?? [],
+            byPriority: payload?.distributions?.byPriority ?? [],
+            byMonth: payload?.distributions?.byMonth ?? [],
+            resolvedByMonth: payload?.distributions?.resolvedByMonth ?? [],
+            byEngineer: payload?.distributions?.byEngineer ?? []
+          },
+          tickets: Array.isArray(payload?.tickets) ? payload.tickets : [],
+          warnings: Array.isArray(payload?.warnings) ? payload.warnings : [],
+          quality: payload?.quality || { warnings: [] }
+        };
+        fillSupportFilters();
+        try { renderSupport(); } catch (renderError) { console.error('[Support] render error', renderError); throw renderError; }
+        const warnCount = (supportState.payload.warnings || []).length + (supportState.payload.quality?.warnings || []).length;
+        status.textContent = warnCount ? '● Supabase conectado com alertas' : '● Supabase conectado';
+        status.style.color = warnCount ? 'var(--color-warning)' : 'var(--color-success)';
+        document.querySelector('#sUpdated').textContent = supportState.payload.generatedAt
+          ? `Atualizado em ${new Date(supportState.payload.generatedAt).toLocaleString('pt-BR')}`
+          : 'Dados carregados';
+        if (empty) {
+          empty.style.display = supportState.payload.tickets.length ? 'none' : 'block';
+          empty.textContent = 'Nenhum chamado encontrado para os filtros selecionados.';
+        }
+      } catch (error) {
+        if (requestId !== supportState.requestId) return;
+        if (error?.code === 'AUTH_REQUIRED' || error?.code === 'AUTH_FORBIDDEN' || error?.message === 'AUTH_REQUIRED') return;
+        console.error('[Support API]', { status: error?.status || 0, error: error.message });
+        status.textContent = '● Falha na atualização'; status.style.color = 'var(--color-danger)';
+        document.querySelector('#sUpdated').textContent = error.message || friendlyApiError(0, null, true);
+        if (empty) { empty.style.display = 'block'; empty.textContent = 'Não foi possível carregar o atendimento.'; }
+      } finally {
+        if (requestId === supportState.requestId) {
+          supportState.loading = false; refresh.disabled = false; refresh.textContent = 'Atualizar';
+        }
+      }
+    }
+
+    Object.values(sFilters).forEach(el => el?.addEventListener('input', () => { supportState.page = 1; renderSupport(); }));
+    document.querySelector('#sClear')?.addEventListener('click', () => {
+      sFilters.search.value = '';
+      ['status', 'priority', 'requested', 'engineer', 'assignee', 'resolved'].forEach(k => { if (sFilters[k]) sFilters[k].value = 'all'; });
+      sFilters.periodType.value = 'created';
+      sFilters.from.value = ''; sFilters.to.value = '';
+      supportState.page = 1; renderSupport();
+    });
+    document.querySelector('#sRefresh')?.addEventListener('click', loadSupport);
+    document.querySelector('#sPrev')?.addEventListener('click', () => { supportState.page -= 1; renderSupport(); });
+    document.querySelector('#sNext')?.addEventListener('click', () => { supportState.page += 1; renderSupport(); });
+    document.querySelector('#sToggleEngineers')?.addEventListener('click', () => { supportState.showAllEngineers = !supportState.showAllEngineers; renderSupport(); });
+    document.querySelector('#sMonthRangeSeg')?.addEventListener('click', (event) => {
+      const btn = event.target.closest('[data-s-month-range]');
+      if (!btn) return;
+      supportState.monthRange = btn.getAttribute('data-s-month-range') || '6';
+      document.querySelectorAll('#sMonthRangeSeg [data-s-month-range]').forEach(b => b.classList.toggle('active', b === btn));
+      renderSupport();
+    });
+    document.querySelectorAll('#view-support th[data-ssort]').forEach(th => th.addEventListener('click', () => {
+      const key = th.dataset.ssort;
+      if (supportState.sortKey === key) supportState.sortDir = supportState.sortDir === 'asc' ? 'desc' : 'asc';
+      else { supportState.sortKey = key; supportState.sortDir = 'asc'; }
+      renderSupport();
+    }));
+    document.querySelector('#sRows')?.addEventListener('click', e => {
+      const tr = e.target.closest('tr[data-sid]');
+      if (!tr || !supportState.payload) return;
+      const ticket = supportState.payload.tickets.find(t => t.ticketId === tr.dataset.sid);
+      if (ticket) openSupportDrawer(ticket);
+    });
+
     let portalStarted = false;
     let portalRefreshTimer = null;
     function startPortalApp() {
@@ -3229,6 +3809,7 @@
         if (views.meetings.classList.contains('active')) loadMeetings();
         if (views.mechanisms.classList.contains('active')) loadMechanisms();
         if (views.financial.classList.contains('active')) loadFinancial();
+        if (views.support.classList.contains('active')) loadSupport();
         if (views.quality.classList.contains('active')) loadQuality();
       }, 5 * 60 * 1000);
     }
@@ -3243,6 +3824,7 @@
       if (typeof meetingsState !== 'undefined') meetingsState.payload = null;
       if (typeof mechanismsState !== 'undefined') mechanismsState.payload = null;
       if (typeof financialState !== 'undefined') financialState.payload = null;
+      if (typeof supportState !== 'undefined') supportState.payload = null;
     }
     window.startPortalApp = startPortalApp;
     window.resetPortalApp = resetPortalApp;

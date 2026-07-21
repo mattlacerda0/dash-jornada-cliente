@@ -419,18 +419,19 @@ def auth_config_payload():
     }
 
 
-def require_corporate_auth(handler):
+def resolve_corporate_user(handler):
+    """Valida o Bearer e retorna (erro_ou_None, email_ou_None)."""
     auth = handler.headers.get("Authorization") or handler.headers.get("authorization") or ""
     if not auth.lower().startswith("bearer "):
-        return 401, {"error": "Não autenticado.", "code": "unauthenticated"}
+        return (401, {"error": "Não autenticado.", "code": "unauthenticated"}), None
     token = auth[7:].strip()
     if not token:
-        return 401, {"error": "Não autenticado.", "code": "unauthenticated"}
+        return (401, {"error": "Não autenticado.", "code": "unauthenticated"}), None
 
     base = (os.environ.get("AUTH_SUPABASE_URL") or "").rstrip("/")
     api_key = (os.environ.get("AUTH_SUPABASE_ANON_KEY") or "").strip()
     if not base or not api_key:
-        return 503, {"error": "Configure AUTH_SUPABASE_URL e AUTH_SUPABASE_ANON_KEY.", "code": "config"}
+        return (503, {"error": "Configure AUTH_SUPABASE_URL e AUTH_SUPABASE_ANON_KEY.", "code": "config"}), None
 
     req = Request(
         f"{base}/auth/v1/user",
@@ -440,13 +441,19 @@ def require_corporate_auth(handler):
         with urlopen(req, timeout=20) as resp:
             user = json.loads(resp.read().decode("utf-8"))
     except HTTPError:
-        return 401, {"error": "Sessão inválida ou expirada.", "code": "unauthenticated"}
+        return (401, {"error": "Sessão inválida ou expirada.", "code": "unauthenticated"}), None
     except Exception:
-        return 401, {"error": "Sessão inválida ou expirada.", "code": "unauthenticated"}
+        return (401, {"error": "Sessão inválida ou expirada.", "code": "unauthenticated"}), None
 
-    if not is_corporate_email(user.get("email")):
-        return 403, {"error": "O acesso é permitido somente para contas @quartavia.com.br.", "code": "invalid_domain"}
-    return None
+    email = user.get("email")
+    if not is_corporate_email(email):
+        return (403, {"error": "O acesso é permitido somente para contas @quartavia.com.br.", "code": "invalid_domain"}), None
+    return None, email
+
+
+def require_corporate_auth(handler):
+    denied, _ = resolve_corporate_user(handler)
+    return denied
 
 
 def send_json(handler, status, payload):
@@ -904,6 +911,53 @@ def support_payload():
     return json.loads(result.stdout)
 
 
+def assistant_payload(email, raw_body):
+    """Proxy do chatbot: usa a mesma lógica da Netlify Function via Node (fonte única).
+
+    Retorna (status_http, corpo_texto) preservando o status real do proxy.
+    """
+    env = os.environ.copy()
+    env["PORTAL_INTERNAL_DATA_RUN"] = "1"
+    env["PORTAL_USER_EMAIL"] = email or ""
+    env["PORTAL_ASSISTANT_BODY"] = raw_body if raw_body else "{}"
+    result = subprocess.run(
+        ["node", str(ROOT / "run_assistant_api.mjs")],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        env=env,
+        timeout=60,
+    )
+    if result.returncode != 0:
+        detail = (result.stderr or result.stdout or "falha ao consultar o assistente").strip()
+        raise RuntimeError(detail[:240])
+    envelope = json.loads(result.stdout)
+    return int(envelope.get("__status", 200)), envelope.get("body", "{}")
+
+
+def assistant_data_payload(auth_header, raw_body):
+    """Endpoint interno servidor-servidor (n8n → portal). O token é validado dentro do Node."""
+    env = os.environ.copy()
+    env["PORTAL_INTERNAL_DATA_RUN"] = "1"
+    env["PORTAL_ASSISTANT_DATA_AUTH"] = auth_header or ""
+    env["PORTAL_ASSISTANT_DATA_BODY"] = raw_body if raw_body else "{}"
+    result = subprocess.run(
+        ["node", str(ROOT / "run_assistant_data_api.mjs")],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        env=env,
+        timeout=300,
+    )
+    if result.returncode != 0:
+        detail = (result.stderr or result.stdout or "falha ao consultar assistant-data").strip()
+        raise RuntimeError(detail[:240])
+    envelope = json.loads(result.stdout)
+    return int(envelope.get("__status", 200)), envelope.get("body", "{}")
+
+
 class Handler(SimpleHTTPRequestHandler):
     def do_GET(self):
         path = urlparse(self.path).path
@@ -938,6 +992,70 @@ class Handler(SimpleHTTPRequestHandler):
             return
 
         super().do_GET()
+
+    def do_POST(self):
+        path = urlparse(self.path).path
+
+        if path == "/api/assistant":
+            error, email = resolve_corporate_user(self)
+            if error:
+                status, payload = error
+                send_json(self, status, payload)
+                return
+            try:
+                length = int(self.headers.get("Content-Length") or 0)
+            except ValueError:
+                length = 0
+            raw = self.rfile.read(length) if length > 0 else b""
+            try:
+                status, body_text = assistant_payload(email, raw.decode("utf-8", errors="replace"))
+            except Exception as exc:
+                print(f"assistant error: {exc}")
+                send_json(self, 500, {
+                    "success": False,
+                    "error": "Erro interno ao consultar o assistente.",
+                    "code": "internal_error",
+                    "generated_at": datetime.now(timezone.utc).isoformat(),
+                })
+                return
+            body_bytes = body_text.encode("utf-8")
+            self.send_response(status)
+            self.send_header("Content-Type", "application/json; charset=utf-8")
+            self.send_header("Cache-Control", "no-store")
+            self.send_header("Content-Length", str(len(body_bytes)))
+            self.end_headers()
+            self.wfile.write(body_bytes)
+            return
+
+        if path == "/api/assistant-data":
+            # Endpoint servidor-servidor: o token interno é validado dentro do Node.
+            auth_header = self.headers.get("Authorization") or self.headers.get("authorization") or ""
+            try:
+                length = int(self.headers.get("Content-Length") or 0)
+            except ValueError:
+                length = 0
+            raw = self.rfile.read(length) if length > 0 else b""
+            try:
+                status, body_text = assistant_data_payload(auth_header, raw.decode("utf-8", errors="replace"))
+            except Exception as exc:
+                print(f"assistant-data error: {exc}")
+                send_json(self, 500, {
+                    "success": False,
+                    "error": "Erro interno ao consultar a métrica.",
+                    "code": "internal_error",
+                    "generated_at": datetime.now(timezone.utc).isoformat(),
+                })
+                return
+            body_bytes = body_text.encode("utf-8")
+            self.send_response(status)
+            self.send_header("Content-Type", "application/json; charset=utf-8")
+            self.send_header("Cache-Control", "no-store")
+            self.send_header("Content-Length", str(len(body_bytes)))
+            self.end_headers()
+            self.wfile.write(body_bytes)
+            return
+
+        send_json(self, 404, {"error": "Não encontrado.", "code": "not_found"})
 
     def log_message(self, fmt, *args):
         print(f"[{self.log_date_time_string()}] {fmt % args}")

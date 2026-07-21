@@ -213,6 +213,66 @@
       .auth-card{padding:28px 20px}
       .auth-card h1{font-size:20px}
     }
+    /* -------- Assistente da Jornada (chatbot) -------- */
+    .asst-launcher{position:fixed;right:24px;bottom:24px;z-index:60;width:56px;height:56px;border-radius:50%;border:1px solid var(--color-primary);background:linear-gradient(145deg,#f47920,#d9660f);color:#17110d;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 10px 30px rgba(0,0,0,.42)}
+    .asst-launcher:hover{filter:brightness(1.06)}
+    .asst-launcher:focus-visible{outline:3px solid var(--color-primary-soft);outline-offset:2px}
+    .asst-launcher svg{width:26px;height:26px}
+    body:not([data-auth="authenticated"]) .asst-launcher,
+    body:not([data-auth="authenticated"]) .asst-panel,
+    body:not([data-auth="authenticated"]) .asst-backdrop{display:none!important}
+    .asst-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:65;border:0}
+    .asst-panel{position:fixed;top:0;right:0;height:100vh;height:100dvh;width:420px;max-width:100vw;z-index:70;background:var(--color-surface);border-left:1px solid var(--color-border);box-shadow:-18px 0 40px rgba(0,0,0,.35);display:flex;flex-direction:column;transform:translateX(102%);transition:transform .22s ease}
+    .asst-panel.open{transform:translateX(0)}
+    .asst-header{display:flex;align-items:flex-start;gap:12px;padding:16px;border-bottom:1px solid var(--color-border)}
+    .asst-header-text{display:flex;flex-direction:column;gap:2px;min-width:0}
+    .asst-header-text strong{font-size:15px}
+    .asst-header-text span{font-size:12px;color:var(--color-text-muted)}
+    .asst-header-actions{margin-left:auto;display:flex;gap:6px;flex-shrink:0}
+    .asst-icon-btn{width:32px;height:32px;border-radius:8px;border:1px solid var(--color-border);background:transparent;color:var(--color-text-muted);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px}
+    .asst-icon-btn:hover{border-color:var(--color-primary);color:var(--color-text)}
+    .asst-icon-btn:focus-visible{outline:2px solid var(--color-primary);outline-offset:1px}
+    .asst-body{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px}
+    .asst-welcome{color:var(--color-text-muted);font-size:13px;line-height:1.5}
+    .asst-suggestions{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+    .asst-chip{border:1px solid var(--color-border);background:var(--color-surface-2);color:var(--color-text);border-radius:999px;padding:7px 12px;font-size:12px;cursor:pointer;text-align:left}
+    .asst-chip:hover{border-color:var(--color-primary);color:#ffc093}
+    .asst-chip:focus-visible{outline:2px solid var(--color-primary);outline-offset:1px}
+    .asst-msg{max-width:88%;padding:10px 12px;border-radius:12px;font-size:13px;line-height:1.5;word-wrap:break-word;overflow-wrap:anywhere}
+    .asst-msg.user{align-self:flex-end;background:var(--color-primary-soft);border:1px solid rgba(244,121,32,.3);color:var(--color-text);border-bottom-right-radius:4px}
+    .asst-msg.assistant{align-self:flex-start;background:var(--color-surface-2);border:1px solid var(--color-border);border-bottom-left-radius:4px}
+    .asst-msg.error{align-self:flex-start;background:rgba(239,107,115,.1);border:1px solid rgba(239,107,115,.4);color:#ffb0b5}
+    .asst-msg-badge{display:inline-flex;align-items:center;gap:5px;font-size:10px;text-transform:uppercase;letter-spacing:.05em;font-weight:700;padding:2px 8px;border-radius:999px;margin-bottom:6px}
+    .asst-msg-badge.realtime{background:rgba(66,201,133,.16);color:#8ee0b5}
+    .asst-msg-badge.rules{background:rgba(105,168,255,.14);color:#a9caff}
+    .asst-msg-text{white-space:pre-wrap}
+    .asst-sources{margin-top:8px;border-top:1px solid var(--color-border);padding-top:6px}
+    .asst-sources summary{cursor:pointer;font-size:12px;color:var(--color-text-muted)}
+    .asst-sources ul{margin:6px 0 0;padding-left:16px}
+    .asst-sources li{font-size:12px;color:var(--color-text);font-family:ui-monospace,monospace}
+    .asst-warnings{margin-top:8px;display:flex;flex-direction:column;gap:4px}
+    .asst-warning{font-size:12px;color:var(--color-warning);background:rgba(246,189,75,.1);border:1px solid rgba(246,189,75,.3);border-radius:8px;padding:6px 8px;line-height:1.4}
+    .asst-retry{margin-top:8px;height:30px;padding:0 12px;border-radius:8px;border:1px solid var(--color-border-strong);background:transparent;color:var(--color-text);cursor:pointer;font-size:12px}
+    .asst-retry:hover{border-color:var(--color-primary)}
+    .asst-loading{align-self:flex-start;display:flex;align-items:center;gap:8px;color:var(--color-text-muted);font-size:12px}
+    .asst-dots{display:inline-flex;gap:3px}
+    .asst-dots i{width:6px;height:6px;border-radius:50%;background:var(--color-text-subtle);animation:asstpulse 1s infinite ease-in-out}
+    .asst-dots i:nth-child(2){animation-delay:.15s}
+    .asst-dots i:nth-child(3){animation-delay:.3s}
+    @keyframes asstpulse{0%,80%,100%{opacity:.3}40%{opacity:1}}
+    .asst-footer{border-top:1px solid var(--color-border);padding:12px 16px calc(12px + env(safe-area-inset-bottom,0px))}
+    .asst-input-row{display:flex;gap:8px;align-items:flex-end}
+    .asst-input{flex:1;min-height:40px;max-height:120px;resize:none;border:1px solid var(--color-border);background:var(--color-surface-2);color:var(--color-text);border-radius:10px;padding:10px 12px;line-height:1.4;width:100%}
+    .asst-input:focus{border-color:var(--color-primary);box-shadow:0 0 0 3px var(--color-primary-tint);outline:none}
+    .asst-send{flex-shrink:0;width:40px;height:40px;border-radius:10px;border:1px solid var(--color-primary);background:var(--color-primary);color:#17110d;cursor:pointer;display:flex;align-items:center;justify-content:center}
+    .asst-send svg{width:18px;height:18px}
+    .asst-send:disabled{opacity:.5;cursor:not-allowed}
+    .asst-send:focus-visible{outline:2px solid var(--color-text);outline-offset:1px}
+    .asst-disclaimer{margin:8px 0 0;font-size:11px;color:var(--color-text-subtle);line-height:1.4}
+    @media(max-width:520px){
+      .asst-panel{width:100vw}
+      .asst-launcher{right:16px;bottom:16px}
+    }
   </style>
 </head>
 <body data-auth="loading">
@@ -958,6 +1018,34 @@
       <div class="drawer-grid" id="drawerGrid"></div>
       <div class="warnings"><strong>Alertas de qualidade</strong><ul id="drawerWarnings"></ul></div>
     </aside>
+  </div>
+
+  <!-- Assistente da Jornada (chatbot) -->
+  <button id="assistantLauncher" class="asst-launcher" type="button" aria-label="Abrir assistente" aria-expanded="false" aria-controls="assistantPanel" aria-haspopup="dialog">
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v8A2.5 2.5 0 0 1 17.5 16H9l-4 4v-4H6.5A2.5 2.5 0 0 1 4 13.5v-8Z" fill="currentColor"/></svg>
+  </button>
+  <div id="assistantBackdrop" class="asst-backdrop" hidden></div>
+  <div id="assistantPanel" class="asst-panel" role="dialog" aria-modal="true" aria-labelledby="assistantTitle" aria-hidden="true" hidden>
+    <header class="asst-header">
+      <div class="asst-header-text">
+        <strong id="assistantTitle">Assistente da Jornada</strong>
+        <span>Pergunte sobre indicadores, regras e origem dos dados</span>
+      </div>
+      <div class="asst-header-actions">
+        <button id="assistantClear" class="asst-icon-btn" type="button" aria-label="Limpar conversa" title="Limpar conversa">↺</button>
+        <button id="assistantClose" class="asst-icon-btn" type="button" aria-label="Fechar assistente" title="Fechar">✕</button>
+      </div>
+    </header>
+    <div id="assistantBody" class="asst-body" role="log" aria-live="polite" aria-relevant="additions"></div>
+    <footer class="asst-footer">
+      <div class="asst-input-row">
+        <textarea id="assistantInput" class="asst-input" rows="1" maxlength="2000" placeholder="Escreva sua pergunta…" aria-label="Sua pergunta para o assistente"></textarea>
+        <button id="assistantSend" class="asst-send" type="button" aria-label="Enviar pergunta">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3.5 20.5 21 12 3.5 3.5 3 10l12 2-12 2 .5 6.5Z" fill="currentColor"/></svg>
+        </button>
+      </div>
+      <p class="asst-disclaimer">O assistente pode consultar regras e fontes. Os valores em tempo real serão ampliados gradualmente.</p>
+    </footer>
   </div>
 
   <script>
@@ -3793,6 +3881,279 @@
       if (ticket) openSupportDrawer(ticket);
     });
 
+    /* -------- Assistente da Jornada (chatbot) -------- */
+    const ASSISTANT_SUGGESTIONS = [
+      'Quantos clientes ativos temos?',
+      'Qual é a regra de cliente ativo?',
+      'Onde está o dado de renda mensal?',
+      'Como é calculada a permanência?',
+      'Qual é a regra do segmento APEX?',
+      'Onde ficam os dados de reuniões?',
+      'Por que um indicador aparece como não calculável?',
+      'Onde ficam os chamados de atendimento?',
+    ];
+    const newAssistantSession = () =>
+      (window.crypto?.randomUUID?.() ?? `sess-${Date.now()}-${Math.random().toString(16).slice(2)}`);
+    const assistantState = {
+      open: false,
+      loading: false,
+      sessionId: newAssistantSession(),
+      messages: [],
+    };
+    let assistantLastFocus = null;
+    const asstEls = {
+      launcher: document.querySelector('#assistantLauncher'),
+      backdrop: document.querySelector('#assistantBackdrop'),
+      panel: document.querySelector('#assistantPanel'),
+      body: document.querySelector('#assistantBody'),
+      input: document.querySelector('#assistantInput'),
+      send: document.querySelector('#assistantSend'),
+      clear: document.querySelector('#assistantClear'),
+      close: document.querySelector('#assistantClose'),
+    };
+
+    const asstNode = (tag, className, text) => {
+      const node = document.createElement(tag);
+      if (className) node.className = className;
+      if (text != null) node.textContent = text;
+      return node;
+    };
+
+    function assistantErrorMessage(status, payload, networkError) {
+      if (networkError) return 'Não foi possível conectar ao assistente.';
+      if (payload?.code === 'N8N_TIMEOUT') return 'O assistente demorou mais que o esperado. Tente novamente.';
+      if (status === 401) return 'Faça login novamente para continuar.';
+      if (status === 403) return 'Sua conta não possui autorização para usar o assistente.';
+      return payload?.error || 'Não foi possível obter a resposta do assistente.';
+    }
+
+    function renderAssistantSource(source) {
+      const li = document.createElement('li');
+      if (typeof source === 'string') {
+        li.textContent = source;
+        return li;
+      }
+      if (source && typeof source === 'object') {
+        const path = [source.schema, source.table, source.column].filter(Boolean).join('.');
+        li.textContent = source.label ? (path ? `${path} — ${source.label}` : source.label) : (path || JSON.stringify(source));
+        return li;
+      }
+      li.textContent = String(source);
+      return li;
+    }
+
+    function buildAssistantBubble(msg) {
+      if (msg.role === 'user') {
+        const bubble = asstNode('div', 'asst-msg user');
+        bubble.appendChild(asstNode('div', 'asst-msg-text', msg.content));
+        return bubble;
+      }
+      if (msg.role === 'error') {
+        const bubble = asstNode('div', 'asst-msg error');
+        bubble.appendChild(asstNode('div', 'asst-msg-text', msg.content));
+        if (msg.retryQuestion) {
+          const retry = asstNode('button', 'asst-retry', 'Tentar novamente');
+          retry.type = 'button';
+          retry.addEventListener('click', () => {
+            const idx = assistantState.messages.indexOf(msg);
+            if (idx !== -1) assistantState.messages.splice(idx, 1);
+            sendAssistant(msg.retryQuestion);
+          });
+          bubble.appendChild(retry);
+        }
+        return bubble;
+      }
+      // assistant
+      const bubble = asstNode('div', 'asst-msg assistant');
+      const badge = asstNode('span', `asst-msg-badge ${msg.realtimeDatabase ? 'realtime' : 'rules'}`,
+        msg.realtimeDatabase ? 'Consulta em tempo real' : 'Base de regras');
+      bubble.appendChild(badge);
+      bubble.appendChild(asstNode('div', 'asst-msg-text', msg.content));
+
+      if (Array.isArray(msg.sources) && msg.sources.length) {
+        const details = asstNode('details', 'asst-sources');
+        details.appendChild(asstNode('summary', null, 'Fontes utilizadas'));
+        const ul = document.createElement('ul');
+        msg.sources.forEach(s => ul.appendChild(renderAssistantSource(s)));
+        details.appendChild(ul);
+        bubble.appendChild(details);
+      }
+
+      if (Array.isArray(msg.warnings) && msg.warnings.length) {
+        const wrap = asstNode('div', 'asst-warnings');
+        msg.warnings.forEach(w => {
+          const text = typeof w === 'string' ? w : (w?.message || w?.reason || JSON.stringify(w));
+          wrap.appendChild(asstNode('div', 'asst-warning', text));
+        });
+        bubble.appendChild(wrap);
+      }
+      return bubble;
+    }
+
+    function renderAssistant() {
+      const body = asstEls.body;
+      body.textContent = '';
+
+      if (!assistantState.messages.length && !assistantState.loading) {
+        const welcome = asstNode('div', 'asst-welcome',
+          'Olá! Posso ajudar com indicadores, regras de negócio e a origem dos dados do portal. Escolha uma sugestão ou escreva sua pergunta.');
+        body.appendChild(welcome);
+        const chips = asstNode('div', 'asst-suggestions');
+        ASSISTANT_SUGGESTIONS.forEach(q => {
+          const chip = asstNode('button', 'asst-chip', q);
+          chip.type = 'button';
+          chip.addEventListener('click', () => sendAssistant(q));
+          chips.appendChild(chip);
+        });
+        body.appendChild(chips);
+      } else {
+        assistantState.messages.forEach(msg => body.appendChild(buildAssistantBubble(msg)));
+        if (assistantState.loading) {
+          const loading = asstNode('div', 'asst-loading');
+          loading.appendChild(asstNode('span', null, 'Consultando o Assistente da Jornada…'));
+          const dots = asstNode('span', 'asst-dots');
+          dots.appendChild(document.createElement('i'));
+          dots.appendChild(document.createElement('i'));
+          dots.appendChild(document.createElement('i'));
+          loading.appendChild(dots);
+          body.appendChild(loading);
+        }
+      }
+      body.scrollTop = body.scrollHeight;
+    }
+
+    function updateAssistantSendState() {
+      const hasText = asstEls.input.value.trim().length > 0;
+      asstEls.send.disabled = assistantState.loading || !hasText;
+    }
+
+    async function sendAssistant(rawText) {
+      if (assistantState.loading) return;
+      const pergunta = String(rawText ?? '').trim();
+      if (!pergunta || pergunta.length > 2000) return;
+
+      assistantState.messages.push({ role: 'user', content: pergunta, createdAt: new Date().toISOString() });
+      asstEls.input.value = '';
+      autoGrowAssistantInput();
+      assistantState.loading = true;
+      updateAssistantSendState();
+      renderAssistant();
+
+      let status = 0;
+      let payload = null;
+      let networkError = false;
+      try {
+        const response = await apiFetch('/api/assistant', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ pergunta, session_id: assistantState.sessionId }),
+        });
+        status = response.status;
+        payload = await response.json().catch(() => null);
+        if (!response.ok || !payload?.success) {
+          throw new Error('assistant_error');
+        }
+        if (typeof payload.session_id === 'string' && payload.session_id) {
+          assistantState.sessionId = payload.session_id;
+        }
+        assistantState.messages.push({
+          role: 'assistant',
+          content: typeof payload.answer === 'string' ? payload.answer : '',
+          intent: payload.intent || 'general',
+          sources: Array.isArray(payload.sources) ? payload.sources : [],
+          warnings: Array.isArray(payload.warnings) ? payload.warnings : [],
+          realtimeDatabase: payload.realtime_database === true,
+          createdAt: payload.generated_at || new Date().toISOString(),
+        });
+      } catch (err) {
+        if (err?.code === 'AUTH_REQUIRED') {
+          status = 401;
+          payload = { code: 'unauthenticated' };
+        } else if (!status) {
+          networkError = true;
+        }
+        assistantState.messages.push({
+          role: 'error',
+          content: assistantErrorMessage(status, payload, networkError),
+          retryQuestion: pergunta,
+          createdAt: new Date().toISOString(),
+        });
+      } finally {
+        assistantState.loading = false;
+        updateAssistantSendState();
+        renderAssistant();
+      }
+    }
+
+    function autoGrowAssistantInput() {
+      const el = asstEls.input;
+      el.style.height = 'auto';
+      el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+    }
+
+    function openAssistant() {
+      if (!isPortalAuthenticated()) return;
+      assistantLastFocus = document.activeElement;
+      assistantState.open = true;
+      asstEls.panel.hidden = false;
+      asstEls.backdrop.hidden = false;
+      requestAnimationFrame(() => asstEls.panel.classList.add('open'));
+      asstEls.panel.setAttribute('aria-hidden', 'false');
+      asstEls.launcher.setAttribute('aria-expanded', 'true');
+      renderAssistant();
+      setTimeout(() => asstEls.input.focus(), 60);
+    }
+
+    function closeAssistant() {
+      assistantState.open = false;
+      asstEls.panel.classList.remove('open');
+      asstEls.panel.setAttribute('aria-hidden', 'true');
+      asstEls.launcher.setAttribute('aria-expanded', 'false');
+      asstEls.backdrop.hidden = true;
+      setTimeout(() => { if (!assistantState.open) asstEls.panel.hidden = true; }, 230);
+      if (assistantLastFocus && typeof assistantLastFocus.focus === 'function') assistantLastFocus.focus();
+      else asstEls.launcher.focus();
+    }
+
+    function clearAssistantConversation() {
+      assistantState.messages = [];
+      assistantState.loading = false;
+      assistantState.sessionId = newAssistantSession();
+      renderAssistant();
+      updateAssistantSendState();
+      asstEls.input.focus();
+    }
+
+    function resetAssistant() {
+      closeAssistant();
+      assistantState.messages = [];
+      assistantState.loading = false;
+      assistantState.sessionId = newAssistantSession();
+      asstEls.input.value = '';
+    }
+
+    if (asstEls.launcher) {
+      asstEls.launcher.addEventListener('click', () => (assistantState.open ? closeAssistant() : openAssistant()));
+      asstEls.close.addEventListener('click', closeAssistant);
+      asstEls.backdrop.addEventListener('click', closeAssistant);
+      asstEls.clear.addEventListener('click', clearAssistantConversation);
+      asstEls.send.addEventListener('click', () => sendAssistant(asstEls.input.value));
+      asstEls.input.addEventListener('input', () => { autoGrowAssistantInput(); updateAssistantSendState(); });
+      asstEls.input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          sendAssistant(asstEls.input.value);
+        }
+      });
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && assistantState.open) {
+          e.preventDefault();
+          closeAssistant();
+        }
+      });
+      updateAssistantSendState();
+    }
+
     let portalStarted = false;
     let portalRefreshTimer = null;
     function startPortalApp() {
@@ -3825,6 +4186,7 @@
       if (typeof mechanismsState !== 'undefined') mechanismsState.payload = null;
       if (typeof financialState !== 'undefined') financialState.payload = null;
       if (typeof supportState !== 'undefined') supportState.payload = null;
+      if (typeof resetAssistant === 'function') resetAssistant();
     }
     window.startPortalApp = startPortalApp;
     window.resetPortalApp = resetPortalApp;

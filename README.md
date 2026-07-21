@@ -56,7 +56,8 @@ Validam o Bearer no projeto **Auth**; consultam dados na **BASE QV**:
 - `/api/mechanisms`
 - `/api/financial-updates`
 - `/api/support`
+- `/api/assistant` (POST) — proxy autenticado do chatbot "Assistente da Jornada". Encaminha a pergunta ao webhook do n8n (`N8N_CHAT_WEBHOOK_URL`) e normaliza a resposta. Não expõe o webhook nem segredos ao frontend.
 
 ## Publicar no Netlify
 
-Cadastre as quatro variáveis no painel. Inclua a URL da Netlify nas Redirect URLs do projeto Auth.
+Cadastre as variáveis no painel (incluindo `N8N_CHAT_WEBHOOK_URL`). Inclua a URL da Netlify nas Redirect URLs do projeto Auth.

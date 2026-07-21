@@ -448,6 +448,26 @@ function buildPayload(clients, demands) {
   };
 }
 
+/** Fonte única (config + fetch + regras) reutilizada pelo handler e por /api/assistant-data. */
+export async function computeSupportPayload() {
+  const configError = configurationError();
+  if (configError) {
+    const err = new Error(configError);
+    err.code = "config";
+    throw err;
+  }
+  await probeDemandsTable();
+  const [{ rows: demands, warnings: fetchWarnings }, clients] = await Promise.all([
+    fetchDemandsResilient(),
+    fetchAll("clients", CLIENT_SELECT),
+  ]);
+  const payload = buildPayload(clients, demands);
+  if (fetchWarnings.length) {
+    payload.quality.warnings = [...(payload.quality.warnings || []), ...fetchWarnings];
+  }
+  return payload;
+}
+
 export default async (request) => {
   const denied = await requireCorporateAuth(request);
   if (denied) return denied;
@@ -462,15 +482,7 @@ export default async (request) => {
     return Response.json({ error: configError }, { status: 503, headers: { "Cache-Control": "no-store" } });
   }
   try {
-    await probeDemandsTable();
-    const [{ rows: demands, warnings: fetchWarnings }, clients] = await Promise.all([
-      fetchDemandsResilient(),
-      fetchAll("clients", CLIENT_SELECT),
-    ]);
-    const payload = buildPayload(clients, demands);
-    if (fetchWarnings.length) {
-      payload.quality.warnings = [...(payload.quality.warnings || []), ...fetchWarnings];
-    }
+    const payload = await computeSupportPayload();
     return Response.json(payload, { headers: { "Cache-Control": "no-store" } });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Falha ao consolidar atendimento";

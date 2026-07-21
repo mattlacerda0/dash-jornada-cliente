@@ -1174,6 +1174,38 @@ function buildPayload(clients, cancellations, financialRows, signatureMap, signa
   };
 }
 
+/**
+ * Consolida o payload de dados gerais (config + fetch + regras) sem exigir auth.
+ * Fonte única reutilizada pelo handler HTTP e pelo endpoint interno /api/assistant-data.
+ */
+export async function computeGeneralDataPayload() {
+  const configError = configurationError();
+  if (configError) {
+    const err = new Error(configError);
+    err.code = "config";
+    throw err;
+  }
+  const [clients, cancellations, financialRows, signatureResult] = await Promise.all([
+    fetchAll("clients", CLIENT_SELECT),
+    fetchAll("cancellations", CANCEL_SELECT),
+    fetchAll("client_financial_data", FINANCIAL_SELECT),
+    fetchSignatureMap(),
+  ]);
+  return buildPayload(
+    clients,
+    cancellations,
+    financialRows,
+    signatureResult.map,
+    {
+      error: signatureResult.error,
+      fetched: signatureResult.fetched,
+      withSignature: signatureResult.withSignature,
+      skippedDueToViewTimeout: signatureResult.skippedDueToViewTimeout,
+      note: signatureResult.note,
+    },
+  );
+}
+
 export default async (request) => {
   const denied = await requireCorporateAuth(request);
   if (denied) return denied;
@@ -1189,25 +1221,7 @@ export default async (request) => {
     String(process.env.DATA_SUPABASE_URL || "").replace(/^https:\/\//, "").split(".")[0],
   );
   try {
-    const [clients, cancellations, financialRows, signatureResult] = await Promise.all([
-      fetchAll("clients", CLIENT_SELECT),
-      fetchAll("cancellations", CANCEL_SELECT),
-      fetchAll("client_financial_data", FINANCIAL_SELECT),
-      fetchSignatureMap(),
-    ]);
-    const payload = buildPayload(
-      clients,
-      cancellations,
-      financialRows,
-      signatureResult.map,
-      {
-        error: signatureResult.error,
-        fetched: signatureResult.fetched,
-        withSignature: signatureResult.withSignature,
-        skippedDueToViewTimeout: signatureResult.skippedDueToViewTimeout,
-        note: signatureResult.note,
-      },
-    );
+    const payload = await computeGeneralDataPayload();
     return Response.json(payload, { headers: { "Cache-Control": "no-store" } });
   } catch (error) {
     console.error("[Data] general-data failed:", error instanceof Error ? error.message : error);

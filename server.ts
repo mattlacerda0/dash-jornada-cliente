@@ -20,12 +20,16 @@ if (Bun.env.AUTH_SUPABASE_URL) process.env.AUTH_SUPABASE_URL = Bun.env.AUTH_SUPA
 if (Bun.env.AUTH_SUPABASE_ANON_KEY) process.env.AUTH_SUPABASE_ANON_KEY = Bun.env.AUTH_SUPABASE_ANON_KEY;
 if (Bun.env.DATA_SUPABASE_URL) process.env.DATA_SUPABASE_URL = Bun.env.DATA_SUPABASE_URL;
 if (Bun.env.DATA_SUPABASE_SERVICE_ROLE_KEY) process.env.DATA_SUPABASE_SERVICE_ROLE_KEY = Bun.env.DATA_SUPABASE_SERVICE_ROLE_KEY;
+if (Bun.env.N8N_CHAT_WEBHOOK_URL) process.env.N8N_CHAT_WEBHOOK_URL = Bun.env.N8N_CHAT_WEBHOOK_URL;
+if (Bun.env.N8N_INTERNAL_API_TOKEN) process.env.N8N_INTERNAL_API_TOKEN = Bun.env.N8N_INTERNAL_API_TOKEN;
 
 const generalDataHandler = (await import("./netlify/functions/general-data.mjs")).default;
 const meetingsHandler = (await import("./netlify/functions/meetings.mjs")).default;
 const mechanismsHandler = (await import("./netlify/functions/mechanisms.mjs")).default;
 const financialUpdatesHandler = (await import("./netlify/functions/financial-updates.mjs")).default;
 const supportHandler = (await import("./netlify/functions/support.mjs")).default;
+const assistantHandler = (await import("./netlify/functions/assistant.mjs")).default;
+const assistantDataHandler = (await import("./netlify/functions/assistant-data.mjs")).default;
 const qualityHandler = (await import("./netlify/functions/quality.mjs")).default;
 const authConfigHandler = (await import("./netlify/functions/auth-config.mjs")).default;
 
@@ -202,6 +206,8 @@ const server = Bun.serve({
     if (url.pathname === "/api/mechanisms") return mechanismsHandler(request);
     if (url.pathname === "/api/financial-updates") return financialUpdatesHandler(request);
     if (url.pathname === "/api/support") return supportHandler(request);
+    if (url.pathname === "/api/assistant") return assistantHandler(request);
+    if (url.pathname === "/api/assistant-data") return assistantDataHandler(request);
     if (url.pathname.startsWith("/js/")) {
       const file = Bun.file(`${ROOT}${url.pathname}`);
       if (await file.exists()) {

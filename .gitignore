@@ -1,5 +1,12 @@
 .env
+.env.*
+!.env.example
 exemplo.env
 .server.stdout.log
 .server.stderr.log
 .netlify
+
+# Segredos e artefatos locais
+.cursor/mcp.json
+__pycache__/
+*.pyc

@@ -698,6 +698,23 @@ function buildPayload(clients, cmRows, mechanisms, cancellations = []) {
   };
 }
 
+/** Fonte única (config + fetch + regras) reutilizada pelo handler e por /api/assistant-data. */
+export async function computeMechanismsPayload() {
+  const configError = configurationError();
+  if (configError) {
+    const err = new Error(configError);
+    err.code = "config";
+    throw err;
+  }
+  const [clients, cmRows, mechanisms, cancellations] = await Promise.all([
+    fetchAll("clients", CLIENT_SELECT),
+    fetchAll("client_mecanismos", CM_SELECT, "client_id.asc"),
+    fetchAll("mecanismos", MEC_SELECT),
+    fetchAll("cancellations", CANCEL_SELECT),
+  ]);
+  return buildPayload(clients, cmRows, mechanisms, cancellations);
+}
+
 export default async (request) => {
   const denied = await requireCorporateAuth(request);
   if (denied) return denied;
@@ -706,13 +723,7 @@ export default async (request) => {
     return Response.json({ error: configError }, { status: 503, headers: { "Cache-Control": "no-store" } });
   }
   try {
-    const [clients, cmRows, mechanisms, cancellations] = await Promise.all([
-      fetchAll("clients", CLIENT_SELECT),
-      fetchAll("client_mecanismos", CM_SELECT, "client_id.asc"),
-      fetchAll("mecanismos", MEC_SELECT),
-      fetchAll("cancellations", CANCEL_SELECT),
-    ]);
-    return Response.json(buildPayload(clients, cmRows, mechanisms, cancellations), {
+    return Response.json(await computeMechanismsPayload(), {
       headers: { "Cache-Control": "no-store" },
     });
   } catch (error) {

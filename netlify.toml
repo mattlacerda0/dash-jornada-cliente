@@ -36,3 +36,13 @@
   from = "/api/support"
   to = "/.netlify/functions/support"
   status = 200
+
+[[redirects]]
+  from = "/api/assistant"
+  to = "/.netlify/functions/assistant"
+  status = 200
+
+[[redirects]]
+  from = "/api/assistant-data"
+  to = "/.netlify/functions/assistant-data"
+  status = 200

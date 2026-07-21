@@ -42,7 +42,7 @@ function segCount(payload, label) {
  * Allowlist de métricas. Cada entrada declara a fonte de cálculo (compute*),
  * o rótulo, as colunas de origem e como extrair o valor do payload consolidado.
  */
-const METRICS = {
+export const METRICS = {
   total_clients: {
     source: "general",
     label: "Total de clientes",
@@ -173,6 +173,34 @@ function nowIso() {
   return new Date().toISOString();
 }
 
+/**
+ * Resolve uma métrica da allowlist reutilizando o mesmo cálculo dos dashboards.
+ * Retorna { metric, value, label, sources, warnings, generated_at } ou null se
+ * a métrica não existir. Fonte única compartilhada por /api/assistant.
+ */
+export async function resolveMetric(metricKey) {
+  const metric = METRICS[metricKey];
+  if (!metric) return null;
+  const payload = await COMPUTE[metric.source]();
+  const rawValue = metric.value(payload);
+  const value = rawValue === undefined ? null : rawValue;
+  const warnings = [];
+  if (value == null) {
+    warnings.push({
+      code: "NOT_CALCULABLE",
+      message: "Indicador ainda não calculável com os dados disponíveis.",
+    });
+  }
+  return {
+    metric: metricKey,
+    value,
+    label: metric.label,
+    sources: metric.sources,
+    warnings,
+    generated_at: nowIso(),
+  };
+}
+
 function errorJson(status, error, code) {
   return Response.json(
     { success: false, error, code, generated_at: nowIso() },
@@ -223,26 +251,9 @@ export default async (request) => {
   }
 
   try {
-    const payload = await COMPUTE[metric.source]();
-    const rawValue = metric.value(payload);
-    const value = rawValue === undefined ? null : rawValue;
-    const warnings = [];
-    if (value == null) {
-      warnings.push({
-        code: "NOT_CALCULABLE",
-        message: "Indicador ainda não calculável com os dados disponíveis.",
-      });
-    }
+    const resolved = await resolveMetric(metricKey);
     return Response.json(
-      {
-        success: true,
-        metric: metricKey,
-        value,
-        label: metric.label,
-        sources: metric.sources,
-        warnings,
-        generated_at: nowIso(),
-      },
+      { success: true, ...resolved },
       { headers: { "Cache-Control": "no-store" } },
     );
   } catch (error) {

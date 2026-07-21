@@ -1,11 +1,16 @@
 import { authenticateRequest } from "./_shared/auth.mjs";
+import { resolvePortalContext } from "./_shared/portal-query.mjs";
 
 /**
  * Proxy autenticado do chatbot "Assistente da Jornada".
  *
  * Fluxo: Frontend -> POST /api/assistant -> valida usuário corporativo
- * -> chama webhook do n8n (analytics-jornada-chat) -> devolve resposta padronizada.
+ * -> identifica a intenção e, para perguntas de valor conhecidas, calcula a
+ *    métrica localmente reutilizando os cálculos dos dashboards
+ * -> envia pergunta + intent + dados_contexto ao webhook do n8n (analytics-jornada-chat)
+ * -> devolve resposta padronizada (metadados autoritativos vêm do backend).
  *
+ * O n8n NÃO acessa o localhost: recebe apenas o contexto já calculado.
  * Nunca encaminha o access token do usuário ao n8n e nunca expõe segredos ao navegador.
  */
 
@@ -62,38 +67,6 @@ async function resolveUserEmail(request) {
   return { email: result.user.email };
 }
 
-function normalizeN8nPayload(raw, sessionId) {
-  const answer = typeof raw?.answer === "string" ? raw.answer : "";
-  const intent = typeof raw?.intent === "string" && raw.intent.trim() ? raw.intent : "general";
-
-  let sources = [];
-  if (Array.isArray(raw?.sources)) {
-    sources = raw.sources;
-  } else if (raw?.source && typeof raw.source === "string") {
-    // Formato atual do catálogo estático: expõe apenas a string "source".
-    sources = [];
-  }
-
-  const warnings = Array.isArray(raw?.warnings) ? raw.warnings : [];
-  const realtime = raw?.realtime_database === true;
-  const resolvedSession =
-    (typeof raw?.session_id === "string" && raw.session_id.trim()) || sessionId;
-
-  return {
-    success: true,
-    session_id: resolvedSession,
-    answer,
-    intent,
-    sources,
-    warnings,
-    realtime_database: realtime,
-    generated_at:
-      typeof raw?.generated_at === "string" && raw.generated_at.trim()
-        ? raw.generated_at
-        : nowIso(),
-  };
-}
-
 export default async (request) => {
   if (request.method !== "POST") {
     return errorJson(405, "Método não permitido. Use POST.", "method_not_allowed");
@@ -141,6 +114,18 @@ export default async (request) => {
     return errorJson(500, "N8N_CHAT_WEBHOOK_URL não configurada.", "config_missing");
   }
 
+  // Motor central: identifica domínio/métrica/intenção, aplica filtros e calcula
+  // o contexto confiável localmente (fonte de verdade). O Gemini apenas verbaliza.
+  let intent = "general";
+  let dadosContexto = null;
+  try {
+    const resolved = await resolvePortalContext(pergunta);
+    intent = resolved.intent;
+    dadosContexto = resolved.dados_contexto;
+  } catch (err) {
+    console.error("[assistant] falha ao resolver contexto:", err?.message || err);
+  }
+
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
 
@@ -157,6 +142,8 @@ export default async (request) => {
         session_id: sessionId,
         user_email: userEmail,
         origem: ORIGIN_TAG,
+        intent,
+        dados_contexto: dadosContexto,
       }),
       signal: controller.signal,
     });
@@ -198,6 +185,25 @@ export default async (request) => {
     return errorJson(502, "O assistente retornou uma resposta inválida.", "N8N_INVALID_RESPONSE");
   }
 
-  const normalized = normalizeN8nPayload(raw, sessionId);
+  // Metadados autoritativos: derivados do backend (dados_contexto), não do eco do n8n.
+  const resolvedSession =
+    (typeof raw?.session_id === "string" && raw.session_id.trim()) || sessionId;
+  const normalized = {
+    success: true,
+    session_id: resolvedSession,
+    answer: raw.answer,
+    intent,
+    domain: dadosContexto?.domain ?? null,
+    metric: dadosContexto?.metric ?? null,
+    metric_definition: dadosContexto?.metric_definition ?? null,
+    metadata: dadosContexto?.metadata ?? null,
+    filters: dadosContexto?.filters ?? null,
+    filter_labels: Array.isArray(dadosContexto?.filter_labels) ? dadosContexto.filter_labels : [],
+    sources: Array.isArray(dadosContexto?.sources) ? dadosContexto.sources : [],
+    warnings: Array.isArray(dadosContexto?.warnings) ? dadosContexto.warnings : [],
+    ambiguities: Array.isArray(dadosContexto?.ambiguities) ? dadosContexto.ambiguities : [],
+    realtime_database: dadosContexto?.realtime_database === true,
+    generated_at: nowIso(),
+  };
   return Response.json(normalized, { headers: { "Cache-Control": "no-store" } });
 };

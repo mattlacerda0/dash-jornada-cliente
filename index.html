@@ -214,11 +214,33 @@
       .auth-card h1{font-size:20px}
     }
     /* -------- Assistente da Jornada (chatbot) -------- */
-    .asst-launcher{position:fixed;right:24px;bottom:24px;z-index:60;width:56px;height:56px;border-radius:50%;border:1px solid var(--color-primary);background:linear-gradient(145deg,#f47920,#d9660f);color:#17110d;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 10px 30px rgba(0,0,0,.42)}
-    .asst-launcher:hover{filter:brightness(1.06)}
+    .asst-launcher{position:fixed;right:24px;bottom:24px;z-index:60;display:inline-flex;align-items:center;gap:10px;height:48px;padding:0 18px;border-radius:999px;border:1px solid var(--color-primary);background:linear-gradient(145deg,#f47920,#d9660f);color:#17110d;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;box-shadow:0 8px 22px rgba(0,0,0,.32);transition:transform .18s ease,box-shadow .18s ease,filter .18s ease}
+    .asst-launcher:hover{transform:translateY(-2px);box-shadow:0 12px 28px rgba(0,0,0,.4);filter:brightness(1.04)}
     .asst-launcher:focus-visible{outline:3px solid var(--color-primary-soft);outline-offset:2px}
-    .asst-launcher svg{width:26px;height:26px}
+    .asst-launcher-icon{width:22px;height:22px;flex-shrink:0}
+    .asst-launcher-label{white-space:nowrap;line-height:1}
+    /* Painel aberto: esconde o launcher (sem dois controles de fechar) */
+    .asst-launcher[aria-expanded="true"]{opacity:0;visibility:hidden;pointer-events:none;transform:translateY(8px)}
+    .asst-launcher.asst-pulse{animation:asstLauncherPulse 1.4s ease-in-out 2}
+    @keyframes asstLauncherPulse{0%,100%{box-shadow:0 8px 22px rgba(0,0,0,.32)}50%{box-shadow:0 8px 22px rgba(0,0,0,.32),0 0 0 8px rgba(244,121,32,.22)}}
+    /* Balão de descoberta */
+    .asst-hint{position:fixed;right:24px;bottom:84px;z-index:61;max-width:264px;display:flex;align-items:flex-start;gap:10px;background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-md);box-shadow:var(--shadow-card);padding:12px 12px 12px 14px;opacity:0;transform:translateY(6px);transition:opacity .2s ease,transform .2s ease}
+    .asst-hint.show{opacity:1;transform:translateY(0)}
+    .asst-hint-text{display:flex;flex-direction:column;gap:3px;font-size:12px;line-height:1.4}
+    .asst-hint-text strong{font-size:13px;color:var(--color-text)}
+    .asst-hint-text span{color:var(--color-text-muted)}
+    .asst-hint-close{flex-shrink:0;width:22px;height:22px;border-radius:6px;border:1px solid var(--color-border);background:transparent;color:var(--color-text-muted);cursor:pointer;font-size:11px;line-height:1;display:flex;align-items:center;justify-content:center}
+    .asst-hint-close:hover{border-color:var(--color-primary);color:var(--color-text)}
+    .asst-hint-close:focus-visible{outline:2px solid var(--color-primary);outline-offset:1px}
+    .asst-launcher[aria-expanded="true"] ~ .asst-hint{opacity:0;visibility:hidden;pointer-events:none}
+    @media (prefers-reduced-motion: reduce){
+      .asst-launcher{transition:none}
+      .asst-launcher:hover{transform:none}
+      .asst-launcher.asst-pulse{animation:none}
+      .asst-hint{transition:none;transform:none}
+    }
     body:not([data-auth="authenticated"]) .asst-launcher,
+    body:not([data-auth="authenticated"]) .asst-hint,
     body:not([data-auth="authenticated"]) .asst-panel,
     body:not([data-auth="authenticated"]) .asst-backdrop{display:none!important}
     .asst-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:65;border:0}
@@ -271,7 +293,10 @@
     .asst-disclaimer{margin:8px 0 0;font-size:11px;color:var(--color-text-subtle);line-height:1.4}
     @media(max-width:520px){
       .asst-panel{width:100vw}
-      .asst-launcher{right:16px;bottom:16px}
+      .asst-launcher{right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));width:56px;height:56px;padding:0;border-radius:50%;justify-content:center;gap:0}
+      .asst-launcher-label{display:none}
+      .asst-launcher-icon{width:26px;height:26px}
+      .asst-hint{right:16px;bottom:calc(84px + env(safe-area-inset-bottom,0px));max-width:min(264px,calc(100vw - 32px))}
     }
   </style>
 </head>
@@ -1021,9 +1046,17 @@
   </div>
 
   <!-- Assistente da Jornada (chatbot) -->
-  <button id="assistantLauncher" class="asst-launcher" type="button" aria-label="Abrir assistente" aria-expanded="false" aria-controls="assistantPanel" aria-haspopup="dialog">
-    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v8A2.5 2.5 0 0 1 17.5 16H9l-4 4v-4H6.5A2.5 2.5 0 0 1 4 13.5v-8Z" fill="currentColor"/></svg>
+  <button id="assistantLauncher" class="asst-launcher" type="button" aria-label="Abrir Assistente da Jornada. Pergunte sobre indicadores, regras e origem dos dados." title="Pergunte sobre indicadores, regras e origem dos dados." aria-expanded="false" aria-controls="assistantPanel" aria-haspopup="dialog">
+    <svg class="asst-launcher-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v8A2.5 2.5 0 0 1 17.5 16H9l-4 4v-4H6.5A2.5 2.5 0 0 1 4 13.5v-8Z" fill="currentColor"/></svg>
+    <span class="asst-launcher-label">Assistente da Jornada</span>
   </button>
+  <div id="assistantHint" class="asst-hint" role="status" aria-live="polite" hidden>
+    <div class="asst-hint-text">
+      <strong>Tem alguma dúvida sobre os dados?</strong>
+      <span>Pergunte ao Assistente da Jornada.</span>
+    </div>
+    <button id="assistantHintClose" class="asst-hint-close" type="button" aria-label="Fechar aviso">✕</button>
+  </div>
   <div id="assistantBackdrop" class="asst-backdrop" hidden></div>
   <div id="assistantPanel" class="asst-panel" role="dialog" aria-modal="true" aria-labelledby="assistantTitle" aria-hidden="true" hidden>
     <header class="asst-header">
@@ -4093,6 +4126,7 @@
 
     function openAssistant() {
       if (!isPortalAuthenticated()) return;
+      hideAssistantHint();
       assistantLastFocus = document.activeElement;
       assistantState.open = true;
       asstEls.panel.hidden = false;
@@ -4154,6 +4188,30 @@
       updateAssistantSendState();
     }
 
+    // Balão de descoberta: exibido uma vez por sessão, próximo ao launcher.
+    const asstHintEl = document.querySelector('#assistantHint');
+    const asstHintCloseEl = document.querySelector('#assistantHintClose');
+    let asstHintTimer = null;
+    function hideAssistantHint() {
+      if (!asstHintEl) return;
+      asstHintEl.classList.remove('show');
+      asstHintEl.hidden = true;
+      if (asstHintTimer) { clearTimeout(asstHintTimer); asstHintTimer = null; }
+    }
+    function showAssistantHintOnce() {
+      if (!asstHintEl || !asstEls.launcher) return;
+      if (!isPortalAuthenticated() || assistantState.open) return;
+      try { if (sessionStorage.getItem('asstHintSeen') === '1') return; } catch (_) {}
+      try { sessionStorage.setItem('asstHintSeen', '1'); } catch (_) {}
+      asstHintEl.hidden = false;
+      requestAnimationFrame(() => asstHintEl.classList.add('show'));
+      asstEls.launcher.classList.add('asst-pulse');
+      asstEls.launcher.addEventListener('animationend', () => asstEls.launcher.classList.remove('asst-pulse'), { once: true });
+      asstHintTimer = setTimeout(hideAssistantHint, 8000);
+    }
+    if (asstHintCloseEl) asstHintCloseEl.addEventListener('click', hideAssistantHint);
+    window.showAssistantHintOnce = showAssistantHintOnce;
+
     let portalStarted = false;
     let portalRefreshTimer = null;
     function startPortalApp() {
@@ -4164,6 +4222,7 @@
       }
       portalStarted = true;
       loadGeneral();
+      setTimeout(() => { if (typeof showAssistantHintOnce === 'function') showAssistantHintOnce(); }, 2000);
       portalRefreshTimer = setInterval(() => {
         if (!isPortalAuthenticated()) return;
         if (views.general.classList.contains('active')) loadGeneral();

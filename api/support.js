@@ -1,6 +1,6 @@
 ﻿const { sendResponse } = require("./_adapter.js");
 
 module.exports = async function handler(req, res) {
-  const { default: fn } = await import("../netlify/functions/meetings.mjs");
+  const { default: fn } = await import("../netlify/functions/support.mjs");
   return sendResponse(fn, req, res);
 };

@@ -790,6 +790,24 @@ function buildPayload(clients, calendlyRows, manualRows, attendanceRows, implRow
   };
 }
 
+/** Fonte única (config + fetch + regras) reutilizada pelo handler e por /api/assistant-data. */
+export async function computeMeetingsPayload() {
+  const configError = configurationError();
+  if (configError) {
+    const err = new Error(configError);
+    err.code = "config";
+    throw err;
+  }
+  const [clients, calendlyRows, manualRows, attendanceRows, implRows] = await Promise.all([
+    fetchAll("clients", CLIENT_SELECT),
+    fetchAll("client_meetings", CALENDLY_SELECT),
+    fetchAll("manual_meetings", MANUAL_SELECT),
+    fetchAll("meeting_attendance", ATTENDANCE_SELECT),
+    fetchAll("client_implementation_meeting_date", IMPL_SELECT, "client_id.asc"),
+  ]);
+  return buildPayload(clients, calendlyRows, manualRows, attendanceRows, implRows);
+}
+
 export default async (request) => {
   const denied = await requireCorporateAuth(request);
   if (denied) return denied;
@@ -801,14 +819,7 @@ export default async (request) => {
     );
   }
   try {
-    const [clients, calendlyRows, manualRows, attendanceRows, implRows] = await Promise.all([
-      fetchAll("clients", CLIENT_SELECT),
-      fetchAll("client_meetings", CALENDLY_SELECT),
-      fetchAll("manual_meetings", MANUAL_SELECT),
-      fetchAll("meeting_attendance", ATTENDANCE_SELECT),
-      fetchAll("client_implementation_meeting_date", IMPL_SELECT, "client_id.asc"),
-    ]);
-    const payload = buildPayload(clients, calendlyRows, manualRows, attendanceRows, implRows);
+    const payload = await computeMeetingsPayload();
     return Response.json(payload, { headers: { "Cache-Control": "no-store" } });
   } catch {
     return Response.json(

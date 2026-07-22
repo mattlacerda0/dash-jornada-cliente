@@ -1,4 +1,4 @@
-.env
+﻿.env
 exemplo.env
 .server.stdout.log
 .server.stderr.log
@@ -11,3 +11,4 @@ _v.json
 _visual_acq.mjs
 .vercel
 .env*
+.cursor/mcp.json

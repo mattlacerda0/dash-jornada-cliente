@@ -1,0 +1,44 @@
+// Wrapper Vercel (@vercel/node) para o proxy autenticado do chatbot.
+// A lógica vive em netlify/functions/assistant.mjs (camada compartilhada).
+// Repassa o request completo porque o handler depende do Authorization do
+// usuário corporativo, do método POST e do corpo JSON.
+module.exports = async function assistant(req, res) {
+  try {
+    const { default: handler } = await import(
+      "../netlify/functions/assistant.mjs"
+    );
+
+    const chunks = [];
+    for await (const chunk of req) {
+      chunks.push(chunk);
+    }
+    const body = chunks.length > 0 ? Buffer.concat(chunks) : undefined;
+
+    const protocol = req.headers["x-forwarded-proto"] || "https";
+    const host = req.headers.host;
+
+    const request = new Request(`${protocol}://${host}${req.url}`, {
+      method: req.method,
+      headers: req.headers,
+      body: req.method === "GET" || req.method === "HEAD" ? undefined : body,
+    });
+
+    const response = await handler(request);
+
+    res.statusCode = response.status;
+    response.headers.forEach((value, key) => {
+      res.setHeader(key, value);
+    });
+    res.end(Buffer.from(await response.arrayBuffer()));
+  } catch (error) {
+    console.error("[assistant]", error instanceof Error ? error.message : error);
+    res.statusCode = 500;
+    res.setHeader("Content-Type", "application/json; charset=utf-8");
+    res.end(
+      JSON.stringify({
+        error: "Erro interno ao processar a mensagem do assistente.",
+        code: "internal_error",
+      }),
+    );
+  }
+};

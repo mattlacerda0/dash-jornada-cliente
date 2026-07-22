@@ -6,7 +6,7 @@ const CLIENT_SELECT =
 const CANCEL_SELECT =
   "id,client_id,distrato_assinado_at,data_pedido,intencao_registrada_at,archived_at,updated_at,created_at";
 const FINANCIAL_SELECT =
-  "id,client_id,reserva_liquidez,ultimo_aporte,ultima_renda_mensal,possui_imovel,possui_carro,possui_consorcio,updated_at";
+  "id,client_id,reserva_liquidez,ultimo_aporte,ultima_renda_mensal,valor_imoveis_quitados,possui_imovel,possui_carro,possui_consorcio,cheque_especial,parcelamento_cartao,credito_pessoal,credito_consignado,updated_at";
 const SIGNATURE_SELECT = "id_cliente,data_assinatura_contrato";
 
 /**
@@ -40,9 +40,14 @@ const USED_FIELDS = [
   { table: "client_financial_data", column: "reserva_liquidez", role: "liquidityReserve" },
   { table: "client_financial_data", column: "ultimo_aporte", role: "lastContribution" },
   { table: "client_financial_data", column: "ultima_renda_mensal", role: "monthlyIncome" },
+  { table: "client_financial_data", column: "valor_imoveis_quitados", role: "paidPropertiesValue" },
   { table: "client_financial_data", column: "possui_imovel", role: "hasProperty" },
   { table: "client_financial_data", column: "possui_carro", role: "hasCar" },
   { table: "client_financial_data", column: "possui_consorcio", role: "hasConsortium" },
+  { table: "client_financial_data", column: "cheque_especial", role: "debtChequeEspecial" },
+  { table: "client_financial_data", column: "parcelamento_cartao", role: "debtParcelamentoCartao" },
+  { table: "client_financial_data", column: "credito_pessoal", role: "debtCreditoPessoal" },
+  { table: "client_financial_data", column: "credito_consignado", role: "debtCreditoConsignado" },
   { table: "client_financial_data", column: "updated_at", role: "financialRecency" },
 ];
 
@@ -77,6 +82,168 @@ const LIQUIDITY_BANDS = [
 ];
 
 const STATUS_LABELS = ["Ativo", "Cancelado", "Congelado", "Não informado"];
+
+/** Ordem obrigatória de exibição/prioridade de segmento por capacidade financeira. */
+const SEGMENT_LABELS = ["APEX", "PRIVATE", "PRINCIPAL", "DEBTS", "OVER", "Dados insuficientes"];
+const INSUFFICIENT_SEGMENT_LABEL = "Dados insuficientes";
+
+const DEBT_FIELDS = [
+  { key: "cheque_especial", label: "cheque especial" },
+  { key: "parcelamento_cartao", label: "parcelamento de cartão" },
+  { key: "credito_pessoal", label: "crédito pessoal" },
+  { key: "credito_consignado", label: "crédito consignado" },
+];
+
+/**
+ * Valida se um valor financeiro está realmente presente.
+ * Distingue número zero informado (válido) de ausência (null/undefined/vazio/inválido).
+ */
+function hasValidFinancialValue(value) {
+  if (value == null) return false;
+  if (typeof value === "number") return Number.isFinite(value);
+  if (typeof value === "string") {
+    const s = value.trim();
+    if (!s) return false;
+    return Number.isFinite(Number(s.replace(",", ".")));
+  }
+  return false;
+}
+
+/**
+ * Normaliza um indicador de dívida.
+ * Reconhece: true, 1, sim, yes, possui, ativo → dívida.
+ * vazio/null/"não" → sem dívida (não infere dívida).
+ */
+function normalizeDebtFlag(raw) {
+  if (raw == null) return { isDebt: false, known: false, unrecognized: false };
+  if (typeof raw === "boolean") return { isDebt: raw, known: true, unrecognized: false };
+  if (typeof raw === "number") return { isDebt: raw !== 0, known: true, unrecognized: false };
+  const s = String(raw).trim().toLowerCase();
+  if (!s) return { isDebt: false, known: false, unrecognized: false };
+  if (["true", "t", "1", "sim", "yes", "y", "possui", "ativo"].includes(s)) {
+    return { isDebt: true, known: true, unrecognized: false };
+  }
+  if (["false", "f", "0", "nao", "não", "no", "n", "vazio", "nenhum", "nenhuma"].includes(s)) {
+    return { isDebt: false, known: true, unrecognized: false };
+  }
+  return { isDebt: false, known: false, unrecognized: true };
+}
+
+/**
+ * Classificação determinística e conservadora de segmento por capacidade financeira.
+ * Prioridade obrigatória: DEBTS > APEX > PRIVATE > PRINCIPAL > OVER > Dados insuficientes.
+ * PRIVATE/PRINCIPAL/OVER só são atribuídos com renda válida (numérica e não negativa).
+ * APEX e DEBTS exigem evidência explícita. Não usa IA, não grava no banco.
+ */
+export function calculateClientSegment(financialData, debtData) {
+  const segmentWarnings = [];
+  const monthlyIncome = financialData?.monthlyIncome ?? null;
+  const liquidityReserve = financialData?.liquidityReserve ?? null;
+  const lastContribution = financialData?.lastContribution ?? null;
+  const paidPropertiesValue = financialData?.paidPropertiesValue ?? null;
+
+  if (monthlyIncome != null && monthlyIncome < 0) segmentWarnings.push("Renda mensal negativa");
+  if (liquidityReserve != null && liquidityReserve < 0) segmentWarnings.push("Reserva de liquidez negativa");
+  if (lastContribution != null && lastContribution < 0) segmentWarnings.push("Último aporte negativo");
+  if (paidPropertiesValue != null && paidPropertiesValue < 0) segmentWarnings.push("Valor de imóveis quitados negativo");
+
+  // Renda válida = presente, numérica e não negativa.
+  const hasValidMonthlyIncome = hasValidFinancialValue(monthlyIncome) && monthlyIncome >= 0;
+
+  // Dívida: exige evidência explícita; ausência não equivale a "não possui".
+  const debtReasons = [];
+  let anyDebt = false;
+  let anyDebtKnown = false;
+  for (const field of DEBT_FIELDS) {
+    const norm = normalizeDebtFlag(debtData?.[field.key]);
+    if (norm.unrecognized) segmentWarnings.push(`Dívida com formato não reconhecido: ${field.key}`);
+    if (norm.known) anyDebtKnown = true;
+    if (norm.isDebt) {
+      anyDebt = true;
+      debtReasons.push(`Possui ${field.label} registrado`);
+    }
+  }
+  const debtDataAvailable = anyDebtKnown;
+
+  const missingFinancialData = [];
+  if (!hasValidMonthlyIncome) missingFinancialData.push("renda mensal");
+  if (!debtDataAvailable) missingFinancialData.push("informação de dívida");
+  if (!hasValidFinancialValue(liquidityReserve)) missingFinancialData.push("reserva de liquidez");
+  if (!hasValidFinancialValue(paidPropertiesValue)) missingFinancialData.push("valor dos imóveis quitados");
+  if (!hasValidFinancialValue(lastContribution)) missingFinancialData.push("último aporte");
+
+  const segmentInputs = {
+    monthlyIncome,
+    liquidityReserve,
+    lastContribution,
+    paidPropertiesValue,
+    hasDebt: anyDebt,
+    debtDataAvailable,
+  };
+
+  const build = (segment, reasons, confidence) => {
+    // Validações defensivas de consistência (não bloqueiam o dashboard).
+    if ((segment === "PRIVATE" || segment === "PRINCIPAL" || segment === "OVER") && !hasValidMonthlyIncome) {
+      segmentWarnings.push(`Segmento ${segment} atribuído sem renda válida`);
+    }
+    if (segment === "APEX" && !reasons.length) segmentWarnings.push("Cliente APEX sem nenhum critério APEX");
+    if (segment === "DEBTS" && !reasons.length) segmentWarnings.push("Cliente DEBTS sem evidência de dívida");
+    if (confidence === "medium") {
+      segmentWarnings.push("Informação de dívida não disponível; classificação feita somente com base financeira.");
+    }
+    return {
+      segment,
+      segmentLabel: segment,
+      segmentStatus: "classified",
+      segmentConfidence: confidence,
+      segmentReason: reasons[0] || null,
+      segmentReasons: reasons,
+      segmentInputs,
+      missingFinancialData,
+      segmentWarnings,
+    };
+  };
+
+  // 1. DEBTS — apenas com evidência explícita de dívida.
+  if (anyDebt) return build("DEBTS", debtReasons, "high");
+
+  // 2. APEX — regra OR; qualquer critério explícito preenchido e atingido.
+  const apexReasons = [];
+  if (hasValidFinancialValue(monthlyIncome) && monthlyIncome >= 100000) {
+    apexReasons.push("Renda mensal igual ou superior a R$ 100 mil");
+  }
+  if (hasValidFinancialValue(paidPropertiesValue) && paidPropertiesValue >= 2000000) {
+    apexReasons.push("Imóveis quitados iguais ou superiores a R$ 2 milhões");
+  }
+  if (hasValidFinancialValue(lastContribution) && lastContribution >= 30000) {
+    apexReasons.push("Último aporte igual ou superior a R$ 30 mil");
+  }
+  if (hasValidFinancialValue(liquidityReserve) && liquidityReserve >= 500000) {
+    apexReasons.push("Reserva de liquidez igual ou superior a R$ 500 mil");
+  }
+  if (apexReasons.length) return build("APEX", apexReasons, "high");
+
+  // 3-7 dependem de renda mensal válida.
+  if (hasValidMonthlyIncome) {
+    const confidence = debtDataAvailable ? "high" : "medium";
+    if (monthlyIncome > 50000) return build("PRIVATE", ["Renda mensal superior a R$ 50 mil"], confidence);
+    if (monthlyIncome >= 20000) return build("PRINCIPAL", ["Renda mensal entre R$ 20 mil e R$ 50 mil"], confidence);
+    return build("OVER", ["Renda mensal inferior a R$ 20 mil"], confidence);
+  }
+
+  // 8. Dados insuficientes — sem dívida, sem critério APEX e sem renda válida.
+  return {
+    segment: null,
+    segmentLabel: INSUFFICIENT_SEGMENT_LABEL,
+    segmentStatus: "insufficient_data",
+    segmentConfidence: "low",
+    segmentReason: "Renda mensal não informada e nenhum critério APEX ou dívida confirmada.",
+    segmentReasons: ["Renda mensal não informada e nenhum critério APEX ou dívida confirmada."],
+    segmentInputs,
+    missingFinancialData,
+    segmentWarnings,
+  };
+}
 
 const STAGE_RANK = {
   "Distrato assinado": 3,
@@ -590,9 +757,11 @@ function buildCancellationMap(cancellations) {
 
 function buildFinancialMap(financialRows) {
   const map = new Map();
+  const counts = new Map();
   for (const row of financialRows) {
     const clientId = blankToNull(row.client_id);
     if (!clientId) continue;
+    counts.set(clientId, (counts.get(clientId) || 0) + 1);
     const updated = parseDate(row.updated_at) || new Date(0);
     const current = map.get(clientId);
     if (!current || updated > current.updated) {
@@ -601,13 +770,21 @@ function buildFinancialMap(financialRows) {
         monthlyIncome: toNumber(row.ultima_renda_mensal),
         lastContribution: toNumber(row.ultimo_aporte),
         liquidityReserve: toNumber(row.reserva_liquidez),
+        paidPropertiesValue: toNumber(row.valor_imoveis_quitados),
         hasProperty: toBool(row.possui_imovel),
         hasCar: toBool(row.possui_carro),
         hasConsortium: toBool(row.possui_consorcio),
+        debt: {
+          cheque_especial: row.cheque_especial,
+          parcelamento_cartao: row.parcelamento_cartao,
+          credito_pessoal: row.credito_pessoal,
+          credito_consignado: row.credito_consignado,
+        },
       });
     }
   }
-  return map;
+  const duplicates = new Set([...counts.entries()].filter(([, n]) => n > 1).map(([id]) => id));
+  return { map, duplicates };
 }
 
 function resolveAcquisition(client, signatureMap) {
@@ -695,7 +872,7 @@ function buildAcquisitionsByMonth(rows) {
 
 function buildPayload(clients, cancellations, financialRows, signatureMap, signatureMeta = {}) {
   const { map: cancelMap, multiples } = buildCancellationMap(cancellations);
-  const financialMap = buildFinancialMap(financialRows);
+  const { map: financialMap, duplicates: financialDuplicates } = buildFinancialMap(financialRows);
   const clientIds = new Set(clients.map((c) => String(c.id)));
   const now = new Date();
   const rows = [];
@@ -761,6 +938,20 @@ function buildPayload(clients, cancellations, financialRows, signatureMap, signa
       if (financial.lastContribution == null) dataWarnings.push("Último aporte ausente");
       if (financial.liquidityReserve == null) dataWarnings.push("Reserva de liquidez ausente");
     }
+    if (financialDuplicates.has(client.id)) {
+      dataWarnings.push("Múltiplos registros financeiros para o mesmo cliente; usado o mais recente");
+    }
+
+    const segmentInfo = calculateClientSegment(
+      {
+        monthlyIncome: financial?.monthlyIncome ?? null,
+        liquidityReserve: financial?.liquidityReserve ?? null,
+        lastContribution: financial?.lastContribution ?? null,
+        paidPropertiesValue: financial?.paidPropertiesValue ?? null,
+      },
+      financial?.debt || {},
+    );
+    if (segmentInfo.segmentWarnings.length) dataWarnings.push(...segmentInfo.segmentWarnings);
     if (multiples.has(client.id)) dataWarnings.push("Múltiplos processos ativos de cancelamento para o mesmo cliente");
     if (cancelInfo?.warnings?.length) dataWarnings.push(...cancelInfo.warnings);
 
@@ -796,15 +987,29 @@ function buildPayload(clients, cancellations, financialRows, signatureMap, signa
       status: analyticalStatus,
       analyticalStatus,
       rawStatus,
-      segment: labelOrUnknown(client.segmentacao),
+      /** segment = código calculado (null quando dados insuficientes). */
+      segment: segmentInfo.segment,
+      /** segmentLabel = rótulo de exibição/agrupamento ("Dados insuficientes" quando null). */
+      segmentLabel: segmentInfo.segmentLabel,
+      segmentStatus: segmentInfo.segmentStatus,
+      segmentConfidence: segmentInfo.segmentConfidence,
+      segmentReason: segmentInfo.segmentReason,
+      segmentReasons: segmentInfo.segmentReasons,
+      segmentInputs: segmentInfo.segmentInputs,
+      missingFinancialData: segmentInfo.missingFinancialData,
+      segmentWarnings: segmentInfo.segmentWarnings,
+      /** originalSegment = valor bruto de clients.segmentacao (preservado, não alterado). */
+      originalSegment: labelOrUnknown(client.segmentacao),
       engineer: labelOrUnknown(client.engenheiro_patrimonial),
       hasFinancialProfile: Boolean(financial),
       monthlyIncome: financial?.monthlyIncome ?? null,
       lastContribution: financial?.lastContribution ?? null,
       liquidityReserve: financial?.liquidityReserve ?? null,
+      paidPropertiesValue: financial?.paidPropertiesValue ?? null,
       hasProperty: financial?.hasProperty ?? null,
       hasCar: financial?.hasCar ?? null,
       hasConsortium: financial?.hasConsortium ?? null,
+      hasDebt: segmentInfo.segmentInputs.hasDebt,
       incomeBand: incomeBand(financial?.monthlyIncome ?? null),
       liquidityBand: liquidityBand(financial?.liquidityReserve ?? null),
       dataWarnings: [...new Set(dataWarnings)],
@@ -833,6 +1038,21 @@ function buildPayload(clients, cancellations, financialRows, signatureMap, signa
   ).length;
   const withFinancial = rows.filter((r) => r.hasFinancialProfile).length;
   const total = rows.length || 1;
+
+  // Métricas de suficiência da segmentação por capacidade financeira.
+  const classifiableClients = rows.filter((r) => r.segmentStatus === "classified").length;
+  const insufficientDataClients = rows.filter((r) => r.segmentStatus === "insufficient_data").length;
+  const withValidIncome = rows.filter((r) => r.segmentInputs && hasValidFinancialValue(r.segmentInputs.monthlyIncome) && r.segmentInputs.monthlyIncome >= 0).length;
+  const withDebtInfo = rows.filter((r) => r.segmentInputs && r.segmentInputs.debtDataAvailable).length;
+  const withApexCriterion = rows.filter((r) => r.segment === "APEX").length;
+  const pctOf = (n) => Math.round((n / total) * 1000) / 10;
+  const segmentation = {
+    classifiableClients,
+    insufficientDataClients,
+    incomeFilledPercent: pctOf(withValidIncome),
+    debtInfoPercent: pctOf(withDebtInfo),
+    apexCriterionPercent: pctOf(withApexCriterion),
+  };
   const activeClients = rows.filter((r) => r.analyticalStatus === "Ativo").length;
   const cancelledClients = rows.filter((r) => r.analyticalStatus === "Cancelado").length;
   const frozenClients = rows.filter((r) => r.analyticalStatus === "Congelado").length;
@@ -885,11 +1105,12 @@ function buildPayload(clients, cancellations, financialRows, signatureMap, signa
     averageMonthlyAcquisitions: acquisitionBundle.summary.averageMonthlyAcquisitions,
     medianMonthlyAcquisitions: acquisitionBundle.summary.medianMonthlyAcquisitions,
     latestMonthChangePercent: acquisitionBundle.summary.latestMonthChangePercent,
+    segmentation,
   };
 
   const distributions = {
     status: distributionFrom(rows, (r) => r.analyticalStatus, STATUS_LABELS).filter((item) => item.count > 0),
-    segments: distributionFrom(rows, (r) => r.segment),
+    segments: distributionFrom(rows, (r) => r.segmentLabel, SEGMENT_LABELS).filter((item) => item.count > 0),
     engineers: distributionFrom(rows, (r) => r.engineer),
     stayRanges: distributionFrom(rows, (r) => r.stayRange, STAY_RANGES),
     financialProfile: [
@@ -953,6 +1174,38 @@ function buildPayload(clients, cancellations, financialRows, signatureMap, signa
   };
 }
 
+/**
+ * Consolida o payload de dados gerais (config + fetch + regras) sem exigir auth.
+ * Fonte única reutilizada pelo handler HTTP e pelo endpoint interno /api/assistant-data.
+ */
+export async function computeGeneralDataPayload() {
+  const configError = configurationError();
+  if (configError) {
+    const err = new Error(configError);
+    err.code = "config";
+    throw err;
+  }
+  const [clients, cancellations, financialRows, signatureResult] = await Promise.all([
+    fetchAll("clients", CLIENT_SELECT),
+    fetchAll("cancellations", CANCEL_SELECT),
+    fetchAll("client_financial_data", FINANCIAL_SELECT),
+    fetchSignatureMap(),
+  ]);
+  return buildPayload(
+    clients,
+    cancellations,
+    financialRows,
+    signatureResult.map,
+    {
+      error: signatureResult.error,
+      fetched: signatureResult.fetched,
+      withSignature: signatureResult.withSignature,
+      skippedDueToViewTimeout: signatureResult.skippedDueToViewTimeout,
+      note: signatureResult.note,
+    },
+  );
+}
+
 export default async (request) => {
   const denied = await requireCorporateAuth(request);
   if (denied) return denied;
@@ -968,25 +1221,7 @@ export default async (request) => {
     String(process.env.DATA_SUPABASE_URL || "").replace(/^https:\/\//, "").split(".")[0],
   );
   try {
-    const [clients, cancellations, financialRows, signatureResult] = await Promise.all([
-      fetchAll("clients", CLIENT_SELECT),
-      fetchAll("cancellations", CANCEL_SELECT),
-      fetchAll("client_financial_data", FINANCIAL_SELECT),
-      fetchSignatureMap(),
-    ]);
-    const payload = buildPayload(
-      clients,
-      cancellations,
-      financialRows,
-      signatureResult.map,
-      {
-        error: signatureResult.error,
-        fetched: signatureResult.fetched,
-        withSignature: signatureResult.withSignature,
-        skippedDueToViewTimeout: signatureResult.skippedDueToViewTimeout,
-        note: signatureResult.note,
-      },
-    );
+    const payload = await computeGeneralDataPayload();
     return Response.json(payload, { headers: { "Cache-Control": "no-store" } });
   } catch (error) {
     console.error("[Data] general-data failed:", error instanceof Error ? error.message : error);

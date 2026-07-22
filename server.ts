@@ -1,4 +1,4 @@
-const ROOT = import.meta.dir;
+﻿const ROOT = import.meta.dir;
 
 async function loadEnvFile(path: string) {
   if (!(await Bun.file(path).exists())) return;
@@ -20,6 +20,8 @@ if (Bun.env.AUTH_SUPABASE_URL) process.env.AUTH_SUPABASE_URL = Bun.env.AUTH_SUPA
 if (Bun.env.AUTH_SUPABASE_ANON_KEY) process.env.AUTH_SUPABASE_ANON_KEY = Bun.env.AUTH_SUPABASE_ANON_KEY;
 if (Bun.env.DATA_SUPABASE_URL) process.env.DATA_SUPABASE_URL = Bun.env.DATA_SUPABASE_URL;
 if (Bun.env.DATA_SUPABASE_SERVICE_ROLE_KEY) process.env.DATA_SUPABASE_SERVICE_ROLE_KEY = Bun.env.DATA_SUPABASE_SERVICE_ROLE_KEY;
+if (Bun.env.N8N_CHAT_WEBHOOK_URL) process.env.N8N_CHAT_WEBHOOK_URL = Bun.env.N8N_CHAT_WEBHOOK_URL;
+if (Bun.env.N8N_INTERNAL_API_TOKEN) process.env.N8N_INTERNAL_API_TOKEN = Bun.env.N8N_INTERNAL_API_TOKEN;
 
 const generalDataHandler = (await import("./netlify/functions/general-data.mjs")).default;
 const onboardingHandler = (await import("./netlify/functions/onboarding.mjs")).default;
@@ -27,6 +29,9 @@ const patrimonialPlanHandler = (await import("./netlify/functions/patrimonial-pl
 const meetingsHandler = (await import("./netlify/functions/meetings.mjs")).default;
 const mechanismsHandler = (await import("./netlify/functions/mechanisms.mjs")).default;
 const financialUpdatesHandler = (await import("./netlify/functions/financial-updates.mjs")).default;
+const supportHandler = (await import("./netlify/functions/support.mjs")).default;
+const assistantHandler = (await import("./netlify/functions/assistant.mjs")).default;
+const assistantDataHandler = (await import("./netlify/functions/assistant-data.mjs")).default;
 const qualityHandler = (await import("./netlify/functions/quality.mjs")).default;
 const authConfigHandler = (await import("./netlify/functions/auth-config.mjs")).default;
 const platformUsageHandler = (await import("./netlify/functions/platform-usage.mjs")).default;
@@ -36,39 +41,39 @@ const PORT = Number(Bun.env.PORT || 4173);
 type Field = [string, string, string, boolean];
 
 const FIELD_DESCRIPTIONS: Record<string, string> = {
-  "clients.id": "Identificador técnico único do cliente",
-  "clients.codigo": "Código de identificação do cliente na Quarta Via",
+  "clients.id": "Identificador tÃ©cnico Ãºnico do cliente",
+  "clients.codigo": "CÃ³digo de identificaÃ§Ã£o do cliente na Quarta Via",
   "clients.name": "Nome do cliente",
-  "clients.data_inicio_ciclo": "Data de início do vínculo ou ciclo do cliente",
+  "clients.data_inicio_ciclo": "Data de inÃ­cio do vÃ­nculo ou ciclo do cliente",
   "clients.data_churn": "Data de churn registrada no cadastro do cliente",
-  "clients.status": "Situação atual do cliente",
-  "clients.segmentacao": "Segmento atribuído ao cliente",
-  "clients.engenheiro_patrimonial": "Engenheiro Patrimonial responsável pelo acompanhamento",
-  "cancellations.client_id": "Vínculo do cancelamento com o cliente",
-  "cancellations.churn_efetivado_at": "Data em que o cancelamento foi efetivamente concluído",
+  "clients.status": "SituaÃ§Ã£o atual do cliente",
+  "clients.segmentacao": "Segmento atribuÃ­do ao cliente",
+  "clients.engenheiro_patrimonial": "Engenheiro Patrimonial responsÃ¡vel pelo acompanhamento",
+  "cancellations.client_id": "VÃ­nculo do cancelamento com o cliente",
+  "cancellations.churn_efetivado_at": "Data em que o cancelamento foi efetivamente concluÃ­do",
   "client_financial_data.reserva_liquidez": "Reserva de liquidez informada pelo cliente",
-  "client_financial_data.ultimo_aporte": "Valor do último aporte registrado",
-  "client_financial_data.ultima_renda_mensal": "Última renda mensal registrada",
-  "client_financial_data.possui_imovel": "Indica se o cliente possui imóvel",
+  "client_financial_data.ultimo_aporte": "Valor do Ãºltimo aporte registrado",
+  "client_financial_data.ultima_renda_mensal": "Ãšltima renda mensal registrada",
+  "client_financial_data.possui_imovel": "Indica se o cliente possui imÃ³vel",
   "client_financial_data.possui_carro": "Indica se o cliente possui carro",
-  "client_financial_data.possui_consorcio": "Indica se o cliente possui consórcio",
-  "client_meetings.start_time": "Data e horário de início da reunião",
-  "client_meetings.end_time": "Data e horário de término da reunião",
+  "client_financial_data.possui_consorcio": "Indica se o cliente possui consÃ³rcio",
+  "client_meetings.start_time": "Data e horÃ¡rio de inÃ­cio da reuniÃ£o",
+  "client_meetings.end_time": "Data e horÃ¡rio de tÃ©rmino da reuniÃ£o",
   "client_meetings.calendly_event_uri": "Identificador externo do evento no Calendly",
-  "client_meetings.event_name": "Título ou nome do evento de reunião",
-  "client_meetings.host_email": "E-mail do anfitrião da reunião",
-  "client_meetings.manually_linked": "Indica vínculo manual da reunião ao cliente",
-  "client_meetings.client_id": "Cliente vinculado à reunião Calendly",
-  "manual_meetings.title": "Título da reunião registrada manualmente",
-  "manual_meetings.start_time": "Data e horário de início da reunião",
-  "manual_meetings.client_id": "Cliente vinculado à reunião manual",
+  "client_meetings.event_name": "TÃ­tulo ou nome do evento de reuniÃ£o",
+  "client_meetings.host_email": "E-mail do anfitriÃ£o da reuniÃ£o",
+  "client_meetings.manually_linked": "Indica vÃ­nculo manual da reuniÃ£o ao cliente",
+  "client_meetings.client_id": "Cliente vinculado Ã  reuniÃ£o Calendly",
+  "manual_meetings.title": "TÃ­tulo da reuniÃ£o registrada manualmente",
+  "manual_meetings.start_time": "Data e horÃ¡rio de inÃ­cio da reuniÃ£o",
+  "manual_meetings.client_id": "Cliente vinculado Ã  reuniÃ£o manual",
   "manual_meetings.google_event_id": "Identificador do evento no Google Calendar",
-  "meeting_attendance.status": "Situação de presença ou realização da reunião",
-  "meeting_attendance.remarcado": "Indica se a reunião foi remarcada",
+  "meeting_attendance.status": "SituaÃ§Ã£o de presenÃ§a ou realizaÃ§Ã£o da reuniÃ£o",
+  "meeting_attendance.remarcado": "Indica se a reuniÃ£o foi remarcada",
   "meeting_attendance.calendly_event_uri": "Identificador externo do evento no Calendly",
-  "client_implementation_meeting_date.meeting_date": "Data registrada para a reunião de implementação",
-  "client_implementation_meeting_date.client_id": "Cliente com data de reunião de implementação",
-  "client_implementation_meeting_date.source": "Origem do registro da reunião de implementação",
+  "client_implementation_meeting_date.meeting_date": "Data registrada para a reuniÃ£o de implementaÃ§Ã£o",
+  "client_implementation_meeting_date.client_id": "Cliente com data de reuniÃ£o de implementaÃ§Ã£o",
+  "client_implementation_meeting_date.source": "Origem do registro da reuniÃ£o de implementaÃ§Ã£o",
 };
 
 const FIELDS: Field[] = [
@@ -94,34 +99,34 @@ const FIELDS: Field[] = [
   ["Financeiro", "client_financial_data", "possui_consorcio", false],
   ["Jornada", "client_journeys", "started_at", false],
   ["Jornada", "client_journeys", "current_stage_id", false],
-  ["Reuniões", "client_meetings", "id", false],
-  ["Reuniões", "client_meetings", "client_id", false],
-  ["Reuniões", "client_meetings", "calendly_event_uri", true],
-  ["Reuniões", "client_meetings", "event_name", true],
-  ["Reuniões", "client_meetings", "start_time", false],
-  ["Reuniões", "client_meetings", "end_time", false],
-  ["Reuniões", "client_meetings", "host_email", true],
-  ["Reuniões", "client_meetings", "manually_linked", false],
-  ["Reuniões", "manual_meetings", "id", false],
-  ["Reuniões", "manual_meetings", "client_id", false],
-  ["Reuniões", "manual_meetings", "title", true],
-  ["Reuniões", "manual_meetings", "start_time", false],
-  ["Reuniões", "manual_meetings", "end_time", false],
-  ["Reuniões", "manual_meetings", "google_event_id", true],
-  ["Reuniões", "manual_meetings", "recurrence_group_id", true],
-  ["Reuniões", "meeting_attendance", "calendly_event_uri", true],
-  ["Reuniões", "meeting_attendance", "status", true],
-  ["Reuniões", "meeting_attendance", "remarcado", false],
-  ["Reuniões", "meeting_attendance", "created_at", false],
-  ["Reuniões", "client_implementation_meeting_date", "client_id", false],
-  ["Reuniões", "client_implementation_meeting_date", "meeting_date", false],
-  ["Reuniões", "client_implementation_meeting_date", "source", true],
+  ["ReuniÃµes", "client_meetings", "id", false],
+  ["ReuniÃµes", "client_meetings", "client_id", false],
+  ["ReuniÃµes", "client_meetings", "calendly_event_uri", true],
+  ["ReuniÃµes", "client_meetings", "event_name", true],
+  ["ReuniÃµes", "client_meetings", "start_time", false],
+  ["ReuniÃµes", "client_meetings", "end_time", false],
+  ["ReuniÃµes", "client_meetings", "host_email", true],
+  ["ReuniÃµes", "client_meetings", "manually_linked", false],
+  ["ReuniÃµes", "manual_meetings", "id", false],
+  ["ReuniÃµes", "manual_meetings", "client_id", false],
+  ["ReuniÃµes", "manual_meetings", "title", true],
+  ["ReuniÃµes", "manual_meetings", "start_time", false],
+  ["ReuniÃµes", "manual_meetings", "end_time", false],
+  ["ReuniÃµes", "manual_meetings", "google_event_id", true],
+  ["ReuniÃµes", "manual_meetings", "recurrence_group_id", true],
+  ["ReuniÃµes", "meeting_attendance", "calendly_event_uri", true],
+  ["ReuniÃµes", "meeting_attendance", "status", true],
+  ["ReuniÃµes", "meeting_attendance", "remarcado", false],
+  ["ReuniÃµes", "meeting_attendance", "created_at", false],
+  ["ReuniÃµes", "client_implementation_meeting_date", "client_id", false],
+  ["ReuniÃµes", "client_implementation_meeting_date", "meeting_date", false],
+  ["ReuniÃµes", "client_implementation_meeting_date", "source", true],
   ["Mecanismos", "client_mecanismos", "status", true],
   ["Mecanismos", "client_mecanismos", "implemented_at", false],
-  ["Satisfação", "nps_responses", "score", false],
-  ["Satisfação", "nps_responses", "submitted_at", false],
-  ["Satisfação", "csat_responses", "score", false],
-  ["Satisfação", "csat_responses", "submitted_at", false],
+  ["SatisfaÃ§Ã£o", "nps_responses", "score", false],
+  ["SatisfaÃ§Ã£o", "nps_responses", "submitted_at", false],
+  ["SatisfaÃ§Ã£o", "csat_responses", "score", false],
+  ["SatisfaÃ§Ã£o", "csat_responses", "submitted_at", false],
   ["Cancelamento", "cancellations", "client_id", false],
   ["Cancelamento", "cancellations", "motivo", true],
   ["Cancelamento", "cancellations", "motivo_categoria", false],
@@ -136,7 +141,7 @@ function configurationError(): string | null {
     const url = new URL(Bun.env.DATA_SUPABASE_URL);
     if (url.protocol !== "https:") return "DATA_SUPABASE_URL deve usar HTTPS";
   } catch {
-    return "DATA_SUPABASE_URL inválida";
+    return "DATA_SUPABASE_URL invÃ¡lida";
   }
   return null;
 }
@@ -206,6 +211,9 @@ const server = Bun.serve({
     if (url.pathname === "/api/mechanisms") return mechanismsHandler(request);
     if (url.pathname === "/api/financial-updates") return financialUpdatesHandler(request);
     if (url.pathname === "/api/platform-usage") return platformUsageHandler(request);
+    if (url.pathname === "/api/support") return supportHandler(request);
+    if (url.pathname === "/api/assistant") return assistantHandler(request);
+    if (url.pathname === "/api/assistant-data") return assistantDataHandler(request);
     if (url.pathname.startsWith("/js/")) {
       const file = Bun.file(`${ROOT}${url.pathname}`);
       if (await file.exists()) {
@@ -215,11 +223,11 @@ const server = Bun.serve({
         return new Response(file, { headers: { 'Content-Type': type } });
       }
     }
-    if (url.pathname !== "/" && url.pathname !== "/index.html") return new Response("Não encontrado", { status: 404 });
+    if (url.pathname !== "/" && url.pathname !== "/index.html") return new Response("NÃ£o encontrado", { status: 404 });
     return new Response(Bun.file(`${ROOT}/index.html`), { headers: { "Content-Type": "text/html; charset=utf-8" } });
   },
 });
 
-console.log(`Dashboard disponível em ${server.url}`);
+console.log(`Dashboard disponÃ­vel em ${server.url}`);
 const configError = configurationError();
 if (configError) console.warn(configError);

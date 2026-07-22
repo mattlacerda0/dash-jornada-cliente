@@ -84,9 +84,14 @@ FIELDS = [
     ("Financeiro", "client_financial_data", "ultima_renda_mensal", False),
     ("Financeiro", "client_financial_data", "ultimo_aporte", False),
     ("Financeiro", "client_financial_data", "reserva_liquidez", False),
+    ("Financeiro", "client_financial_data", "valor_imoveis_quitados", False),
     ("Financeiro", "client_financial_data", "possui_imovel", False),
     ("Financeiro", "client_financial_data", "possui_carro", False),
     ("Financeiro", "client_financial_data", "possui_consorcio", False),
+    ("Financeiro", "client_financial_data", "cheque_especial", False),
+    ("Financeiro", "client_financial_data", "parcelamento_cartao", False),
+    ("Financeiro", "client_financial_data", "credito_pessoal", False),
+    ("Financeiro", "client_financial_data", "credito_consignado", False),
     ("Jornada", "client_journeys", "started_at", False),
     ("Jornada", "client_journeys", "current_stage_id", False),
     ("Reuniões", "client_meetings", "id", False),
@@ -145,6 +150,18 @@ FIELDS = [
     ("Cancelamento", "cancellations", "created_at", False),
     ("Aquisição", "vw_info_cliente", "id_cliente", False),
     ("Aquisição", "vw_info_cliente", "data_assinatura_contrato", False),
+    ("Atendimento", "demands", "id", False),
+    ("Atendimento", "demands", "client_id", False),
+    ("Atendimento", "demands", "title", True),
+    ("Atendimento", "demands", "type", True),
+    ("Atendimento", "demands", "priority", True),
+    ("Atendimento", "demands", "status", True),
+    ("Atendimento", "demands", "requested_by_client", False),
+    ("Atendimento", "demands", "assigned_to", False),
+    ("Atendimento", "demands", "resolved_at", False),
+    ("Atendimento", "demands", "resolved_by", False),
+    ("Atendimento", "demands", "created_at", False),
+    ("Atendimento", "demands", "updated_at", False),
 ]
 
 FIELD_DESCRIPTIONS = {
@@ -171,11 +188,16 @@ FIELD_DESCRIPTIONS = {
     ("client_financial_data", "created_at"): "Data de criação do registro financeiro do cliente.",
     ("client_financial_data", "updated_at"): "Data da última atualização conhecida do registro financeiro.",
     ("client_financial_data", "reserva_liquidez"): "Valor informado como reserva de liquidez do cliente.",
+    ("client_financial_data", "valor_imoveis_quitados"): "Valor total dos imóveis quitados informado pelo cliente.",
     ("client_financial_data", "ultimo_aporte"): "Valor do último aporte financeiro registrado.",
     ("client_financial_data", "ultima_renda_mensal"): "Última renda mensal registrada para o cliente.",
     ("client_financial_data", "possui_imovel"): "Indica se o cliente informou possuir imóvel.",
     ("client_financial_data", "possui_carro"): "Indica se o cliente informou possuir carro.",
     ("client_financial_data", "possui_consorcio"): "Indica se o cliente informou possuir consórcio.",
+    ("client_financial_data", "cheque_especial"): "Indica se o cliente possui cheque especial (usado para identificar dívidas).",
+    ("client_financial_data", "parcelamento_cartao"): "Indica se o cliente possui parcelamento de cartão (usado para identificar dívidas).",
+    ("client_financial_data", "credito_pessoal"): "Indica se o cliente possui crédito pessoal (usado para identificar dívidas).",
+    ("client_financial_data", "credito_consignado"): "Indica se o cliente possui crédito consignado (usado para identificar dívidas).",
     ("client_meetings", "id"): "Identificador único da reunião registrada.",
     ("client_meetings", "client_id"): "Cliente vinculado à reunião.",
     ("client_meetings", "calendly_event_uri"): "Identificador externo do evento no Calendly.",
@@ -216,6 +238,18 @@ FIELD_DESCRIPTIONS = {
     ("mecanismos", "mercado"): "Mercado associado ao mecanismo, usado como dimensão analítica.",
     ("mecanismos", "programa"): "Programa ao qual o mecanismo está vinculado.",
     ("mecanismos", "status"): "Status cadastral do mecanismo no catálogo.",
+    ("demands", "id"): "Identificador único do chamado de atendimento.",
+    ("demands", "client_id"): "Cliente vinculado ao chamado de atendimento.",
+    ("demands", "title"): "Título do chamado de atendimento.",
+    ("demands", "type"): "Tipo/origem do chamado (não representa reclamação/elogio sem categoria confirmada).",
+    ("demands", "priority"): "Prioridade informada para o chamado.",
+    ("demands", "status"): "Status do chamado (aberto, em andamento, resolvido etc.).",
+    ("demands", "requested_by_client"): "Indica se o chamado foi solicitado pelo cliente.",
+    ("demands", "assigned_to"): "Responsável designado pelo chamado.",
+    ("demands", "resolved_at"): "Data de resolução do chamado, usada para tempo de resolução.",
+    ("demands", "resolved_by"): "Usuário que resolveu o chamado.",
+    ("demands", "created_at"): "Data de abertura do chamado.",
+    ("demands", "updated_at"): "Data da última atualização do chamado.",
 }
 
 FIELD_USED_IN = {
@@ -254,15 +288,32 @@ FIELD_USED_IN = {
     ("cancellations", "created_at"): ["Dados Gerais"],
     ("vw_info_cliente", "id_cliente"): ["Dados Gerais"],
     ("vw_info_cliente", "data_assinatura_contrato"): ["Dados Gerais"],
+    ("demands", "id"): ["Atendimento"],
+    ("demands", "client_id"): ["Atendimento"],
+    ("demands", "title"): ["Atendimento"],
+    ("demands", "type"): ["Atendimento"],
+    ("demands", "priority"): ["Atendimento"],
+    ("demands", "status"): ["Atendimento"],
+    ("demands", "requested_by_client"): ["Atendimento"],
+    ("demands", "assigned_to"): ["Atendimento"],
+    ("demands", "resolved_at"): ["Atendimento"],
+    ("demands", "resolved_by"): ["Atendimento"],
+    ("demands", "created_at"): ["Atendimento"],
+    ("demands", "updated_at"): ["Atendimento"],
     ("client_financial_data", "client_id"): ["Dados Gerais", "Atualização Financeira"],
     ("client_financial_data", "created_at"): ["Atualização Financeira"],
     ("client_financial_data", "updated_at"): ["Dados Gerais", "Atualização Financeira"],
-    ("client_financial_data", "reserva_liquidez"): ["Dados Gerais", "Atualização Financeira"],
-    ("client_financial_data", "ultimo_aporte"): ["Dados Gerais", "Atualização Financeira"],
-    ("client_financial_data", "ultima_renda_mensal"): ["Dados Gerais", "Atualização Financeira"],
+    ("client_financial_data", "reserva_liquidez"): ["Dados Gerais", "Atualização Financeira", "Segmentação por capacidade financeira"],
+    ("client_financial_data", "valor_imoveis_quitados"): ["Segmentação por capacidade financeira"],
+    ("client_financial_data", "ultimo_aporte"): ["Dados Gerais", "Atualização Financeira", "Segmentação por capacidade financeira"],
+    ("client_financial_data", "ultima_renda_mensal"): ["Dados Gerais", "Atualização Financeira", "Segmentação por capacidade financeira"],
     ("client_financial_data", "possui_imovel"): ["Dados Gerais", "Atualização Financeira"],
     ("client_financial_data", "possui_carro"): ["Dados Gerais", "Atualização Financeira"],
     ("client_financial_data", "possui_consorcio"): ["Dados Gerais", "Atualização Financeira"],
+    ("client_financial_data", "cheque_especial"): ["Segmentação por capacidade financeira"],
+    ("client_financial_data", "parcelamento_cartao"): ["Segmentação por capacidade financeira"],
+    ("client_financial_data", "credito_pessoal"): ["Segmentação por capacidade financeira"],
+    ("client_financial_data", "credito_consignado"): ["Segmentação por capacidade financeira"],
     ("client_meetings", "id"): ["Reuniões"],
     ("client_meetings", "client_id"): ["Reuniões"],
     ("client_meetings", "calendly_event_uri"): ["Reuniões"],
@@ -368,18 +419,19 @@ def auth_config_payload():
     }
 
 
-def require_corporate_auth(handler):
+def resolve_corporate_user(handler):
+    """Valida o Bearer e retorna (erro_ou_None, email_ou_None)."""
     auth = handler.headers.get("Authorization") or handler.headers.get("authorization") or ""
     if not auth.lower().startswith("bearer "):
-        return 401, {"error": "Não autenticado.", "code": "unauthenticated"}
+        return (401, {"error": "Não autenticado.", "code": "unauthenticated"}), None
     token = auth[7:].strip()
     if not token:
-        return 401, {"error": "Não autenticado.", "code": "unauthenticated"}
+        return (401, {"error": "Não autenticado.", "code": "unauthenticated"}), None
 
     base = (os.environ.get("AUTH_SUPABASE_URL") or "").rstrip("/")
     api_key = (os.environ.get("AUTH_SUPABASE_ANON_KEY") or "").strip()
     if not base or not api_key:
-        return 503, {"error": "Configure AUTH_SUPABASE_URL e AUTH_SUPABASE_ANON_KEY.", "code": "config"}
+        return (503, {"error": "Configure AUTH_SUPABASE_URL e AUTH_SUPABASE_ANON_KEY.", "code": "config"}), None
 
     req = Request(
         f"{base}/auth/v1/user",
@@ -389,13 +441,19 @@ def require_corporate_auth(handler):
         with urlopen(req, timeout=20) as resp:
             user = json.loads(resp.read().decode("utf-8"))
     except HTTPError:
-        return 401, {"error": "Sessão inválida ou expirada.", "code": "unauthenticated"}
+        return (401, {"error": "Sessão inválida ou expirada.", "code": "unauthenticated"}), None
     except Exception:
-        return 401, {"error": "Sessão inválida ou expirada.", "code": "unauthenticated"}
+        return (401, {"error": "Sessão inválida ou expirada.", "code": "unauthenticated"}), None
 
-    if not is_corporate_email(user.get("email")):
-        return 403, {"error": "O acesso é permitido somente para contas @quartavia.com.br.", "code": "invalid_domain"}
-    return None
+    email = user.get("email")
+    if not is_corporate_email(email):
+        return (403, {"error": "O acesso é permitido somente para contas @quartavia.com.br.", "code": "invalid_domain"}), None
+    return None, email
+
+
+def require_corporate_auth(handler):
+    denied, _ = resolve_corporate_user(handler)
+    return denied
 
 
 def send_json(handler, status, payload):
@@ -834,6 +892,72 @@ def financial_updates_payload():
     return json.loads(result.stdout)
 
 
+def support_payload():
+    """Reaproveita a consolidação do Netlify Function via Node (fonte única)."""
+    env = os.environ.copy()
+    env["PORTAL_INTERNAL_DATA_RUN"] = "1"
+    result = subprocess.run(
+        ["node", str(ROOT / "run_support_api.mjs")],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        env=env,
+        timeout=180,
+    )
+    if result.returncode != 0:
+        detail = (result.stderr or result.stdout or "falha ao gerar support").strip()
+        raise RuntimeError(detail[:240])
+    return json.loads(result.stdout)
+
+
+def assistant_payload(email, raw_body):
+    """Proxy do chatbot: usa a mesma lógica da Netlify Function via Node (fonte única).
+
+    Retorna (status_http, corpo_texto) preservando o status real do proxy.
+    """
+    env = os.environ.copy()
+    env["PORTAL_INTERNAL_DATA_RUN"] = "1"
+    env["PORTAL_USER_EMAIL"] = email or ""
+    env["PORTAL_ASSISTANT_BODY"] = raw_body if raw_body else "{}"
+    result = subprocess.run(
+        ["node", str(ROOT / "run_assistant_api.mjs")],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        env=env,
+        timeout=60,
+    )
+    if result.returncode != 0:
+        detail = (result.stderr or result.stdout or "falha ao consultar o assistente").strip()
+        raise RuntimeError(detail[:240])
+    envelope = json.loads(result.stdout)
+    return int(envelope.get("__status", 200)), envelope.get("body", "{}")
+
+
+def assistant_data_payload(auth_header, raw_body):
+    """Endpoint interno servidor-servidor (n8n → portal). O token é validado dentro do Node."""
+    env = os.environ.copy()
+    env["PORTAL_INTERNAL_DATA_RUN"] = "1"
+    env["PORTAL_ASSISTANT_DATA_AUTH"] = auth_header or ""
+    env["PORTAL_ASSISTANT_DATA_BODY"] = raw_body if raw_body else "{}"
+    result = subprocess.run(
+        ["node", str(ROOT / "run_assistant_data_api.mjs")],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        env=env,
+        timeout=300,
+    )
+    if result.returncode != 0:
+        detail = (result.stderr or result.stdout or "falha ao consultar assistant-data").strip()
+        raise RuntimeError(detail[:240])
+    envelope = json.loads(result.stdout)
+    return int(envelope.get("__status", 200)), envelope.get("body", "{}")
+
+
 class Handler(SimpleHTTPRequestHandler):
     def do_GET(self):
         path = urlparse(self.path).path
@@ -851,6 +975,7 @@ class Handler(SimpleHTTPRequestHandler):
             "/api/meetings": ("meetings", meetings_payload, "Não foi possível consolidar os dados de reuniões"),
             "/api/mechanisms": ("mechanisms", mechanisms_payload, "Não foi possível consolidar a implementação de mecanismos"),
             "/api/financial-updates": ("financial-updates", financial_updates_payload, "Não foi possível consolidar a atualização financeira"),
+            "/api/support": ("support", support_payload, "Não foi possível consolidar o atendimento"),
         }
         if path in protected:
             denied = require_corporate_auth(self)
@@ -867,6 +992,70 @@ class Handler(SimpleHTTPRequestHandler):
             return
 
         super().do_GET()
+
+    def do_POST(self):
+        path = urlparse(self.path).path
+
+        if path == "/api/assistant":
+            error, email = resolve_corporate_user(self)
+            if error:
+                status, payload = error
+                send_json(self, status, payload)
+                return
+            try:
+                length = int(self.headers.get("Content-Length") or 0)
+            except ValueError:
+                length = 0
+            raw = self.rfile.read(length) if length > 0 else b""
+            try:
+                status, body_text = assistant_payload(email, raw.decode("utf-8", errors="replace"))
+            except Exception as exc:
+                print(f"assistant error: {exc}")
+                send_json(self, 500, {
+                    "success": False,
+                    "error": "Erro interno ao consultar o assistente.",
+                    "code": "internal_error",
+                    "generated_at": datetime.now(timezone.utc).isoformat(),
+                })
+                return
+            body_bytes = body_text.encode("utf-8")
+            self.send_response(status)
+            self.send_header("Content-Type", "application/json; charset=utf-8")
+            self.send_header("Cache-Control", "no-store")
+            self.send_header("Content-Length", str(len(body_bytes)))
+            self.end_headers()
+            self.wfile.write(body_bytes)
+            return
+
+        if path == "/api/assistant-data":
+            # Endpoint servidor-servidor: o token interno é validado dentro do Node.
+            auth_header = self.headers.get("Authorization") or self.headers.get("authorization") or ""
+            try:
+                length = int(self.headers.get("Content-Length") or 0)
+            except ValueError:
+                length = 0
+            raw = self.rfile.read(length) if length > 0 else b""
+            try:
+                status, body_text = assistant_data_payload(auth_header, raw.decode("utf-8", errors="replace"))
+            except Exception as exc:
+                print(f"assistant-data error: {exc}")
+                send_json(self, 500, {
+                    "success": False,
+                    "error": "Erro interno ao consultar a métrica.",
+                    "code": "internal_error",
+                    "generated_at": datetime.now(timezone.utc).isoformat(),
+                })
+                return
+            body_bytes = body_text.encode("utf-8")
+            self.send_response(status)
+            self.send_header("Content-Type", "application/json; charset=utf-8")
+            self.send_header("Cache-Control", "no-store")
+            self.send_header("Content-Length", str(len(body_bytes)))
+            self.end_headers()
+            self.wfile.write(body_bytes)
+            return
+
+        send_json(self, 404, {"error": "Não encontrado.", "code": "not_found"})
 
     def log_message(self, fmt, *args):
         print(f"[{self.log_date_time_string()}] {fmt % args}")

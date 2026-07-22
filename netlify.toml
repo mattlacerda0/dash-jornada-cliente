@@ -1,4 +1,4 @@
-[build]
+﻿[build]
   publish = "."
   functions = "netlify/functions"
 
@@ -45,4 +45,19 @@
 [[redirects]]
   from = "/api/platform-usage"
   to = "/.netlify/functions/platform-usage"
+  status = 200
+
+[[redirects]]
+  from = "/api/support"
+  to = "/.netlify/functions/support"
+  status = 200
+
+[[redirects]]
+  from = "/api/assistant"
+  to = "/.netlify/functions/assistant"
+  status = 200
+
+[[redirects]]
+  from = "/api/assistant-data"
+  to = "/.netlify/functions/assistant-data"
   status = 200

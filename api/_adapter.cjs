@@ -1,4 +1,4 @@
-﻿function collectHeaders(req) {
+function collectHeaders(req) {
   const headers = new Headers();
   Object.entries(req.headers || {}).forEach(([key, value]) => {
     if (Array.isArray(value)) headers.set(key, value.join(", "));

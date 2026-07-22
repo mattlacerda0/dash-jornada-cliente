@@ -1,6 +1,6 @@
-// Wrapper Vercel (@vercel/node) para o endpoint interno servidor-servidor.
-// A lógica vive em netlify/functions/assistant-data.mjs (camada compartilhada).
-// Este wrapper repassa método, headers, URL e body para um Request Web API,
+﻿// Wrapper Vercel (@vercel/node) para o endpoint interno servidor-servidor.
+// A lÃ³gica vive em netlify/functions/assistant-data.mjs (camada compartilhada).
+// Este wrapper repassa mÃ©todo, headers, URL e body para um Request Web API,
 // pois o handler depende do Authorization e do corpo JSON.
 module.exports = async function assistantData(req, res) {
   try {

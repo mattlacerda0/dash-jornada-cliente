@@ -1,7 +1,7 @@
-// Wrapper Vercel (@vercel/node) para o proxy autenticado do chatbot.
-// A lógica vive em netlify/functions/assistant.mjs (camada compartilhada).
+﻿// Wrapper Vercel (@vercel/node) para o proxy autenticado do chatbot.
+// A lÃ³gica vive em netlify/functions/assistant.mjs (camada compartilhada).
 // Repassa o request completo porque o handler depende do Authorization do
-// usuário corporativo, do método POST e do corpo JSON.
+// usuÃ¡rio corporativo, do mÃ©todo POST e do corpo JSON.
 module.exports = async function assistant(req, res) {
   try {
     const { default: handler } = await import(

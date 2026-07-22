@@ -10,15 +10,21 @@ export function getAuthEnv() {
 }
 
 export function getDataEnv() {
-  const url = (process.env.DATA_SUPABASE_URL || "").trim().replace(/\/$/, "");
-  const serviceRoleKey = (process.env.DATA_SUPABASE_SERVICE_ROLE_KEY || "").trim();
+  const url = (process.env.DATA_SUPABASE_URL || process.env.SUPABASE_URL || "")
+    .trim()
+    .replace(/\/$/, "");
+  const serviceRoleKey = (
+    process.env.DATA_SUPABASE_SERVICE_ROLE_KEY ||
+    process.env.SUPABASE_SERVICE_ROLE_KEY ||
+    ""
+  ).trim();
   return { url, serviceRoleKey };
 }
 
 export function dataConfigurationError() {
   const { url, serviceRoleKey } = getDataEnv();
   if (!url || !serviceRoleKey) {
-    return "Configure DATA_SUPABASE_URL e DATA_SUPABASE_SERVICE_ROLE_KEY.";
+    return "Configure DATA_SUPABASE_URL/DATA_SUPABASE_SERVICE_ROLE_KEY ou SUPABASE_URL/SUPABASE_SERVICE_ROLE_KEY.";
   }
   try {
     if (new URL(url).protocol !== "https:") return "DATA_SUPABASE_URL deve usar HTTPS";

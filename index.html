@@ -1083,6 +1083,8 @@
     /* -------- Navigation -------- */
     const views = {
       general: document.querySelector('#view-general'),
+      journey: document.querySelector('#view-journey'),
+      plan: document.querySelector('#view-plan'),
       meetings: document.querySelector('#view-meetings'),
       mechanisms: document.querySelector('#view-mechanisms'),
       financial: document.querySelector('#view-financial'),
@@ -1094,6 +1096,8 @@
       document.querySelectorAll('[data-nav]').forEach(b => b.classList.toggle('active', b === btn));
       Object.entries(views).forEach(([key, el]) => el.classList.toggle('active', key === btn.dataset.nav));
       if (btn.dataset.nav === 'general' && !generalState.payload) loadGeneral();
+      if (btn.dataset.nav === 'journey' && !onboardingState.payload) loadOnboarding();
+      if (btn.dataset.nav === 'plan' && !planState.payload) loadPlan();
       if (btn.dataset.nav === 'meetings' && !meetingsState.payload) loadMeetings();
       if (btn.dataset.nav === 'mechanisms' && !mechanismsState.payload) loadMechanisms();
       if (btn.dataset.nav === 'financial' && !financialState.payload) loadFinancial();
@@ -2144,11 +2148,6 @@
     };
     const dayValue = value => value == null ? '—' : `${fmt.format(Math.round(value))} d`;
     const percentValue = value => value == null ? '—' : pct(value);
-    function viabilityClass(value) {
-      if (value === 'Sim') return 'sim';
-      if (value === 'Não identificado') return 'no';
-      return 'base';
-    }
     function hBarsMetric(items) {
       const list = (items || []).filter(i => i.value != null);
       const max = Math.max(...list.map(i => i.value || 0), 1);
@@ -2262,55 +2261,6 @@
       }
     }
 
-    Object.entries(gFilters).forEach(([key, el]) => el.addEventListener('change', () => {
-      if (key === 'status') setStatusFilter(el.value);
-      generalState.page = 1;
-      renderGeneral();
-    }));
-    gFilters.search.addEventListener('input', () => {
-      generalState.page = 1;
-      renderGeneral();
-    });
-    gActiveOnly.addEventListener('click', (event) => {
-      event.preventDefault();
-      event.stopPropagation();
-      setStatusFilter(generalState.statusFilter === 'active' ? 'all' : 'active');
-      generalState.page = 1;
-      renderGeneral();
-    });
-    document.querySelector('#gClear').addEventListener('click', () => {
-      gFilters.search.value = '';
-      ['segment', 'engineer', 'contract', 'cancel', 'stay'].forEach(k => gFilters[k].value = 'all');
-      setStatusFilter('all');
-      generalState.page = 1;
-      renderGeneral();
-    });
-    document.querySelector('#gRefresh').addEventListener('click', loadGeneral);
-    document.querySelector('#gPrev').addEventListener('click', () => { generalState.page -= 1; renderGeneral(); });
-    document.querySelector('#gNext').addEventListener('click', () => { generalState.page += 1; renderGeneral(); });
-    document.querySelector('#toggleEngineers').addEventListener('click', () => { generalState.showAllEngineers = !generalState.showAllEngineers; renderGeneral(); });
-    const acqRangeSeg = document.querySelector('#gAcqRangeSeg');
-    if (acqRangeSeg) {
-      acqRangeSeg.addEventListener('click', (event) => {
-        const btn = event.target.closest('[data-acq-range]');
-        if (!btn) return;
-        const next = String(btn.dataset.acqRange);
-        generalState.acqRange = next === '24' ? '24' : next === '12' ? '12' : '6';
-        renderGeneral();
-      });
-    }
-    document.querySelectorAll('#view-general th[data-sort]').forEach(th => th.addEventListener('click', () => {
-      const key = th.dataset.sort;
-      if (generalState.sortKey === key) generalState.sortDir = generalState.sortDir === 'asc' ? 'desc' : 'asc';
-      else { generalState.sortKey = key; generalState.sortDir = 'asc'; }
-      renderGeneral();
-    }));
-    document.querySelector('#gRows').addEventListener('click', e => {
-      const tr = e.target.closest('tr[data-id]');
-      if (!tr || !generalState.payload) return;
-      const client = generalState.payload.clients.find(c => c.clientId === tr.dataset.id);
-      if (client) openDrawer(client);
-    });
     Object.values(pFilters).forEach(el => el.addEventListener('input', () => { planState.page = 1; renderPlan(); }));
     document.querySelector('#pClear').addEventListener('click', () => {
       pFilters.search.value = '';
@@ -3968,6 +3918,8 @@
       portalRefreshTimer = setInterval(() => {
         if (!isPortalAuthenticated()) return;
         if (views.general.classList.contains('active')) loadGeneral();
+        if (views.journey.classList.contains('active')) loadOnboarding();
+        if (views.plan.classList.contains('active')) loadPlan();
         if (views.meetings.classList.contains('active')) loadMeetings();
         if (views.mechanisms.classList.contains('active')) loadMechanisms();
         if (views.financial.classList.contains('active')) loadFinancial();
@@ -3983,6 +3935,8 @@
       }
       qualityData = [];
       if (typeof generalState !== 'undefined') generalState.payload = null;
+      if (typeof onboardingState !== 'undefined') onboardingState.payload = null;
+      if (typeof planState !== 'undefined') planState.payload = null;
       if (typeof meetingsState !== 'undefined') meetingsState.payload = null;
       if (typeof mechanismsState !== 'undefined') mechanismsState.payload = null;
       if (typeof financialState !== 'undefined') financialState.payload = null;

@@ -18,6 +18,10 @@ export function getDataEnv() {
     process.env.SUPABASE_SERVICE_ROLE_KEY ||
     ""
   ).trim();
+  if (!process.env.DATA_SUPABASE_URL && url) process.env.DATA_SUPABASE_URL = url;
+  if (!process.env.DATA_SUPABASE_SERVICE_ROLE_KEY && serviceRoleKey) {
+    process.env.DATA_SUPABASE_SERVICE_ROLE_KEY = serviceRoleKey;
+  }
   return { url, serviceRoleKey };
 }
 

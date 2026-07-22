@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Autenticação no projeto Auth (rckpuebaiswrxzmywllv).
  * Nunca valida tokens com o projeto BASE QV (dados).
  */

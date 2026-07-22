@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Variáveis de ambiente com finalidade explícita.
  * Auth = projeto rckpuebaiswrxzmywllv | Data = BASE QV
  */

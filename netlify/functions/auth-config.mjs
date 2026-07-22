@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Configuração pública de Auth para o navegador.
  * Expõe apenas AUTH_SUPABASE_URL + AUTH_SUPABASE_ANON_KEY.
  * Nunca retorna service role nem chaves do projeto de dados.

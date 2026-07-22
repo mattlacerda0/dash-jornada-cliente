@@ -1,4 +1,4 @@
-import { requireCorporateAuth } from "./_shared/auth.mjs";
+﻿import { requireCorporateAuth } from "./_shared/auth.mjs";
 import { dataConfigurationError } from "./_shared/env.mjs";
 
 const CLIENT_SELECT = "id,codigo,name,engenheiro_patrimonial,data_inicio_ciclo,created_at";

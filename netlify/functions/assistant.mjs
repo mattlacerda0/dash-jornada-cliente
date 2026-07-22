@@ -1,4 +1,4 @@
-import { authenticateRequest } from "./_shared/auth.mjs";
+﻿import { authenticateRequest } from "./_shared/auth.mjs";
 import { resolvePortalContext } from "./_shared/portal-query.mjs";
 
 /**

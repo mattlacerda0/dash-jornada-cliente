@@ -1,4 +1,4 @@
-import { timingSafeEqual } from "node:crypto";
+﻿import { timingSafeEqual } from "node:crypto";
 import { computeGeneralDataPayload } from "./general-data.mjs";
 import { computeMeetingsPayload } from "./meetings.mjs";
 import { computeMechanismsPayload } from "./mechanisms.mjs";

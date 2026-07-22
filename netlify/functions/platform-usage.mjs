@@ -1,4 +1,4 @@
-const SOURCE = {
+﻿const SOURCE = {
   id: "qv360",
   label: "QV360",
   schema: process.env.QV360_SUPABASE_SCHEMA || "public",

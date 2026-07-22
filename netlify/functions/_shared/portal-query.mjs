@@ -1,4 +1,4 @@
-import { computeGeneralDataPayload, measureBundle } from "../general-data.mjs";
+﻿import { computeGeneralDataPayload, measureBundle } from "../general-data.mjs";
 import { computeMeetingsPayload } from "../meetings.mjs";
 
 /**

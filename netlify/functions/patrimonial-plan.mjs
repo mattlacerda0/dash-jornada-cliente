@@ -1,4 +1,4 @@
-const SOURCES = [
+﻿const SOURCES = [
   {
     id: "qv360",
     label: "QV360",

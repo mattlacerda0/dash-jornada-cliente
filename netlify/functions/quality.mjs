@@ -1,4 +1,4 @@
-import { requireCorporateAuth } from "./_shared/auth.mjs";
+﻿import { requireCorporateAuth } from "./_shared/auth.mjs";
 import { dataConfigurationError } from "./_shared/env.mjs";
 
 // domain, table, column, includeBlank

@@ -1,6 +1,7 @@
-const { sendResponse } = require("./_adapter.js");
+﻿const { sendResponse } = require("./_adapter.js");
 
-module.exports = async function patrimonialPlan(_req, res) {
+module.exports = async function patrimonialPlan(req, res) {
   const { default: handler } = await import("../netlify/functions/patrimonial-plan.mjs");
-  return sendResponse(handler, res);
+  return sendResponse(handler, req, res);
 };
+

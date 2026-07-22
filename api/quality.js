@@ -1,6 +1,7 @@
-const { sendResponse } = require("./_adapter.js");
+﻿const { sendResponse } = require("./_adapter.js");
 
-module.exports = async function quality(_req, res) {
+module.exports = async function quality(req, res) {
   const { default: handler } = await import("../netlify/functions/quality.mjs");
-  return sendResponse(handler, res);
+  return sendResponse(handler, req, res);
 };
+

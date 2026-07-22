@@ -1,6 +1,7 @@
-const { sendResponse } = require("./_adapter.js");
+﻿const { sendResponse } = require("./_adapter.js");
 
-module.exports = async function platformUsage(_req, res) {
+module.exports = async function platformUsage(req, res) {
   const { default: handler } = await import("../netlify/functions/platform-usage.mjs");
-  return sendResponse(handler, res);
+  return sendResponse(handler, req, res);
 };
+

@@ -21,6 +21,14 @@
                ],
     "routes":  [
                    {
+                       "src":  "/api/financial-updates",
+                       "dest":  "/api/quality.js?fn=financial-updates"
+                   },
+                   {
+                       "src":  "/api/quality",
+                       "dest":  "/api/quality.js?fn=quality"
+                   },
+                   {
                        "src":  "/api/(.*)",
                        "dest":  "/api/$1.js"
                    },

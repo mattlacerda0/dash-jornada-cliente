@@ -43,6 +43,11 @@
   status = 200
 
 [[redirects]]
+  from = "/api/engagement"
+  to = "/.netlify/functions/engagement"
+  status = 200
+
+[[redirects]]
   from = "/api/platform-usage"
   to = "/.netlify/functions/platform-usage"
   status = 200

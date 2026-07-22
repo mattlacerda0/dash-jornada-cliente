@@ -352,6 +352,7 @@
         <button type="button" data-nav="meetings"><span class="nav-icon">◎</span>Reuniões</button>
         <button type="button" data-nav="mechanisms"><span class="nav-icon">◎</span>Mecanismos</button>
         <button type="button" data-nav="financial"><span class="nav-icon">$</span>Atualização Financeira</button>
+        <button type="button" data-nav="engagement"><span class="nav-icon">◉</span>Engajamento</button>
         <button type="button" data-nav="platform"><span class="nav-icon">◫</span>Uso da Plataforma</button>
         <button type="button" data-nav="support"><span class="nav-icon">☎</span>Atendimento</button>
         <button type="button" data-nav="quality"><span class="nav-icon">▦</span>Qualidade</button>
@@ -574,7 +575,7 @@
           <section class="summary" id="jKpis"></section>
 
           <div class="section-head">
-            <div><h2>Indicadores de prazo e conclusão</h2><p>Médias e distribuições calculadas a partir da BASE QV.</p></div>
+            <div><h2>Indicadores de prazo e conclusão</h2><p>Medianas e distribuições calculadas a partir da BASE QV, excluindo diferenças negativas de datas.</p></div>
           </div>
           <section class="journey-grid">
             <article class="chart-card"><h3>Dias até a primeira reunião</h3><p>Quantidade de clientes por faixa de dias</p><div id="jFirstMeetingChart"></div></article>
@@ -1018,6 +1019,50 @@
         </div>
       </section>
 
+      <section class="view" id="view-engagement">
+        <div class="container">
+          <header class="page-header">
+            <div>
+              <div class="eyebrow">App Pharus + QV360 · fallback BASE QV</div>
+              <h1>Engajamento</h1>
+              <p>Consolidação de respostas, interações, pesquisas e limitações de mensagens por cliente.</p>
+            </div>
+            <div class="status-actions">
+              <div class="status"><b id="eStatus" style="color:var(--color-warning)">● Aguardando consulta</b><span id="eUpdated">Fontes: App Pharus, QV360 e fallback BASE QV</span></div>
+              <button class="btn" id="eRefresh" type="button">Atualizar</button>
+            </div>
+          </header>
+          <section class="filters general" aria-label="Filtros de engajamento">
+            <label>Busca<input id="eSearch" placeholder="Nome, e-mail ou ID" /></label>
+            <label>Fonte<select id="eSource"><option value="all">Todas</option><option value="App Pharus">App Pharus</option><option value="QV360">QV360</option></select></label>
+            <label>Respondeu pesquisa<select id="eSurvey"><option value="all">Todos</option><option value="yes">Sim</option><option value="no">Não</option></select></label>
+            <button class="btn" id="eClear" type="button">Limpar filtros</button>
+          </section>
+          <section class="summary kpis-8" id="eKpis"></section>
+          <div class="section-head"><div><h2>Distribuições de engajamento</h2><p>App Pharus e QV360 somados quando há vínculo confiável por cliente.</p></div></div>
+          <section class="charts">
+            <article class="chart-card"><h3>Clientes por fonte</h3><p>Base consolidada por origem</p><div id="eChartSources"></div></article>
+            <article class="chart-card"><h3>Respondeu pesquisas?</h3><p>Submissões ou avaliações vinculadas</p><div id="eChartSurvey"></div></article>
+            <article class="chart-card"><h3>Volume de respostas</h3><p>Faixas por cliente</p><div id="eChartResponses"></div></article>
+            <article class="chart-card"><h3>Limitações de mensagens</h3><p>Itens sem fonte confiável</p><div id="eChartLimits"></div></article>
+          </section>
+          <section class="table-panel">
+            <div class="section-head" style="margin:0">
+              <div><h2>Detalhamento por cliente</h2><p>Respostas e interações por fonte.</p></div>
+              <span class="counter" id="eCounter"></span>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th data-esort="clientName">Cliente</th><th data-esort="source">Fonte</th><th data-esort="responses" class="num">Respostas</th><th data-esort="interactions" class="num">Interações</th><th data-esort="surveyAnswered">Pesquisa</th><th data-esort="lastInteractionAt">Última interação</th></tr></thead>
+                <tbody id="eRows"></tbody>
+              </table>
+            </div>
+            <div class="empty" id="eEmpty">Nenhum cliente encontrado para os filtros selecionados.</div>
+            <div class="pagination"><div id="ePageInfo"></div><div><button class="btn" id="ePrev" type="button">Anterior</button><button class="btn" id="eNext" type="button">Próxima</button></div></div>
+          </section>
+        </div>
+      </section>
+
       <section class="view" id="view-platform">
         <div class="container">
           <header class="page-header">
@@ -1215,6 +1260,7 @@
             <article class="chart-card"><h3>Reuniões</h3><p>Indicadores usados na tela de reuniões</p><div class="indicator-matrix" id="qMeetingsMatrix"></div></article>
             <article class="chart-card"><h3>Mecanismos</h3><p>Indicadores usados na tela de mecanismos</p><div class="indicator-matrix" id="qMechanismsMatrix"></div></article>
             <article class="chart-card"><h3>Atualização Financeira</h3><p>Indicadores novos da tela financeira</p><div class="indicator-matrix" id="qFinancialMatrix"></div></article>
+            <article class="chart-card"><h3>Engajamento</h3><p>Indicadores de respostas, interações e pesquisas</p><div class="indicator-matrix" id="qEngagementMatrix"></div></article>
             <article class="chart-card"><h3>Uso da Plataforma</h3><p>Indicadores novos calculados pelo QV360</p><div class="indicator-matrix" id="qPlatformMatrix"></div></article>
           </section>
           <div class="section-head"><div><h2>Preenchimento por coluna</h2><p>Cada cartão compara valores vazios ou nulos com o total de registros da tabela.</p></div><span class="counter" id="counter"></span></div>
@@ -1344,6 +1390,7 @@
       meetings: document.querySelector('#view-meetings'),
       mechanisms: document.querySelector('#view-mechanisms'),
       financial: document.querySelector('#view-financial'),
+      engagement: document.querySelector('#view-engagement'),
       platform: document.querySelector('#view-platform'),
       support: document.querySelector('#view-support'),
       quality: document.querySelector('#view-quality')
@@ -1358,6 +1405,7 @@
       if (btn.dataset.nav === 'meetings' && !meetingsState.payload) loadMeetings();
       if (btn.dataset.nav === 'mechanisms' && !mechanismsState.payload) loadMechanisms();
       if (btn.dataset.nav === 'financial' && !financialState.payload) loadFinancial();
+      if (btn.dataset.nav === 'engagement' && !engagementState.payload) loadEngagement();
       if (btn.dataset.nav === 'platform' && !platformState.payload) loadPlatform();
       if (btn.dataset.nav === 'support' && !supportState.payload) loadSupport();
       if (btn.dataset.nav === 'quality' && !qualityData.length) loadQuality();
@@ -1386,8 +1434,8 @@
         (!q || `${d.table} ${d.column}`.toLowerCase().includes(q))
       ).sort((a, b) => getPct(b) - getPct(a) || getFilled(b) - getFilled(a) || `${a.table}.${a.column}`.localeCompare(`${b.table}.${b.column}`, 'pt-BR'));
     }
-    const viabilityClass = value => value === 'Sem dados' || value === 'Não identificado' ? 'no' : String(value).startsWith('Parcial') ? 'base' : 'sim';
-    const coverageText = item => item?.total ? `${fmt.format(item.count || 0)} / ${fmt.format(item.total)}<span>${pct(item.percent || 0)}</span>` : 'Sem dados';
+    const viabilityClass = value => value === 'Sem dado' || value === 'Sem dados' || value === 'Não identificado' ? 'no' : String(value).startsWith('Parcial') ? 'base' : 'sim';
+    const coverageText = item => item?.total ? `${fmt.format(item.count || 0)} / ${fmt.format(item.total)}<span>${pct(item.percent || 0)}</span>` : 'Sem dado';
     const fixedCoverage = (count, total, percent) => ({ count: count || 0, total: total || 0, percent: percent || 0 });
     function renderViabilityMatrix(target, rows) {
       if (!target) return;
@@ -1424,6 +1472,15 @@
         { indicator: 'Quantidade de atualizações financeiras', viability: 'Parcial', metric: 'Base atual registra o estado financeiro mais recente; sem histórico completo de eventos', coverage: fixedCoverage(financialState.payload?.summary?.clientsWithFinancialData, financialState.payload?.summary?.totalClients, financialState.payload?.summary?.financialDataCoveragePercent), base: 'BASE QV' },
         { indicator: 'Patrimônio atualizado recentemente (Sim/Não)', viability: 'Parcial', metric: 'Proxy por recência dos dados financeiros', coverage: fixedCoverage(financialState.payload?.summary?.updatedLast30Days, financialState.payload?.summary?.totalClients, financialState.payload?.summary?.updatedLast30DaysPercentOfPortfolio), base: 'BASE QV' },
       ]);
+      renderViabilityMatrix(document.querySelector('#qEngagementMatrix'), indicatorRowsFromPayload(engagementState.payload, [
+        { indicator: 'Tempo médio de resposta às solicitações', viability: 'Parcial', metric: 'Fallback BASE QV: cycle_change_requests/freeze_change_requests/tasks' },
+        { indicator: 'Quantidade de respostas', viability: 'Sim', metric: 'App Pharus + QV360: form_submissions e scheduled_meeting_evaluation; fallback BASE QV parcial' },
+        { indicator: 'Quantidade de interações', viability: 'Sim', metric: 'App Pharus + QV360: form_submissions + avaliações + reuniões + outputs' },
+        { indicator: 'Quantidade de mensagens respondidas', viability: 'Sem dado', metric: 'Sem tabela confiável de mensagens cliente ↔ EP' },
+        { indicator: 'Quantidade de mensagens ignoradas', viability: 'Sem dado', metric: 'Exige sent_at/responded_at/sender_type/message_status' },
+        { indicator: 'Tempo médio entre interação do EP e resposta do cliente', viability: 'Sem dado', metric: 'Sem pareamento confiável entre ação do EP e resposta posterior do cliente' },
+        { indicator: 'Cliente respondeu pesquisas? (Sim/Não)', viability: 'Sim', metric: 'App Pharus + QV360: form_submissions ou scheduled_meeting_evaluation por user_id' },
+      ], 'App Pharus + QV360 / fallback BASE QV'));
       renderViabilityMatrix(document.querySelector('#qPlatformMatrix'), indicatorRowsFromPayload(platformState.payload, [
         { indicator: 'Realizou login? (Sim/Não)', viability: 'Viável somente no QV360', metric: 'login_history por user_id ou core_user.last_login' },
         { indicator: 'Número total de logins', viability: 'Viável somente no QV360', metric: 'Contagem de login_history' },
@@ -1565,6 +1622,11 @@
           const financialResponse = await apiFetch(`/api/financial-updates?t=${Date.now()}`, { cache: 'no-store' });
           const financialPayload = await financialResponse.json().catch(() => ({}));
           if (financialResponse.ok) financialState.payload = financialPayload;
+        }
+        if (!engagementState.payload) {
+          const engagementResponse = await apiFetch(`/api/engagement?t=${Date.now()}`, { cache: 'no-store' });
+          const engagementPayload = await engagementResponse.json().catch(() => ({}));
+          if (engagementResponse.ok) engagementState.payload = engagementPayload;
         }
         if (!platformState.payload) {
           const platformResponse = await apiFetch(`/api/platform-usage?t=${Date.now()}`, { cache: 'no-store' });
@@ -2487,10 +2549,10 @@
       const summary = payload.summary || {};
       const data = filteredOnboardingClients();
       document.querySelector('#jKpis').innerHTML = `
-        <article class="metric highlight"><div class="metric-label">Média até 1ª reunião</div><div class="metric-value">${dayValue(summary.averageFirstMeetingDays)}</div><div class="metric-note">Contratação → primeira reunião</div></article>
-        <article class="metric"><div class="metric-label">Média até entrega do plano</div><div class="metric-value">${dayValue(summary.averagePlanDeliveryDays)}</div><div class="metric-note">Contratação → reunião de implementação</div></article>
-        <article class="metric"><div class="metric-label">Média até 1º mecanismo</div><div class="metric-value">${dayValue(summary.averageFirstImplementationDays)}</div><div class="metric-note">Contratação → implementação</div></article>
-        <article class="metric"><div class="metric-label">Média onboarding total</div><div class="metric-value">${dayValue(summary.averageTotalOnboardingDays)}</div><div class="metric-note">Estágio inicial → próxima etapa</div></article>
+        <article class="metric highlight"><div class="metric-label">Mediana até 1ª reunião</div><div class="metric-value">${dayValue(summary.averageFirstMeetingDays)}</div><div class="metric-note">Contratação → primeira reunião</div></article>
+        <article class="metric"><div class="metric-label">Mediana até entrega do plano</div><div class="metric-value">${dayValue(summary.averagePlanDeliveryDays)}</div><div class="metric-note">Contratação → reunião de implementação</div></article>
+        <article class="metric"><div class="metric-label">Mediana até 1º mecanismo</div><div class="metric-value">${dayValue(summary.averageFirstImplementationDays)}</div><div class="metric-note">Contratação → implementação</div></article>
+        <article class="metric"><div class="metric-label">Mediana onboarding total</div><div class="metric-value">${dayValue(summary.averageTotalOnboardingDays)}</div><div class="metric-note">Estágio inicial → próxima etapa</div></article>
         <article class="metric highlight"><div class="metric-label">Concluíram onboarding</div><div class="metric-value">${fmt.format(summary.completedOnboarding || 0)}</div><div class="metric-note">${pct(summary.completedPercent || 0)} dos clientes com jornada - ${fmt.format(summary.totalClients || 0)} clientes total</div></article>`;
 
       document.querySelector('#jFirstMeetingChart').innerHTML = donut(payload.distributions?.firstMeetingRanges || []);
@@ -3604,6 +3666,123 @@
       const client = mechanismsState.payload.clients.find(c => c.clientId === tr.dataset.kid);
       if (client) openMechanismDrawer(client);
     });
+
+    /* -------- Engajamento -------- */
+    const engagementState = {
+      payload: null, page: 1, pageSize: 25, sortKey: 'clientName', sortDir: 'asc', loading: false, requestId: 0
+    };
+    const eFilters = {
+      search: document.querySelector('#eSearch'),
+      source: document.querySelector('#eSource'),
+      survey: document.querySelector('#eSurvey'),
+    };
+    function filteredEngagementClients() {
+      const clients = engagementState.payload?.clients || [];
+      const q = eFilters.search.value.trim().toLowerCase();
+      return clients.filter(c => {
+        if (eFilters.source.value !== 'all' && c.source !== eFilters.source.value) return false;
+        if (eFilters.survey.value === 'yes' && !c.surveyAnswered) return false;
+        if (eFilters.survey.value === 'no' && c.surveyAnswered) return false;
+        if (q && !`${c.clientName} ${c.email} ${c.clientId}`.toLowerCase().includes(q)) return false;
+        return true;
+      }).sort((a, b) => {
+        const key = engagementState.sortKey;
+        const av = a[key], bv = b[key];
+        let cmp = 0;
+        if (av == null && bv == null) cmp = 0;
+        else if (av == null) cmp = -1;
+        else if (bv == null) cmp = 1;
+        else if (typeof av === 'number' && typeof bv === 'number') cmp = av - bv;
+        else if (typeof av === 'boolean' && typeof bv === 'boolean') cmp = Number(av) - Number(bv);
+        else cmp = String(av).localeCompare(String(bv), 'pt-BR', { numeric: true });
+        return engagementState.sortDir === 'asc' ? cmp : -cmp;
+      });
+    }
+    function renderEngagement() {
+      if (!engagementState.payload) return;
+      const payload = engagementState.payload;
+      const summary = payload.summary || {};
+      const rows = filteredEngagementClients();
+      const avgResponse = summary.averageRequestResponseDays == null ? '—' : `${fmt.format(summary.averageRequestResponseDays)} d`;
+      document.querySelector('#eKpis').innerHTML = `
+        <article class="metric highlight"><div class="metric-label">Clientes distintos consolidados</div><div class="metric-value">${fmt.format(summary.totalClients || 0)}</div><div class="metric-note">Distinct client_id · QV360 + App Pharus</div></article>
+        <article class="metric"><div class="metric-label">Tempo médio de resposta</div><div class="metric-value">${avgResponse}</div><div class="metric-note">Fallback BASE QV · ${fmt.format(summary.responseTimeSample || 0)} registros</div></article>
+        <article class="metric"><div class="metric-label">Quantidade de respostas</div><div class="metric-value">${fmt.format(summary.totalResponses || 0)}</div><div class="metric-note">${fmt.format(summary.clientsWithResponses || 0)} clientes com resposta</div></article>
+        <article class="metric"><div class="metric-label">Quantidade de interações</div><div class="metric-value">${fmt.format(summary.totalInteractions || 0)}</div><div class="metric-note">Submissões, avaliações, reuniões e outputs</div></article>
+        <article class="metric"><div class="metric-label">Mensagens respondidas</div><div class="metric-value">Sem dado</div><div class="metric-note">Sem tabela cliente ↔ EP confiável</div></article>
+        <article class="metric"><div class="metric-label">Mensagens ignoradas</div><div class="metric-value">Sem dado</div><div class="metric-note">Faltam sent_at/responded_at/status</div></article>
+        <article class="metric"><div class="metric-label">Tempo EP → cliente</div><div class="metric-value">Sem dado</div><div class="metric-note">Sem pareamento confiável</div></article>
+        <article class="metric"><div class="metric-label">Responderam pesquisas</div><div class="metric-value">${fmt.format(summary.clientsWithSurvey || 0)}</div><div class="metric-note">${pct(summary.totalClients ? (summary.clientsWithSurvey || 0) / summary.totalClients * 100 : 0)} da base consolidada</div></article>`;
+      document.querySelector('#eChartSources').innerHTML = hBars(payload.distributions?.bySource || []);
+      document.querySelector('#eChartSurvey').innerHTML = donut(payload.distributions?.bySurvey || []);
+      document.querySelector('#eChartResponses').innerHTML = hBars(payload.distributions?.byResponseVolume || []);
+      document.querySelector('#eChartLimits').innerHTML = hBars([
+        { label: 'Mensagens respondidas', count: 0, percent: 0 },
+        { label: 'Mensagens ignoradas', count: 0, percent: 0 },
+        { label: 'EP → resposta cliente', count: 0, percent: 0 },
+      ]);
+      const pages = Math.max(1, Math.ceil(rows.length / engagementState.pageSize));
+      if (engagementState.page > pages) engagementState.page = pages;
+      const start = (engagementState.page - 1) * engagementState.pageSize;
+      const pageRows = rows.slice(start, start + engagementState.pageSize);
+      document.querySelector('#eRows').innerHTML = pageRows.map(c => `<tr><td class="truncate" title="${escapeHtml(c.clientName || 'Não informado')}">${escapeHtml(c.clientName || 'Não informado')}</td><td>${escapeHtml(c.source || 'Não informado')}</td><td class="num">${fmt.format(c.responses || 0)}</td><td class="num">${fmt.format(c.interactions || 0)}</td><td>${boolLabel(c.surveyAnswered)}</td><td>${dateBR(c.lastInteractionAt)}</td></tr>`).join('');
+      document.querySelector('#eCounter').textContent = `${rows.length} de ${(payload.clients || []).length} clientes`;
+      document.querySelector('#ePageInfo').textContent = `Página ${engagementState.page} de ${pages}`;
+      document.querySelector('#eEmpty').style.display = rows.length ? 'none' : 'block';
+      document.querySelector('#ePrev').disabled = engagementState.page <= 1;
+      document.querySelector('#eNext').disabled = engagementState.page >= pages;
+    }
+    async function loadEngagement() {
+      if (!isPortalAuthenticated()) return;
+      if (engagementState.loading) return;
+      engagementState.loading = true;
+      const requestId = ++engagementState.requestId;
+      const refresh = document.querySelector('#eRefresh');
+      const status = document.querySelector('#eStatus');
+      refresh.disabled = true; refresh.textContent = 'Atualizando...';
+      status.textContent = '● Atualizando dados'; status.style.color = 'var(--color-warning)';
+      try {
+        const response = await apiFetch(`/api/engagement?t=${Date.now()}`, { cache: 'no-store' });
+        const payload = await response.json().catch(() => ({}));
+        if (requestId !== engagementState.requestId) return;
+        if (!response.ok) throw Object.assign(new Error(friendlyApiError(response.status, payload)), { status: response.status, payload });
+        engagementState.payload = payload;
+        engagementState.page = 1;
+        renderEngagement();
+        const warnings = (payload.quality?.warnings || []).length;
+        status.textContent = warnings ? '● Fontes conectadas com alertas' : '● Fontes conectadas';
+        status.style.color = warnings ? 'var(--color-warning)' : 'var(--color-success)';
+        document.querySelector('#eUpdated').textContent = `Atualizado em ${new Date(payload.generatedAt).toLocaleString('pt-BR')}`;
+      } catch (error) {
+        if (requestId !== engagementState.requestId) return;
+        if (error?.code === 'AUTH_REQUIRED' || error?.code === 'AUTH_FORBIDDEN' || error?.message === 'AUTH_REQUIRED') return;
+        status.textContent = '● Falha na atualização'; status.style.color = 'var(--color-danger)';
+        document.querySelector('#eUpdated').textContent = error.message || friendlyApiError(0, null, true);
+        document.querySelector('#eEmpty').style.display = 'block';
+        document.querySelector('#eEmpty').textContent = 'Não foi possível carregar o engajamento.';
+      } finally {
+        if (requestId === engagementState.requestId) {
+          engagementState.loading = false; refresh.disabled = false; refresh.textContent = 'Atualizar';
+        }
+      }
+    }
+    Object.values(eFilters).forEach(el => el?.addEventListener('input', () => { engagementState.page = 1; renderEngagement(); }));
+    document.querySelector('#eClear')?.addEventListener('click', () => {
+      eFilters.search.value = '';
+      eFilters.source.value = 'all';
+      eFilters.survey.value = 'all';
+      engagementState.page = 1;
+      renderEngagement();
+    });
+    document.querySelector('#eRefresh')?.addEventListener('click', loadEngagement);
+    document.querySelector('#ePrev')?.addEventListener('click', () => { engagementState.page -= 1; renderEngagement(); });
+    document.querySelector('#eNext')?.addEventListener('click', () => { engagementState.page += 1; renderEngagement(); });
+    document.querySelectorAll('#view-engagement th[data-esort]').forEach(th => th.addEventListener('click', () => {
+      const key = th.dataset.esort;
+      if (engagementState.sortKey === key) engagementState.sortDir = engagementState.sortDir === 'asc' ? 'desc' : 'asc';
+      else { engagementState.sortKey = key; engagementState.sortDir = key === 'clientName' || key === 'source' ? 'asc' : 'desc'; }
+      renderEngagement();
+    }));
 
     /* -------- Uso da Plataforma -------- */
     const platformState = {
@@ -4923,6 +5102,7 @@
         if (views.meetings.classList.contains('active')) loadMeetings();
         if (views.mechanisms.classList.contains('active')) loadMechanisms();
         if (views.financial.classList.contains('active')) loadFinancial();
+        if (views.engagement.classList.contains('active')) loadEngagement();
         if (views.platform.classList.contains('active')) loadPlatform();
         if (views.support.classList.contains('active')) loadSupport();
         if (views.quality.classList.contains('active')) loadQuality();
@@ -4941,6 +5121,7 @@
       if (typeof meetingsState !== 'undefined') meetingsState.payload = null;
       if (typeof mechanismsState !== 'undefined') mechanismsState.payload = null;
       if (typeof financialState !== 'undefined') financialState.payload = null;
+      if (typeof engagementState !== 'undefined') engagementState.payload = null;
       if (typeof platformState !== 'undefined') platformState.payload = null;
       if (typeof supportState !== 'undefined') supportState.payload = null;
       if (typeof resetAssistant === 'function') resetAssistant();

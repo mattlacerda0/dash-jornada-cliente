@@ -22,6 +22,12 @@ if (Bun.env.DATA_SUPABASE_URL) process.env.DATA_SUPABASE_URL = Bun.env.DATA_SUPA
 if (Bun.env.DATA_SUPABASE_SERVICE_ROLE_KEY) process.env.DATA_SUPABASE_SERVICE_ROLE_KEY = Bun.env.DATA_SUPABASE_SERVICE_ROLE_KEY;
 if (Bun.env.N8N_CHAT_WEBHOOK_URL) process.env.N8N_CHAT_WEBHOOK_URL = Bun.env.N8N_CHAT_WEBHOOK_URL;
 if (Bun.env.N8N_INTERNAL_API_TOKEN) process.env.N8N_INTERNAL_API_TOKEN = Bun.env.N8N_INTERNAL_API_TOKEN;
+if (Bun.env.QV360_SUPABASE_URL) process.env.QV360_SUPABASE_URL = Bun.env.QV360_SUPABASE_URL;
+if (Bun.env.QV360_SUPABASE_SCHEMA) process.env.QV360_SUPABASE_SCHEMA = Bun.env.QV360_SUPABASE_SCHEMA;
+if (Bun.env.QV360_SUPABASE_SERVICE_ROLE_KEY) process.env.QV360_SUPABASE_SERVICE_ROLE_KEY = Bun.env.QV360_SUPABASE_SERVICE_ROLE_KEY;
+if (Bun.env.APP_PHARUS_SUPABASE_URL) process.env.APP_PHARUS_SUPABASE_URL = Bun.env.APP_PHARUS_SUPABASE_URL;
+if (Bun.env.APP_PHARUS_SUPABASE_SCHEMA) process.env.APP_PHARUS_SUPABASE_SCHEMA = Bun.env.APP_PHARUS_SUPABASE_SCHEMA;
+if (Bun.env.APP_PHARUS_SUPABASE_SERVICE_ROLE_KEY) process.env.APP_PHARUS_SUPABASE_SERVICE_ROLE_KEY = Bun.env.APP_PHARUS_SUPABASE_SERVICE_ROLE_KEY;
 
 const generalDataHandler = (await import("./netlify/functions/general-data.mjs")).default;
 const onboardingHandler = (await import("./netlify/functions/onboarding.mjs")).default;
@@ -29,6 +35,7 @@ const patrimonialPlanHandler = (await import("./netlify/functions/patrimonial-pl
 const meetingsHandler = (await import("./netlify/functions/meetings.mjs")).default;
 const mechanismsHandler = (await import("./netlify/functions/mechanisms.mjs")).default;
 const financialUpdatesHandler = (await import("./netlify/functions/financial-updates.mjs")).default;
+const engagementHandler = (await import("./netlify/functions/engagement.mjs")).default;
 const supportHandler = (await import("./netlify/functions/support.mjs")).default;
 const assistantHandler = (await import("./netlify/functions/assistant.mjs")).default;
 const assistantDataHandler = (await import("./netlify/functions/assistant-data.mjs")).default;
@@ -210,6 +217,7 @@ const server = Bun.serve({
     if (url.pathname === "/api/meetings") return meetingsHandler(request);
     if (url.pathname === "/api/mechanisms") return mechanismsHandler(request);
     if (url.pathname === "/api/financial-updates") return financialUpdatesHandler(request);
+    if (url.pathname === "/api/engagement") return engagementHandler(request);
     if (url.pathname === "/api/platform-usage") return platformUsageHandler(request);
     if (url.pathname === "/api/support") return supportHandler(request);
     if (url.pathname === "/api/assistant") return assistantHandler(request);

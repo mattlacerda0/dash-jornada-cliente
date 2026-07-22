@@ -40,6 +40,12 @@ function daysBetween(start, end) {
   return Math.floor((startOfDay(end).getTime() - startOfDay(start).getTime()) / 86400000);
 }
 
+function nonNegativeDaysBetween(start, end) {
+  if (!start || !end) return null;
+  const days = daysBetween(start, end);
+  return days >= 0 ? days : null;
+}
+
 function firstValue(row, ...names) {
   for (const name of names) {
     const value = blankToNull(row?.[name]);
@@ -245,9 +251,9 @@ async function buildPayload() {
     const totalOnboardingDurations = clientTransitions
       .filter((item) => TOTAL_ONBOARDING_START_STAGE_IDS.has(item.stageId))
       .map((item) => item.days);
-    const totalOnboardingDays = average(totalOnboardingDurations);
+    const totalOnboardingDays = median(totalOnboardingDurations);
 
-    const daysUntil = (date) => contractDate && date ? daysBetween(contractDate, date) : null;
+    const daysUntil = (date) => nonNegativeDaysBetween(contractDate, date);
 
     return {
       clientId,
@@ -289,16 +295,16 @@ async function buildPayload() {
     stageGroups.get(item.stageName).push(item.days);
   }
   const stageDurations = [...stageGroups.entries()]
-    .map(([label, values]) => ({ label, count: values.length, value: average(values), percent: 0 }))
+    .map(([label, values]) => ({ label, count: values.length, value: median(values), percent: 0 }))
     .sort((a, b) => (b.value || 0) - (a.value || 0));
 
   const indicators = [
-    ["Dias entre contratação e primeira reunião", withFirstMeeting ? "Sim" : "Sem base", "Diferença entre clients.data_inicio_ciclo e a primeira client_meetings.start_time.", average(rows.map((row) => row.daysToFirstMeeting)), "dias", withFirstMeeting],
-    ["Dias entre contratação e entrega do plano patrimonial", withPlanDelivery ? "Sim" : "Sem base", "Diferença entre clients.data_inicio_ciclo e a primeira client_implementation_meeting_date.meeting_date.", average(rows.map((row) => row.daysToPlanDelivery)), "dias", withPlanDelivery],
-    ["Dias entre contratação e primeiro mecanismo implementado", withImplementation ? "Sim" : "Não identificado", "Diferença entre clients.data_inicio_ciclo e a primeira client_mecanismos.implemented_at.", average(rows.map((row) => row.daysToFirstImplementation)), "dias", withImplementation],
-    ["Tempo total de onboarding", totalOnboardingCount ? "Sim" : "Sem base", "Diferença entre client_journeys.started_at dos estágios 33bb253e... ou 7c43c981... e a próxima data do mesmo client_id.", average(rows.map((row) => row.totalOnboardingDays)), "dias", totalOnboardingCount],
+    ["Dias entre contratação e primeira reunião", withFirstMeeting ? "Sim" : "Sem base", "Mediana da diferença não negativa entre clients.data_inicio_ciclo e a primeira client_meetings.start_time.", median(rows.map((row) => row.daysToFirstMeeting)), "dias", withFirstMeeting],
+    ["Dias entre contratação e entrega do plano patrimonial", withPlanDelivery ? "Sim" : "Sem base", "Mediana da diferença não negativa entre clients.data_inicio_ciclo e a primeira client_implementation_meeting_date.meeting_date.", median(rows.map((row) => row.daysToPlanDelivery)), "dias", withPlanDelivery],
+    ["Dias entre contratação e primeiro mecanismo implementado", withImplementation ? "Sim" : "Não identificado", "Mediana da diferença não negativa entre clients.data_inicio_ciclo e a primeira client_mecanismos.implemented_at.", median(rows.map((row) => row.daysToFirstImplementation)), "dias", withImplementation],
+    ["Tempo total de onboarding", totalOnboardingCount ? "Sim" : "Sem base", "Mediana da diferença não negativa entre client_journeys.started_at dos estágios 33bb253e... ou 7c43c981... e a próxima data do mesmo client_id.", median(rows.map((row) => row.totalOnboardingDays)), "dias", totalOnboardingCount],
     ["Concluiu onboarding (Sim/Não)", hasJourney ? "Sim" : "Sem base", "Sim quando o estágio atual do client_id é diferente dos estágios 7c43c981..., ae3a6015... e 33bb253e.... Não quando é igual.", completeCount, "clientes", withCompletionBase],
-    ["Tempo médio para cada etapa da jornada", stageDurations.length ? "Sim" : "Sem base", "Média da diferença entre client_journeys.started_at e a próxima mudança de current_stage_id; eixo pelo journey_stages.name.", average(stageDurations.map((item) => item.value)), "dias", allTransitionDurations.length],
+    ["Tempo médio para cada etapa da jornada", stageDurations.length ? "Sim" : "Sem base", "Mediana da diferença não negativa entre client_journeys.started_at e a próxima mudança de current_stage_id; eixo pelo journey_stages.name.", median(stageDurations.map((item) => item.value)), "dias", allTransitionDurations.length],
   ].map(([indicator, viability, metric, value, unit, count]) => ({
     indicator,
     viability,

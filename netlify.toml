@@ -38,6 +38,11 @@
   status = 200
 
 [[redirects]]
+  from = "/api/pharus-mechanisms"
+  to = "/.netlify/functions/pharus-mechanisms"
+  status = 200
+
+[[redirects]]
   from = "/api/financial-updates"
   to = "/.netlify/functions/financial-updates"
   status = 200
@@ -55,6 +60,16 @@
 [[redirects]]
   from = "/api/support"
   to = "/.netlify/functions/support"
+  status = 200
+
+[[redirects]]
+  from = "/api/cancellations"
+  to = "/.netlify/functions/cancellations"
+  status = 200
+
+[[redirects]]
+  from = "/api/satisfaction"
+  to = "/.netlify/functions/satisfaction"
   status = 200
 
 [[redirects]]

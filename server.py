@@ -28,9 +28,13 @@ def _parse_env_line(raw: str):
 
 
 def load_env():
-    """Carrega .env (e opcionalmente exemplo.env) antes de validar variáveis."""
+    """Carrega .env (e opcionalmente exemplo.env) antes de validar variáveis.
+
+    Sempre relativo a ROOT = Path(__file__).resolve().parent — não depende do cwd.
+    """
     candidates = [ROOT / ".env", ROOT / "exemplo.env"]
     loaded_from = None
+    loaded_path = None
 
     try:
         from dotenv import load_dotenv  # type: ignore
@@ -40,6 +44,7 @@ def load_env():
                 load_dotenv(path, override=False)
                 if loaded_from is None:
                     loaded_from = path.name
+                    loaded_path = path.resolve()
     except ImportError:
         pass
 
@@ -52,15 +57,27 @@ def load_env():
             if not parsed:
                 continue
             key, value = parsed
-            # Não sobrescrever variáveis já definidas no ambiente do processo.
+            # Não sobrescrever variáveis já definidas (não vazias) no ambiente do processo.
             if key not in os.environ or not str(os.environ.get(key) or "").strip():
                 os.environ[key] = value
         if loaded_from is None:
             loaded_from = path.name
+            loaded_path = path.resolve()
 
     if loaded_from is None:
         raise RuntimeError("Arquivo .env não encontrado (procure .env ao lado de server.py).")
     print(f"Variáveis carregadas de {loaded_from}")
+    if loaded_path is not None:
+        print(f"env_path: {loaded_path}")
+    # Diagnóstico seguro App Pharus (sem imprimir segredos).
+    pharus_url = str(os.environ.get("PHARUS_SUPABASE_URL") or "").strip()
+    pharus_key = str(os.environ.get("PHARUS_SUPABASE_ANON_KEY") or "").strip()
+    print({
+        "pharus_url_configured": bool(pharus_url),
+        "pharus_key_configured": bool(pharus_key),
+        "pharus_key_len": len(pharus_key),
+        "env_path": str(loaded_path or (ROOT / ".env")),
+    })
 
 # (domain, table, column, include_blank) — uniqueness: public.{table}.{column}
 FIELDS = [
@@ -135,9 +152,11 @@ FIELDS = [
     ("Mecanismos", "mecanismos", "programa", True),
     ("Mecanismos", "mecanismos", "status", True),
     ("Satisfação", "nps_responses", "score", False),
-    ("Satisfação", "nps_responses", "submitted_at", False),
+    ("Satisfação", "nps_responses", "created_at", False),
+    ("Satisfação", "nps_responses", "tipo_de_forms", True),
     ("Satisfação", "csat_responses", "score", False),
-    ("Satisfação", "csat_responses", "submitted_at", False),
+    ("Satisfação", "csat_responses", "created_at", False),
+    ("Satisfação", "csat_responses", "tipo_de_forms", True),
     ("Cancelamento", "cancellations", "client_id", False),
     ("Cancelamento", "cancellations", "motivo", True),
     ("Cancelamento", "cancellations", "motivo_categoria", False),
@@ -873,6 +892,31 @@ def mechanisms_payload():
     return json.loads(result.stdout)
 
 
+def pharus_mechanisms_payload():
+    """App Pharus (mecanismos sugeridos) — falha isolada da BASE QV."""
+    env = os.environ.copy()
+    env["PORTAL_INTERNAL_DATA_RUN"] = "1"
+    # Diagnóstico seguro no subprocesso (sem valor da chave).
+    print({
+        "pharus_subprocess_url_configured": bool(str(env.get("PHARUS_SUPABASE_URL") or "").strip()),
+        "pharus_subprocess_key_configured": bool(str(env.get("PHARUS_SUPABASE_ANON_KEY") or "").strip()),
+        "pharus_subprocess_key_len": len(str(env.get("PHARUS_SUPABASE_ANON_KEY") or "").strip()),
+    })
+    result = subprocess.run(
+        ["node", str(ROOT / "run_pharus_mechanisms_api.mjs")],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        env=env,
+        timeout=180,
+    )
+    if result.returncode != 0:
+        detail = (result.stderr or result.stdout or "falha ao gerar pharus-mechanisms").strip()
+        raise RuntimeError(detail[:240])
+    return json.loads(result.stdout)
+
+
 def financial_updates_payload():
     """Reaproveita a consolidação do Netlify Function via Node (fonte única)."""
     env = os.environ.copy()
@@ -907,6 +951,89 @@ def support_payload():
     )
     if result.returncode != 0:
         detail = (result.stderr or result.stdout or "falha ao gerar support").strip()
+        raise RuntimeError(detail[:240])
+    return json.loads(result.stdout)
+
+
+def cancellations_payload():
+    """Reaproveita a consolidação do Netlify Function via Node (fonte única)."""
+    env = os.environ.copy()
+    env["PORTAL_INTERNAL_DATA_RUN"] = "1"
+    started = datetime.now(timezone.utc)
+    result = subprocess.run(
+        ["node", str(ROOT / "run_cancellations_api.mjs")],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        env=env,
+        timeout=300,
+    )
+    elapsed_ms = int((datetime.now(timezone.utc) - started).total_seconds() * 1000)
+    if result.returncode != 0:
+        detail = (result.stderr or result.stdout or "falha ao gerar cancellations").strip()
+        print(
+            "[cancellations] endpoint=/api/cancellations status=500 "
+            f"ms={elapsed_ms} message={detail[:200]}"
+        )
+        raise RuntimeError(detail[:240])
+    print(f"[cancellations] endpoint=/api/cancellations status=200 ms={elapsed_ms}")
+    return json.loads(result.stdout)
+
+
+def platform_usage_payload():
+    """Reaproveita a consolidação do Netlify Function via Node (fonte única)."""
+    env = os.environ.copy()
+    env["PORTAL_INTERNAL_DATA_RUN"] = "1"
+    result = subprocess.run(
+        ["node", str(ROOT / "run_platform_usage_api.mjs")],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        env=env,
+        timeout=180,
+    )
+    if result.returncode != 0:
+        detail = (result.stderr or result.stdout or "falha ao gerar platform-usage").strip()
+        raise RuntimeError(detail[:240])
+    return json.loads(result.stdout)
+
+
+def onboarding_payload():
+    """Reaproveita a consolidação do Netlify Function via Node (fonte única)."""
+    env = os.environ.copy()
+    env["PORTAL_INTERNAL_DATA_RUN"] = "1"
+    result = subprocess.run(
+        ["node", str(ROOT / "run_onboarding_api.mjs")],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        env=env,
+        timeout=300,
+    )
+    if result.returncode != 0:
+        detail = (result.stderr or result.stdout or "falha ao gerar onboarding").strip()
+        raise RuntimeError(detail[:240])
+    return json.loads(result.stdout)
+
+
+def patrimonial_plan_payload():
+    """Reaproveita a consolidação do Netlify Function via Node (fonte única)."""
+    env = os.environ.copy()
+    env["PORTAL_INTERNAL_DATA_RUN"] = "1"
+    result = subprocess.run(
+        ["node", str(ROOT / "run_patrimonial_plan_api.mjs")],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        env=env,
+        timeout=180,
+    )
+    if result.returncode != 0:
+        detail = (result.stderr or result.stdout or "falha ao gerar patrimonial-plan").strip()
         raise RuntimeError(detail[:240])
     return json.loads(result.stdout)
 
@@ -972,10 +1099,15 @@ class Handler(SimpleHTTPRequestHandler):
         protected = {
             "/api/quality": ("quality", quality_payload, "Falha ao consultar indicadores de qualidade"),
             "/api/general-data": ("general-data", general_data_payload, "Não foi possível consolidar os dados gerais"),
+            "/api/onboarding": ("onboarding", onboarding_payload, "Não foi possível consolidar jornada e onboarding"),
+            "/api/patrimonial-plan": ("patrimonial-plan", patrimonial_plan_payload, "Não foi possível consolidar o plano patrimonial"),
             "/api/meetings": ("meetings", meetings_payload, "Não foi possível consolidar os dados de reuniões"),
             "/api/mechanisms": ("mechanisms", mechanisms_payload, "Não foi possível consolidar a implementação de mecanismos"),
+            "/api/pharus-mechanisms": ("pharus-mechanisms", pharus_mechanisms_payload, "Não foi possível consolidar os mecanismos do App Pharus"),
             "/api/financial-updates": ("financial-updates", financial_updates_payload, "Não foi possível consolidar a atualização financeira"),
+            "/api/platform-usage": ("platform-usage", platform_usage_payload, "Não foi possível consolidar o uso da plataforma"),
             "/api/support": ("support", support_payload, "Não foi possível consolidar o atendimento"),
+            "/api/cancellations": ("cancellations", cancellations_payload, "Não foi possível consolidar os cancelamentos"),
         }
         if path in protected:
             denied = require_corporate_auth(self)
@@ -984,11 +1116,31 @@ class Handler(SimpleHTTPRequestHandler):
                 send_json(self, status, payload)
                 return
             label, producer, err_msg = protected[path]
+            started = datetime.now(timezone.utc)
             try:
                 send_json(self, 200, producer())
+                elapsed_ms = int((datetime.now(timezone.utc) - started).total_seconds() * 1000)
+                print(f"[{label}] endpoint={path} status=200 ms={elapsed_ms}")
             except Exception as exc:
-                send_json(self, 500, {"error": err_msg})
-                print(f"{label} error: {exc}")
+                elapsed_ms = int((datetime.now(timezone.utc) - started).total_seconds() * 1000)
+                # Log técnico no servidor (sem tokens / PII / payload completo).
+                print(
+                    f"[{label}] endpoint={path} status=500 ms={elapsed_ms} "
+                    f"code=data_query_failed message={str(exc)[:200]}"
+                )
+                send_json(self, 500, {
+                    "error": err_msg,
+                    "code": "data_query_failed",
+                })
+            return
+
+        # Evita 404 silencioso de rotas /api/* não mapeadas.
+        if path.startswith("/api/"):
+            print(f"[api] endpoint={path} status=404 code=route_not_found")
+            send_json(self, 404, {
+                "error": f"Endpoint não encontrado: {path}",
+                "code": "route_not_found",
+            })
             return
 
         super().do_GET()

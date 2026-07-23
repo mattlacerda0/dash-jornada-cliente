@@ -1,5 +1,6 @@
 ﻿.env
 exemplo.env
+!.env.example
 .server.stdout.log
 .server.stderr.log
 .netlify
@@ -11,4 +12,5 @@ _v.json
 _visual_acq.mjs
 .vercel
 .env*
+!.env.example
 .cursor/mcp.json

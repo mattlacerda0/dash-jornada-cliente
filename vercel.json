@@ -25,6 +25,10 @@
                        "dest":  "/api/quality.js?fn=financial-updates"
                    },
                    {
+                       "src":  "/api/satisfaction",
+                       "dest":  "/api/quality.js?fn=satisfaction"
+                   },
+                   {
                        "src":  "/api/quality",
                        "dest":  "/api/quality.js?fn=quality"
                    },

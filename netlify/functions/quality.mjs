@@ -1,5 +1,7 @@
 ﻿import { requireCorporateAuth } from "./_shared/auth.mjs";
 import { dataConfigurationError } from "./_shared/env.mjs";
+import { computeSupportPayload } from "./support.mjs";
+import { computePharusMechanismsPayload } from "./pharus-mechanisms.mjs";
 
 // domain, table, column, includeBlank
 // Uniqueness key: public.{table}.{column}
@@ -75,9 +77,11 @@ const FIELDS = [
   ["Mecanismos", "mecanismos", "programa", true],
   ["Mecanismos", "mecanismos", "status", true],
   ["Satisfação", "nps_responses", "score", false],
-  ["Satisfação", "nps_responses", "submitted_at", false],
+  ["Satisfação", "nps_responses", "created_at", false],
+  ["Satisfação", "nps_responses", "tipo_de_forms", true],
   ["Satisfação", "csat_responses", "score", false],
-  ["Satisfação", "csat_responses", "submitted_at", false],
+  ["Satisfação", "csat_responses", "created_at", false],
+  ["Satisfação", "csat_responses", "tipo_de_forms", true],
   ["Cancelamento", "cancellations", "client_id", false],
   ["Cancelamento", "cancellations", "motivo", true],
   ["Cancelamento", "cancellations", "motivo_categoria", false],
@@ -90,18 +94,27 @@ const FIELDS = [
   ["Cancelamento", "cancellations", "created_at", false],
   ["Aquisição", "vw_info_cliente", "id_cliente", false],
   ["Aquisição", "vw_info_cliente", "data_assinatura_contrato", false],
-  ["Atendimento", "demands", "id", false],
-  ["Atendimento", "demands", "client_id", false],
-  ["Atendimento", "demands", "title", true],
-  ["Atendimento", "demands", "type", true],
-  ["Atendimento", "demands", "priority", true],
-  ["Atendimento", "demands", "status", true],
-  ["Atendimento", "demands", "requested_by_client", false],
-  ["Atendimento", "demands", "assigned_to", false],
-  ["Atendimento", "demands", "resolved_at", false],
-  ["Atendimento", "demands", "resolved_by", false],
-  ["Atendimento", "demands", "created_at", false],
-  ["Atendimento", "demands", "updated_at", false],
+];
+
+/** Campos de Atendimento (research.acionamentos) — preenchimento via Business Data. */
+const ACIONAMENTOS_QUALITY_FIELDS = [
+  ["Atendimento", "acionamentos", "id", false],
+  ["Atendimento", "acionamentos", "nome_solicitante", true],
+  ["Atendimento", "acionamentos", "prioridade", true],
+  ["Atendimento", "acionamentos", "tipo_solicitacao", true],
+  ["Atendimento", "acionamentos", "area_setor", true],
+  ["Atendimento", "acionamentos", "titulo", true],
+  ["Atendimento", "acionamentos", "descricao", true],
+  ["Atendimento", "acionamentos", "email_cliente", true],
+  ["Atendimento", "acionamentos", "data_abertura", false],
+  ["Atendimento", "acionamentos", "status", true],
+  ["Atendimento", "acionamentos", "origem", true],
+  ["Atendimento", "acionamentos", "client_id", false],
+  ["Atendimento", "acionamentos", "client_name", true],
+  ["Atendimento", "acionamentos", "client_found", false],
+  ["Atendimento", "acionamentos", "resolved_at", false],
+  ["Atendimento", "acionamentos", "created_at", false],
+  ["Atendimento", "acionamentos", "updated_at", false],
 ];
 
 const FIELD_DESCRIPTIONS = {
@@ -115,6 +128,8 @@ const FIELD_DESCRIPTIONS = {
   "clients.segmentacao": "Segmento atribuído ao cliente.",
   "clients.engenheiro_patrimonial": "Engenheiro Patrimonial responsável pelo acompanhamento do cliente.",
   "cancellations.client_id": "Cliente vinculado ao registro de cancelamento.",
+  "cancellations.motivo": "Motivo textual do cancelamento registrado em public.cancellations.",
+  "cancellations.motivo_categoria": "Categoria do motivo de cancelamento (quando preenchida).",
   "cancellations.distrato_assinado_at": "Data em que o distrato do cliente foi assinado.",
   "cancellations.data_pedido": "Data em que o pedido de cancelamento foi registrado.",
   "cancellations.intencao_registrada_at": "Data em que a intenção de cancelamento foi registrada.",
@@ -178,31 +193,46 @@ const FIELD_DESCRIPTIONS = {
   "mecanismos.mercado": "Mercado associado ao mecanismo, usado como dimensão analítica.",
   "mecanismos.programa": "Programa ao qual o mecanismo está vinculado.",
   "mecanismos.status": "Status cadastral do mecanismo no catálogo.",
-  "demands.id": "Identificador único do chamado de atendimento.",
-  "demands.client_id": "Cliente vinculado ao chamado de atendimento.",
-  "demands.title": "Título do chamado de atendimento.",
-  "demands.type": "Tipo/origem do chamado (não representa reclamação/elogio sem categoria confirmada).",
-  "demands.priority": "Prioridade informada para o chamado.",
-  "demands.status": "Status do chamado (aberto, em andamento, resolvido etc.).",
-  "demands.requested_by_client": "Indica se o chamado foi solicitado pelo cliente.",
-  "demands.assigned_to": "Responsável designado pelo chamado.",
-  "demands.resolved_at": "Data de resolução do chamado, usada para tempo de resolução.",
-  "demands.resolved_by": "Usuário que resolveu o chamado.",
-  "demands.created_at": "Data de abertura do chamado.",
-  "demands.updated_at": "Data da última atualização do chamado.",
+  "acionamentos.id": "Identificador único do acionamento (research.acionamentos).",
+  "acionamentos.nome_solicitante": "Nome de quem abriu o acionamento.",
+  "acionamentos.prioridade": "Prioridade informada no formulário (Urgente, Alta, Média, Baixa).",
+  "acionamentos.tipo_solicitacao": "Tipo da solicitação registrada.",
+  "acionamentos.area_setor": "Área ou setor destinatário do acionamento.",
+  "acionamentos.titulo": "Título do acionamento.",
+  "acionamentos.descricao": "Descrição textual (pode conter dados pessoais; exibida só no drawer autenticado).",
+  "acionamentos.email_cliente": "E-mail do cliente informado no acionamento.",
+  "acionamentos.data_abertura": "Data de abertura do acionamento.",
+  "acionamentos.status": "Status operacional do acionamento.",
+  "acionamentos.origem": "Origem do registro (formulário, integração etc.).",
+  "acionamentos.client_id": "Identificador do cliente vinculado na base, quando encontrado.",
+  "acionamentos.client_name": "Nome do cliente vinculado, quando encontrado.",
+  "acionamentos.client_found": "Indica se o cliente foi encontrado na base no momento do registro.",
+  "acionamentos.resolved_at": "Data/hora de resolução do acionamento.",
+  "acionamentos.created_at": "Data de criação do registro.",
+  "acionamentos.updated_at": "Data da última atualização do registro.",
+  "user_mechanisms.id": "Identificador da sugestão de mecanismo no App Pharus.",
+  "user_mechanisms.user_id": "Usuário do App Pharus (não é client_id da BASE QV).",
+  "user_mechanisms.mechanism_id": "Referência ao catálogo mechanisms.id no App Pharus.",
+  "user_mechanisms.status": "Status da sugestão (ex.: suggested). Não significa implementação.",
+  "user_mechanisms.created_at": "Data da sugestão. Não usar como data de implementação.",
+  "mechanisms.id": "Identificador do mecanismo no catálogo App Pharus.",
+  "mechanisms.data": "JSON com name, risk, market, category e demais atributos do mecanismo no App Pharus.",
+  "mechanisms.created_at": "Criação do registro no catálogo App Pharus.",
+  "mechanisms.updated_at": "Última atualização do catálogo App Pharus.",
 };
 
 /** Dashboards que consomem a coluna (sem incluir campos só da própria página de qualidade). */
 const FIELD_USED_IN = {
-  "clients.id": ["Dados Gerais", "Reuniões", "Implementação de Mecanismos", "Atualização Financeira"],
-  "clients.codigo": ["Dados Gerais", "Reuniões", "Implementação de Mecanismos", "Atualização Financeira"],
-  "clients.name": ["Dados Gerais", "Reuniões", "Implementação de Mecanismos", "Atualização Financeira"],
-  "clients.created_at": ["Dados Gerais", "Reuniões", "Implementação de Mecanismos"],
-  "clients.data_inicio_ciclo": ["Dados Gerais", "Reuniões", "Implementação de Mecanismos"],
-  "clients.data_churn": ["Dados Gerais"],
+  "clients.id": ["Dados Gerais", "Reuniões", "Implementação de Mecanismos", "Atualização Financeira", "Cancelamento"],
+  "clients.codigo": ["Dados Gerais", "Reuniões", "Implementação de Mecanismos", "Atualização Financeira", "Cancelamento"],
+  "clients.name": ["Dados Gerais", "Reuniões", "Implementação de Mecanismos", "Atualização Financeira", "Cancelamento"],
+  "clients.created_at": ["Dados Gerais", "Reuniões", "Implementação de Mecanismos", "Cancelamento"],
+  "clients.data_inicio_ciclo": ["Dados Gerais", "Reuniões", "Implementação de Mecanismos", "Cancelamento"],
+  "clients.data_churn": ["Dados Gerais", "Cancelamento"],
+  "clients.motivo_churn": ["Cancelamento"],
   "clients.status": ["Dados Gerais", "Implementação de Mecanismos", "Atualização Financeira"],
-  "clients.segmentacao": ["Dados Gerais"],
-  "clients.engenheiro_patrimonial": ["Dados Gerais", "Reuniões", "Implementação de Mecanismos", "Atualização Financeira"],
+  "clients.segmentacao": ["Dados Gerais", "Cancelamento"],
+  "clients.engenheiro_patrimonial": ["Dados Gerais", "Reuniões", "Implementação de Mecanismos", "Atualização Financeira", "Cancelamento"],
   "client_mecanismos.id": ["Implementação de Mecanismos"],
   "client_mecanismos.client_id": ["Implementação de Mecanismos"],
   "client_mecanismos.mecanismo_id": ["Implementação de Mecanismos"],
@@ -219,47 +249,58 @@ const FIELD_USED_IN = {
   "mecanismos.mercado": ["Implementação de Mecanismos"],
   "mecanismos.programa": ["Implementação de Mecanismos"],
   "mecanismos.status": ["Implementação de Mecanismos"],
-  "cancellations.client_id": ["Dados Gerais"],
-  "cancellations.distrato_assinado_at": ["Dados Gerais"],
-  "cancellations.data_pedido": ["Dados Gerais"],
-  "cancellations.intencao_registrada_at": ["Dados Gerais"],
-  "cancellations.archived_at": ["Dados Gerais"],
+  "user_mechanisms.id": ["Implementação de Mecanismos", "App Pharus"],
+  "user_mechanisms.user_id": ["Implementação de Mecanismos", "App Pharus"],
+  "user_mechanisms.mechanism_id": ["Implementação de Mecanismos", "App Pharus"],
+  "user_mechanisms.status": ["Implementação de Mecanismos", "App Pharus"],
+  "user_mechanisms.created_at": ["Implementação de Mecanismos", "App Pharus"],
+  "mechanisms.id": ["Implementação de Mecanismos", "App Pharus"],
+  "mechanisms.data": ["Implementação de Mecanismos", "App Pharus"],
+  "mechanisms.created_at": ["Implementação de Mecanismos", "App Pharus"],
+  "mechanisms.updated_at": ["Implementação de Mecanismos", "App Pharus"],
+  "cancellations.client_id": ["Dados Gerais", "Cancelamento"],
+  "cancellations.motivo": ["Cancelamento"],
+  "cancellations.motivo_categoria": ["Cancelamento"],
+  "cancellations.distrato_assinado_at": ["Dados Gerais", "Cancelamento"],
+  "cancellations.data_pedido": ["Dados Gerais", "Cancelamento"],
+  "cancellations.intencao_registrada_at": ["Dados Gerais", "Cancelamento"],
+  "cancellations.archived_at": ["Dados Gerais", "Cancelamento"],
   "cancellations.churn_efetivado_at": ["Dados Gerais"],
-  "cancellations.updated_at": ["Dados Gerais"],
-  "cancellations.created_at": ["Dados Gerais"],
+  "cancellations.updated_at": ["Dados Gerais", "Cancelamento"],
+  "cancellations.created_at": ["Dados Gerais", "Cancelamento"],
   "vw_info_cliente.id_cliente": ["Dados Gerais"],
   "vw_info_cliente.data_assinatura_contrato": ["Dados Gerais"],
-  "client_financial_data.client_id": ["Dados Gerais", "Atualização Financeira"],
-  "client_financial_data.created_at": ["Atualização Financeira"],
-  "client_financial_data.updated_at": ["Dados Gerais", "Atualização Financeira"],
-  "client_financial_data.reserva_liquidez": ["Dados Gerais", "Atualização Financeira", "Segmentação por capacidade financeira"],
-  "client_financial_data.valor_imoveis_quitados": ["Segmentação por capacidade financeira"],
-  "client_financial_data.ultimo_aporte": ["Dados Gerais", "Atualização Financeira", "Segmentação por capacidade financeira"],
-  "client_financial_data.ultima_renda_mensal": ["Dados Gerais", "Atualização Financeira", "Segmentação por capacidade financeira"],
+  "client_financial_data.client_id": ["Dados Gerais", "Atualização Financeira", "Cancelamento"],
+  "client_financial_data.created_at": ["Atualização Financeira", "Cancelamento"],
+  "client_financial_data.updated_at": ["Dados Gerais", "Atualização Financeira", "Cancelamento"],
+  "client_financial_data.reserva_liquidez": ["Dados Gerais", "Atualização Financeira", "Segmentação por capacidade financeira", "Cancelamento"],
+  "client_financial_data.valor_imoveis_quitados": ["Segmentação por capacidade financeira", "Cancelamento"],
+  "client_financial_data.ultimo_aporte": ["Dados Gerais", "Atualização Financeira", "Segmentação por capacidade financeira", "Cancelamento"],
+  "client_financial_data.ultima_renda_mensal": ["Dados Gerais", "Atualização Financeira", "Segmentação por capacidade financeira", "Cancelamento"],
   "client_financial_data.possui_imovel": ["Dados Gerais", "Atualização Financeira"],
   "client_financial_data.possui_carro": ["Dados Gerais", "Atualização Financeira"],
   "client_financial_data.possui_consorcio": ["Dados Gerais", "Atualização Financeira"],
-  "client_financial_data.cheque_especial": ["Segmentação por capacidade financeira"],
-  "client_financial_data.parcelamento_cartao": ["Segmentação por capacidade financeira"],
-  "client_financial_data.credito_pessoal": ["Segmentação por capacidade financeira"],
-  "client_financial_data.credito_consignado": ["Segmentação por capacidade financeira"],
-  "client_meetings.id": ["Reuniões"],
-  "client_meetings.client_id": ["Reuniões"],
-  "client_meetings.calendly_event_uri": ["Reuniões"],
-  "client_meetings.event_name": ["Reuniões"],
-  "client_meetings.start_time": ["Reuniões"],
+  "client_financial_data.cheque_especial": ["Segmentação por capacidade financeira", "Cancelamento"],
+  "client_financial_data.parcelamento_cartao": ["Segmentação por capacidade financeira", "Cancelamento"],
+  "client_financial_data.credito_pessoal": ["Segmentação por capacidade financeira", "Cancelamento"],
+  "client_financial_data.credito_consignado": ["Segmentação por capacidade financeira", "Cancelamento"],
+  "client_meetings.id": ["Reuniões", "Cancelamento"],
+  "client_meetings.client_id": ["Reuniões", "Cancelamento"],
+  "client_meetings.calendly_event_uri": ["Reuniões", "Cancelamento"],
+  "client_meetings.event_name": ["Reuniões", "Cancelamento"],
+  "client_meetings.start_time": ["Reuniões", "Cancelamento"],
   "client_meetings.end_time": ["Reuniões"],
   "client_meetings.host_email": ["Reuniões"],
   "client_meetings.manually_linked": ["Reuniões"],
-  "manual_meetings.id": ["Reuniões"],
-  "manual_meetings.client_id": ["Reuniões"],
-  "manual_meetings.title": ["Reuniões"],
-  "manual_meetings.start_time": ["Reuniões"],
+  "manual_meetings.id": ["Reuniões", "Cancelamento"],
+  "manual_meetings.client_id": ["Reuniões", "Cancelamento"],
+  "manual_meetings.title": ["Reuniões", "Cancelamento"],
+  "manual_meetings.start_time": ["Reuniões", "Cancelamento"],
   "manual_meetings.end_time": ["Reuniões"],
-  "manual_meetings.google_event_id": ["Reuniões"],
+  "manual_meetings.google_event_id": ["Reuniões", "Cancelamento"],
   "manual_meetings.recurrence_group_id": ["Reuniões"],
-  "meeting_attendance.calendly_event_uri": ["Reuniões"],
-  "meeting_attendance.status": ["Reuniões"],
+  "meeting_attendance.calendly_event_uri": ["Reuniões", "Cancelamento"],
+  "meeting_attendance.status": ["Reuniões", "Cancelamento"],
   "meeting_attendance.remarcado": ["Reuniões"],
   "meeting_attendance.link_gravacao": ["Reuniões"],
   "meeting_attendance.created_at": ["Reuniões"],
@@ -267,18 +308,23 @@ const FIELD_USED_IN = {
   "client_implementation_meeting_date.client_id": ["Reuniões"],
   "client_implementation_meeting_date.meeting_date": ["Reuniões"],
   "client_implementation_meeting_date.source": ["Reuniões"],
-  "demands.id": ["Atendimento"],
-  "demands.client_id": ["Atendimento"],
-  "demands.title": ["Atendimento"],
-  "demands.type": ["Atendimento"],
-  "demands.priority": ["Atendimento"],
-  "demands.status": ["Atendimento"],
-  "demands.requested_by_client": ["Atendimento"],
-  "demands.assigned_to": ["Atendimento"],
-  "demands.resolved_at": ["Atendimento"],
-  "demands.resolved_by": ["Atendimento"],
-  "demands.created_at": ["Atendimento"],
-  "demands.updated_at": ["Atendimento"],
+  "acionamentos.id": ["Atendimento"],
+  "acionamentos.nome_solicitante": ["Atendimento"],
+  "acionamentos.prioridade": ["Atendimento"],
+  "acionamentos.tipo_solicitacao": ["Atendimento"],
+  "acionamentos.area_setor": ["Atendimento"],
+  "acionamentos.titulo": ["Atendimento"],
+  "acionamentos.descricao": ["Atendimento"],
+  "acionamentos.email_cliente": ["Atendimento"],
+  "acionamentos.data_abertura": ["Atendimento"],
+  "acionamentos.status": ["Atendimento"],
+  "acionamentos.origem": ["Atendimento"],
+  "acionamentos.client_id": ["Atendimento"],
+  "acionamentos.client_name": ["Atendimento"],
+  "acionamentos.client_found": ["Atendimento"],
+  "acionamentos.resolved_at": ["Atendimento"],
+  "acionamentos.created_at": ["Atendimento"],
+  "acionamentos.updated_at": ["Atendimento"],
 };
 
 const TABLE_COUNT_SELECT = {
@@ -423,10 +469,87 @@ function clientsStatusConsistency(rows) {
 function assertUniqueFields(fields) {
   const seen = new Set();
   for (const [, table, column] of fields) {
-    const key = `public.${table}.${column}`;
+    const key = `${table}.${column}`;
     if (seen.has(key)) throw new Error(`Campo duplicado na qualidade: ${key}`);
     seen.add(key);
   }
+}
+
+function isFilledQualityValue(value) {
+  if (value == null) return false;
+  if (typeof value === "boolean") return true;
+  if (typeof value === "number") return Number.isFinite(value);
+  const text = String(value).trim();
+  return text !== "" && text !== "Não informado";
+}
+
+function buildAcionamentosQualityFromSupport(payload) {
+  const tickets = Array.isArray(payload?.tickets) ? payload.tickets : [];
+  const totalRows = tickets.length;
+  const fieldGetters = {
+    id: (t) => t.ticketId,
+    nome_solicitante: (t) => (t.requester === "Não informado" ? null : t.requester),
+    prioridade: (t) => (t.priority === "Não informado" ? null : t.priorityRaw || t.priority),
+    tipo_solicitacao: (t) => (t.type === "Não informado" ? null : t.type),
+    area_setor: (t) => (t.area === "Não informado" ? null : t.area),
+    titulo: (t) => (t.title === "Não informado" ? null : t.title),
+    descricao: (t) => t.description,
+    email_cliente: (t) => t.clientEmail,
+    data_abertura: (t) => t.openedAt,
+    status: (t) => t.statusRaw || t.status,
+    origem: (t) => (t.origin === "Não informado" ? null : t.origin),
+    client_id: (t) => t.clientId,
+    client_name: (t) => (t.clientName === "Não informado" ? null : t.clientName),
+    client_found: (t) => t.clientFound,
+    resolved_at: (t) => t.resolvedAt,
+    created_at: (t) => t.createdAt,
+    updated_at: (t) => t.updatedAt,
+  };
+  return ACIONAMENTOS_QUALITY_FIELDS.map(([domain, table, column]) => {
+    const getter = fieldGetters[column];
+    const filled = getter ? tickets.filter((t) => isFilledQualityValue(getter(t))).length : 0;
+    const missingRows = Math.max(0, totalRows - filled);
+    const key = `${table}.${column}`;
+    const item = {
+      domain,
+      table,
+      column,
+      schema: "research",
+      totalRows,
+      missingRows,
+      sourceNote: "research.acionamentos (Business Data)",
+    };
+    const description = FIELD_DESCRIPTIONS[key];
+    if (description) item.description = description;
+    const usedIn = FIELD_USED_IN[key];
+    if (usedIn?.length) item.usedIn = usedIn;
+    return item;
+  });
+}
+
+function buildPharusQualityFromPayload(payload) {
+  const coverage = Array.isArray(payload?.quality?.fieldCoverage) ? payload.quality.fieldCoverage : [];
+  const schema = payload?.source?.schema || "public";
+  return coverage.map((row) => {
+    const key = `${row.table}.${row.column}`;
+    const totalRows = Number(row.totalRows) || 0;
+    const filled = Number(row.filled) || 0;
+    const item = {
+      domain: "App Pharus",
+      table: row.table,
+      column: row.column,
+      schema,
+      totalRows,
+      missingRows: Math.max(0, totalRows - filled),
+      sourceNote: "Fonte: App Pharus",
+      sourceTag: "Fonte: App Pharus",
+    };
+    const description = FIELD_DESCRIPTIONS[key];
+    if (description) item.description = description;
+    const usedIn = FIELD_USED_IN[key];
+    if (usedIn?.length) item.usedIn = usedIn;
+    return item;
+  });
 }
 
 async function fetchAllRows(table, select, order = "id.asc") {
@@ -637,8 +760,7 @@ export default async (request) => {
     if (usedIn?.length) item.usedIn = usedIn;
     return item;
   }));
-  const data = settled.filter((item) => item.status === "fulfilled").map((item) => item.value)
-    .sort((a, b) => `${a.domain}.${a.table}.${a.column}`.localeCompare(`${b.domain}.${b.table}.${b.column}`));
+  const data = settled.filter((item) => item.status === "fulfilled").map((item) => item.value);
 
   const warnings = [];
   const hardErrors = [];
@@ -652,6 +774,59 @@ export default async (request) => {
     warnings.push(warning);
     if (!warning.optional) hardErrors.push(warning.message);
   });
+
+  try {
+    const supportPayload = await computeSupportPayload();
+    data.push(...buildAcionamentosQualityFromSupport(supportPayload));
+  } catch (error) {
+    const warning = buildFieldWarning(error, { table: "acionamentos", column: null });
+    warning.reason = "Falha ao carregar research.acionamentos (Business Data) para Qualidade.";
+    warning.impact = "Cards de Atendimento na Qualidade podem ficar ausentes.";
+    warning.optional = true;
+    warning.usedIn = ["Atendimento"];
+    warnings.push(warning);
+  }
+
+  try {
+    const pharusPayload = await computePharusMechanismsPayload();
+    const pharusRows = buildPharusQualityFromPayload(pharusPayload);
+    if (pharusRows.length) data.push(...pharusRows);
+    if (pharusPayload?.source?.status === "failed") {
+      warnings.push({
+        table: "user_mechanisms",
+        column: null,
+        reason: pharusPayload.source?.message || "Não foi possível consultar o App Pharus",
+        impact: "Indicadores App Pharus na Qualidade/Mecanismos ficam indisponíveis; BASE QV segue válida.",
+        optional: true,
+        usedIn: ["App Pharus", "Implementação de Mecanismos"],
+        message: pharusPayload.source?.message || "App Pharus indisponível",
+      });
+    } else {
+      for (const w of (pharusPayload.warnings || []).slice(0, 12)) {
+        warnings.push({
+          table: w.mechanismId ? "mechanisms" : "user_mechanisms",
+          column: null,
+          reason: w.message || w.code,
+          impact: "Fonte: App Pharus — não afeta indicadores da BASE QV.",
+          optional: true,
+          usedIn: ["App Pharus"],
+          message: w.message || w.code,
+        });
+      }
+    }
+  } catch (error) {
+    warnings.push({
+      table: "user_mechanisms",
+      column: null,
+      reason: "Falha ao carregar App Pharus para Qualidade.",
+      impact: "Cards App Pharus podem ficar ausentes; BASE QV segue válida.",
+      optional: true,
+      usedIn: ["App Pharus"],
+      message: error instanceof Error ? error.message : String(error || "falha"),
+    });
+  }
+
+  data.sort((a, b) => `${a.domain}.${a.table}.${a.column}`.localeCompare(`${b.domain}.${b.table}.${b.column}`));
 
   try {
     const consistency = clientsStatusConsistency(await fetchClientStatuses());

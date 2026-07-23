@@ -31,7 +31,7 @@ const FINANCIAL_SEGMENT_SOURCES = [
 ];
 const MEETING_ATTENDANCE_STATUS = { schema: SUPABASE, table: "meeting_attendance", column: "status" };
 const MECHANISM_STATUS = { schema: SUPABASE, table: "client_mecanismos", column: "status" };
-const DEMANDS_ID = { schema: SUPABASE, table: "demands", column: "id" };
+const ACIONAMENTOS_ID = { schema: "research", table: "acionamentos", column: "id" };
 
 function segCount(payload, label) {
   const found = (payload?.distributions?.segments || []).find((s) => s.label === label);
@@ -150,15 +150,66 @@ export const METRICS = {
   },
   total_support_tickets: {
     source: "support",
-    label: "Total de chamados",
-    sources: [DEMANDS_ID],
+    label: "Total de acionamentos",
+    sources: [ACIONAMENTOS_ID],
     value: (p) => p.summary.totalTickets,
+  },
+  open_support_tickets: {
+    source: "support",
+    label: "Acionamentos abertos",
+    sources: [{ schema: "research", table: "acionamentos", column: "status" }],
+    value: (p) => p.summary.openTickets,
+  },
+  urgent_support_tickets: {
+    source: "support",
+    label: "Acionamentos urgentes",
+    sources: [{ schema: "research", table: "acionamentos", column: "prioridade" }],
+    value: (p) => p.summary.urgentTickets,
   },
   resolved_support_tickets: {
     source: "support",
-    label: "Chamados resolvidos",
-    sources: [{ schema: SUPABASE, table: "demands", column: "resolved_at" }],
+    label: "Acionamentos resolvidos",
+    sources: [{ schema: "research", table: "acionamentos", column: "resolved_at" }],
     value: (p) => p.summary.resolvedTickets,
+  },
+  resolution_rate: {
+    source: "support",
+    label: "Taxa de resolução (%)",
+    sources: [{ schema: "research", table: "acionamentos", column: "resolved_at" }],
+    value: (p) => p.summary.resolutionRate,
+  },
+  median_resolution_time: {
+    source: "support",
+    label: "Tempo típico de resolução (h)",
+    sources: [
+      { schema: "research", table: "acionamentos", column: "data_abertura" },
+      { schema: "research", table: "acionamentos", column: "resolved_at" },
+    ],
+    value: (p) => p.summary.medianResolutionHours,
+  },
+  identified_support_clients: {
+    source: "support",
+    label: "Clientes identificados",
+    sources: [
+      { schema: "research", table: "acionamentos", column: "client_found" },
+      { schema: "research", table: "acionamentos", column: "client_id" },
+    ],
+    value: (p) => p.summary.identifiedClients,
+  },
+  unidentified_support_clients: {
+    source: "support",
+    label: "Clientes não identificados",
+    sources: [
+      { schema: "research", table: "acionamentos", column: "client_found" },
+      { schema: "research", table: "acionamentos", column: "client_id" },
+    ],
+    value: (p) => p.summary.unidentifiedClients,
+  },
+  top_support_area: {
+    source: "support",
+    label: "Área com mais acionamentos",
+    sources: [{ schema: "research", table: "acionamentos", column: "area_setor" }],
+    value: (p) => p.summary.topArea,
   },
 };
 

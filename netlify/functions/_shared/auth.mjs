@@ -1,6 +1,6 @@
 ﻿/**
- * Autenticação no projeto Auth (rckpuebaiswrxzmywllv).
- * Nunca valida tokens com o projeto BASE QV (dados).
+ * Autenticação no projeto Business Data (mesmo host do Auth Google).
+ * Tokens JWT da sessão validam neste projeto; não misturar com BASE QV (dados operacionais).
  */
 import { getAuthEnv } from "./env.mjs";
 

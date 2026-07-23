@@ -7,6 +7,8 @@ import { computeOnboardingPayload } from "../onboarding.mjs";
 import { computeMeetingsPayload } from "../meetings.mjs";
 import { computeGeneralDataPayload } from "../general-data.mjs";
 import { computeSupportPayload } from "../support.mjs";
+import { computeCancellationsPayload } from "../cancellations.mjs";
+import { computePharusMechanismsPayload } from "../pharus-mechanisms.mjs";
 
 function getByPath(obj, path) {
   if (!obj || !path) return undefined;
@@ -25,6 +27,11 @@ export const portalDomainExecutors = {
     id: "mechanisms",
     label: "Implementação de Mecanismos",
     compute: computeMechanismsPayload,
+  },
+  pharus_mechanisms: {
+    id: "pharus_mechanisms",
+    label: "App Pharus · Mecanismos sugeridos",
+    compute: computePharusMechanismsPayload,
   },
   journey: {
     id: "journey",
@@ -45,6 +52,11 @@ export const portalDomainExecutors = {
     id: "support",
     label: "Atendimento",
     compute: computeSupportPayload,
+  },
+  cancellations: {
+    id: "cancellations",
+    label: "Cancelamento",
+    compute: computeCancellationsPayload,
   },
 };
 
@@ -71,6 +83,26 @@ export const portalMetricRegistry = {
     unit: "clients",
     aggregation: "count",
     definition: "Clientes com status analítico Ativo após consolidação com cancelamentos.",
+  },
+  active_or_frozen_clients: {
+    domain: "general",
+    label: "Clientes ativos e congelados",
+    payloadPath: null,
+    countFromClients: (c) => {
+      const st = String(c.analyticalStatus || c.clientStatus || c.status || "");
+      return st === "Ativo" || st === "Congelado";
+    },
+    sampleSizePath: "summary.totalClients",
+    unit: "clients",
+    aggregation: "count",
+    definition: "Clientes com status analítico Ativo ou Congelado.",
+    aliases: [
+      "clientes ativos e congelados",
+      "ativos e congelados",
+      "ativos ou congelados",
+      "ativos mais congelados",
+      "carteira ativa e congelada",
+    ],
   },
   cancelled_clients: {
     domain: "general",
@@ -232,6 +264,23 @@ export const portalMetricRegistry = {
     definition: "Tipos do catálogo ainda não vinculados a nenhum cliente. Não é erro técnico.",
     aliases: ["tipos sem utilizacao", "tipos sem utilização", "tipos nao utilizados"],
   },
+  most_used_mechanism: {
+    domain: "mechanisms",
+    label: "Mecanismo mais utilizado",
+    payloadPath: "summary.topMechanism",
+    sampleSizePath: "summary.clientsWithMechanisms",
+    unit: "mechanism",
+    aggregation: "top",
+    definition:
+      "Mecanismo com mais clientes distintos após deduplicação client_id+mecanismo_id (BASE QV). Não confundir com mais implementado nem com sugestões do App Pharus.",
+    aliases: [
+      "mecanismo mais utilizado",
+      "mecanismo mais usado",
+      "qual mecanismo aparece em mais clientes",
+      "mecanismo com mais clientes",
+      "tipo de mecanismo mais frequente",
+    ],
+  },
   available_mechanisms: {
     domain: "mechanisms",
     label: "Vínculos cliente + mecanismo",
@@ -365,6 +414,34 @@ export const portalMetricRegistry = {
     definition: "Contagem sobre clients[] do payload de Mecanismos: inProgress === 1.",
   },
 
+  /* ---------- APP PHARUS (sugestões — não implementação) ---------- */
+  pharus_users_with_suggestions: {
+    domain: "pharus_mechanisms",
+    label: "Usuários com mecanismos sugeridos (App Pharus)",
+    payloadPath: "summary.usersWithSuggestions",
+    sampleSizePath: "summary.usersWithSuggestions",
+    unit: "users",
+    aggregation: "count",
+    definition: "Usuários distintos com sugestão em user_mechanisms no App Pharus. Não misturar com BASE QV.",
+  },
+  pharus_total_suggestions: {
+    domain: "pharus_mechanisms",
+    label: "Total de sugestões (App Pharus)",
+    payloadPath: "summary.totalSuggestions",
+    sampleSizePath: "summary.totalSuggestions",
+    unit: "suggestions",
+    aggregation: "count",
+    definition: "Registros em user_mechanisms (App Pharus). Não são implementações.",
+  },
+  pharus_top_suggested_mechanism: {
+    domain: "pharus_mechanisms",
+    label: "Mecanismo mais sugerido (App Pharus)",
+    payloadPath: "summary.topSuggestedMechanism",
+    unit: "mechanism",
+    aggregation: "top",
+    definition: "Nome do mecanismo com mais sugestões no App Pharus.",
+  },
+
   /* ---------- JOURNEY (página Jornada — distinto de Mecanismos) ---------- */
   average_days_to_first_mechanism: {
     domain: "journey",
@@ -388,6 +465,176 @@ export const portalMetricRegistry = {
     aggregation: "count",
     definition: "Clientes cujo estágio atual não está entre os estágios abertos de onboarding.",
     aliases: ["concluiram onboarding", "onboarding concluido"],
+  },
+
+  /* ---------- ATENDIMENTO (research.acionamentos) ---------- */
+  total_support_tickets: {
+    domain: "support",
+    label: "Total de acionamentos",
+    payloadPath: "summary.totalTickets",
+    sampleSizePath: "summary.totalTickets",
+    unit: "tickets",
+    aggregation: "count",
+    definition: "Contagem de acionamentos em research.acionamentos no payload de Atendimento.",
+  },
+  open_support_tickets: {
+    domain: "support",
+    label: "Acionamentos abertos",
+    payloadPath: "summary.openTickets",
+    sampleSizePath: "summary.totalTickets",
+    unit: "tickets",
+    aggregation: "count",
+    definition: "Acionamentos com status normalizado aberto (novo, aberto, pendente, em andamento) e sem resolução.",
+  },
+  urgent_support_tickets: {
+    domain: "support",
+    label: "Acionamentos urgentes",
+    payloadPath: "summary.urgentTickets",
+    sampleSizePath: "summary.totalTickets",
+    unit: "tickets",
+    aggregation: "count",
+    definition: "Acionamentos com prioridade normalizada Urgente.",
+  },
+  resolved_support_tickets: {
+    domain: "support",
+    label: "Acionamentos resolvidos",
+    payloadPath: "summary.resolvedTickets",
+    sampleSizePath: "summary.totalTickets",
+    unit: "tickets",
+    aggregation: "count",
+    definition: "Acionamentos com resolved_at ou status resolvido/concluído/fechado.",
+  },
+  resolution_rate: {
+    domain: "support",
+    label: "Taxa de resolução",
+    payloadPath: "summary.resolutionRate",
+    sampleSizePath: "summary.totalTickets",
+    unit: "percent",
+    aggregation: "rate",
+    definition: "Percentual de acionamentos resolvidos sobre o total.",
+  },
+  median_resolution_time: {
+    domain: "support",
+    label: "Tempo típico de resolução",
+    payloadPath: "summary.medianResolutionHours",
+    sampleSizePath: "summary.resolvedTickets",
+    unit: "hours",
+    aggregation: "median",
+    definition: "Mediana em horas entre abertura e resolução, somente com datas válidas.",
+  },
+  identified_support_clients: {
+    domain: "support",
+    label: "Clientes identificados",
+    payloadPath: "summary.identifiedClients",
+    sampleSizePath: "summary.totalTickets",
+    unit: "tickets",
+    aggregation: "count",
+    definition: "Acionamentos com client_found=true ou client_id preenchido.",
+  },
+  unidentified_support_clients: {
+    domain: "support",
+    label: "Clientes não identificados",
+    payloadPath: "summary.unidentifiedClients",
+    sampleSizePath: "summary.totalTickets",
+    unit: "tickets",
+    aggregation: "count",
+    definition: "Acionamentos sem vínculo confirmado (client_found=false e client_id nulo).",
+  },
+  top_support_area: {
+    domain: "support",
+    label: "Área com mais acionamentos",
+    payloadPath: "summary.topArea",
+    sampleSizePath: "summary.totalTickets",
+    unit: "label",
+    aggregation: "top",
+    definition: "Área/setor com maior volume de acionamentos no período.",
+  },
+
+  /* ---------- CANCELAMENTO (BASE QV) ---------- */
+  total_cancellations: {
+    domain: "cancellations",
+    label: "Total de cancelamentos",
+    payloadPath: "summary.totalCancellations",
+    sampleSizePath: "summary.totalCancellations",
+    unit: "clients",
+    aggregation: "count",
+    definition: "Clientes com data consolidada de cancelamento válida na BASE QV.",
+  },
+  cancellations_with_reason: {
+    domain: "cancellations",
+    label: "Cancelamentos com motivo informado",
+    payloadPath: "summary.withReason",
+    sampleSizePath: "summary.totalCancellations",
+    unit: "clients",
+    aggregation: "count",
+    definition: "Clientes cancelados com motivo preenchido.",
+  },
+  cancellations_without_reason: {
+    domain: "cancellations",
+    label: "Cancelamentos sem motivo",
+    payloadPath: "summary.withoutReason",
+    sampleSizePath: "summary.totalCancellations",
+    unit: "clients",
+    aggregation: "count",
+    definition: "Clientes cancelados sem motivo preenchido.",
+  },
+  median_days_to_cancellation: {
+    domain: "cancellations",
+    label: "Tempo típico até o cancelamento",
+    payloadPath: "summary.medianDaysToCancellation",
+    averagePath: "summary.averageDaysToCancellation",
+    sampleSizePath: "summary.staySampleSize",
+    unit: "days",
+    aggregation: "median",
+    definition: "Mediana de dias entre contratação e data consolidada de cancelamento.",
+  },
+  average_days_to_cancellation: {
+    domain: "cancellations",
+    label: "Tempo médio até o cancelamento",
+    payloadPath: "summary.averageDaysToCancellation",
+    sampleSizePath: "summary.staySampleSize",
+    unit: "days",
+    aggregation: "average",
+    definition: "Média de dias entre contratação e cancelamento.",
+  },
+  median_meetings_before_cancellation: {
+    domain: "cancellations",
+    label: "Reuniões típicas antes do cancelamento",
+    payloadPath: "summary.medianMeetingsBeforeCancellation",
+    averagePath: "summary.averageMeetingsBeforeCancellation",
+    sampleSizePath: "summary.meetingsSampleSize",
+    unit: "meetings",
+    aggregation: "median",
+    definition: "Mediana de reuniões com presença confirmada antes do cancelamento.",
+  },
+  median_days_since_financial_update_before_cancellation: {
+    domain: "cancellations",
+    label: "Dias desde a última atualização financeira antes do cancelamento",
+    payloadPath: "summary.medianDaysSinceFinancialUpdate",
+    averagePath: "summary.averageDaysSinceFinancialUpdate",
+    sampleSizePath: "summary.financialSampleSize",
+    unit: "days",
+    aggregation: "median",
+    definition: "Mediana de dias sem atualização financeira anterior ao cancelamento.",
+  },
+  median_days_without_interaction_before_cancellation: {
+    domain: "cancellations",
+    label: "Dias desde a última reunião antes do cancelamento",
+    payloadPath: "summary.medianDaysWithoutInteraction",
+    averagePath: "summary.averageDaysWithoutInteraction",
+    sampleSizePath: "summary.interactionSampleSize",
+    unit: "days",
+    aggregation: "median",
+    definition: "Interação v1: mediana de dias desde a última reunião realizada até o cancelamento.",
+  },
+  top_cancellation_reason: {
+    domain: "cancellations",
+    label: "Motivo mais comum de cancelamento",
+    payloadPath: "summary.topReason",
+    sampleSizePath: "summary.withReason",
+    unit: "label",
+    aggregation: "top",
+    definition: "Motivo com maior volume entre cancelamentos com motivo informado.",
   },
 };
 
@@ -447,6 +694,16 @@ export async function resolveMetricFromDashboard(domain, metricId, filters = {},
     clientsRows = applyDashboardClientFilters(clientsRows, filters);
   }
 
+  let ticketRows = Array.isArray(payload.tickets) ? payload.tickets : [];
+  if (hasFilters && entry.domain === "support" && ticketRows.length) {
+    ticketRows = applySupportTicketFilters(ticketRows, filters);
+  }
+
+  let cancellationRows = Array.isArray(payload.clients) ? payload.clients : [];
+  if (hasFilters && entry.domain === "cancellations" && cancellationRows.length) {
+    cancellationRows = applyCancellationClientFilters(cancellationRows, filters);
+  }
+
   let value;
   let average = entry.averagePath ? getByPath(payload, entry.averagePath) : null;
   let median = entry.medianPath ? getByPath(payload, entry.medianPath) : null;
@@ -461,6 +718,15 @@ export async function resolveMetricFromDashboard(domain, metricId, filters = {},
   } else if (typeof entry.countFromClients === "function") {
     value = clientsRows.filter(entry.countFromClients).length;
     sampleSize = clientsRows.length;
+  } else if (hasFilters && entry.domain === "support" && Array.isArray(payload.tickets)) {
+    const recomputed = recomputeSupportSummaryLikeDashboard(ticketRows);
+    value = pickFromRecomputed(recomputed, entry.payloadPath);
+    if (entry.sampleSizePath) sampleSize = pickFromRecomputed(recomputed, entry.sampleSizePath) ?? sampleSize;
+  } else if (hasFilters && entry.domain === "cancellations" && Array.isArray(payload.clients)) {
+    const recomputed = recomputeCancellationsSummaryLikeDashboard(cancellationRows);
+    value = pickFromRecomputed(recomputed, entry.payloadPath);
+    if (entry.averagePath) average = pickFromRecomputed(recomputed, entry.averagePath) ?? average;
+    if (entry.sampleSizePath) sampleSize = pickFromRecomputed(recomputed, entry.sampleSizePath) ?? sampleSize;
   } else if (hasFilters && entry.domain === "mechanisms" && Array.isArray(payload.clients)) {
     const recomputed = recomputeMechanismsSummaryLikeDashboard(clientsRows, payload);
     value = pickFromRecomputed(recomputed, entry.payloadPath);
@@ -469,6 +735,17 @@ export async function resolveMetricFromDashboard(domain, metricId, filters = {},
     if (entry.sampleSizePath) sampleSize = pickFromRecomputed(recomputed, entry.sampleSizePath) ?? sampleSize;
   } else {
     value = getByPath(payload, entry.payloadPath);
+  }
+
+  if (entry.aggregation === "top" && value && typeof value === "object" && !Array.isArray(value)) {
+    if (metricId === "most_used_mechanism") {
+      // Mantém objeto { name, clientCount, ties } — formatAnswer monta a frase.
+    } else if (value.name != null) {
+      const n = value.clientCount ?? value.count ?? value.clients;
+      value = n != null ? `${value.name} (${n})` : String(value.name);
+    } else if (value.label != null) {
+      value = String(value.label);
+    }
   }
 
   const aggregation = options.aggregation || entry.aggregation;
@@ -538,14 +815,26 @@ function applyDashboardClientFilters(clients, filters = {}) {
   return clients.filter((c) => {
     if (filters.engineer && c.engineer !== filters.engineer) return false;
     if (filters.client_status || filters.status) {
-      const want = String(filters.client_status || filters.status).toLowerCase();
+      const want = String(filters.client_status || filters.status).toLowerCase().replace(/\s+/g, "_");
       const st = String(c.clientStatus || c.analyticalStatus || "").toLowerCase();
+      const isActive = st.includes("ativ") && !st.includes("inativ");
+      const isFrozen = st.includes("congel") || st.includes("paus");
+      const isCancelled = st.includes("cancel") || st.includes("churn") || st.includes("encerr");
       if (want === "active" || want === "ativo") {
-        if (!(st.includes("ativ") && !st.includes("inativ"))) return false;
+        if (!isActive) return false;
       } else if (want === "cancelled" || want === "cancelado") {
-        if (!(st.includes("cancel") || st.includes("churn") || st.includes("encerr"))) return false;
+        if (!isCancelled) return false;
       } else if (want === "frozen" || want === "congelado") {
-        if (!(st.includes("congel") || st.includes("paus"))) return false;
+        if (!isFrozen) return false;
+      } else if (
+        want === "active_or_frozen" ||
+        want === "active_and_frozen" ||
+        want === "ativos_e_congelados" ||
+        want === "ativos_ou_congelados"
+      ) {
+        if (!(isActive || isFrozen)) return false;
+      } else if (want === "unknown" || want === "nao_informado" || want === "não_informado") {
+        if (isActive || isFrozen || isCancelled) return false;
       } else if (st !== want) return false;
     }
     if (filters.mechanism_status || filters.mechStatus) {
@@ -591,11 +880,43 @@ function recomputeMechanismsSummaryLikeDashboard(rows, fullPayload) {
   const catalog = fullPayload.catalog?.mechanisms || [];
   const catalogIds = new Set(catalog.map((m) => String(m.id)));
   const usedIds = new Set();
+  const byMechanism = new Map();
   for (const c of rows) {
     for (const m of c.mechanisms || []) {
       if (m.mechanismId && catalogIds.has(String(m.mechanismId))) usedIds.add(String(m.mechanismId));
+      const key = m.mechanismId != null ? String(m.mechanismId) : null;
+      if (!key) continue;
+      const cur = byMechanism.get(key) || {
+        id: key,
+        name: m.name || "Não informado",
+        clientCount: 0,
+      };
+      cur.clientCount += 1;
+      byMechanism.set(key, cur);
     }
   }
+  const ranked = [...byMechanism.values()].sort(
+    (a, b) => b.clientCount - a.clientCount || a.name.localeCompare(b.name, "pt-BR"),
+  );
+  const maxClients = ranked[0]?.clientCount || 0;
+  const ties = maxClients > 0
+    ? ranked.filter((item) => item.clientCount === maxClients)
+      .sort((a, b) => a.name.localeCompare(b.name, "pt-BR"))
+    : [];
+  const lead = ties[0] || null;
+  const topMechanism = lead
+    ? {
+      id: lead.id,
+      name: lead.name,
+      clientCount: lead.clientCount,
+      count: lead.clientCount,
+      ties: ties.slice(1).map((item) => ({
+        id: item.id,
+        name: item.name,
+        clientCount: item.clientCount,
+      })),
+    }
+    : null;
   return {
     clientsWithMechanisms: rows.length,
     availableMechanisms: available,
@@ -612,6 +933,7 @@ function recomputeMechanismsSummaryLikeDashboard(rows, fullPayload) {
     typesUsed: usedIds.size,
     catalogMechanisms: catalog.length,
     typesUnused: catalog.length - usedIds.size,
+    topMechanism,
   };
 }
 
@@ -635,4 +957,147 @@ function percentile(sorted, p) {
   if (lo === hi) return sorted[lo];
   const w = idx - lo;
   return sorted[lo] * (1 - w) + sorted[hi] * w;
+}
+
+function foldSupportToken(value) {
+  return String(value || "")
+    .normalize("NFD")
+    .replace(/\p{M}/gu, "")
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, " ");
+}
+
+/** Filtra tickets[] do payload de Atendimento (mesmos campos já normalizados). */
+function applySupportTicketFilters(tickets, filters = {}) {
+  return tickets.filter((t) => {
+    const areaWant = filters.area_setor || filters.area;
+    if (areaWant && areaWant !== "all") {
+      if (foldSupportToken(t.area) !== foldSupportToken(areaWant)) return false;
+    }
+    if (filters.priority && filters.priority !== "all") {
+      if (foldSupportToken(t.priority) !== foldSupportToken(filters.priority)) return false;
+    }
+    if (filters.status && filters.status !== "all") {
+      if (foldSupportToken(t.status) !== foldSupportToken(filters.status)) return false;
+    }
+    const typeWant = filters.tipo_solicitacao || filters.type;
+    if (typeWant && typeWant !== "all") {
+      if (foldSupportToken(t.type) !== foldSupportToken(typeWant)) return false;
+    }
+    if (filters.opened === "today") {
+      const d = t.openedAt ? new Date(t.openedAt) : null;
+      if (!d || Number.isNaN(d.getTime())) return false;
+      const now = new Date();
+      if (
+        d.getUTCFullYear() !== now.getUTCFullYear()
+        || d.getUTCMonth() !== now.getUTCMonth()
+        || d.getUTCDate() !== now.getUTCDate()
+      ) return false;
+    }
+    if (filters.opened === "last_month") {
+      const d = t.openedAt ? new Date(t.openedAt) : null;
+      if (!d || Number.isNaN(d.getTime())) return false;
+      const now = new Date();
+      const from = new Date(now.getTime() - 30 * 86400000);
+      if (d < from || d > now) return false;
+    }
+    return true;
+  });
+}
+
+/** Reagrega summary a partir dos tickets já calculados pelo dashboard (sem fórmula paralela). */
+function recomputeSupportSummaryLikeDashboard(rows) {
+  const totalTickets = rows.length;
+  const openTickets = rows.filter((t) => t.isOpen).length;
+  const urgentTickets = rows.filter((t) => t.priority === "Urgente").length;
+  const identifiedClients = rows.filter((t) => t.clientIdentified).length;
+  const unidentifiedClients = rows.filter((t) => !t.clientIdentified).length;
+  const resolvedTickets = rows.filter((t) => t.isResolved).length;
+  const resolutionRate = totalTickets
+    ? Math.round((resolvedTickets / totalTickets) * 1000) / 10
+    : 0;
+  const resValues = rows
+    .map((t) => t.resolutionHours)
+    .filter((h) => h != null && Number.isFinite(h) && h >= 0)
+    .sort((a, b) => a - b);
+  const medianResolutionHours = resValues.length
+    ? Math.round(percentile(resValues, 50) * 10) / 10
+    : null;
+  const areaMap = new Map();
+  for (const t of rows) {
+    if (!t.area || t.area === "Não informado") continue;
+    areaMap.set(t.area, (areaMap.get(t.area) || 0) + 1);
+  }
+  const topArea = [...areaMap.entries()]
+    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], "pt-BR"))[0]?.[0] || null;
+  return {
+    totalTickets,
+    openTickets,
+    urgentTickets,
+    identifiedClients,
+    unidentifiedClients,
+    resolvedTickets,
+    resolutionRate,
+    medianResolutionHours,
+    topArea,
+  };
+}
+
+/** Filtra clients[] do payload de Cancelamento (mesmos campos já normalizados). */
+function applyCancellationClientFilters(clients, filters = {}) {
+  return clients.filter((c) => {
+    if (filters.engineer && filters.engineer !== "all" && c.engineer !== filters.engineer) return false;
+    if (filters.segment && filters.segment !== "all" && c.segment !== filters.segment) return false;
+    if (filters.reason && filters.reason !== "all" && c.reason !== filters.reason) return false;
+    if (filters.category && filters.category !== "all" && c.category !== filters.category) return false;
+    if (filters.hasReason === "yes" && !c.hasReason) return false;
+    if (filters.hasReason === "no" && c.hasReason) return false;
+    return true;
+  });
+}
+
+function cancelRobustStats(values) {
+  const sorted = values.filter((v) => v != null && Number.isFinite(v) && v >= 0).sort((a, b) => a - b);
+  if (!sorted.length) return { median: null, mean: null, validCount: 0 };
+  const mean = Math.round((sorted.reduce((a, b) => a + b, 0) / sorted.length) * 10) / 10;
+  const median = Math.round(percentile(sorted, 50) * 10) / 10;
+  return { median, mean, validCount: sorted.length };
+}
+
+/** Reagrega summary a partir dos clients já calculados pelo dashboard Cancelamento. */
+function recomputeCancellationsSummaryLikeDashboard(rows) {
+  const totalCancellations = rows.length;
+  const withReason = rows.filter((r) => r.hasReason).length;
+  const withoutReason = totalCancellations - withReason;
+  const stayStats = cancelRobustStats(rows.map((r) => r.daysToCancellation));
+  const meetingStats = cancelRobustStats(rows.map((r) => r.meetingsBeforeCancellation));
+  const financialStats = cancelRobustStats(rows.map((r) => r.daysSinceFinancialUpdate).filter((d) => d != null));
+  const interactionStats = cancelRobustStats(rows.map((r) => r.daysWithoutInteraction).filter((d) => d != null));
+  const reasonMap = new Map();
+  for (const r of rows) {
+    if (!r.hasReason || !r.reason) continue;
+    reasonMap.set(r.reason, (reasonMap.get(r.reason) || 0) + 1);
+  }
+  const topReason = [...reasonMap.entries()]
+    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], "pt-BR"))[0]?.[0] || null;
+  return {
+    totalCancellations,
+    withReason,
+    withoutReason,
+    medianDaysToCancellation: stayStats.median,
+    averageDaysToCancellation: stayStats.mean,
+    staySampleSize: stayStats.validCount,
+    medianMeetingsBeforeCancellation: meetingStats.median,
+    averageMeetingsBeforeCancellation: meetingStats.mean,
+    meetingsSampleSize: meetingStats.validCount,
+    medianDaysSinceFinancialUpdate: financialStats.median,
+    averageDaysSinceFinancialUpdate: financialStats.mean,
+    financialSampleSize: financialStats.validCount,
+    medianDaysWithoutInteraction: interactionStats.median,
+    averageDaysWithoutInteraction: interactionStats.mean,
+    interactionSampleSize: interactionStats.validCount,
+    insufficientDataClients: rows.filter((r) => r.insufficientData).length,
+    topReason,
+  };
 }

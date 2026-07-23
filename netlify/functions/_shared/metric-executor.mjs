@@ -200,6 +200,21 @@ export function verbalizeMetricResult(queryPlan, result) {
   }
 
   const label = result.label || "indicador";
+  if (result.metric === "most_used_mechanism") {
+    const v = result.value;
+    if (v && typeof v === "object" && v.name) {
+      const n = Number(v.clientCount ?? v.count ?? 0);
+      return `O mecanismo mais utilizado é ${v.name}, presente em ${fmt(n)} clientes.`;
+    }
+    if (typeof v === "string" && v.trim()) {
+      return `O mecanismo mais utilizado é ${v}.`;
+    }
+    return "Não há mecanismo calculável no recorte atual.";
+  }
+  if (result.domain === "pharus_mechanisms") {
+    const raw = typeof result.value === "object" ? JSON.stringify(result.value) : withUnit(result.value);
+    return `No App Pharus, ${String(label).toLowerCase()}: ${raw}.`;
+  }
   if (unit === "clients") {
     const name = result.metric === "total_clients" || /^total de clientes$/i.test(label)
       ? "clientes"

@@ -79,25 +79,24 @@
     #view-mechanisms .summary.kpis-mech-3{grid-template-columns:repeat(3,1fr)}
     #view-mechanisms .summary.kpis-mech-4{grid-template-columns:repeat(4,1fr)}
     #view-mechanisms .summary.kpis-mech-2{grid-template-columns:repeat(2,1fr)}
-    #view-mechanisms .unused-types-box{
-      margin:0 0 18px;
-      padding:14px 16px 14px 42px;
-      border:1px solid rgba(246,189,75,.45);
-      border-radius:var(--radius-md);
-      background:rgba(246,189,75,.1);
-      position:relative;
+    /* Cancelamento: destaque laranja nos big numbers principais */
+    #view-cancellations .summary.kpis-cancel-primary{grid-template-columns:repeat(3,1fr);margin-bottom:12px}
+    #view-cancellations .summary.kpis-cancel-secondary{grid-template-columns:repeat(3,1fr)}
+    #view-cancellations .summary.kpis-cancel-quality{grid-template-columns:repeat(2,1fr);margin-top:12px}
+    #view-cancellations .metric.kpi-primary{
+      border-color:rgba(244,121,32,.45);
+      border-top:2px solid var(--color-primary);
+      background:linear-gradient(165deg,rgba(244,121,32,.14),var(--color-surface) 58%);
+      box-shadow:0 0 0 1px rgba(244,121,32,.12),0 10px 28px rgba(244,121,32,.12),var(--shadow-card);
     }
-    #view-mechanisms .unused-types-box::before{
-      content:"!";
-      position:absolute;left:14px;top:14px;
-      width:20px;height:20px;border-radius:50%;
-      display:grid;place-items:center;
-      font-size:12px;font-weight:800;color:#1a1408;
-      background:var(--color-warning);
-    }
-    #view-mechanisms .unused-types-box h3{margin:0 0 6px;font-size:14px;color:#ffe0a1}
-    #view-mechanisms .unused-types-box p{margin:0 0 10px;font-size:12px;color:#f0d48a;line-height:1.45}
-    #view-mechanisms .unused-types-box ul{margin:0;padding-left:18px;font-size:13px;line-height:1.6;color:var(--color-text)}
+    #view-cancellations .metric.kpi-primary .metric-label{color:#f0b07a}
+    #view-cancellations .metric.kpi-primary .metric-value{color:#ffc796}
+    #view-cancellations .metric.kpi-secondary .metric-value{font-size:26px}
+    #view-cancellations .charts.cancel-charts{grid-template-columns:repeat(2,minmax(0,1fr))}
+    #view-cancellations .chart-card.cancel-span-all{grid-column:1/-1}
+    #view-mechanisms .unused-types-box.portal-alert::before{display:none}
+    #view-mechanisms .unused-types-box.portal-alert h3{margin:0 0 4px;font-size:15px;color:#ffd37b}
+    #view-mechanisms .unused-types-box.portal-alert p{margin:0 0 6px;font-size:13px;color:var(--color-text);line-height:1.5}
     #view-mechanisms .type-stat-row .bar-fill-clients{background:rgba(244,121,32,.8)}
     #view-mechanisms .type-stat-row .bar-fill-impl{background:rgba(66,201,133,.8)}
     #view-mechanisms .help{
@@ -182,6 +181,104 @@
     .alert-banner .alert-meta span{color:var(--color-text-muted)}
     .alert-banner .alert-meta b{color:var(--color-text)}
     @media (max-width:640px){.alert-banner{flex-direction:column}}
+    /* Portal alerts dismissíveis (padrão reutilizável) */
+    .portal-alert{
+      position:relative;
+      display:flex;
+      gap:14px;
+      align-items:flex-start;
+      margin:0 0 18px;
+      padding:16px 44px 16px 16px;
+      border-radius:12px;
+      border:1px solid rgba(246,189,75,.35);
+      background:rgba(246,189,75,.10);
+      box-shadow:0 8px 22px rgba(0,0,0,.16);
+    }
+    /* display:flex acima sobrescreve [hidden] do UA — sem isto o banner amarelo vazio permanece. */
+    .portal-alert[hidden],
+    .portal-alert.portal-alert--dismissed{
+      display:none!important;
+      margin:0!important;
+      padding:0!important;
+      border:none!important;
+      box-shadow:none!important;
+      max-height:0!important;
+      overflow:hidden!important;
+      pointer-events:none!important;
+    }
+    .portal-alert--warning{border-color:rgba(246,189,75,.4);background:rgba(246,189,75,.1)}
+    .portal-alert--info{border-color:rgba(244,121,32,.35);background:rgba(244,121,32,.08)}
+    .portal-alert--success{border-color:rgba(66,201,133,.35);background:rgba(66,201,133,.08)}
+    .portal-alert--error{border-color:rgba(239,107,115,.4);background:rgba(239,107,115,.1)}
+    .portal-alert__icon{flex-shrink:0;font-size:20px;line-height:1.2;color:#f6bd4b;margin-top:1px}
+    .portal-alert--info .portal-alert__icon{color:#f0b07a}
+    .portal-alert--success .portal-alert__icon{color:#7dd9a8}
+    .portal-alert--error .portal-alert__icon{color:#ff9399}
+    .portal-alert__content{flex:1;min-width:0}
+    .portal-alert__content h3{margin:0 0 4px;font-size:15px;color:#ffd37b;padding-right:4px}
+    .portal-alert--info .portal-alert__content h3{color:#ffc796}
+    .portal-alert__content p{margin:0 0 6px;font-size:13px;color:var(--color-text);line-height:1.5}
+    .portal-alert__content p:last-child{margin-bottom:0}
+    .portal-alert__note{font-size:12px;color:var(--color-text-muted)}
+    .portal-alert__meta{display:flex;flex-wrap:wrap;gap:14px;margin-top:10px;font-size:12px}
+    .portal-alert__meta span{color:var(--color-text-muted)}
+    .portal-alert__meta b{color:var(--color-text)}
+    .portal-alert__body-extra{margin-top:8px}
+    .portal-alert__body-extra ul{margin:0;padding-left:18px;font-size:13px;line-height:1.6;color:var(--color-text)}
+    .portal-alert__expand{
+      margin-top:10px;padding:6px 10px;font-size:12px;cursor:pointer;
+      border-radius:8px;border:1px solid rgba(246,189,75,.35);
+      background:rgba(0,0,0,.15);color:var(--color-text);font-family:inherit;
+    }
+    .portal-alert__expand:hover{border-color:rgba(244,121,32,.4);color:var(--color-primary)}
+    .portal-alert__close{
+      position:absolute;top:10px;right:10px;z-index:20;
+      width:36px;height:36px;padding:0;
+      display:inline-grid;place-items:center;
+      border-radius:8px;border:1px solid transparent;
+      background:rgba(0,0,0,.18);color:var(--color-text-muted);
+      font-size:18px;line-height:1;cursor:pointer;
+      font-family:inherit;
+      pointer-events:auto;
+      transition:color .15s ease,background .15s ease,border-color .15s ease;
+    }
+    .portal-alert__close:hover{color:var(--color-primary);background:rgba(244,121,32,.12);border-color:rgba(244,121,32,.3)}
+    .portal-alert__close:focus-visible{outline:2px solid var(--color-primary);outline-offset:2px;color:var(--color-primary)}
+    .portal-alert.portal-alert--closing,
+    .portal-alert.is-dismissing{
+      overflow:hidden;
+      opacity:0;
+      transform:translateY(-4px);
+      margin-bottom:0!important;
+      padding-top:0!important;
+      padding-bottom:0!important;
+      border-width:0;
+      max-height:0!important;
+      pointer-events:none;
+      transition:opacity .18s ease,transform .18s ease,max-height .18s ease,margin .18s ease,padding .18s ease,border .18s ease;
+    }
+    @media (prefers-reduced-motion:reduce){
+      .portal-alert.portal-alert--closing,
+      .portal-alert.is-dismissing{transition:none;transform:none}
+    }
+    @media (max-width:640px){
+      .portal-alert{flex-direction:column;padding-right:44px}
+    }
+    .mech-explainer.portal-alert{background:rgba(244,121,32,.08);border-color:rgba(244,121,32,.35)}
+    .mech-explainer.portal-alert p{color:var(--color-text-muted)}
+    .mech-explainer.portal-alert .mech-unit-defs{margin-top:10px}
+    .source-badge{
+      display:inline-flex;align-items:center;gap:6px;
+      padding:6px 10px;border-radius:999px;font-size:11px;font-weight:600;
+      letter-spacing:.02em;white-space:nowrap;
+      color:#ffd37b;background:rgba(246,189,75,.12);border:1px solid rgba(246,189,75,.35);
+    }
+    .pharus-block{
+      margin-top:28px;padding-top:22px;
+      border-top:1px solid var(--color-border);
+    }
+    .pharus-block .section-head{align-items:flex-start;gap:12px}
+    .pharus-block .section-head .source-badge{flex-shrink:0;margin-top:4px}
     .missing{display:flex;justify-content:space-between;align-items:end;margin:20px 0 12px}.missing strong{font-size:27px}.missing span{font-size:13px;color:var(--color-text-muted)}
     .percent{text-align:right}.percent b{display:block;font-size:20px;color:var(--color-primary)}
     .track{height:7px;background:#303030;border-radius:999px;overflow:hidden}.track div{height:100%;border-radius:999px;background:linear-gradient(90deg,var(--color-primary),#ff9b50)}
@@ -213,6 +310,8 @@
     .warnings{margin-top:16px}.warnings li{margin:6px 0;color:#ffb4b8;font-size:12px}
     .engineers-toggle{margin-top:10px}
     .summary.kpis-8{grid-template-columns:repeat(4,1fr)}
+    #view-support .summary.kpis-support-6{grid-template-columns:repeat(3,1fr)}
+    #view-support .charts{grid-template-columns:repeat(2,minmax(0,1fr))}
     .filters.meetings,.filters.mechanisms,.filters.financial{grid-template-columns:repeat(4,minmax(0,1fr))}
     .row-ok td:first-child{box-shadow:inset 3px 0 0 var(--color-success)}
     .row-warn td:first-child{box-shadow:inset 3px 0 0 var(--color-warning)}
@@ -280,8 +379,8 @@
     @media(max-width:780px){.acquisition-summary{grid-template-columns:1fr 1fr}.acquisition-chart-grid[data-cols="6"]{min-width:420px}}
     .timeline{display:grid;gap:10px;margin-top:12px}.timeline-item{border:1px solid var(--color-border);border-radius:10px;padding:12px;background:#1a1a1a}.timeline-item .meta{font-size:11px;color:var(--color-text-subtle);margin-top:4px}
     .indicator-matrix{display:grid;gap:12px}.indicator-row{display:grid;grid-template-columns:minmax(210px,1.15fr) 132px minmax(150px,.7fr) minmax(260px,1.55fr) 120px;gap:0;border:1px solid var(--color-border);border-radius:var(--radius-md);overflow:hidden;background:#202020}.indicator-cell{padding:13px 14px;border-right:1px solid var(--color-border);font-size:13px}.indicator-cell:last-child{border-right:0}.indicator-head{background:#2b2f34;color:var(--color-text);font-weight:700;text-transform:uppercase;letter-spacing:.04em}.indicator-status{display:flex;align-items:center;font-weight:700}.indicator-status.sim{background:rgba(66,201,133,.14);color:#c7f5dd}.indicator-status.no{background:rgba(239,107,115,.16);color:#ffb9bd}.indicator-status.base{background:rgba(246,189,75,.13);color:#ffe0a1}.indicator-coverage{font-weight:700;color:var(--color-text)}.indicator-coverage span{display:block;margin-top:2px;color:var(--color-text-muted);font-size:11px;font-weight:500}.viability-stack{grid-template-columns:1fr}
-    @media(max-width:1100px){.cards,.charts{grid-template-columns:1fr}.summary,.summary.kpis-8,#view-mechanisms .summary.kpis-mech-3,#view-mechanisms .summary.kpis-mech-4,#view-mechanisms .summary.kpis-mech-2{grid-template-columns:repeat(2,1fr)}.filters,.filters.general,.filters.meetings,.filters.mechanisms,.filters.financial{grid-template-columns:1fr 1fr}.month-row{grid-template-columns:64px minmax(100px,1fr) minmax(160px,1fr)}.month-val{white-space:normal}}
-    @media(max-width:780px){.layout{grid-template-columns:1fr}.sidebar{display:none}main{padding:20px}.page-header{display:block}.status{text-align:left;margin-top:12px}.filters,.filters.general,.filters.mechanisms,.filters.financial,.summary,.cards,.charts,#view-mechanisms .summary.kpis-mech-3,#view-mechanisms .summary.kpis-mech-4,#view-mechanisms .summary.kpis-mech-2{grid-template-columns:1fr}.topbar{padding:0 20px}.status-actions{align-items:flex-start;justify-content:space-between}.hbar{grid-template-columns:minmax(108px,36%) minmax(48px,1fr) minmax(96px,104px);gap:8px;margin:9px 0}.hbar-val{font-size:11px}.month-row{grid-template-columns:1fr;gap:8px}.month-val{text-align:left}.month-count{margin-left:0;width:100%}#view-mechanisms .help[data-tip]::after{left:0;transform:none;width:min(240px,78vw)}}
+    @media(max-width:1100px){.cards,.charts{grid-template-columns:1fr}.summary,.summary.kpis-8,#view-support .summary.kpis-support-6,#view-mechanisms .summary.kpis-mech-3,#view-mechanisms .summary.kpis-mech-4,#view-mechanisms .summary.kpis-mech-2,#view-cancellations .summary.kpis-cancel-primary,#view-cancellations .summary.kpis-cancel-secondary,#view-cancellations .summary.kpis-cancel-quality{grid-template-columns:repeat(2,1fr)}.filters,.filters.general,.filters.meetings,.filters.mechanisms,.filters.financial{grid-template-columns:1fr 1fr}.month-row{grid-template-columns:64px minmax(100px,1fr) minmax(160px,1fr)}.month-val{white-space:normal}}
+    @media(max-width:780px){.layout{grid-template-columns:1fr}.sidebar{display:none}main{padding:20px}.page-header{display:block}.status{text-align:left;margin-top:12px}.filters,.filters.general,.filters.mechanisms,.filters.financial,.summary,.cards,.charts,#view-support .summary.kpis-support-6,#view-mechanisms .summary.kpis-mech-3,#view-mechanisms .summary.kpis-mech-4,#view-mechanisms .summary.kpis-mech-2,#view-cancellations .summary.kpis-cancel-primary,#view-cancellations .summary.kpis-cancel-secondary,#view-cancellations .summary.kpis-cancel-quality{grid-template-columns:1fr}.topbar{padding:0 20px}.status-actions{align-items:flex-start;justify-content:space-between}.hbar{grid-template-columns:minmax(108px,36%) minmax(48px,1fr) minmax(96px,104px);gap:8px;margin:9px 0}.hbar-val{font-size:11px}.month-row{grid-template-columns:1fr;gap:8px}.month-val{text-align:left}.month-count{margin-left:0;width:100%}#view-mechanisms .help[data-tip]::after{left:0;transform:none;width:min(240px,78vw)}}
     #portal-root[hidden],#auth-root[hidden]{display:none!important}
     /* Auth Guard: portal só existe visualmente quando autenticado */
     body:not([data-auth="authenticated"]) #portal-root{display:none!important;visibility:hidden!important;pointer-events:none!important}
@@ -465,6 +564,7 @@
         <button type="button" data-nav="financial"><span class="nav-icon">$</span>Atualização Financeira</button>
         <button type="button" data-nav="platform"><span class="nav-icon">◫</span>Uso da Plataforma</button>
         <button type="button" data-nav="support"><span class="nav-icon">☎</span>Atendimento</button>
+        <button type="button" data-nav="cancellations"><span class="nav-icon">✕</span>Cancelamento</button>
         <button type="button" data-nav="quality"><span class="nav-icon">▦</span>Qualidade</button>
       </nav>
     </aside>
@@ -491,8 +591,9 @@
                 <select id="gStatusFilter">
                   <option value="all">Todos</option>
                   <option value="active">Ativos</option>
-                  <option value="cancelled">Cancelados</option>
+                  <option value="active_or_frozen">Ativos e congelados</option>
                   <option value="frozen">Congelados</option>
+                  <option value="cancelled">Cancelados</option>
                   <option value="unknown">Não informados</option>
                 </select>
                 <button type="button" class="chip-btn" id="gActiveOnly" aria-pressed="false">
@@ -523,6 +624,8 @@
             <label>Faixa de permanência<select id="gStayRange"><option value="all">Todas</option></select></label>
             <button class="btn" id="gClear" type="button">Limpar filtros</button>
           </section>
+
+          <div class="portal-alert portal-alert--warning" id="gDataAlert" data-alert-id="general-status-consistency" hidden role="status"></div>
 
           <section class="summary" id="gKpis1"></section>
           <section class="summary" id="gKpis2"></section>
@@ -617,6 +720,7 @@
           </section>
 
           <section class="summary" id="pKpis"></section>
+          <div class="portal-alert portal-alert--warning" id="pSourceAlert" data-alert-id="plan-source-warning" hidden role="status"></div>
 
           <div class="section-head">
             <div><h2>Indicadores do plano</h2><p>Resultados complementares: QV360 + App Pharus.</p></div>
@@ -683,6 +787,7 @@
           </section>
 
           <section class="summary" id="jKpis"></section>
+          <div class="portal-alert portal-alert--warning" id="jSourceAlert" data-alert-id="journey-source-warning" hidden role="status"></div>
 
           <div class="section-head">
             <div><h2>Indicadores de prazo e conclusão</h2><p>Médias e distribuições calculadas a partir da BASE QV.</p></div>
@@ -786,6 +891,7 @@
           </section>
 
           <section class="summary kpis-8" id="mKpis"></section>
+          <div class="portal-alert portal-alert--warning" id="mSourceAlert" data-alert-id="meetings-source-warning" hidden role="status"></div>
 
           <div class="section-head"><div><h2>Distribuições</h2><p>Leitura da agenda e da recorrência.</p></div></div>
           <section class="charts">
@@ -874,8 +980,9 @@
                 <select id="kClientStatus">
                   <option value="all">Todos</option>
                   <option value="active">Ativos</option>
-                  <option value="cancelled">Cancelados</option>
+                  <option value="active_or_frozen">Ativos e congelados</option>
                   <option value="frozen">Congelados</option>
+                  <option value="cancelled">Cancelados</option>
                   <option value="unknown">Não informados</option>
                 </select>
                 <button type="button" class="chip-btn" id="kActiveOnly" aria-pressed="false">
@@ -923,22 +1030,28 @@
             <button class="btn" id="kClear" type="button">Limpar filtros</button>
           </section>
 
-          <aside class="mech-explainer" aria-label="Unidades dos indicadores">
-            <p>Os indicadores distinguem três unidades: <strong>cliente</strong> (pessoa/conta distinta), <strong>tipo de mecanismo</strong> (item do catálogo) e <strong>vínculo cliente + mecanismo</strong> (combinação única após deduplicação). Um cliente com 3 mecanismos gera 3 vínculos.</p>
-            <div class="mech-unit-defs">
-              <span><b>Cliente</b> — pessoa/conta distinta na carteira</span>
-              <span><b>Tipo de mecanismo</b> — item cadastrado em <code>mecanismos</code></span>
-              <span><b>Vínculo</b> — combinação única cliente + mecanismo <span class="help" tabindex="0" data-tip="Após deduplicação por client_id + mecanismo_id. O percentual implementado usa vínculos como denominador, nunca a contagem de tipos.">?</span></span>
+          <aside class="portal-alert portal-alert--info mech-explainer" id="kUnitsExplainer" data-alert-id="mechanisms-units-explainer" role="status" aria-label="Unidades dos indicadores">
+            <div class="portal-alert__icon" aria-hidden="true">ℹ</div>
+            <div class="portal-alert__content">
+              <h3>Unidades dos indicadores</h3>
+              <p>Os indicadores distinguem três unidades: <strong>cliente</strong> (pessoa/conta distinta), <strong>tipo de mecanismo</strong> (item do catálogo) e <strong>vínculo cliente + mecanismo</strong> (combinação única após deduplicação). Um cliente com 3 mecanismos gera 3 vínculos.</p>
+              <div class="mech-unit-defs">
+                <span><b>Cliente</b> — pessoa/conta distinta na carteira</span>
+                <span><b>Tipo de mecanismo</b> — item cadastrado em <code>mecanismos</code></span>
+                <span><b>Vínculo</b> — combinação única cliente + mecanismo <span class="help" tabindex="0" data-tip="Após deduplicação por client_id + mecanismo_id. O percentual implementado usa vínculos como denominador, nunca a contagem de tipos.">?</span></span>
+              </div>
             </div>
+            <button type="button" class="portal-alert__close" data-dismiss-portal-alert aria-label="Fechar aviso" title="Fechar">×</button>
           </aside>
+          <div class="portal-alert portal-alert--warning" id="kSourceAlert" data-alert-id="mechanisms-source-warning" hidden role="status"></div>
 
           <div class="kpi-block-label">Cobertura</div>
-          <section class="summary kpis-mech-3" id="kKpisCoverage"></section>
+          <section class="summary kpis-mech-4" id="kKpisCoverage"></section>
           <div class="kpi-block-label">Andamento</div>
           <section class="summary kpis-mech-4" id="kKpisProgress"></section>
           <div class="kpi-block-label">Tempo e evolução</div>
           <section class="summary kpis-mech-2" id="kKpisTime"></section>
-          <aside class="unused-types-box" id="kUnusedTypes"></aside>
+          <aside class="portal-alert portal-alert--warning unused-types-box" id="kUnusedTypes" data-alert-id="mechanisms-unused-types" hidden role="status"></aside>
 
           <div class="section-head"><div><h2>Distribuições</h2><p>Unidade marcada em cada gráfico: clientes, vínculos ou tipos do catálogo.</p></div></div>
           <section class="charts">
@@ -1029,6 +1142,7 @@
               </div>
             </div>
           </section>
+
         </div>
       </section>
 
@@ -1054,8 +1168,9 @@
                 <select id="fClientStatus">
                   <option value="all">Todos</option>
                   <option value="active">Ativos</option>
-                  <option value="cancelled">Cancelados</option>
+                  <option value="active_or_frozen">Ativos e congelados</option>
                   <option value="frozen">Congelados</option>
+                  <option value="cancelled">Cancelados</option>
                   <option value="unknown">Não informados</option>
                 </select>
                 <button type="button" class="chip-btn" id="fActiveOnly" aria-pressed="false">
@@ -1103,7 +1218,8 @@
           </section>
 
           <section class="summary kpis-8" id="fKpis"></section>
-          <p class="note-muted" id="fHistoryNote" hidden></p>
+          <div class="portal-alert portal-alert--info" id="fHistoryNote" data-alert-id="financial-history-note" hidden role="status"></div>
+          <div class="portal-alert portal-alert--warning" id="fSourceAlert" data-alert-id="financial-source-warning" hidden role="status"></div>
 
           <div class="section-head"><div><h2>Distribuições</h2><p>Cobertura e recência dos dados financeiros.</p></div></div>
           <section class="charts">
@@ -1189,6 +1305,7 @@
             <button class="btn" id="uClear" type="button">Limpar filtros</button>
           </section>
           <section class="summary kpis-8" id="uKpis"></section>
+          <div class="portal-alert portal-alert--warning" id="uSourceAlert" data-alert-id="platform-source-warning" hidden role="status"></div>
           <div class="section-head"><div><h2>Distribuições de acesso</h2><p>Frequência calculada a partir do QV360.</p></div></div>
           <section class="charts">
             <article class="chart-card"><h3>Realizaram login</h3><p>Usuários com histórico de acesso</p><div id="uChartLogin"></div></article>
@@ -1217,116 +1334,186 @@
         <div class="container">
           <header class="page-header">
             <div>
-              <div class="eyebrow">Portal · Jornada do Cliente</div>
+              <div class="eyebrow">Business Data · research.acionamentos</div>
               <h1>Atendimento</h1>
-              <p>Acompanhamento dos chamados, solicitações e interações de atendimento registradas para os clientes.</p>
+              <p>Volume, área, tipo, prioridade e vínculo com clientes a partir dos acionamentos registrados.</p>
             </div>
             <div class="status-actions">
-              <div class="status"><b id="sStatus" style="color:var(--color-warning)">● Conectando ao Supabase</b><span id="sUpdated">Calculando indicadores…</span></div>
+              <div class="status"><b id="sStatus" style="color:var(--color-warning)">● Conectando à base</b><span id="sUpdated">Calculando indicadores…</span></div>
               <button class="btn" id="sRefresh" type="button">Atualizar</button>
             </div>
           </header>
 
-          <div class="alert-banner" id="sAlert" hidden>
-            <span class="alert-icon" aria-hidden="true">⚠</span>
-            <div>
-              <h3 id="sAlertTitle">Base de atendimento ainda insuficiente para análise</h3>
-              <p id="sAlertText"></p>
-              <p class="alert-note" id="sAlertNote">Algumas métricas permanecerão como não calculáveis até que exista maior volume e histórico de resolução.</p>
-              <div class="alert-meta" id="sAlertMeta"></div>
-            </div>
-          </div>
-
           <section class="filters financial" aria-label="Filtros de atendimento">
-            <label>Busca<input id="sSearch" placeholder="Cliente, código, título ou ID" /></label>
-            <label>Status do chamado<select id="sStatusFilter"><option value="all">Todos</option></select></label>
+            <label>Busca<input id="sSearch" placeholder="Título, descrição, cliente, e-mail ou ID" /></label>
+            <label>Solicitante<select id="sRequester"><option value="all">Todos</option></select></label>
             <label>Prioridade<select id="sPriority"><option value="all">Todas</option></select></label>
-            <label>Solicitado pelo cliente<select id="sRequested">
+            <label>Tipo da solicitação<select id="sType"><option value="all">Todos</option></select></label>
+            <label>Área/setor<select id="sArea"><option value="all">Todas</option></select></label>
+            <label>Status<select id="sStatusFilter"><option value="all">Todos</option></select></label>
+            <label>Origem<select id="sOrigin"><option value="all">Todas</option></select></label>
+            <label>Cliente identificado<select id="sIdentified">
+              <option value="all">Todos</option>
+              <option value="yes">Identificado</option>
+              <option value="no">Não identificado</option>
+            </select></label>
+            <label>Possui anexo<select id="sAttachment">
               <option value="all">Todos</option>
               <option value="yes">Sim</option>
               <option value="no">Não</option>
             </select></label>
-            <label>Engenheiro Patrimonial<select id="sEngineer"><option value="all">Todos</option></select></label>
-            <label>Responsável<select id="sAssignee"><option value="all">Todos</option></select></label>
-            <label>Possui resolução<select id="sResolved">
-              <option value="all">Todos</option>
-              <option value="yes">Sim</option>
-              <option value="no">Não</option>
-            </select></label>
-            <label>Período<select id="sPeriodType">
-              <option value="created">Abertura</option>
-              <option value="resolved">Resolução</option>
-            </select></label>
-            <label>De<input id="sFrom" type="date" /></label>
-            <label>Até<input id="sTo" type="date" /></label>
+            <label>Período de abertura — de<input id="sOpenedFrom" type="date" /></label>
+            <label>até<input id="sOpenedTo" type="date" /></label>
             <button class="btn" id="sClear" type="button">Limpar filtros</button>
           </section>
 
-          <section class="summary kpis-8" id="sKpis"></section>
+          <section class="summary kpis-support-6" id="sKpis"></section>
 
-          <div class="section-head"><div><h2>Distribuições</h2><p>Distribuição dos chamados por status, prioridade, período e responsável.</p></div></div>
-          <section class="charts">
-            <article class="chart-card"><h3>Chamados por status</h3><p>Quantidade e percentual</p><div id="sChartStatus"></div></article>
-            <article class="chart-card"><h3>Chamados por prioridade</h3><p>Quantidade e percentual</p><div id="sChartPriority"></div></article>
-            <article class="chart-card" style="grid-column:1/-1">
-              <div class="month-chart-head">
-                <div>
-                  <h3>Chamados por mês</h3>
-                  <p>Contagem por data de abertura</p>
-                </div>
-                <div class="seg" id="sMonthRangeSeg" role="group" aria-label="Período do gráfico mensal">
-                  <button type="button" data-s-month-range="6" class="active">Últimos 6 meses</button>
-                  <button type="button" data-s-month-range="12">Últimos 12 meses</button>
-                </div>
-              </div>
-              <div id="sChartMonths"></div>
-              <p class="note-muted" id="sMonthNote" hidden></p>
-            </article>
-            <article class="chart-card" style="grid-column:1/-1">
-              <h3>Resolução por mês</h3>
-              <p>Contagem por data de resolução</p>
-              <div id="sChartResolved"></div>
-            </article>
-            <article class="chart-card" style="grid-column:1/-1">
-              <h3>Chamados por Engenheiro Patrimonial</h3>
-              <p id="sEngineersNote">Quantidade de chamados por engenheiro</p>
-              <div id="sChartEngineers"></div>
-              <button class="btn engineers-toggle" id="sToggleEngineers" type="button">Ver todos</button>
+          <div class="section-head"><div><h2>Distribuições</h2><p>Área, tipo, prioridade e evolução por período de abertura.</p></div></div>
+          <section class="charts" id="sCharts">
+            <article class="chart-card"><h3>Acionamentos por área/setor</h3><p>App Pharus · QV360 Web · Não informado</p><div id="sChartArea"></div></article>
+            <article class="chart-card"><h3>Acionamentos por tipo</h3><p>tipo_solicitacao</p><div id="sChartType"></div></article>
+            <article class="chart-card"><h3>Acionamentos por prioridade</h3><p>Urgente · Alta · Média · Baixa</p><div id="sChartPriority"></div></article>
+            <article class="chart-card">
+              <h3>Acionamentos por período</h3>
+              <p>Por data de abertura (dia até 45 dias; mês acima disso)</p>
+              <div id="sChartPeriod"></div>
+              <p class="note-muted" id="sPeriodNote" hidden></p>
             </article>
           </section>
 
           <section class="table-panel">
             <div class="section-head" style="margin:0">
-              <div><h2>Detalhamento dos chamados</h2><p>Clique em uma linha para ver o chamado.</p></div>
+              <div><h2>Detalhamento dos acionamentos</h2><p>Clique em uma linha para ver o detalhe.</p></div>
               <span class="counter" id="sCounter"></span>
             </div>
             <div class="table-wrap">
               <table>
                 <thead>
                   <tr>
-                    <th data-ssort="title">Chamado</th>
-                    <th data-ssort="clientName">Cliente</th>
-                    <th data-ssort="clientCode">Código</th>
-                    <th data-ssort="status">Status</th>
+                    <th data-ssort="title">Título</th>
+                    <th data-ssort="area">Área/setor</th>
+                    <th data-ssort="type">Tipo da solicitação</th>
                     <th data-ssort="priority">Prioridade</th>
-                    <th data-ssort="requestedByClient">Solicitado pelo cliente</th>
-                    <th data-ssort="assignedTo">Responsável</th>
-                    <th data-ssort="createdAt">Abertura</th>
-                    <th data-ssort="resolvedAt">Resolução</th>
-                    <th data-ssort="resolutionHours" class="num">Tempo de resolução</th>
-                    <th data-ssort="classification">Classificação</th>
-                    <th data-ssort="escalated">Escalado</th>
+                    <th data-ssort="status">Status</th>
+                    <th data-ssort="requester">Solicitante</th>
+                    <th data-ssort="clientName">Cliente</th>
+                    <th data-ssort="clientEmail">E-mail do cliente</th>
+                    <th data-ssort="clientIdentified">Cliente identificado</th>
+                    <th data-ssort="openedAt">Data de abertura</th>
+                    <th data-ssort="hasAttachment">Possui anexo</th>
                   </tr>
                 </thead>
                 <tbody id="sRows"></tbody>
               </table>
             </div>
-            <div class="empty" id="sEmpty">Nenhum chamado encontrado para os filtros selecionados.</div>
+            <div class="empty" id="sEmpty">Nenhum acionamento encontrado para os filtros selecionados.</div>
             <div class="pagination">
               <div id="sPageInfo"></div>
               <div>
                 <button class="btn" id="sPrev" type="button">Anterior</button>
                 <button class="btn" id="sNext" type="button">Próxima</button>
+              </div>
+            </div>
+          </section>
+        </div>
+      </section>
+
+      <section class="view" id="view-cancellations">
+        <div class="container">
+          <header class="page-header">
+            <div>
+              <div class="eyebrow">BASE QV · public.cancellations</div>
+              <h1>Cancelamento</h1>
+              <p>Análise dos motivos, permanência e sinais anteriores ao cancelamento dos clientes.</p>
+            </div>
+            <div class="status-actions">
+              <div class="status"><b id="cStatus" style="color:var(--color-warning)">● Conectando à base</b><span id="cUpdated">Calculando indicadores…</span></div>
+              <button class="btn" id="cRefresh" type="button">Atualizar</button>
+            </div>
+          </header>
+
+          <section class="filters financial" aria-label="Filtros de cancelamento">
+            <label>Busca<input id="cSearch" placeholder="Nome, código ou ID" /></label>
+            <label>Engenheiro Patrimonial<select id="cEngineer"><option value="all">Todos</option></select></label>
+            <label>Segmento<select id="cSegment"><option value="all">Todos</option></select></label>
+            <label>Motivo<select id="cReason"><option value="all">Todos</option></select></label>
+            <label>Categoria<select id="cCategory"><option value="all">Todas</option></select></label>
+            <label>Período de cancelamento — de<input id="cFrom" type="date" /></label>
+            <label>até<input id="cTo" type="date" /></label>
+            <label>Faixa de permanência<select id="cStayRange"><option value="all">Todas</option></select></label>
+            <label>Faixa de reuniões<select id="cMeetingRange"><option value="all">Todas</option></select></label>
+            <label>Possui motivo<select id="cHasReason">
+              <option value="all">Todos</option>
+              <option value="yes">Sim</option>
+              <option value="no">Não</option>
+            </select></label>
+            <label>Atualização financeira anterior<select id="cHasFinancial">
+              <option value="all">Todos</option>
+              <option value="yes">Sim</option>
+              <option value="no">Não</option>
+            </select></label>
+            <label>Interação anterior (reunião)<select id="cHasInteraction">
+              <option value="all">Todos</option>
+              <option value="yes">Sim</option>
+              <option value="no">Não</option>
+            </select></label>
+            <button class="btn" id="cClear" type="button">Limpar filtros</button>
+          </section>
+
+          <section class="summary kpis-cancel-primary" id="cKpisPrimary"></section>
+          <section class="summary kpis-cancel-secondary" id="cKpis"></section>
+          <div id="cSourceAlertHost">
+            <div id="cSourceAlert" data-alert-id="cancellations-data-quality-warning" hidden role="status"></div>
+          </div>
+          <section class="summary kpis-cancel-quality" id="cKpisQuality"></section>
+
+          <div class="section-head"><div><h2>Distribuições</h2><p>Motivos, tempo até o cancelamento e sinais anteriores.</p></div></div>
+          <section class="charts cancel-charts">
+            <article class="chart-card cancel-span-all"><h3>Cancelamentos por motivo</h3><p>Quantidade e percentual</p><div id="cChartReason"></div></article>
+            <article class="chart-card cancel-span-all"><h3>Cancelamentos por mês</h3><p>Últimos 12 meses · data consolidada</p><div id="cChartMonths"></div></article>
+            <article class="chart-card"><h3>Tempo até cancelamento</h3><p>Faixas de permanência</p><div id="cChartStay"></div></article>
+            <article class="chart-card"><h3>Reuniões antes do cancelamento</h3><p>Presença confirmada</p><div id="cChartMeetings"></div></article>
+            <article class="chart-card"><h3>Última atualização financeira</h3><p>Dias antes do cancelamento</p><div id="cChartFinancial"></div></article>
+            <article class="chart-card"><h3>Cancelamentos por EP</h3><p>Quantidade e % dos cancelados</p><div id="cChartEngineer"></div></article>
+            <article class="chart-card cancel-span-all"><h3>Cancelamentos por segmento</h3><p>Mesma segmentação do Dados Gerais</p><div id="cChartSegment"></div></article>
+          </section>
+
+          <section class="table-panel">
+            <div class="section-head" style="margin:0">
+              <div><h2>Detalhamento dos cancelamentos</h2><p>Clique em uma linha para ver o detalhe.</p></div>
+              <span class="counter" id="cCounter"></span>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th data-csort="clientName">Cliente</th>
+                    <th data-csort="clientCode">Código</th>
+                    <th data-csort="engineer">Engenheiro Patrimonial</th>
+                    <th data-csort="segment">Segmento</th>
+                    <th data-csort="hireDate">Data de contratação</th>
+                    <th data-csort="cancellationDate">Data de cancelamento</th>
+                    <th data-csort="daysToCancellation" class="num">Tempo até cancelamento</th>
+                    <th data-csort="reason">Motivo</th>
+                    <th data-csort="category">Categoria</th>
+                    <th data-csort="meetingsBeforeCancellation" class="num">Reuniões antes</th>
+                    <th data-csort="financialUpdateDate">Última atualização financeira</th>
+                    <th data-csort="daysSinceFinancialUpdate" class="num">Dias sem atualização financeira</th>
+                    <th data-csort="lastMeetingDate">Última reunião</th>
+                    <th data-csort="daysSinceLastMeeting" class="num">Dias sem reunião</th>
+                    <th data-csort="dataWarnings">Alertas</th>
+                  </tr>
+                </thead>
+                <tbody id="cRows"></tbody>
+              </table>
+            </div>
+            <div class="empty" id="cEmpty">Nenhum cancelamento encontrado para os filtros selecionados.</div>
+            <div class="pagination">
+              <div id="cPageInfo"></div>
+              <div>
+                <button class="btn" id="cPrev" type="button">Anterior</button>
+                <button class="btn" id="cNext" type="button">Próxima</button>
               </div>
             </div>
           </section>
@@ -1351,6 +1538,7 @@
               <button class="btn" id="refresh" type="button">Atualizar</button>
             </div>
           </header>
+          <div class="portal-alert portal-alert--warning" id="qSourceAlert" data-alert-id="quality-source-warning" hidden role="status"></div>
           <section class="filters" aria-label="Filtros globais">
             <label>Buscar coluna ou tabela<input id="search" placeholder="Ex.: data_inicio_ciclo" /></label>
             <label>Domínio<select id="domain"><option value="all">Todos os domínios</option></select></label>
@@ -1365,8 +1553,10 @@
             <article class="chart-card"><h3>Dados Gerais</h3><p>Indicadores usados na primeira aba</p><div class="indicator-matrix" id="qGeneralMatrix"></div></article>
             <article class="chart-card"><h3>Reuniões</h3><p>Indicadores usados na tela de reuniões</p><div class="indicator-matrix" id="qMeetingsMatrix"></div></article>
             <article class="chart-card"><h3>Mecanismos</h3><p>Indicadores usados na tela de mecanismos</p><div class="indicator-matrix" id="qMechanismsMatrix"></div></article>
+            <article class="chart-card"><h3>App Pharus · Mecanismos sugeridos</h3><p>Fonte: App Pharus — não misturar com implementação BASE QV</p><div class="indicator-matrix" id="qPharusMechanismsMatrix"></div></article>
             <article class="chart-card"><h3>Atualização Financeira</h3><p>Indicadores novos da tela financeira</p><div class="indicator-matrix" id="qFinancialMatrix"></div></article>
             <article class="chart-card"><h3>Uso da Plataforma</h3><p>Indicadores novos calculados pelo QV360</p><div class="indicator-matrix" id="qPlatformMatrix"></div></article>
+            <article class="chart-card"><h3>Cancelamento</h3><p>Indicadores da BASE QV (sem App Pharus nesta versão)</p><div class="indicator-matrix" id="qCancellationsMatrix"></div></article>
           </section>
           <div class="section-head"><div><h2>Preenchimento por coluna</h2><p>Cada cartão compara valores vazios ou nulos com o total de registros da tabela.</p></div><span class="counter" id="counter"></span></div>
           <section class="cards" id="cards"></section>
@@ -1473,6 +1663,333 @@
       if (status >= 500) return 'Não foi possível consultar a base de dados.';
       return payload?.error || 'Não foi possível carregar os dados.';
     }
+
+    /* -------- Portal alerts dismissíveis (somente visualização atual — sem persistência) -------- */
+    /** Fechamentos válidos só enquanto a aba atual permanece aberta. Limpo na troca de página e no F5. */
+    const portalViewDismissedAlerts = new Set();
+    function clearPortalViewDismissedAlerts() {
+      portalViewDismissedAlerts.clear();
+      // Remove resíduo de versões anteriores que persistiam em sessionStorage.
+      try { sessionStorage.removeItem('portalDismissedAlerts'); } catch { /* ignore */ }
+    }
+    function isPortalAlertDismissed(alertId) {
+      if (!alertId) return false;
+      return portalViewDismissedAlerts.has(String(alertId).trim());
+    }
+    function dismissPortalAlert(alertId) {
+      if (!alertId) return;
+      const id = String(alertId).trim();
+      if (!id) return;
+      portalViewDismissedAlerts.add(id);
+    }
+    function eventTargetElement(event) {
+      const t = event?.target;
+      if (t instanceof Element) return t;
+      if (t && t.parentElement instanceof Element) return t.parentElement;
+      const path = typeof event?.composedPath === 'function' ? event.composedPath() : [];
+      for (const node of path) {
+        if (node instanceof Element) return node;
+      }
+      return null;
+    }
+    function hidePortalAlertHost(el) {
+      if (!el) return;
+      el.hidden = true;
+      el.setAttribute('hidden', '');
+      el.classList.add('portal-alert--dismissed');
+    }
+    /** Restaura avisos estáticos (conteúdo no HTML) após troca de aba. */
+    function restoreStaticPortalAlert(selector, alertId) {
+      const el = document.querySelector(selector);
+      if (!el || !alertId) return;
+      if (isPortalAlertDismissed(alertId)) {
+        hidePortalAlertHost(el);
+        return;
+      }
+      el.classList.remove('portal-alert--dismissed');
+      el.hidden = false;
+      el.removeAttribute('hidden');
+      ensurePortalAlertCloseButton(el);
+    }
+    function ensurePortalAlertCloseButton(root) {
+      if (!root) return null;
+      let btn = root.querySelector('[data-dismiss-portal-alert], .portal-alert__close');
+      if (!btn) {
+        btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'portal-alert__close';
+        btn.setAttribute('data-dismiss-portal-alert', '');
+        btn.setAttribute('aria-label', 'Fechar aviso');
+        btn.title = 'Fechar';
+        btn.textContent = '×';
+        root.appendChild(btn);
+      } else {
+        btn.classList.add('portal-alert__close');
+        btn.setAttribute('data-dismiss-portal-alert', '');
+        if (!btn.getAttribute('aria-label')) btn.setAttribute('aria-label', 'Fechar aviso');
+        if (!btn.title) btn.title = 'Fechar';
+        btn.type = 'button';
+      }
+      return btn;
+    }
+    /** Um único listener global — não registrar de novo ao trocar de página. */
+    function setupPortalAlertDismissal() {
+      if (window.__portalAlertDismissalReady) return;
+      window.__portalAlertDismissalReady = true;
+      document.addEventListener('click', (event) => {
+        const targetEl = eventTargetElement(event);
+        if (!targetEl) return;
+
+        const expandBtn = targetEl.closest('[data-alert-expand]');
+        if (expandBtn) {
+          event.preventDefault();
+          event.stopPropagation();
+          const more = expandBtn.parentElement?.querySelector('.portal-alert__more');
+          if (more) {
+            const open = more.hasAttribute('hidden');
+            if (open) more.removeAttribute('hidden');
+            else more.setAttribute('hidden', '');
+            expandBtn.textContent = open
+              ? 'Recolher alertas'
+              : (expandBtn.dataset.expandLabel || 'Ver mais alertas');
+          }
+          return;
+        }
+
+        const button = targetEl.closest('[data-dismiss-portal-alert]');
+        if (!button) return;
+        event.preventDefault();
+        event.stopPropagation();
+        const alert = button.closest('[data-alert-id]');
+        if (!alert) return;
+        const alertId = String(alert.dataset.alertId || '').trim();
+        if (!alertId) return;
+        dismissPortalAlert(alertId);
+        hidePortalAlertHost(alert);
+      }, true);
+      document.addEventListener('keydown', (event) => {
+        if (event.key !== 'Enter' && event.key !== ' ') return;
+        const targetEl = eventTargetElement(event);
+        if (!targetEl) return;
+        const button = targetEl.closest('[data-dismiss-portal-alert]');
+        if (!button) return;
+        event.preventDefault();
+        event.stopPropagation();
+        button.click();
+      }, true);
+    }
+    function portalAlertIcon(type) {
+      if (type === 'info') return 'ℹ';
+      if (type === 'success') return '✔';
+      if (type === 'error') return '✕';
+      return '⚠';
+    }
+    function severityRank(sev) {
+      const s = String(sev || 'warning').toLowerCase();
+      if (s === 'error' || s === 'critical') return 0;
+      if (s === 'warning') return 1;
+      return 2;
+    }
+    /** Normaliza warnings (string | {message} | {code,label,count}) em lista agregada. */
+    function normalizePortalWarnings(warnings) {
+      const map = new Map();
+      for (const raw of (Array.isArray(warnings) ? warnings : [])) {
+        if (raw == null) continue;
+        if (typeof raw === 'string') {
+          const msg = raw.trim();
+          if (!msg) continue;
+          const cur = map.get(msg) || { code: msg, label: msg, count: 0, severity: 'warning' };
+          cur.count += 1;
+          map.set(msg, cur);
+          continue;
+        }
+        if (typeof raw !== 'object') continue;
+        const code = String(raw.code || raw.message || raw.reason || 'warning').trim();
+        const label = String(raw.label || raw.message || raw.reason || code).trim();
+        if (!label) continue;
+        const key = code || label;
+        const add = Number(raw.count);
+        const cur = map.get(key) || {
+          code: key,
+          label,
+          count: 0,
+          severity: raw.severity || 'warning'
+        };
+        cur.count += Number.isFinite(add) && add > 0 ? add : 1;
+        if (raw.label) cur.label = String(raw.label);
+        map.set(key, cur);
+      }
+      return [...map.values()].sort((a, b) =>
+        severityRank(a.severity) - severityRank(b.severity) ||
+        b.count - a.count ||
+        a.label.localeCompare(b.label, 'pt-BR')
+      );
+    }
+    function formatWarningLine(item) {
+      if (item.count > 1 && !/^\d+\s/.test(item.label)) {
+        return `${fmt.format(item.count)} ${item.label.charAt(0).toLowerCase()}${item.label.slice(1)}`;
+      }
+      if (item.count > 1 && /^\d+\s/.test(item.label)) return item.label;
+      return item.count > 1 ? `${fmt.format(item.count)} × ${item.label}` : item.label;
+    }
+    /** Monta/atualiza um aviso dismissível. Retorna false se fechado nesta visualização. */
+    function mountPortalAlert(container, config = {}) {
+      if (!container) return false;
+      const alertId = String(config.id || container.dataset.alertId || '').trim();
+      if (!alertId) return false;
+      container.dataset.alertId = alertId;
+      if (isPortalAlertDismissed(alertId)) {
+        hidePortalAlertHost(container);
+        return false;
+      }
+      const type = config.type || 'warning';
+      const title = config.title || '';
+      const message = config.message || '';
+      const note = config.note || '';
+      const metaHtml = config.metaHtml || '';
+      const extraHtml = config.extraHtml || '';
+      const icon = config.icon || portalAlertIcon(type);
+      container.classList.add('portal-alert', `portal-alert--${type}`);
+      container.classList.remove('portal-alert--dismissed', 'is-dismissing', 'portal-alert--closing');
+      container.setAttribute('role', config.role || 'status');
+      container.innerHTML = `
+        <div class="portal-alert__icon" aria-hidden="true">${icon}</div>
+        <div class="portal-alert__content">
+          ${title ? `<h3>${escapeHtml(title)}</h3>` : ''}
+          ${message ? `<p>${config.allowHtmlMessage ? message : escapeHtml(message)}</p>` : ''}
+          ${note ? `<p class="portal-alert__note">${escapeHtml(note)}</p>` : ''}
+          ${metaHtml ? `<div class="portal-alert__meta">${metaHtml}</div>` : ''}
+          ${extraHtml ? `<div class="portal-alert__body-extra">${extraHtml}</div>` : ''}
+        </div>
+        <button type="button" class="portal-alert__close" data-dismiss-portal-alert aria-label="Fechar aviso" title="Fechar">×</button>`;
+      container.hidden = false;
+      container.removeAttribute('hidden');
+      return true;
+    }
+    function buildWarningsExtraHtml(aggregated) {
+      if (!aggregated.length) return '';
+      const top = aggregated.slice(0, 5);
+      const rest = aggregated.slice(5);
+      const li = (items) => items.map(i => `<li>${escapeHtml(formatWarningLine(i))}</li>`).join('');
+      let html = `<ul>${li(top)}</ul>`;
+      if (rest.length) {
+        const label = `+ ${fmt.format(rest.length)} outros alertas`;
+        html += `<button type="button" class="portal-alert__expand" data-alert-expand data-expand-label="${escapeHtml(label)}">${escapeHtml(label)}</button>`;
+        html += `<ul class="portal-alert__more" hidden>${li(rest)}</ul>`;
+      }
+      return html;
+    }
+    function showSourceWarningsAlert(containerId, alertId, title, warnings, options = {}) {
+      const el = document.querySelector(containerId);
+      if (!el) return;
+      const aggregated = normalizePortalWarnings(warnings).filter(w => {
+        const code = String(w.code || '').toUpperCase();
+        if (options.excludeCodes && options.excludeCodes.includes(code)) return false;
+        if (code === 'BASE_FORMING') return false;
+        return true;
+      });
+      if (!aggregated.length || isPortalAlertDismissed(alertId)) {
+        hidePortalAlertHost(el);
+        return;
+      }
+      const summaryMessage = options.message
+        || (aggregated.length === 1
+          ? formatWarningLine(aggregated[0])
+          : `Há ${fmt.format(aggregated.length)} tipos de alerta nas fontes desta página. Os indicadores disponíveis continuam sendo exibidos.`);
+      mountPortalAlert(el, {
+        id: alertId,
+        type: options.type || 'warning',
+        title: title || 'Alertas de qualidade',
+        message: summaryMessage,
+        note: options.note || '',
+        extraHtml: buildWarningsExtraHtml(aggregated),
+        icon: '⚠'
+      });
+    }
+    function initStaticPortalAlerts() {
+      setupPortalAlertDismissal();
+      clearPortalViewDismissedAlerts();
+      document.querySelectorAll('[data-alert-id]').forEach((el) => {
+        const id = String(el.dataset.alertId || '').trim();
+        if (!id) return;
+        if (el.classList.contains('portal-alert') && !el.hidden) {
+          ensurePortalAlertCloseButton(el);
+        }
+      });
+    }
+    setupPortalAlertDismissal();
+    clearPortalViewDismissedAlerts();
+
+    /** Remonta avisos da página a partir do payload já carregado (após troca de aba). */
+    function remountPortalAlertsForPage(nav) {
+      if (nav === 'support') return;
+      if (nav === 'general' && typeof generalState !== 'undefined' && generalState.payload) {
+        const payload = generalState.payload;
+        const gAlert = document.querySelector('#gDataAlert');
+        if (gAlert) {
+          const notes = payload.quality?.statusConsistency?.notes || [];
+          const apiWarnings = payload.quality?.warnings || [];
+          if (notes.length || apiWarnings.length) {
+            const lines = [
+              ...notes.map(n => escapeHtml(String(n))),
+              ...apiWarnings.map(w => escapeHtml(typeof w === 'string' ? w : (w.message || w.reason || JSON.stringify(w))))
+            ];
+            mountPortalAlert(gAlert, {
+              id: 'general-status-consistency',
+              type: 'warning',
+              title: 'Observações de qualidade dos dados',
+              message: 'Há inconsistências ou alertas na consolidação da carteira. Os indicadores exibidos continuam válidos para a amostra disponível.',
+              extraHtml: lines.length ? `<ul>${lines.map(l => `<li>${l}</li>`).join('')}</ul>` : '',
+              icon: '⚠'
+            });
+          } else {
+            hidePortalAlertHost(gAlert);
+          }
+        }
+      }
+      if (nav === 'plan' && typeof planState !== 'undefined' && planState.payload) {
+        showSourceWarningsAlert('#pSourceAlert', 'plan-source-warning', 'Alertas das fontes do plano patrimonial', planState.payload.sources?.warnings || []);
+      }
+      if (nav === 'journey' && typeof onboardingState !== 'undefined' && onboardingState.payload) {
+        showSourceWarningsAlert('#jSourceAlert', 'journey-source-warning', 'Alertas das fontes de jornada', onboardingState.payload.sources?.warnings || []);
+      }
+      if (nav === 'meetings' && typeof meetingsState !== 'undefined' && meetingsState.payload) {
+        showSourceWarningsAlert('#mSourceAlert', 'meetings-source-warning', 'Alertas de qualidade das reuniões', meetingsState.payload.quality?.warnings || []);
+      }
+      if (nav === 'mechanisms' && typeof mechanismsState !== 'undefined' && mechanismsState.payload) {
+        restoreStaticPortalAlert('#kUnitsExplainer', 'mechanisms-units-explainer');
+        showSourceWarningsAlert('#kSourceAlert', 'mechanisms-source-warning', 'Alertas de qualidade dos mecanismos', mechanismsState.payload.quality?.warnings || []);
+        if (typeof renderMechanisms === 'function') renderMechanisms();
+      }
+      if (nav === 'financial' && typeof financialState !== 'undefined' && financialState.payload) {
+        if (typeof renderFinancial === 'function') renderFinancial();
+        showSourceWarningsAlert(
+          '#fSourceAlert',
+          'financial-source-warning',
+          'Alertas de qualidade financeira',
+          financialState.payload.quality?.warnings || financialState.payload.warnings || []
+        );
+      }
+      if (nav === 'platform' && typeof platformState !== 'undefined' && platformState.payload) {
+        showSourceWarningsAlert('#uSourceAlert', 'platform-source-warning', 'Alertas das fontes de uso da plataforma', platformState.payload.sources?.warnings || []);
+      }
+      if (nav === 'cancellations' && typeof cancellationsState !== 'undefined' && cancellationsState.payload) {
+        showSourceWarningsAlert(
+          '#cSourceAlert',
+          'cancellations-data-quality-warning',
+          'Atenção à cobertura dos dados de cancelamento',
+          [
+            ...(cancellationsState.payload.warnings || []),
+            ...(cancellationsState.payload.quality?.warnings || [])
+          ],
+          {
+            message: 'Alguns indicadores dependem de datas, reuniões e atualizações financeiras válidas. Registros sem informação suficiente não são tratados como zero.',
+            note: 'Os KPIs disponíveis continuam sendo exibidos com a cobertura real de cada métrica.'
+          }
+        );
+      }
+    }
+
     const monthsAgo = n => { const d = new Date(); d.setMonth(d.getMonth() - n); return d; };
     const inDateBand = (iso, band) => {
       if (band === 'all') return true;
@@ -1497,12 +2014,17 @@
       financial: document.querySelector('#view-financial'),
       platform: document.querySelector('#view-platform'),
       support: document.querySelector('#view-support'),
+      cancellations: document.querySelector('#view-cancellations'),
       quality: document.querySelector('#view-quality')
     };
     document.querySelectorAll('[data-nav]').forEach(btn => btn.addEventListener('click', () => {
       if (!isPortalAuthenticated()) return;
+      // Nova visualização: avisos fechados voltam a poder aparecer.
+      clearPortalViewDismissedAlerts();
       document.querySelectorAll('[data-nav]').forEach(b => b.classList.toggle('active', b === btn));
-      Object.entries(views).forEach(([key, el]) => el.classList.toggle('active', key === btn.dataset.nav));
+      Object.entries(views).forEach(([key, el]) => {
+        if (el) el.classList.toggle('active', key === btn.dataset.nav);
+      });
       window.__portalCurrentPage = btn.dataset.nav || 'general';
       // Canonical page ids for the assistant
       const pageMap = {
@@ -1514,6 +2036,7 @@
         financial: 'financial_updates',
         platform: 'platform_usage',
         support: 'support',
+        cancellations: 'cancellations',
         quality: 'quality',
       };
       window.__portalCurrentPageCanonical = pageMap[btn.dataset.nav] || btn.dataset.nav || 'general';
@@ -1525,13 +2048,15 @@
       if (btn.dataset.nav === 'financial' && !financialState.payload) loadFinancial();
       if (btn.dataset.nav === 'platform' && !platformState.payload) loadPlatform();
       if (btn.dataset.nav === 'support' && !supportState.payload) loadSupport();
+      if (btn.dataset.nav === 'cancellations' && !cancellationsState.payload) loadCancellations();
       if (btn.dataset.nav === 'quality' && !qualityData.length) loadQuality();
+      remountPortalAlertsForPage(btn.dataset.nav);
     }));
     window.__portalCurrentPage = document.querySelector('[data-nav].active')?.dataset?.nav || 'general';
     window.__portalCurrentPageCanonical = ({
       general: 'general', journey: 'journey', plan: 'patrimonial_plan', meetings: 'meetings',
       mechanisms: 'mechanisms', financial: 'financial_updates', platform: 'platform_usage',
-      support: 'support', quality: 'quality',
+      support: 'support', cancellations: 'cancellations', quality: 'quality',
     })[window.__portalCurrentPage] || window.__portalCurrentPage;
 
     /* -------- Quality (existing behavior + descriptions) -------- */
@@ -1592,6 +2117,15 @@
         { indicator: 'Primeira implementação', viability: 'Sim', metric: 'min(implemented_at) por cliente − data_inicio_ciclo/created_at; negativos excluídos', coverage: fixedCoverage(0, 0, 0), base: 'BASE QV' },
         { indicator: 'Implementação recente (30 dias)', viability: 'Sim', metric: 'clientes únicos com implemented_at nos últimos 30 dias', coverage: fixedCoverage(mechanismsState.payload?.summary?.clientsWithRecentImplementation, mechanismsState.payload?.summary?.clientsWithMechanisms, mechanismsState.payload?.summary?.recentImplementationPercent), base: 'BASE QV' },
       ]);
+      renderViabilityMatrix(document.querySelector('#qPharusMechanismsMatrix'), [
+        { indicator: 'Usuários com mecanismos sugeridos', viability: 'Parcial', metric: 'count(distinct user_id) em user_mechanisms — endpoint /api/pharus-mechanisms disponível para outros dashboards', coverage: fixedCoverage(0, 0, 0), base: 'App Pharus' },
+        { indicator: 'Total de sugestões', viability: 'Parcial', metric: 'count(*) em user_mechanisms (não carregado nesta sessão da página Mecanismos)', coverage: fixedCoverage(0, 0, 0), base: 'App Pharus' },
+        { indicator: 'Tipos distintos sugeridos', viability: 'Parcial', metric: 'distinct mechanism_id (+ catálogo mechanisms.data)', coverage: fixedCoverage(0, 0, 0), base: 'App Pharus' },
+        { indicator: 'Mecanismo / mercado / categoria mais sugeridos', viability: 'Parcial', metric: 'Agregações sobre user_mechanisms ⋉ mechanisms.data', coverage: fixedCoverage(0, 0, 0), base: 'App Pharus' },
+        { indicator: 'Sugestões recentes (30 dias)', viability: 'Parcial', metric: 'created_at da sugestão — não é implementação', coverage: fixedCoverage(0, 0, 0), base: 'App Pharus' },
+        { indicator: 'Mecanismos implementados', viability: 'Sem dados', metric: 'Sem status de conclusão / implemented_at no App Pharus auditado', coverage: fixedCoverage(0, 0, 0), base: 'App Pharus' },
+        { indicator: 'Mecanismos implementados antes do cancelamento', viability: 'Sem dados', metric: 'Fonte localizada parcialmente no App Pharus, mas ainda sem evidência de implementação e data de conclusão', coverage: fixedCoverage(0, 0, 0), base: 'App Pharus' },
+      ]);
       renderViabilityMatrix(document.querySelector('#qFinancialMatrix'), [
         { indicator: 'Dados financeiros cadastrados', viability: 'Sim', metric: 'client_financial_data por client_id', coverage: fixedCoverage(financialState.payload?.summary?.clientsWithFinancialData, financialState.payload?.summary?.totalClients, financialState.payload?.summary?.financialDataCoveragePercent), base: 'BASE QV' },
         { indicator: 'Dados atualizados nos últimos 30 dias', viability: 'Sim', metric: 'updated_at/created_at dentro dos últimos 30 dias', coverage: fixedCoverage(financialState.payload?.summary?.updatedLast30Days, financialState.payload?.summary?.clientsWithFinancialData, financialState.payload?.summary?.updatedLast30DaysPercentOfFinancial), base: 'BASE QV' },
@@ -1610,6 +2144,17 @@
         { indicator: 'Frequência semanal de acesso', viability: 'Viável somente no QV360', metric: 'Logins / semanas' },
         { indicator: 'Frequência mensal de acesso', viability: 'Viável somente no QV360', metric: 'Logins / meses' },
       ], 'QV360 / public'));
+      renderViabilityMatrix(document.querySelector('#qCancellationsMatrix'), [
+        { indicator: 'Total de cancelamentos', viability: 'Sim', metric: 'count(distinct client_id) com data consolidada válida', coverage: fixedCoverage(0, 0, 0), base: 'BASE QV' },
+        { indicator: 'Motivo do cancelamento', viability: 'Sim', metric: 'cancellations.motivo (+ fallback clients.motivo_churn)', coverage: fixedCoverage(0, 0, 0), base: 'BASE QV' },
+        { indicator: 'Categoria do motivo', viability: 'Sim', metric: 'cancellations.motivo_categoria', coverage: fixedCoverage(0, 0, 0), base: 'BASE QV' },
+        { indicator: 'Tempo até cancelamento', viability: 'Sim', metric: 'cancelamento - (data_inicio_ciclo | created_at); mediana', coverage: fixedCoverage(0, 0, 0), base: 'BASE QV' },
+        { indicator: 'Reuniões antes do cancelamento', viability: 'Sim', metric: 'Presença confirmada (compareceu) com data <= cancelamento', coverage: fixedCoverage(0, 0, 0), base: 'BASE QV' },
+        { indicator: 'Última atualização financeira', viability: 'Sim', metric: 'client_financial_data.updated_at|created_at <= cancelamento', coverage: fixedCoverage(0, 0, 0), base: 'BASE QV' },
+        { indicator: 'Dias desde a última reunião', viability: 'Sim', metric: 'Interação v1 = última reunião realizada antes do cancelamento', coverage: fixedCoverage(0, 0, 0), base: 'BASE QV' },
+        { indicator: 'Mecanismos antes do cancelamento', viability: 'Sem dados', metric: 'Fonte localizada parcialmente no App Pharus, mas ainda sem evidência de implementação e data de conclusão', base: 'App Pharus' },
+        { indicator: 'Último acesso antes do cancelamento', viability: 'Sem dados', metric: 'Pendente App Pharus — não exibido nesta versão', base: 'App Pharus' },
+      ]);
     }
     function renderQuality() {
       const data = filteredQuality();
@@ -1630,12 +2175,13 @@
             : `${d.usedIn.slice(0, -1).join(', ')} e ${d.usedIn[d.usedIn.length - 1]}`)
           : '';
         const usedIn = usedLabel ? `<div class="field-used"><b>Usado em:</b> ${escapeHtml(usedLabel)}</div>` : '';
-        return `<article class="field-card"><div class="card-top"><div><div class="field">${escapeHtml(d.column)}</div><div class="table-name">public.${escapeHtml(d.table)}</div>${d.description ? `<div class="field-desc">${escapeHtml(d.description)}</div>` : ''}${usedIn}${consistency}</div><span class="badge ${s}">${sevLabel[s]}</span></div>
+        const schemaName = d.schema || 'public';
+        return `<article class="field-card"><div class="card-top"><div><div class="field">${escapeHtml(d.column)}</div><div class="table-name">${escapeHtml(schemaName)}.${escapeHtml(d.table)}</div>${d.description ? `<div class="field-desc">${escapeHtml(d.description)}</div>` : ''}${usedIn}${consistency}</div><span class="badge ${s}">${sevLabel[s]}</span></div>
           <div class="missing"><div><span>Preenchidos</span><br><strong>${fmt.format(filled)}</strong></div><div class="percent"><b>${pct(p)}</b><span>de ${fmt.format(d.totalRows)} linhas</span></div></div>
           <div class="track" title="${pct(p)} preenchido"><div style="width:${Math.min(p, 100)}%"></div></div>
           <div class="card-footer"><span>${escapeHtml(d.domain)}</span><span>${fmt.format(d.totalRows)} linhas</span></div></article>`;
       }).join('');
-      qEls.rows.innerHTML = data.map(d => `<tr><td>${escapeHtml(d.domain)}</td><td><code>public.${escapeHtml(d.table)}</code></td><td title="${escapeHtml(d.description || '')}"><code>${escapeHtml(d.column)}</code></td><td class="num">${fmt.format(d.totalRows)}</td><td class="num">${fmt.format(getFilled(d))}</td><td class="num">${pct(getPct(d))}</td></tr>`).join('');
+      qEls.rows.innerHTML = data.map(d => `<tr><td>${escapeHtml(d.domain)}</td><td><code>${escapeHtml(d.schema || 'public')}.${escapeHtml(d.table)}</code></td><td title="${escapeHtml(d.description || '')}"><code>${escapeHtml(d.column)}</code></td><td class="num">${fmt.format(d.totalRows)}</td><td class="num">${fmt.format(getFilled(d))}</td><td class="num">${pct(getPct(d))}</td></tr>`).join('');
       qEls.counter.textContent = `${data.length} de ${qualityData.length} colunas`;
       qEls.empty.style.display = data.length ? 'none' : 'block';
       qEls.cards.style.display = data.length ? 'grid' : 'none';
@@ -1691,6 +2237,8 @@
           qualityStatusBtn.title = '';
         }
         renderQualityAlertsPopover([]);
+        const qAlert = document.querySelector('#qSourceAlert');
+        if (qAlert) qAlert.hidden = true;
         return;
       }
 
@@ -1705,6 +2253,13 @@
           qualityStatusBtn.title = 'Algumas fontes não puderam ser auditadas. Clique para ver detalhes.';
         }
         renderQualityAlertsPopover(warnings);
+        mountPortalAlert(document.querySelector('#qSourceAlert'), {
+          id: 'quality-source-warning',
+          type: 'warning',
+          title: `${warnings.length} alerta${warnings.length > 1 ? 's' : ''} de qualidade`,
+          message: 'Algumas fontes não puderam ser auditadas. O restante da página continua válido. Detalhes também estão disponíveis no status de conexão.',
+          icon: '⚠'
+        });
       } else {
         status.textContent = '● Supabase conectado';
         status.style.color = 'var(--color-success)';
@@ -1714,6 +2269,8 @@
         }
         renderQualityAlertsPopover([]);
         closeQualityAlerts();
+        const qAlert = document.querySelector('#qSourceAlert');
+        if (qAlert) qAlert.hidden = true;
       }
       if (payload?.generatedAt && updated) {
         updated.textContent = `Atualizado em ${new Date(payload.generatedAt).toLocaleString('pt-BR')}`;
@@ -1789,14 +2346,15 @@
     const STATUS_FILTER_OPTIONS = [
       { value: 'all', label: 'Todos' },
       { value: 'active', label: 'Ativos' },
-      { value: 'cancelled', label: 'Cancelados' },
+      { value: 'active_or_frozen', label: 'Ativos e congelados' },
       { value: 'frozen', label: 'Congelados' },
+      { value: 'cancelled', label: 'Cancelados' },
       { value: 'unknown', label: 'Não informados' }
     ];
     const STATUS_FILTER_TO_LABEL = {
       active: 'Ativo',
-      cancelled: 'Cancelado',
       frozen: 'Congelado',
+      cancelled: 'Cancelado',
       unknown: 'Não informado'
     };
     const STATUS_ORDER = ['Ativo', 'Cancelado', 'Congelado', 'Não informado'];
@@ -1864,6 +2422,36 @@
         return client.status;
       }
       return normalizeStatus(client?.status ?? client?.rawStatus);
+    }
+    function clientStatusFilterKey(statusOrClient) {
+      const label = typeof statusOrClient === 'string'
+        ? normalizeStatus(statusOrClient)
+        : clientStatusLabel(statusOrClient);
+      if (label === 'Ativo') return 'active';
+      if (label === 'Congelado') return 'frozen';
+      if (label === 'Cancelado') return 'cancelled';
+      return 'unknown';
+    }
+    /** Filtro único de status do cliente (inclui active_or_frozen). */
+    function matchesClientStatusFilter(clientStatus, filterValue) {
+      if (!filterValue || filterValue === 'all') return true;
+      const status = (clientStatus === 'active' || clientStatus === 'frozen' || clientStatus === 'cancelled' || clientStatus === 'unknown')
+        ? clientStatus
+        : clientStatusFilterKey(clientStatus);
+      switch (filterValue) {
+        case 'active':
+          return status === 'active';
+        case 'frozen':
+          return status === 'frozen';
+        case 'active_or_frozen':
+          return status === 'active' || status === 'frozen';
+        case 'cancelled':
+          return status === 'cancelled';
+        case 'unknown':
+          return status === 'unknown';
+        default:
+          return true;
+      }
     }
 
     function percentileSorted(sorted, p) {
@@ -2068,9 +2656,8 @@
     function filteredClients() {
       const clients = generalState.payload?.clients || [];
       const q = gFilters.search.value.trim().toLowerCase();
-      const statusLabel = STATUS_FILTER_TO_LABEL[generalState.statusFilter] || null;
       return clients.filter(c => {
-        if (statusLabel && clientStatusLabel(c) !== statusLabel) return false;
+        if (!matchesClientStatusFilter(c, generalState.statusFilter)) return false;
         if (gFilters.segment.value !== 'all' && segmentLabelOf(c) !== gFilters.segment.value) return false;
         if (gFilters.engineer.value !== 'all' && c.engineer !== gFilters.engineer.value) return false;
         if (gFilters.stay.value !== 'all' && c.stayRange !== gFilters.stay.value) return false;
@@ -2421,6 +3008,27 @@
           ? 'var(--color-warning)'
           : 'var(--color-success)';
         document.querySelector('#gUpdated').textContent = `Atualizado em ${new Date(payload.generatedAt).toLocaleString('pt-BR')}`;
+        const gAlert = document.querySelector('#gDataAlert');
+        if (gAlert) {
+          const notes = payload.quality?.statusConsistency?.notes || [];
+          const apiWarnings = payload.quality?.warnings || [];
+          if ((notes.length || apiWarnings.length) && !isPortalAlertDismissed('general-status-consistency')) {
+            const lines = [
+              ...notes.map(n => escapeHtml(String(n))),
+              ...apiWarnings.map(w => escapeHtml(typeof w === 'string' ? w : (w.message || w.reason || JSON.stringify(w))))
+            ];
+            mountPortalAlert(gAlert, {
+              id: 'general-status-consistency',
+              type: 'warning',
+              title: 'Observações de qualidade dos dados',
+              message: 'Há inconsistências ou alertas na consolidação da carteira. Os indicadores exibidos continuam válidos para a amostra disponível.',
+              extraHtml: lines.length ? `<ul>${lines.map(l => `<li>${l}</li>`).join('')}</ul>` : '',
+              icon: '⚠'
+            });
+          } else {
+            hidePortalAlertHost(gAlert);
+          }
+        }
       } catch (error) {
         if (requestId !== generalState.requestId) return;
         if (error?.code === 'AUTH_REQUIRED' || error?.code === 'AUTH_FORBIDDEN' || error?.message === 'AUTH_REQUIRED') return;
@@ -2585,10 +3193,10 @@
       refresh.disabled = true; refresh.textContent = 'Atualizando…';
       status.textContent = '● Atualizando dados'; status.style.color = 'var(--color-warning)';
       try {
-        const response = await fetch(`/api/patrimonial-plan?t=${Date.now()}`, { cache: 'no-store' });
-        const payload = await response.json();
+        const response = await apiFetch(`/api/patrimonial-plan?t=${Date.now()}`, { cache: 'no-store' });
+        const payload = await response.json().catch(() => ({}));
         if (requestId !== planState.requestId) return;
-        if (!response.ok) throw new Error(payload.error || 'Falha ao consultar plano patrimonial');
+        if (!response.ok) throw new Error(friendlyApiError(response.status, payload) || payload.error || 'Falha ao consultar plano patrimonial');
         planState.payload = payload;
         planState.page = 1;
         fillSelect(pFilters.source, (payload.sources?.databases || []).map(db => db.source), 'Todas');
@@ -2596,6 +3204,7 @@
         status.textContent = payload.sources?.warnings?.length ? '● Fontes conectadas com alertas' : '● Fontes conectadas';
         status.style.color = payload.sources?.warnings?.length ? 'var(--color-warning)' : 'var(--color-success)';
         document.querySelector('#pUpdated').textContent = `Atualizado em ${new Date(payload.generatedAt).toLocaleString('pt-BR')}`;
+        showSourceWarningsAlert('#pSourceAlert', 'plan-source-warning', 'Alertas das fontes do plano patrimonial', payload.sources?.warnings || []);
       } catch (error) {
         if (requestId !== planState.requestId) return;
         status.textContent = '● Falha na atualização'; status.style.color = 'var(--color-danger)';
@@ -2709,10 +3318,10 @@
       refresh.disabled = true; refresh.textContent = 'Atualizando…';
       status.textContent = '● Atualizando dados'; status.style.color = 'var(--color-warning)';
       try {
-        const response = await fetch(`/api/onboarding?t=${Date.now()}`, { cache: 'no-store' });
-        const payload = await response.json();
+        const response = await apiFetch(`/api/onboarding?t=${Date.now()}`, { cache: 'no-store' });
+        const payload = await response.json().catch(() => ({}));
         if (requestId !== onboardingState.requestId) return;
-        if (!response.ok) throw new Error(payload.error || 'Falha ao consultar jornada');
+        if (!response.ok) throw new Error(friendlyApiError(response.status, payload) || payload.error || 'Falha ao consultar jornada');
         onboardingState.payload = payload;
         onboardingState.page = 1;
         const clients = payload.clients || [];
@@ -2722,6 +3331,7 @@
         status.textContent = payload.sources?.warnings?.length ? '● Portal conectado com alertas' : '● Portal conectado';
         status.style.color = payload.sources?.warnings?.length ? 'var(--color-warning)' : 'var(--color-success)';
         document.querySelector('#jUpdated').textContent = `Atualizado em ${new Date(payload.generatedAt).toLocaleString('pt-BR')}`;
+        showSourceWarningsAlert('#jSourceAlert', 'journey-source-warning', 'Alertas das fontes de jornada', payload.sources?.warnings || []);
       } catch (error) {
         if (requestId !== onboardingState.requestId) return;
         status.textContent = '● Falha na atualização'; status.style.color = 'var(--color-danger)';
@@ -3327,6 +3937,7 @@
         status.textContent = payload.quality?.warnings?.length ? '● Supabase conectado com alertas' : '● Supabase conectado';
         status.style.color = payload.quality?.warnings?.length ? 'var(--color-warning)' : 'var(--color-success)';
         document.querySelector('#mUpdated').textContent = `Atualizado em ${new Date(payload.generatedAt).toLocaleString('pt-BR')}`;
+        showSourceWarningsAlert('#mSourceAlert', 'meetings-source-warning', 'Alertas de qualidade das reuniões', payload.quality?.warnings || []);
       } catch (error) {
         if (requestId !== meetingsState.requestId) return;
         if (error?.code === 'AUTH_REQUIRED' || error?.code === 'AUTH_FORBIDDEN' || error?.message === 'AUTH_REQUIRED') return;
@@ -3376,7 +3987,7 @@
     });
 
     /* -------- Implementação de Mecanismos -------- */
-    const K_STATUS_FILTER = { active: 'Ativo', cancelled: 'Cancelado', frozen: 'Congelado', unknown: 'Não informado' };
+    const K_STATUS_FILTER = { active: 'Ativo', cancelled: 'Cancelado', frozen: 'Congelado', unknown: 'Não informado', active_or_frozen: null };
     const K_STATUS_LABELS = {
       Apto: 'Aptos',
       'Em andamento': 'Em andamento',
@@ -3406,7 +4017,7 @@
     const kActiveOnly = document.querySelector('#kActiveOnly');
 
     function setKClientStatus(next) {
-      const allowed = new Set(['all', 'active', 'cancelled', 'frozen', 'unknown']);
+      const allowed = new Set(['all', 'active', 'active_or_frozen', 'cancelled', 'frozen', 'unknown']);
       mechanismsState.clientStatusFilter = allowed.has(next) ? next : 'all';
       kFilters.clientStatus.value = mechanismsState.clientStatusFilter;
       const on = mechanismsState.clientStatusFilter === 'active';
@@ -3453,9 +4064,8 @@
     function filteredMechanismClients() {
       const clients = mechanismsState.payload?.clients || [];
       const q = kFilters.search.value.trim().toLowerCase();
-      const statusLabel = K_STATUS_FILTER[mechanismsState.clientStatusFilter] || null;
       return clients.filter(c => {
-        if (statusLabel && c.clientStatus !== statusLabel) return false;
+        if (!matchesClientStatusFilter(c.clientStatus || c, mechanismsState.clientStatusFilter)) return false;
         if (kFilters.segment?.value && kFilters.segment.value !== 'all' && c.segment !== kFilters.segment.value) return false;
         if (kFilters.engineer.value !== 'all' && c.engineer !== kFilters.engineer.value) return false;
         if (kFilters.mechCountBand?.value && kFilters.mechCountBand.value !== 'all') {
@@ -3519,10 +4129,16 @@
       const recPerClient = rows.map(c => c.available).filter(v => v != null);
       const recStats = robustStatsClient(recPerClient);
       const baseSummary = mechanismsState.payload?.summary || {};
-      const statusLabel = K_STATUS_FILTER[mechanismsState.clientStatusFilter] || null;
       let portfolioClients = baseSummary.portfolioClients ?? null;
-      if (statusLabel && baseSummary.portfolioByStatus) {
-        portfolioClients = baseSummary.portfolioByStatus[statusLabel] ?? 0;
+      const filter = mechanismsState.clientStatusFilter;
+      if (filter !== 'all' && baseSummary.portfolioByStatus) {
+        const by = baseSummary.portfolioByStatus;
+        if (filter === 'active_or_frozen') {
+          portfolioClients = (by.Ativo || 0) + (by.Congelado || 0);
+        } else {
+          const statusLabel = { active: 'Ativo', cancelled: 'Cancelado', frozen: 'Congelado', unknown: 'Não informado' }[filter];
+          portfolioClients = statusLabel ? (by[statusLabel] ?? 0) : portfolioClients;
+        }
       }
       const clientsWithout = portfolioClients == null ? null : Math.max(0, portfolioClients - rows.length);
       const coverage = portfolioClients ? Math.round((rows.length / portfolioClients) * 1000) / 10 : null;
@@ -3545,6 +4161,43 @@
       const typesUnused = unusedCatalogTypes.length;
       const catalogCoveragePercent = catalogMechanisms
         ? Math.round((typesUsed / catalogMechanisms) * 1000) / 10
+        : null;
+
+      const byMechanism = new Map();
+      for (const c of rows) {
+        for (const m of c.mechanisms || []) {
+          const id = m.mechanismId != null ? String(m.mechanismId) : null;
+          if (!id) continue;
+          const cur = byMechanism.get(id) || {
+            id,
+            name: m.name || 'Não informado',
+            clientCount: 0,
+          };
+          cur.clientCount += 1;
+          byMechanism.set(id, cur);
+        }
+      }
+      const ranked = [...byMechanism.values()].sort(
+        (a, b) => b.clientCount - a.clientCount || a.name.localeCompare(b.name, 'pt-BR')
+      );
+      const maxClients = ranked[0]?.clientCount || 0;
+      const ties = maxClients > 0
+        ? ranked.filter(item => item.clientCount === maxClients)
+          .sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'))
+        : [];
+      const lead = ties[0] || null;
+      const topMechanism = lead
+        ? {
+          id: lead.id,
+          name: lead.name,
+          clientCount: lead.clientCount,
+          count: lead.clientCount,
+          ties: ties.slice(1).map(item => ({
+            id: item.id,
+            name: item.name,
+            clientCount: item.clientCount,
+          })),
+        }
         : null;
 
       return {
@@ -3573,6 +4226,7 @@
         medianRecommendationsPerClient: recStats.median == null ? null : Math.round(recStats.median * 10) / 10,
         clientsWithNoImplementation: rows.filter(c => c.implemented === 0).length,
         partitionComplete: (implemented + inProgress + eligible + unrecognized) === available,
+        topMechanism,
       };
     }
 
@@ -3817,10 +4471,30 @@
           ? fmt.format(avgDays)
           : Number(avgDays).toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 2 }));
 
+      const topMech = summary.topMechanism;
+      const topMechTies = Array.isArray(topMech?.ties) ? topMech.ties : [];
+      const topMechTieNames = topMech
+        ? [topMech.name, ...topMechTies.map(t => t.name)].filter(Boolean)
+        : [];
+      let topMechValue = 'Não calculável';
+      let topMechNote = 'Nenhum mecanismo disponível no recorte atual.';
+      let topMechTip = 'Identifica o mecanismo vinculado à maior quantidade de clientes distintos, após a deduplicação por cliente e mecanismo.';
+      if (topMech && topMech.clientCount > 0) {
+        topMechValue = escapeHtml(topMech.name || 'Não informado');
+        const clientsLabel = `${fmt.format(topMech.clientCount)} cliente${topMech.clientCount === 1 ? '' : 's'}`;
+        if (topMechTies.length) {
+          topMechNote = `${clientsLabel}. Empatado com mais ${fmt.format(topMechTies.length)} mecanismo(s).`;
+          topMechTip = `${topMechTip} Empate entre: ${topMechTieNames.join(', ')}.`;
+        } else {
+          topMechNote = `${clientsLabel}. Mecanismo presente no maior número de clientes.`;
+        }
+      }
+
       document.querySelector('#kKpisCoverage').innerHTML = `
         <article class="metric kpi-primary"><div class="metric-label">Clientes com mecanismos <span class="help" tabindex="0" data-tip="Cada cliente é contado uma única vez, mesmo que possua vários mecanismos.">?</span></div><div class="metric-value">${fmt.format(summary.clientsWithMechanisms)}</div><div class="metric-note">Clientes distintos com pelo menos um mecanismo vinculado.</div></article>
         <article class="metric kpi-secondary"><div class="metric-label">Tipos utilizados <span class="help" tabindex="0" data-tip="Existem ${summary.catalogMechanisms == null ? '—' : fmt.format(summary.catalogMechanisms)} tipos cadastrados no catálogo e ${fmt.format(summary.typesUsed)} já aparecem vinculados a pelo menos um cliente.">?</span></div><div class="metric-value">${typesValue}</div><div class="metric-note">Tipos do catálogo que já estão vinculados a clientes.</div></article>
-        <article class="metric kpi-secondary"><div class="metric-label">Tipos sem utilização <span class="help" tabindex="0" data-tip="${escapeHtml(unusedTip)}">?</span></div><div class="metric-value">${fmt.format(summary.typesUnused)}</div><div class="metric-note">Tipos ainda não vinculados a nenhum cliente.</div></article>`;
+        <article class="metric kpi-secondary"><div class="metric-label">Tipos sem utilização <span class="help" tabindex="0" data-tip="${escapeHtml(unusedTip)}">?</span></div><div class="metric-value">${fmt.format(summary.typesUnused)}</div><div class="metric-note">Tipos ainda não vinculados a nenhum cliente.</div></article>
+        <article class="metric kpi-primary"><div class="metric-label">Mecanismo mais utilizado <span class="help" tabindex="0" data-tip="${escapeHtml(topMechTip)}">?</span></div><div class="metric-value" style="font-size:${topMech && topMech.clientCount > 0 ? '18px' : '22px'}">${topMechValue}</div><div class="metric-note">${escapeHtml(topMechNote)}</div></article>`;
 
       document.querySelector('#kKpisProgress').innerHTML = `
         <article class="metric kpi-primary"><div class="metric-label">Mecanismos implementados <span class="help" tabindex="0" data-tip="Conta as combinações entre cliente e mecanismo que chegaram ao status concluído.">?</span></div><div class="metric-value">${fmt.format(summary.implementedMechanisms)}</div><div class="metric-note">Vínculos com status concluído.</div></article>
@@ -3834,12 +4508,17 @@
 
       const unusedBox = document.querySelector('#kUnusedTypes');
       if (unusedBox) {
-        if (!unused.length) {
-          unusedBox.innerHTML = `<h3>Tipos sem utilização</h3><p>Todos os tipos do catálogo estão vinculados a pelo menos um cliente no conjunto filtrado.</p>`;
+        if (!unused.length || isPortalAlertDismissed('mechanisms-unused-types')) {
+          hidePortalAlertHost(unusedBox);
         } else {
-          unusedBox.innerHTML = `<h3>Tipos sem utilização (${fmt.format(unused.length)})</h3>
-            <p>Esses tipos existem no catálogo, mas ainda não foram vinculados a nenhum cliente.</p>
-            <ul>${unused.map(t => `<li>${escapeHtml(t.name)}</li>`).join('')}</ul>`;
+          mountPortalAlert(unusedBox, {
+            id: 'mechanisms-unused-types',
+            type: 'warning',
+            title: `Tipos sem utilização (${fmt.format(unused.length)})`,
+            message: 'Esses tipos existem no catálogo, mas ainda não foram vinculados a nenhum cliente.',
+            extraHtml: `<ul>${unused.map(t => `<li>${escapeHtml(t.name)}</li>`).join('')}</ul>`,
+            icon: '⚠'
+          });
         }
       }
 
@@ -3954,6 +4633,8 @@
       document.querySelector('#drawer').setAttribute('aria-hidden', 'false');
     }
 
+    /* App Pharus: conexão/API mantidas no backend; UI desta página não carrega /api/pharus-mechanisms. */
+
     async function loadMechanisms() {
       if (!isPortalAuthenticated()) return;
       if (mechanismsState.loading) return;
@@ -3987,6 +4668,7 @@
         status.textContent = hasWarnings ? '● Supabase conectado com alertas' : '● Supabase conectado';
         status.style.color = hasWarnings ? 'var(--color-warning)' : 'var(--color-success)';
         document.querySelector('#kUpdated').textContent = `Atualizado em ${new Date(payload.generatedAt).toLocaleString('pt-BR')}`;
+        showSourceWarningsAlert('#kSourceAlert', 'mechanisms-source-warning', 'Alertas de qualidade dos mecanismos', payload.quality?.warnings || []);
       } catch (error) {
         if (requestId !== mechanismsState.requestId) return;
         if (error?.code === 'AUTH_REQUIRED' || error?.code === 'AUTH_FORBIDDEN' || error?.message === 'AUTH_REQUIRED') return;
@@ -4173,6 +4855,7 @@
         status.textContent = hasWarnings ? '● QV360 conectado com alertas' : '● QV360 conectado';
         status.style.color = hasWarnings ? 'var(--color-warning)' : 'var(--color-success)';
         document.querySelector('#uUpdated').textContent = `Atualizado em ${new Date(payload.generatedAt).toLocaleString('pt-BR')}`;
+        showSourceWarningsAlert('#uSourceAlert', 'platform-source-warning', 'Alertas das fontes de uso da plataforma', payload.sources?.warnings || []);
       } catch (error) {
         if (requestId !== platformState.requestId) return;
         if (error?.code === 'AUTH_REQUIRED' || error?.code === 'AUTH_FORBIDDEN' || error?.message === 'AUTH_REQUIRED') return;
@@ -4236,7 +4919,7 @@
     const fActiveOnly = document.querySelector('#fActiveOnly');
 
     function setFClientStatus(next) {
-      const allowed = new Set(['all', 'active', 'cancelled', 'frozen', 'unknown']);
+      const allowed = new Set(['all', 'active', 'active_or_frozen', 'cancelled', 'frozen', 'unknown']);
       financialState.clientStatusFilter = allowed.has(next) ? next : 'all';
       if (fFilters.clientStatus) fFilters.clientStatus.value = financialState.clientStatusFilter;
       const on = financialState.clientStatusFilter === 'active';
@@ -4280,9 +4963,8 @@
     function filteredFinancialClients() {
       const clients = financialState.payload?.clients || [];
       const q = fFilters.search.value.trim().toLowerCase();
-      const statusLabel = F_STATUS_FILTER[financialState.clientStatusFilter] || null;
       return clients.filter(c => {
-        if (statusLabel && clientStatusLabel(c) !== statusLabel) return false;
+        if (!matchesClientStatusFilter(c, financialState.clientStatusFilter)) return false;
         if (fFilters.engineer.value !== 'all' && c.engineer !== fFilters.engineer.value) return false;
         if (fFilters.hasData.value === 'yes' && !c.hasFinancialData) return false;
         if (fFilters.hasData.value === 'no' && c.hasFinancialData) return false;
@@ -4477,8 +5159,13 @@
 
       const note = document.querySelector('#fHistoryNote');
       if (note) {
-        note.hidden = false;
-        note.textContent = 'A base atual armazena apenas o estado financeiro mais recente por cliente.';
+        mountPortalAlert(note, {
+          id: 'financial-history-note',
+          type: 'info',
+          title: 'Histórico financeiro',
+          message: 'A base atual armazena apenas o estado financeiro mais recente por cliente.',
+          icon: 'ℹ'
+        });
       }
 
       document.querySelector('#fChartRecency').innerHTML = hBars(dist.updateRecency || []);
@@ -4597,6 +5284,12 @@
         document.querySelector('#fUpdated').textContent = financialState.payload.generatedAt
           ? `Atualizado em ${new Date(financialState.payload.generatedAt).toLocaleString('pt-BR')}`
           : 'Dados carregados';
+        showSourceWarningsAlert(
+          '#fSourceAlert',
+          'financial-source-warning',
+          'Alertas de qualidade financeira',
+          financialState.payload.warnings || financialState.payload.quality?.warnings || []
+        );
         if (empty) {
           empty.style.display = financialState.payload.clients.length ? 'none' : 'block';
           empty.textContent = 'Nenhum cliente encontrado para os filtros selecionados.';
@@ -4655,27 +5348,40 @@
       if (client) openFinancialDrawer(client);
     });
 
-    /* ===================== Atendimento (Support) ===================== */
+    /* ===================== Atendimento (Support) — research.acionamentos ===================== */
     const supportState = {
-      payload: null, page: 1, pageSize: 25, sortKey: 'createdAt', sortDir: 'desc',
-      monthRange: '6', showAllEngineers: false, loading: false, requestId: 0
+      payload: null, page: 1, pageSize: 25, sortKey: 'openedAt', sortDir: 'desc',
+      loading: false, requestId: 0
     };
     const sFilters = {
       search: document.querySelector('#sSearch'),
-      status: document.querySelector('#sStatusFilter'),
+      requester: document.querySelector('#sRequester'),
       priority: document.querySelector('#sPriority'),
-      requested: document.querySelector('#sRequested'),
-      engineer: document.querySelector('#sEngineer'),
-      assignee: document.querySelector('#sAssignee'),
-      resolved: document.querySelector('#sResolved'),
-      periodType: document.querySelector('#sPeriodType'),
-      from: document.querySelector('#sFrom'),
-      to: document.querySelector('#sTo')
+      type: document.querySelector('#sType'),
+      area: document.querySelector('#sArea'),
+      status: document.querySelector('#sStatusFilter'),
+      origin: document.querySelector('#sOrigin'),
+      identified: document.querySelector('#sIdentified'),
+      attachment: document.querySelector('#sAttachment'),
+      openedFrom: document.querySelector('#sOpenedFrom'),
+      openedTo: document.querySelector('#sOpenedTo')
     };
     const S_SUFFICIENCY_LABEL = { critical: 'Confiabilidade crítica', low: 'Confiabilidade baixa', moderate: 'Confiabilidade moderada', good: 'Confiabilidade boa' };
-    const S_STATUS_BADGE = { 'Aberto': 'medium', 'Em andamento': 'medium', 'Pendente': 'medium', 'Resolvido': 'active', 'Não informado': 'unavailable' };
+    const S_STATUS_BADGE = { 'Novo': 'medium', 'Aberto': 'medium', 'Em andamento': 'medium', 'Pendente': 'medium', 'Resolvido': 'active', 'Não informado': 'unavailable' };
     const S_PRIORITY_BADGE = { 'Baixa': 'unavailable', 'Média': 'medium', 'Alta': 'low', 'Urgente': 'low', 'Não informado': 'unavailable' };
+    const S_PRIORITY_COLOR = { 'Urgente': '#c0392b', 'Alta': '#e67e22', 'Média': '#f1c40f', 'Baixa': '#7f8c8d', 'Não informado': '#bdc3c7' };
+    const S_AREA_CHART_ORDER = ['App Pharus', 'QV360 Web', 'Não informado'];
 
+    function supportFold(v) {
+      return String(v || '').normalize('NFD').replace(/\p{M}/gu, '').toLowerCase().trim().replace(/\s+/g, ' ');
+    }
+    /** Área do gráfico: somente App Pharus, QV360 Web ou Não informado. */
+    function normalizeSupportAreaChart(raw) {
+      const token = supportFold(raw);
+      if (token === 'app pharus') return 'App Pharus';
+      if (token === 'qv360 web') return 'QV360 Web';
+      return 'Não informado';
+    }
     function supportStatusBadge(label) {
       const cls = S_STATUS_BADGE[label] || 'unavailable';
       return `<span class="badge ${cls}">${escapeHtml(label || 'Não informado')}</span>`;
@@ -4684,48 +5390,33 @@
       const cls = S_PRIORITY_BADGE[label] || 'unavailable';
       return `<span class="badge ${cls}">${escapeHtml(label || 'Não informado')}</span>`;
     }
-    function formatResolutionHours(hours) {
-      if (hours == null || Number.isNaN(Number(hours))) return null;
-      if (hours < 48) return `${fmt.format(Math.round(hours * 10) / 10)} h`;
-      return `${fmt.format(Math.round((hours / 24) * 10) / 10)} d`;
-    }
-    function ticketResolutionCell(t) {
-      if (t.isResolved) {
-        const v = formatResolutionHours(t.resolutionHours);
-        return v || 'Não calculável';
-      }
-      return 'Não calculável';
-    }
-
-    function supportPeriodDate(t) {
-      return sFilters.periodType.value === 'resolved' ? t.resolvedAt : t.createdAt;
-    }
-    function supportInPeriod(t) {
-      if (!sFilters.from.value && !sFilters.to.value) return true;
-      const raw = supportPeriodDate(t);
-      if (!raw) return false;
-      const d = new Date(raw);
+    function inDateRange(iso, fromVal, toVal) {
+      if (!fromVal && !toVal) return true;
+      if (!iso) return false;
+      const d = new Date(iso);
       if (Number.isNaN(d.getTime())) return false;
-      if (sFilters.from.value && d < new Date(sFilters.from.value + 'T00:00:00Z')) return false;
-      if (sFilters.to.value && d > new Date(sFilters.to.value + 'T23:59:59Z')) return false;
+      if (fromVal && d < new Date(fromVal + 'T00:00:00Z')) return false;
+      if (toVal && d > new Date(toVal + 'T23:59:59Z')) return false;
       return true;
     }
 
     function filteredSupportTickets() {
       const tickets = supportState.payload?.tickets || [];
-      const q = sFilters.search.value.trim().toLowerCase();
+      const q = (sFilters.search?.value || '').trim().toLowerCase();
       return tickets.filter(t => {
-        if (sFilters.status.value !== 'all' && t.status !== sFilters.status.value) return false;
-        if (sFilters.priority.value !== 'all' && t.priority !== sFilters.priority.value) return false;
-        if (sFilters.requested.value === 'yes' && t.requestedByClient !== true) return false;
-        if (sFilters.requested.value === 'no' && t.requestedByClient === true) return false;
-        if (sFilters.engineer.value !== 'all' && t.engineer !== sFilters.engineer.value) return false;
-        if (sFilters.assignee.value !== 'all' && (t.assignedTo || '') !== sFilters.assignee.value) return false;
-        if (sFilters.resolved.value === 'yes' && !t.isResolved) return false;
-        if (sFilters.resolved.value === 'no' && t.isResolved) return false;
-        if (!supportInPeriod(t)) return false;
+        if (sFilters.status?.value !== 'all' && t.status !== sFilters.status.value) return false;
+        if (sFilters.priority?.value !== 'all' && t.priority !== sFilters.priority.value) return false;
+        if (sFilters.type?.value !== 'all' && t.type !== sFilters.type.value) return false;
+        if (sFilters.area?.value !== 'all' && normalizeSupportAreaChart(t.area) !== sFilters.area.value) return false;
+        if (sFilters.origin?.value !== 'all' && t.origin !== sFilters.origin.value) return false;
+        if (sFilters.requester?.value !== 'all' && t.requester !== sFilters.requester.value) return false;
+        if (sFilters.identified?.value === 'yes' && !t.clientIdentified) return false;
+        if (sFilters.identified?.value === 'no' && t.clientIdentified) return false;
+        if (sFilters.attachment?.value === 'yes' && !t.hasAttachment) return false;
+        if (sFilters.attachment?.value === 'no' && t.hasAttachment) return false;
+        if (!inDateRange(t.openedAt, sFilters.openedFrom?.value, sFilters.openedTo?.value)) return false;
         if (q) {
-          const hay = `${t.title || ''} ${t.clientName || ''} ${t.clientCode || ''} ${t.clientId || ''} ${t.ticketId || ''}`.toLowerCase();
+          const hay = `${t.title || ''} ${t.description || ''} ${t.clientName || ''} ${t.clientEmail || ''} ${t.ticketId || ''} ${t.requester || ''}`.toLowerCase();
           if (!hay.includes(q)) return false;
         }
         return true;
@@ -4735,65 +5426,88 @@
     function computeSupportSummary(rows) {
       const totalTickets = rows.length;
       const openTickets = rows.filter(t => t.isOpen).length;
-      const resolvedTickets = rows.filter(t => t.isResolved).length;
-      const resValues = rows.map(t => t.resolutionHours).filter(h => h != null && Number.isFinite(h) && h >= 0).sort((a, b) => a - b);
-      const median = resValues.length ? (resValues.length % 2 ? resValues[(resValues.length - 1) / 2] : (resValues[resValues.length / 2 - 1] + resValues[resValues.length / 2]) / 2) : null;
-      const average = resValues.length ? resValues.reduce((a, b) => a + b, 0) / resValues.length : null;
-      const clientsWithTickets = new Set(rows.map(t => t.clientId).filter(Boolean)).size;
-      const totalClients = supportState.payload?.summary?.totalClients || 0;
+      const urgentTickets = rows.filter(t => t.priority === 'Urgente').length;
+      const identifiedClients = rows.filter(t => t.clientIdentified).length;
+      const unidentifiedClients = rows.filter(t => !t.clientIdentified).length;
       const p = (n, d) => d ? Math.round((n / d) * 1000) / 10 : 0;
-      const sufficiency = totalTickets >= 100 && resolvedTickets >= 20 ? 'good' : totalTickets >= 30 ? 'moderate' : totalTickets >= 10 ? 'low' : 'critical';
+      const areaMap = new Map();
+      rows.forEach(t => {
+        const area = normalizeSupportAreaChart(t.area);
+        if (area === 'Não informado') return;
+        areaMap.set(area, (areaMap.get(area) || 0) + 1);
+      });
+      const topArea = [...areaMap.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], 'pt-BR'))[0]?.[0] || null;
+      const dataSufficiency = totalTickets < 30
+        ? (totalTickets < 10 ? 'critical' : 'low')
+        : (totalTickets >= 100 ? 'good' : 'moderate');
       return {
-        totalTickets, openTickets, resolvedTickets,
-        resolutionCoveragePercent: p(resolvedTickets, totalTickets),
-        medianResolutionHours: median == null ? null : Math.round(median * 10) / 10,
-        averageResolutionHours: average == null ? null : Math.round(average * 10) / 10,
-        clientsWithTickets, clientsWithTicketsPercent: p(clientsWithTickets, totalClients),
-        totalClients, dataSufficiency: sufficiency
+        totalTickets, openTickets, urgentTickets, identifiedClients, unidentifiedClients,
+        identifiedPercent: p(identifiedClients, totalTickets),
+        unidentifiedPercent: p(unidentifiedClients, totalTickets),
+        topArea, dataSufficiency
       };
     }
 
     function computeSupportDistributions(rows) {
       const total = rows.length || 1;
-      const statusOrder = ['Aberto', 'Em andamento', 'Pendente', 'Resolvido', 'Não informado'];
-      const statusMap = new Map();
-      rows.forEach(t => statusMap.set(t.status, (statusMap.get(t.status) || 0) + 1));
-      const byStatus = [...statusMap.keys()]
-        .sort((a, b) => (statusOrder.indexOf(a) + 1 || 99) - (statusOrder.indexOf(b) + 1 || 99))
-        .map(label => ({ label, count: statusMap.get(label), percent: Math.round((statusMap.get(label) / total) * 1000) / 10 }));
-      const byPriority = ['Baixa', 'Média', 'Alta', 'Urgente', 'Não informado']
-        .map(label => ({ label, count: rows.filter(t => t.priority === label).length }))
-        .filter(i => i.count > 0)
-        .map(i => ({ ...i, percent: Math.round((i.count / total) * 1000) / 10 }));
-      const byEngMap = new Map();
-      rows.forEach(t => { const e = t.engineer || 'Não informado'; byEngMap.set(e, (byEngMap.get(e) || 0) + 1); });
-      const byEngineer = [...byEngMap.entries()].map(([label, count]) => ({ label, count, percent: Math.round((count / total) * 1000) / 10 }))
-        .sort((a, b) => b.count - a.count || a.label.localeCompare(b.label, 'pt-BR'));
-
-      const monthsBack = Number(supportState.monthRange) || 6;
-      const buildMonths = (getDate) => {
-        const now = new Date();
-        const nowKey = `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, '0')}`;
-        const buckets = new Map();
-        for (let i = monthsBack - 1; i >= 0; i -= 1) {
-          const d = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - i, 1));
-          buckets.set(`${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}`, 0);
-        }
+      const dist = (getLabel, preferred = null) => {
+        const map = new Map();
         rows.forEach(t => {
-          const raw = getDate(t);
-          if (!raw) return;
-          const d = new Date(raw);
-          if (Number.isNaN(d.getTime()) || d > now) return;
-          const key = `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}`;
-          if (key > nowKey || !buckets.has(key)) return;
-          buckets.set(key, buckets.get(key) + 1);
+          const label = getLabel(t) || 'Não informado';
+          map.set(label, (map.get(label) || 0) + 1);
         });
-        return [...buckets.entries()].map(([month, count]) => ({ month, count }));
+        let entries = [...map.entries()].map(([label, count]) => ({
+          label, count, percent: Math.round((count / total) * 1000) / 10
+        }));
+        if (preferred) {
+          entries = preferred.map(label => {
+            const found = entries.find(e => e.label === label);
+            return found || { label, count: 0, percent: 0 };
+          }).filter(e => e.count > 0 || preferred.length <= 3);
+          entries.sort((a, b) => {
+            const ia = preferred.indexOf(a.label); const ib = preferred.indexOf(b.label);
+            const ra = ia === -1 ? 999 : ia; const rb = ib === -1 ? 999 : ib;
+            if (ra !== rb) return ra - rb;
+            return b.count - a.count;
+          });
+        } else {
+          entries.sort((a, b) => b.count - a.count || a.label.localeCompare(b.label, 'pt-BR'));
+        }
+        return entries;
       };
-      const byMonth = buildMonths(t => t.createdAt);
-      const resolvedRows = rows.filter(t => t.isResolved && t.resolvedAt);
-      const resolvedByMonth = resolvedRows.length ? buildMonths(t => (t.isResolved ? t.resolvedAt : null)) : [];
-      return { byStatus, byPriority, byEngineer, byMonth, resolvedByMonth };
+      const byArea = dist(t => normalizeSupportAreaChart(t.area), S_AREA_CHART_ORDER);
+      const byType = dist(t => (t.type === 'Não informado' ? null : t.type));
+      const byPriority = dist(t => t.priority, ['Urgente', 'Alta', 'Média', 'Baixa', 'Não informado']);
+      const now = new Date();
+      const dates = rows.map(t => t.openedAt ? new Date(t.openedAt) : null).filter(d => d && !Number.isNaN(d.getTime()) && d <= now);
+      let byPeriod = [];
+      if (dates.length) {
+        const min = new Date(Math.min(...dates.map(d => d.getTime())));
+        const spanDays = Math.max(1, Math.ceil((now.getTime() - min.getTime()) / 86400000) + 1);
+        const byDay = spanDays <= 45;
+        const buckets = new Map();
+        if (byDay) {
+          for (let t = Date.UTC(min.getUTCFullYear(), min.getUTCMonth(), min.getUTCDate()); t <= now.getTime(); t += 86400000) {
+            const key = `${new Date(t).getUTCFullYear()}-${String(new Date(t).getUTCMonth() + 1).padStart(2, '0')}-${String(new Date(t).getUTCDate()).padStart(2, '0')}`;
+            buckets.set(key, 0);
+          }
+        } else {
+          let cursor = new Date(Date.UTC(min.getUTCFullYear(), min.getUTCMonth(), 1));
+          const end = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
+          while (cursor <= end) {
+            buckets.set(`${cursor.getUTCFullYear()}-${String(cursor.getUTCMonth() + 1).padStart(2, '0')}`, 0);
+            cursor = new Date(Date.UTC(cursor.getUTCFullYear(), cursor.getUTCMonth() + 1, 1));
+          }
+        }
+        dates.forEach(d => {
+          const key = byDay
+            ? `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}-${String(d.getUTCDate()).padStart(2, '0')}`
+            : `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}`;
+          if (buckets.has(key)) buckets.set(key, buckets.get(key) + 1);
+        });
+        byPeriod = [...buckets.entries()].map(([period, count]) => ({ period, month: period, label: period, count, grain: byDay ? 'day' : 'month' }));
+      }
+      return { byArea, byType, byPriority, byPeriod };
     }
 
     function fillSupportFilters() {
@@ -4804,34 +5518,38 @@
         sel.innerHTML = `<option value="all">${allLabel}</option>` + values.map(v => `<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`).join('');
         sel.value = values.includes(current) ? current : 'all';
       };
-      const statusOrder = ['Aberto', 'Em andamento', 'Pendente', 'Resolvido', 'Não informado'];
-      fill(sFilters.status, [...new Set(tickets.map(t => t.status))].sort((a, b) => (statusOrder.indexOf(a) + 1 || 99) - (statusOrder.indexOf(b) + 1 || 99)), 'Todos');
-      const prOrder = ['Baixa', 'Média', 'Alta', 'Urgente', 'Não informado'];
-      fill(sFilters.priority, prOrder.filter(p => tickets.some(t => t.priority === p)), 'Todas');
-      fill(sFilters.engineer, [...new Set(tickets.map(t => t.engineer).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'pt-BR')), 'Todos');
-      fill(sFilters.assignee, [...new Set(tickets.map(t => t.assignedTo).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'pt-BR')), 'Todos');
+      const uniq = (getter) => [...new Set(tickets.map(getter).filter(v => v && v !== 'Não informado'))].sort((a, b) => a.localeCompare(b, 'pt-BR'));
+      fill(sFilters.status, uniq(t => t.status), 'Todos');
+      fill(sFilters.priority, ['Urgente', 'Alta', 'Média', 'Baixa', 'Não informado'].filter(p => tickets.some(t => t.priority === p)), 'Todas');
+      fill(sFilters.type, uniq(t => t.type), 'Todos');
+      fill(sFilters.area, S_AREA_CHART_ORDER.filter(a => tickets.some(t => normalizeSupportAreaChart(t.area) === a)), 'Todas');
+      fill(sFilters.origin, uniq(t => t.origin), 'Todas');
+      fill(sFilters.requester, uniq(t => t.requester), 'Todos');
     }
 
-    function renderSupportMonthChart(elId, items, emptyText) {
-      const el = document.querySelector(elId);
+    function renderSupportPeriodChart(items) {
+      const el = document.querySelector('#sChartPeriod');
       if (!el) return;
       if (!items || !items.length) {
-        el.innerHTML = `<div class="empty" style="display:block">${escapeHtml(emptyText || 'Sem dados')}</div>`;
+        el.innerHTML = '<div class="empty" style="display:block">Sem período para exibir.</div>';
         return;
       }
       const maxValue = Math.max(...items.map(i => i.count), 0);
       const plotH = 180;
-      el.innerHTML = `<div class="acquisition-chart-scroll"><div class="acquisition-chart-grid" data-cols="${items.length}" role="img" aria-label="Chamados por mês">${items.map(i => {
+      el.innerHTML = `<div class="acquisition-chart-scroll"><div class="acquisition-chart-grid" data-cols="${items.length}" role="img" aria-label="Acionamentos por período">${items.map(i => {
         const heightPct = maxValue > 0 ? (i.count / maxValue) * 100 : 0;
         const barPx = i.count > 0 ? Math.max(Math.round((heightPct / 100) * plotH), 6) : 0;
         const shortLabel = (() => {
-          const [y, m] = String(i.month).split('-');
+          const parts = String(i.period || i.month || '').split('-');
           const names = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
-          const idx = Number(m) - 1;
-          if (!y || idx < 0 || idx > 11) return i.month;
-          return items.length >= 12 ? `${names[idx]}/${String(y).slice(2)}` : names[idx];
+          if (parts.length === 3) return `${parts[2]}/${parts[1]}`;
+          if (parts.length === 2) {
+            const idx = Number(parts[1]) - 1;
+            return names[idx] ? `${names[idx]}/${String(parts[0]).slice(2)}` : i.period;
+          }
+          return i.period;
         })();
-        return `<div class="acquisition-column" title="${escapeHtml(formatMonthLabel(i.month))}: ${fmt.format(i.count)} chamados" data-value="${i.count}">
+        return `<div class="acquisition-column" title="${escapeHtml(String(i.period))}: ${fmt.format(i.count)}" data-value="${i.count}">
           <div class="acquisition-column-value">${fmt.format(i.count)}</div>
           <div class="acquisition-column-bar-wrap"><div class="acquisition-column-bar" style="height:${barPx}px"></div></div>
           <div class="acquisition-column-label">${escapeHtml(shortLabel)}</div>
@@ -4839,46 +5557,54 @@
       }).join('')}</div></div>`;
     }
 
+    function renderPriorityBars(items) {
+      const el = document.querySelector('#sChartPriority');
+      if (!el) return;
+      if (!items.length) { el.innerHTML = '<div class="empty" style="display:block">Sem dados</div>'; return; }
+      const max = Math.max(...items.map(i => i.count), 1);
+      el.innerHTML = items.map(i => {
+        const color = S_PRIORITY_COLOR[i.label] || '#95a5a6';
+        const w = Math.max(4, Math.round((i.count / max) * 100));
+        return `<div class="hbar" title="${escapeHtml(i.label)}: ${fmt.format(i.count)} (${pct(i.percent)})">
+          <div class="hbar-label">${escapeHtml(i.label)}</div>
+          <div class="hbar-track"><span style="width:${w}%;background:${color}"></span></div>
+          <div class="hbar-val">${fmt.format(i.count)} · ${pct(i.percent)}</div>
+        </div>`;
+      }).join('');
+    }
+
     function openSupportDrawer(ticket) {
-      document.querySelector('#drawerTitle').textContent = ticket.title || 'Chamado';
-      document.querySelector('#drawerSub').textContent = `${ticket.clientName || 'Não informado'} · Código ${ticket.clientCode || 'Não informado'}`;
-      const resolutionText = ticket.isResolved ? (formatResolutionHours(ticket.resolutionHours) || 'Não calculável') : 'Não calculável';
+      if (!isPortalAuthenticated()) return;
+      const areaLabel = normalizeSupportAreaChart(ticket.area);
+      document.querySelector('#drawerTitle').textContent = ticket.title || 'Acionamento';
+      document.querySelector('#drawerSub').textContent = `${areaLabel} · ${ticket.type || 'Tipo não informado'}`;
+      const attachText = ticket.hasAttachment
+        ? (ticket.attachmentLink ? `Sim · ${ticket.attachmentLink}` : 'Sim')
+        : 'Não';
       const items = [
-        ['Cliente', ticket.clientName || 'Não informado'],
-        ['Código', ticket.clientCode || 'Não informado'],
-        ['Status', ticket.status || 'Não informado'],
         ['Prioridade', ticket.priority || 'Não informado'],
-        ['Solicitado pelo cliente', boolLabel(ticket.requestedByClient)],
-        ['Responsável', ticket.assignedTo || 'Não informado'],
-        ['Data de abertura', dateBR(ticket.createdAt)],
-        ['Data de resolução', dateBR(ticket.resolvedAt)],
-        ['Tempo de resolução', resolutionText],
-        ['Classificação', 'Não classificável'],
-        ['Escalado', 'Fonte não confirmada']
+        ['Tipo', ticket.type || 'Não informado'],
+        ['Área/setor', areaLabel],
+        ['Status', ticket.status || 'Não informado'],
+        ['Solicitante', ticket.requester || 'Não informado'],
+        ['Cliente', ticket.clientName || 'Não informado'],
+        ['E-mail', ticket.clientEmail || 'Não informado'],
+        ['Data de abertura', dateBR(ticket.openedAt)],
+        ['Origem', ticket.origin || 'Não informado'],
+        ['Anexos', attachText],
+        ['Vínculo com cliente', ticket.clientIdentified ? 'Identificado' : 'Não identificado'],
+        ['Reclamações', 'Não classificável'],
+        ['Elogios', 'Não classificável'],
+        ['Escalonamento', 'Fonte não confirmada']
       ];
-      const desc = ticket.description ? `<div class="drawer-section" style="grid-column:1/-1"><h3>Descrição</h3><p style="margin:0;color:var(--color-text);font-size:13px;white-space:pre-wrap">${escapeHtml(ticket.description)}</p></div>` : '';
-      const notes = ticket.resolutionNotes ? `<div class="drawer-section" style="grid-column:1/-1"><h3>Notas de resolução</h3><p style="margin:0;color:var(--color-text);font-size:13px;white-space:pre-wrap">${escapeHtml(ticket.resolutionNotes)}</p></div>` : '';
+      const desc = isPortalAuthenticated() && ticket.description
+        ? `<div class="drawer-section" style="grid-column:1/-1"><h3>Descrição</h3><p style="margin:0;color:var(--color-text);font-size:13px;white-space:pre-wrap">${escapeHtml(ticket.description)}</p></div>`
+        : '';
       document.querySelector('#drawerGrid').innerHTML =
-        items.map(([k, v]) => `<div class="drawer-item"><span>${k}</span><strong>${escapeHtml(String(v))}</strong></div>`).join('') + desc + notes;
+        items.map(([k, v]) => `<div class="drawer-item"><span>${k}</span><strong>${escapeHtml(String(v))}</strong></div>`).join('') + desc;
       document.querySelector('#drawerWarnings').innerHTML = (ticket.dataWarnings || []).map(w => `<li>${escapeHtml(w)}</li>`).join('') || '<li style="color:var(--color-text-muted)">Nenhum alerta</li>';
       document.querySelector('#drawer').classList.add('open');
       document.querySelector('#drawer').setAttribute('aria-hidden', 'false');
-    }
-
-    function renderSupportAlert(summary) {
-      const banner = document.querySelector('#sAlert');
-      if (!banner) return;
-      const show = summary.totalTickets < 30 || summary.resolvedTickets < 10 || summary.resolutionCoveragePercent < 20;
-      banner.hidden = !show;
-      if (!show) return;
-      document.querySelector('#sAlertText').textContent =
-        `Atualmente há ${fmt.format(summary.totalTickets)} chamado(s) registrado(s) e ${fmt.format(summary.resolvedTickets)} atendimento(s) resolvido(s). Os indicadores abaixo são apresentados de forma provisória e podem não representar o comportamento real da operação.`;
-      document.querySelector('#sAlertMeta').innerHTML = [
-        ['Total de registros', fmt.format(summary.totalTickets)],
-        ['Registros resolvidos', fmt.format(summary.resolvedTickets)],
-        ['Cobertura de resolução', pct(summary.resolutionCoveragePercent)],
-        ['Nível de confiabilidade', S_SUFFICIENCY_LABEL[summary.dataSufficiency] || '—']
-      ].map(([k, v]) => `<span>${k}: <b>${escapeHtml(String(v))}</b></span>`).join('');
     }
 
     function renderSupport() {
@@ -4886,47 +5612,29 @@
       const rows = filteredSupportTickets();
       const summary = computeSupportSummary(rows);
       const dist = computeSupportDistributions(rows);
-      renderSupportAlert(summary);
-
-      const medianText = summary.medianResolutionHours == null
-        ? '<div class="metric-value" style="font-size:18px">Não calculável</div><div class="metric-note">Nenhum chamado resolvido com datas válidas</div>'
-        : `<div class="metric-value">${formatResolutionHours(summary.medianResolutionHours)}</div><div class="metric-note">Mediana · média ${summary.averageResolutionHours == null ? '—' : formatResolutionHours(summary.averageResolutionHours)}</div>`;
 
       document.querySelector('#sKpis').innerHTML = `
-        <article class="metric"><div class="metric-label">Quantidade de chamados <span class="help" title="Total de chamados registrados no recorte filtrado.">?</span></div><div class="metric-value">${fmt.format(summary.totalTickets)}</div><div class="metric-note">${S_SUFFICIENCY_LABEL[summary.dataSufficiency]}</div></article>
-        <article class="metric"><div class="metric-label">Chamados abertos <span class="help" title="Status aberto, pendente ou em andamento.">?</span></div><div class="metric-value">${fmt.format(summary.openTickets)}</div><div class="metric-note">${pct(summary.totalTickets ? Math.round((summary.openTickets / summary.totalTickets) * 1000) / 10 : 0)} do total</div></article>
-        <article class="metric"><div class="metric-label">Chamados resolvidos <span class="help" title="Com resolved_at válido ou status resolvido/concluído/fechado.">?</span></div><div class="metric-value">${fmt.format(summary.resolvedTickets)}</div><div class="metric-note">${pct(summary.resolutionCoveragePercent)} de cobertura</div></article>
-        <article class="metric"><div class="metric-label">Tempo típico de resolução <span class="help" title="Mediana de horas entre abertura e resolução, apenas com datas válidas.">?</span></div>${medianText}</article>
-        <article class="metric"><div class="metric-label">Reclamações <span class="help" title="Categoria de reclamação ainda não confirmada.">?</span></div><div class="metric-value" style="font-size:18px">Não classificável</div><div class="metric-note">Categoria de reclamação ainda não confirmada</div></article>
-        <article class="metric"><div class="metric-label">Elogios <span class="help" title="Categoria de elogio ainda não confirmada.">?</span></div><div class="metric-value" style="font-size:18px">Não classificável</div><div class="metric-note">Categoria de elogio ainda não confirmada</div></article>
-        <article class="metric"><div class="metric-label">Chamados escalados <span class="help" title="Não há fonte confirmada de escalonamento.">?</span></div><div class="metric-value" style="font-size:18px">Fonte não confirmada</div><div class="metric-note">Sem evidência de escalonamento na base</div></article>
-        <article class="metric"><div class="metric-label">Clientes com chamado <span class="help" title="Clientes distintos com ao menos um chamado.">?</span></div><div class="metric-value">${fmt.format(summary.clientsWithTickets)}</div><div class="metric-note">${pct(summary.clientsWithTicketsPercent)} da carteira</div></article>`;
+        <article class="metric"><div class="metric-label">Total de acionamentos</div><div class="metric-value">${fmt.format(summary.totalTickets)}</div><div class="metric-note">Quantidade de solicitações registradas no período.</div></article>
+        <article class="metric"><div class="metric-label">Acionamentos abertos</div><div class="metric-value">${fmt.format(summary.openTickets)}</div><div class="metric-note">Solicitações que ainda não possuem resolução.</div></article>
+        <article class="metric"><div class="metric-label">Acionamentos urgentes</div><div class="metric-value">${fmt.format(summary.urgentTickets)}</div><div class="metric-note">Solicitações registradas com prioridade urgente.</div></article>
+        <article class="metric"><div class="metric-label">Clientes identificados</div><div class="metric-value">${fmt.format(summary.identifiedClients)}</div><div class="metric-note">${pct(summary.identifiedPercent)} · Acionamentos vinculados a um cliente encontrado na base.</div></article>
+        <article class="metric"><div class="metric-label">Clientes não identificados</div><div class="metric-value">${fmt.format(summary.unidentifiedClients)}</div><div class="metric-note">Acionamentos sem vínculo confirmado com um cliente.</div></article>
+        <article class="metric"><div class="metric-label">Área com mais acionamentos</div><div class="metric-value" style="font-size:${summary.topArea ? '20px' : '18px'}">${escapeHtml(summary.topArea || 'Não informado')}</div><div class="metric-note">Área com maior volume no período.</div></article>`;
 
-      document.querySelector('#sChartStatus').innerHTML = hBars(dist.byStatus || []);
-      document.querySelector('#sChartPriority').innerHTML = hBars(dist.byPriority || []);
-      renderSupportMonthChart('#sChartMonths', dist.byMonth || [], 'Sem meses para exibir.');
-      const monthNote = document.querySelector('#sMonthNote');
-      if (monthNote) {
-        const nonZero = (dist.byMonth || []).filter(m => m.count > 0).length;
-        monthNote.hidden = nonZero > 1;
-        monthNote.textContent = 'Histórico ainda insuficiente para tendência.';
+      document.querySelector('#sChartArea').innerHTML = hBars(dist.byArea || []);
+      const typeEl = document.querySelector('#sChartType');
+      if (dist.byType.length === 1) {
+        typeEl.innerHTML = `<div class="empty" style="display:block">Atualmente todos os registros estão classificados como ${escapeHtml(dist.byType[0].label)}.</div>${hBars(dist.byType)}`;
+      } else {
+        typeEl.innerHTML = hBars(dist.byType || []);
       }
-      const resolvedEl = document.querySelector('#sChartResolved');
-      if ((dist.resolvedByMonth || []).length) {
-        renderSupportMonthChart('#sChartResolved', dist.resolvedByMonth, 'Nenhum chamado resolvido no período.');
-      } else if (resolvedEl) {
-        resolvedEl.innerHTML = '<div class="empty" style="display:block">Nenhum chamado resolvido no período.</div>';
-      }
-      const engLimit = supportState.showAllEngineers ? undefined : 8;
-      document.querySelector('#sChartEngineers').innerHTML = hBars(dist.byEngineer || [], engLimit);
-      const engNote = document.querySelector('#sEngineersNote');
-      if (engNote) engNote.textContent = summary.totalTickets < 30 ? 'Quantidade de chamados por engenheiro · baixa amostra' : 'Quantidade de chamados por engenheiro';
-      const engToggle = document.querySelector('#sToggleEngineers');
-      if (engToggle) engToggle.textContent = supportState.showAllEngineers ? 'Ver principais' : 'Ver todos';
+      renderPriorityBars(dist.byPriority || []);
+      renderSupportPeriodChart(dist.byPeriod || []);
 
       const sorted = [...rows].sort((a, b) => {
         const key = supportState.sortKey;
-        let av = a[key], bv = b[key];
+        let av = key === 'area' ? normalizeSupportAreaChart(a.area) : a[key];
+        let bv = key === 'area' ? normalizeSupportAreaChart(b.area) : b[key];
         let cmp = 0;
         if (av == null && bv == null) cmp = 0;
         else if (av == null) cmp = 1;
@@ -4945,21 +5653,20 @@
 
       document.querySelector('#sRows').innerHTML = pageRows.map(t => `
         <tr data-sid="${escapeHtml(t.ticketId)}">
-          <td class="truncate" title="${escapeHtml(t.title)}">${escapeHtml(t.title)}</td>
-          <td class="truncate" title="${escapeHtml(t.clientName)}">${escapeHtml(t.clientName)}</td>
-          <td>${escapeHtml(t.clientCode || 'Não informado')}</td>
-          <td>${supportStatusBadge(t.status)}</td>
+          <td class="truncate" title="${escapeHtml(t.title)}">${escapeHtml(t.title || 'Não informado')}</td>
+          <td class="truncate">${escapeHtml(normalizeSupportAreaChart(t.area))}</td>
+          <td class="truncate">${escapeHtml(t.type || 'Não informado')}</td>
           <td>${supportPriorityBadge(t.priority)}</td>
-          <td>${boolLabel(t.requestedByClient)}</td>
-          <td class="truncate" title="${escapeHtml(t.assignedTo || 'Não informado')}">${escapeHtml(t.assignedTo || 'Não informado')}</td>
-          <td>${dateBR(t.createdAt)}</td>
-          <td>${dateBR(t.resolvedAt)}</td>
-          <td class="num">${escapeHtml(ticketResolutionCell(t))}</td>
-          <td><span class="note-muted">Não classificável</span></td>
-          <td><span class="note-muted">Fonte não confirmada</span></td>
+          <td>${supportStatusBadge(t.status)}</td>
+          <td class="truncate">${escapeHtml(t.requester || 'Não informado')}</td>
+          <td class="truncate">${escapeHtml(t.clientName || 'Não informado')}</td>
+          <td class="truncate">${escapeHtml(t.clientEmail || 'Não informado')}</td>
+          <td>${t.clientIdentified ? 'Sim' : 'Não'}</td>
+          <td>${dateBR(t.openedAt)}</td>
+          <td>${t.hasAttachment ? 'Sim' : 'Não'}</td>
         </tr>`).join('');
 
-      document.querySelector('#sCounter').textContent = `${sorted.length} de ${(supportState.payload.tickets || []).length} chamados`;
+      document.querySelector('#sCounter').textContent = `${sorted.length} de ${(supportState.payload.tickets || []).length} acionamentos`;
       document.querySelector('#sPageInfo').textContent = `Página ${supportState.page} de ${pages}`;
       document.querySelector('#sEmpty').style.display = sorted.length ? 'none' : 'block';
       document.querySelector('#sPrev').disabled = supportState.page <= 1;
@@ -4985,18 +5692,13 @@
         if (requestId !== supportState.requestId) return;
         if (!response.ok) {
           console.error('[Support API]', { status: response.status, body: responseText.slice(0, 800) });
+          if (payload?.diagnostic) console.error('[Support diagnostic]', payload.diagnostic);
           throw Object.assign(new Error(friendlyApiError(response.status, payload)), { status: response.status, payload });
         }
         supportState.payload = {
           ...payload,
           summary: payload?.summary ?? {},
-          distributions: {
-            byStatus: payload?.distributions?.byStatus ?? [],
-            byPriority: payload?.distributions?.byPriority ?? [],
-            byMonth: payload?.distributions?.byMonth ?? [],
-            resolvedByMonth: payload?.distributions?.resolvedByMonth ?? [],
-            byEngineer: payload?.distributions?.byEngineer ?? []
-          },
+          distributions: payload?.distributions ?? {},
           tickets: Array.isArray(payload?.tickets) ? payload.tickets : [],
           warnings: Array.isArray(payload?.warnings) ? payload.warnings : [],
           quality: payload?.quality || { warnings: [] }
@@ -5004,14 +5706,14 @@
         fillSupportFilters();
         try { renderSupport(); } catch (renderError) { console.error('[Support] render error', renderError); throw renderError; }
         const warnCount = (supportState.payload.warnings || []).length + (supportState.payload.quality?.warnings || []).length;
-        status.textContent = warnCount ? '● Supabase conectado com alertas' : '● Supabase conectado';
+        status.textContent = warnCount ? '● Base conectada com alertas' : '● Base conectada';
         status.style.color = warnCount ? 'var(--color-warning)' : 'var(--color-success)';
         document.querySelector('#sUpdated').textContent = supportState.payload.generatedAt
           ? `Atualizado em ${new Date(supportState.payload.generatedAt).toLocaleString('pt-BR')}`
           : 'Dados carregados';
         if (empty) {
           empty.style.display = supportState.payload.tickets.length ? 'none' : 'block';
-          empty.textContent = 'Nenhum chamado encontrado para os filtros selecionados.';
+          empty.textContent = 'Nenhum acionamento encontrado para os filtros selecionados.';
         }
       } catch (error) {
         if (requestId !== supportState.requestId) return;
@@ -5029,23 +5731,16 @@
 
     Object.values(sFilters).forEach(el => el?.addEventListener('input', () => { supportState.page = 1; renderSupport(); }));
     document.querySelector('#sClear')?.addEventListener('click', () => {
-      sFilters.search.value = '';
-      ['status', 'priority', 'requested', 'engineer', 'assignee', 'resolved'].forEach(k => { if (sFilters[k]) sFilters[k].value = 'all'; });
-      sFilters.periodType.value = 'created';
-      sFilters.from.value = ''; sFilters.to.value = '';
+      if (sFilters.search) sFilters.search.value = '';
+      ['requester', 'priority', 'type', 'area', 'status', 'origin', 'identified', 'attachment'].forEach(k => {
+        if (sFilters[k]) sFilters[k].value = 'all';
+      });
+      ['openedFrom', 'openedTo'].forEach(k => { if (sFilters[k]) sFilters[k].value = ''; });
       supportState.page = 1; renderSupport();
     });
     document.querySelector('#sRefresh')?.addEventListener('click', loadSupport);
     document.querySelector('#sPrev')?.addEventListener('click', () => { supportState.page -= 1; renderSupport(); });
     document.querySelector('#sNext')?.addEventListener('click', () => { supportState.page += 1; renderSupport(); });
-    document.querySelector('#sToggleEngineers')?.addEventListener('click', () => { supportState.showAllEngineers = !supportState.showAllEngineers; renderSupport(); });
-    document.querySelector('#sMonthRangeSeg')?.addEventListener('click', (event) => {
-      const btn = event.target.closest('[data-s-month-range]');
-      if (!btn) return;
-      supportState.monthRange = btn.getAttribute('data-s-month-range') || '6';
-      document.querySelectorAll('#sMonthRangeSeg [data-s-month-range]').forEach(b => b.classList.toggle('active', b === btn));
-      renderSupport();
-    });
     document.querySelectorAll('#view-support th[data-ssort]').forEach(th => th.addEventListener('click', () => {
       const key = th.dataset.ssort;
       if (supportState.sortKey === key) supportState.sortDir = supportState.sortDir === 'asc' ? 'desc' : 'asc';
@@ -5059,9 +5754,440 @@
       if (ticket) openSupportDrawer(ticket);
     });
 
+    /* -------- Cancelamento (BASE QV) -------- */
+    const cancellationsState = {
+      payload: null, page: 1, pageSize: 25, sortKey: 'cancellationDate', sortDir: 'desc',
+      loading: false, requestId: 0
+    };
+    const cFilters = {
+      search: document.querySelector('#cSearch'),
+      engineer: document.querySelector('#cEngineer'),
+      segment: document.querySelector('#cSegment'),
+      reason: document.querySelector('#cReason'),
+      category: document.querySelector('#cCategory'),
+      from: document.querySelector('#cFrom'),
+      to: document.querySelector('#cTo'),
+      stayRange: document.querySelector('#cStayRange'),
+      meetingRange: document.querySelector('#cMeetingRange'),
+      hasReason: document.querySelector('#cHasReason'),
+      hasFinancial: document.querySelector('#cHasFinancial'),
+      hasInteraction: document.querySelector('#cHasInteraction')
+    };
+    const C_STAY_RANGES = ['Até 3 meses', 'De 4 a 6 meses', 'De 7 a 12 meses', 'De 13 a 24 meses', 'Mais de 24 meses', 'Dados insuficientes'];
+    const C_MEETING_RANGES = ['0 reuniões', '1 a 2', '3 a 5', '6 a 10', 'Mais de 10', 'Dados insuficientes'];
+    const C_FINANCIAL_RANGES = ['Até 30 dias antes', '31 a 60 dias', '61 a 90 dias', '91 a 180 dias', 'Mais de 180 dias', 'Sem atualização anterior'];
+    const C_SEGMENTS = ['APEX', 'PRIVATE', 'PRINCIPAL', 'DEBTS', 'OVER', 'Dados insuficientes'];
+
+    function cancelDaysText(v) {
+      if (v == null) return 'Não calculável';
+      return `${fmt.format(v)} dias`;
+    }
+    function cancelMetricText(v, suffix = '') {
+      if (v == null) return 'Não calculável';
+      return `${fmt.format(v)}${suffix}`;
+    }
+    function cancelRobustStats(values) {
+      const sorted = values.filter(v => v != null && Number.isFinite(v) && v >= 0).sort((a, b) => a - b);
+      if (!sorted.length) return { median: null, mean: null, validCount: 0 };
+      const mean = Math.round((sorted.reduce((a, b) => a + b, 0) / sorted.length) * 10) / 10;
+      const percentile = (p) => {
+        if (sorted.length === 1) return sorted[0];
+        const idx = (p / 100) * (sorted.length - 1);
+        const lo = Math.floor(idx); const hi = Math.ceil(idx);
+        if (lo === hi) return sorted[lo];
+        const w = idx - lo;
+        return sorted[lo] * (1 - w) + sorted[hi] * w;
+      };
+      return { median: Math.round(percentile(50) * 10) / 10, mean, validCount: sorted.length };
+    }
+    function cancelPct(part, total) {
+      if (!total) return 0;
+      return Math.round((part / total) * 1000) / 10;
+    }
+    function cancelDist(rows, getLabel, preferred = null) {
+      const total = rows.length || 1;
+      const map = new Map();
+      rows.forEach(r => {
+        const label = getLabel(r) || 'Não informado';
+        map.set(label, (map.get(label) || 0) + 1);
+      });
+      let entries = [...map.entries()].map(([label, count]) => ({
+        label, count, percent: cancelPct(count, total), sampleSize: count, percentOfCancellations: cancelPct(count, total)
+      }));
+      if (preferred?.length) {
+        const byLabel = new Map(entries.map(e => [e.label, e]));
+        entries = preferred.map(label => byLabel.get(label) || { label, count: 0, percent: 0, sampleSize: 0, percentOfCancellations: 0 });
+      } else {
+        entries.sort((a, b) => b.count - a.count || a.label.localeCompare(b.label, 'pt-BR'));
+      }
+      return entries;
+    }
+    function cancelMonthSeries(rows) {
+      const now = new Date();
+      const buckets = new Map();
+      for (let i = 11; i >= 0; i -= 1) {
+        const d = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - i, 1));
+        const key = `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}`;
+        buckets.set(key, 0);
+      }
+      const nowKey = `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, '0')}`;
+      rows.forEach(r => {
+        if (!r.cancellationDate) return;
+        const d = new Date(r.cancellationDate);
+        if (Number.isNaN(d.getTime()) || d > now) return;
+        const key = `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}`;
+        if (key > nowKey || !buckets.has(key)) return;
+        buckets.set(key, buckets.get(key) + 1);
+      });
+      return [...buckets.entries()].map(([month, count]) => ({ month, label: month, count }));
+    }
+
+    function filteredCancellationClients() {
+      const clients = cancellationsState.payload?.clients || [];
+      const q = (cFilters.search?.value || '').trim().toLowerCase();
+      return clients.filter(c => {
+        if (cFilters.engineer?.value !== 'all' && c.engineer !== cFilters.engineer.value) return false;
+        if (cFilters.segment?.value !== 'all' && c.segment !== cFilters.segment.value) return false;
+        if (cFilters.reason?.value !== 'all' && c.reason !== cFilters.reason.value) return false;
+        if (cFilters.category?.value !== 'all' && c.category !== cFilters.category.value) return false;
+        if (cFilters.stayRange?.value !== 'all' && c.stayRange !== cFilters.stayRange.value) return false;
+        if (cFilters.meetingRange?.value !== 'all' && c.meetingsBeforeBand !== cFilters.meetingRange.value) return false;
+        if (cFilters.hasReason?.value === 'yes' && !c.hasReason) return false;
+        if (cFilters.hasReason?.value === 'no' && c.hasReason) return false;
+        if (cFilters.hasFinancial?.value === 'yes' && c.daysSinceFinancialUpdate == null) return false;
+        if (cFilters.hasFinancial?.value === 'no' && c.daysSinceFinancialUpdate != null) return false;
+        if (cFilters.hasInteraction?.value === 'yes' && c.daysWithoutInteraction == null) return false;
+        if (cFilters.hasInteraction?.value === 'no' && c.daysWithoutInteraction != null) return false;
+        if (!inDateRange(c.cancellationDate, cFilters.from?.value, cFilters.to?.value)) return false;
+        if (q) {
+          const hay = `${c.clientName || ''} ${c.clientCode || ''} ${c.clientId || ''}`.toLowerCase();
+          if (!hay.includes(q)) return false;
+        }
+        return true;
+      });
+    }
+
+    function computeCancellationsSummary(rows) {
+      const total = rows.length;
+      const withReason = rows.filter(r => r.hasReason).length;
+      const withoutReason = total - withReason;
+      const stayStats = cancelRobustStats(rows.map(r => r.daysToCancellation));
+      const meetingStats = cancelRobustStats(rows.map(r => r.meetingsBeforeCancellation));
+      const financialStats = cancelRobustStats(rows.map(r => r.daysSinceFinancialUpdate).filter(d => d != null));
+      const interactionStats = cancelRobustStats(rows.map(r => r.daysWithoutInteraction).filter(d => d != null));
+      const topReason = cancelDist(rows.filter(r => r.hasReason), r => r.reason)[0]?.label || null;
+      return {
+        totalCancellations: total,
+        withReason,
+        withoutReason,
+        withReasonPercent: cancelPct(withReason, total || 1),
+        withoutReasonPercent: cancelPct(withoutReason, total || 1),
+        medianDaysToCancellation: stayStats.median,
+        averageDaysToCancellation: stayStats.mean,
+        staySampleSize: stayStats.validCount,
+        medianMeetingsBeforeCancellation: meetingStats.median,
+        averageMeetingsBeforeCancellation: meetingStats.mean,
+        meetingsSampleSize: meetingStats.validCount,
+        medianDaysSinceFinancialUpdate: financialStats.median,
+        averageDaysSinceFinancialUpdate: financialStats.mean,
+        financialSampleSize: financialStats.validCount,
+        medianDaysWithoutInteraction: interactionStats.median,
+        averageDaysWithoutInteraction: interactionStats.mean,
+        interactionSampleSize: interactionStats.validCount,
+        insufficientDataClients: rows.filter(r => r.insufficientData).length,
+        topReason
+      };
+    }
+
+    function computeCancellationsDistributions(rows) {
+      return {
+        byReason: cancelDist(rows, r => (r.hasReason ? r.reason : null)),
+        byCategory: cancelDist(rows, r => (r.categoryRaw ? r.category : null)),
+        byMonth: cancelMonthSeries(rows),
+        byStayRange: cancelDist(rows, r => r.stayRange, C_STAY_RANGES),
+        byMeetingCount: cancelDist(rows, r => r.meetingsBeforeBand, C_MEETING_RANGES),
+        byFinancialRecency: cancelDist(rows, r => r.financialRecencyBand, C_FINANCIAL_RANGES),
+        byEngineer: cancelDist(rows, r => (r.engineer === 'Não informado' ? null : r.engineer)),
+        bySegment: cancelDist(rows, r => r.segment, C_SEGMENTS)
+      };
+    }
+
+    function fillCancellationsFilters() {
+      const clients = cancellationsState.payload?.clients || [];
+      const fill = (sel, values, allLabel) => {
+        if (!sel) return;
+        const current = sel.value;
+        sel.innerHTML = `<option value="all">${allLabel}</option>` + values.map(v => `<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`).join('');
+        sel.value = values.includes(current) ? current : 'all';
+      };
+      const uniq = (getter) => [...new Set(clients.map(getter).filter(v => v && v !== 'Não informado'))].sort((a, b) => a.localeCompare(b, 'pt-BR'));
+      fill(cFilters.engineer, uniq(c => c.engineer), 'Todos');
+      fill(cFilters.segment, C_SEGMENTS.filter(s => clients.some(c => c.segment === s)), 'Todos');
+      fill(cFilters.reason, uniq(c => c.hasReason ? c.reason : null), 'Todos');
+      fill(cFilters.category, uniq(c => c.categoryRaw ? c.category : null), 'Todas');
+      fill(cFilters.stayRange, C_STAY_RANGES.filter(r => clients.some(c => c.stayRange === r)), 'Todas');
+      fill(cFilters.meetingRange, C_MEETING_RANGES.filter(r => clients.some(c => c.meetingsBeforeBand === r)), 'Todas');
+    }
+
+    function renderCancelMonthChart(items) {
+      const el = document.querySelector('#cChartMonths');
+      if (!el) return;
+      if (!items?.length) {
+        el.innerHTML = '<div class="empty" style="display:block">Sem período para exibir.</div>';
+        return;
+      }
+      const maxValue = Math.max(...items.map(i => i.count), 0);
+      const plotH = 180;
+      const names = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+      el.innerHTML = `<div class="acquisition-chart-scroll"><div class="acquisition-chart-grid" data-cols="${items.length}" role="img" aria-label="Cancelamentos por mês">${items.map(i => {
+        const heightPct = maxValue > 0 ? (i.count / maxValue) * 100 : 0;
+        const barPx = i.count > 0 ? Math.max(Math.round((heightPct / 100) * plotH), 6) : 0;
+        const parts = String(i.month || '').split('-');
+        const shortLabel = parts.length === 2 && names[Number(parts[1]) - 1]
+          ? `${names[Number(parts[1]) - 1]}/${String(parts[0]).slice(2)}`
+          : i.month;
+        return `<div class="acquisition-column" title="${escapeHtml(String(i.month))}: ${fmt.format(i.count)}" data-value="${i.count}">
+          <div class="acquisition-column-value">${fmt.format(i.count)}</div>
+          <div class="acquisition-column-bar-wrap"><div class="acquisition-column-bar" style="height:${barPx}px"></div></div>
+          <div class="acquisition-column-label">${escapeHtml(shortLabel)}</div>
+        </div>`;
+      }).join('')}</div></div>`;
+    }
+
+    function openCancellationDrawer(client) {
+      if (!isPortalAuthenticated()) return;
+      document.querySelector('#drawerTitle').textContent = client.clientName || 'Cliente cancelado';
+      document.querySelector('#drawerSub').textContent = `${client.clientCode || 'Sem código'} · ${client.analyticalStatus || 'Cancelado'}`;
+      const meetingsHtml = (client.meetingsSummary || []).length
+        ? `<div class="drawer-section" style="grid-column:1/-1"><h3>Reuniões anteriores (últimas)</h3><ul style="margin:0;padding-left:18px;font-size:13px">${
+            client.meetingsSummary.map(m => `<li>${escapeHtml(dateBR(m.startTime))} — ${escapeHtml(m.title || 'Reunião')} (${escapeHtml(m.source || '')})</li>`).join('')
+          }</ul></div>`
+        : `<div class="drawer-section" style="grid-column:1/-1"><h3>Reuniões anteriores</h3><p style="margin:0;color:var(--color-text-muted);font-size:13px">Nenhuma reunião realizada com presença confirmada antes do cancelamento.</p></div>`;
+      const missing = [];
+      if (!client.hasReason) missing.push('Motivo');
+      if (!client.categoryRaw) missing.push('Categoria');
+      if (client.hireDate == null) missing.push('Data de contratação');
+      if (client.daysToCancellation == null) missing.push('Tempo até cancelamento');
+      if (client.daysSinceFinancialUpdate == null) missing.push('Atualização financeira anterior');
+      if (client.daysWithoutInteraction == null) missing.push('Última reunião anterior');
+      const items = [
+        ['Status analítico', client.analyticalStatus || 'Cancelado'],
+        ['Engenheiro Patrimonial', client.engineer || 'Não informado'],
+        ['Segmento', client.segment || 'Não informado'],
+        ['Data de contratação', dateBR(client.hireDate)],
+        ['Fonte da contratação', client.hireDateSource || 'Não informado'],
+        ['Data de cancelamento', dateBR(client.cancellationDate)],
+        ['Fonte da data de cancelamento', client.cancellationDateSource || 'Não informado'],
+        ['Estágio', client.cancellationStage || 'Não informado'],
+        ['Permanência', client.daysToCancellation == null ? 'Não calculável' : `${cancelDaysText(client.daysToCancellation)} (${client.stayRange})`],
+        ['Motivo', client.reason || 'Não informado'],
+        ['Categoria', client.category || 'Não informado'],
+        ['Reuniões antes do cancelamento', client.meetingsBeforeCancellation == null ? 'Não calculável' : fmt.format(client.meetingsBeforeCancellation)],
+        ['Última atualização financeira', dateBR(client.financialUpdateDate)],
+        ['Dias sem atualização financeira', cancelDaysText(client.daysSinceFinancialUpdate)],
+        ['Última reunião (interação v1)', dateBR(client.lastMeetingDate)],
+        ['Dias desde a última reunião', cancelDaysText(client.daysSinceLastMeeting)],
+        ['Campos ausentes', missing.length ? missing.join(', ') : 'Nenhum']
+      ];
+      document.querySelector('#drawerGrid').innerHTML =
+        items.map(([k, v]) => `<div class="drawer-item"><span>${k}</span><strong>${escapeHtml(String(v))}</strong></div>`).join('') + meetingsHtml;
+      document.querySelector('#drawerWarnings').innerHTML = (client.dataWarnings || []).map(w => `<li>${escapeHtml(w)}</li>`).join('') || '<li style="color:var(--color-text-muted)">Nenhum alerta</li>';
+      document.querySelector('#drawer').classList.add('open');
+      document.querySelector('#drawer').setAttribute('aria-hidden', 'false');
+    }
+
+    function renderCancellations() {
+      if (!cancellationsState.payload) return;
+      const setHtml = (sel, html) => { const el = document.querySelector(sel); if (el) el.innerHTML = html; };
+      const setText = (sel, text) => { const el = document.querySelector(sel); if (el) el.textContent = text; };
+      const rows = filteredCancellationClients();
+      const summary = computeCancellationsSummary(rows);
+      const dist = computeCancellationsDistributions(rows);
+
+      setHtml('#cKpisPrimary', `
+        <article class="metric kpi-primary"><div class="metric-label">Total de cancelamentos</div><div class="metric-value">${fmt.format(summary.totalCancellations)}</div><div class="metric-note">Clientes com cancelamento identificado na BASE QV.</div></article>
+        <article class="metric kpi-primary"><div class="metric-label">Com motivo informado</div><div class="metric-value">${fmt.format(summary.withReason)}</div><div class="metric-note">${pct(summary.withReasonPercent)} · Clientes com motivo de cancelamento registrado.</div></article>
+        <article class="metric kpi-primary"><div class="metric-label">Tempo típico até o cancelamento</div><div class="metric-value">${cancelDaysText(summary.medianDaysToCancellation)}</div><div class="metric-note">Mediana entre a contratação e o cancelamento.${summary.averageDaysToCancellation != null ? ` Média: ${fmt.format(summary.averageDaysToCancellation)} dias.` : ''}</div></article>`);
+
+      setHtml('#cKpis', `
+        <article class="metric kpi-secondary"><div class="metric-label">Reuniões antes do cancelamento</div><div class="metric-value">${cancelMetricText(summary.medianMeetingsBeforeCancellation)}</div><div class="metric-note">Quantidade típica de reuniões realizadas antes do cancelamento.${summary.averageMeetingsBeforeCancellation != null ? ` Média: ${fmt.format(summary.averageMeetingsBeforeCancellation)}.` : ''}</div></article>
+        <article class="metric kpi-secondary"><div class="metric-label">Dias desde a última atualização financeira</div><div class="metric-value">${cancelDaysText(summary.medianDaysSinceFinancialUpdate)}</div><div class="metric-note">Tempo típico sem atualização financeira antes do cancelamento.</div></article>
+        <article class="metric kpi-secondary"><div class="metric-label">Dias desde a última reunião antes do cancelamento</div><div class="metric-value">${cancelDaysText(summary.medianDaysWithoutInteraction)}</div><div class="metric-note">Interação v1: última reunião com presença confirmada antes do cancelamento.</div></article>`);
+
+      setHtml('#cKpisQuality', `
+        <article class="metric"><div class="metric-label">Cancelamentos sem motivo</div><div class="metric-value">${fmt.format(summary.withoutReason)}</div><div class="metric-note">${pct(summary.withoutReasonPercent)} · Clientes cancelados sem motivo preenchido.</div></article>
+        <article class="metric"><div class="metric-label">Cancelamentos com dados insuficientes</div><div class="metric-value">${fmt.format(summary.insufficientDataClients)}</div><div class="metric-note">Clientes sem pelo menos um indicador importante calculável.</div></article>`);
+
+      setHtml('#cChartReason', hBars(dist.byReason || [], 15));
+      renderCancelMonthChart(dist.byMonth || []);
+      setHtml('#cChartStay', hBars(dist.byStayRange || []));
+      setHtml('#cChartMeetings', hBars(dist.byMeetingCount || []));
+      setHtml('#cChartFinancial', hBars(dist.byFinancialRecency || []));
+      setHtml('#cChartEngineer', hBars(dist.byEngineer || [], 15));
+      setHtml('#cChartSegment', hBars(dist.bySegment || []));
+
+      const sorted = [...rows].sort((a, b) => {
+        const key = cancellationsState.sortKey;
+        const av = a[key]; const bv = b[key];
+        let cmp = 0;
+        if (av == null && bv == null) cmp = 0;
+        else if (av == null) cmp = 1;
+        else if (bv == null) cmp = -1;
+        else if (typeof av === 'number' && typeof bv === 'number') cmp = av - bv;
+        else if (typeof av === 'boolean' && typeof bv === 'boolean') cmp = Number(av) - Number(bv);
+        else cmp = String(av).localeCompare(String(bv), 'pt-BR', { numeric: true });
+        return cancellationsState.sortDir === 'asc' ? cmp : -cmp;
+      });
+
+      const pages = Math.max(1, Math.ceil(sorted.length / cancellationsState.pageSize));
+      if (cancellationsState.page > pages) cancellationsState.page = pages;
+      if (cancellationsState.page < 1) cancellationsState.page = 1;
+      const start = (cancellationsState.page - 1) * cancellationsState.pageSize;
+      const pageRows = sorted.slice(start, start + cancellationsState.pageSize);
+
+      setHtml('#cRows', pageRows.map(c => `
+        <tr data-cid="${escapeHtml(c.clientId)}">
+          <td class="truncate" title="${escapeHtml(c.clientName)}">${escapeHtml(c.clientName || 'Não informado')}</td>
+          <td class="truncate">${escapeHtml(c.clientCode || 'Não informado')}</td>
+          <td class="truncate">${escapeHtml(c.engineer || 'Não informado')}</td>
+          <td>${escapeHtml(c.segment || 'Não informado')}</td>
+          <td>${dateBR(c.hireDate)}</td>
+          <td>${dateBR(c.cancellationDate)}</td>
+          <td class="num">${cancelDaysText(c.daysToCancellation)}</td>
+          <td class="truncate" title="${escapeHtml(c.reason)}">${escapeHtml(c.reason || 'Não informado')}</td>
+          <td class="truncate">${escapeHtml(c.category || 'Não informado')}</td>
+          <td class="num">${c.meetingsBeforeCancellation == null ? 'Não calculável' : fmt.format(c.meetingsBeforeCancellation)}</td>
+          <td>${dateBR(c.financialUpdateDate)}</td>
+          <td class="num">${cancelDaysText(c.daysSinceFinancialUpdate)}</td>
+          <td>${dateBR(c.lastMeetingDate)}</td>
+          <td class="num">${cancelDaysText(c.daysSinceLastMeeting)}</td>
+          <td class="truncate" title="${escapeHtml((c.dataWarnings || []).join(' · '))}">${escapeHtml((c.dataWarnings || []).length ? `${c.dataWarnings.length} alerta(s)` : '—')}</td>
+        </tr>`).join(''));
+
+      setText('#cCounter', `${sorted.length} de ${(cancellationsState.payload.clients || []).length} cancelamentos`);
+      setText('#cPageInfo', `Página ${cancellationsState.page} de ${pages}`);
+      const empty = document.querySelector('#cEmpty');
+      if (empty) empty.style.display = sorted.length ? 'none' : 'block';
+      const prev = document.querySelector('#cPrev');
+      const next = document.querySelector('#cNext');
+      if (prev) prev.disabled = cancellationsState.page <= 1;
+      if (next) next.disabled = cancellationsState.page >= pages;
+    }
+
+    async function loadCancellations() {
+      if (!isPortalAuthenticated()) return;
+      if (window.__portalCurrentPage !== 'cancellations' && window.__portalCurrentPageCanonical !== 'cancellations') {
+        // Isolamento: não carregar Cancelamento fora da aba ativa.
+        return;
+      }
+      if (cancellationsState.loading) return;
+      cancellationsState.loading = true;
+      const requestId = ++cancellationsState.requestId;
+      const endpoint = '/api/cancellations';
+      const refresh = document.querySelector('#cRefresh');
+      const status = document.querySelector('#cStatus');
+      const empty = document.querySelector('#cEmpty');
+      if (refresh) { refresh.disabled = true; refresh.textContent = 'Atualizando…'; }
+      if (status) { status.textContent = '● Atualizando dados'; status.style.color = 'var(--color-warning)'; }
+      try {
+        const response = await apiFetch(`${endpoint}?t=${Date.now()}`, { cache: 'no-store' });
+        const responseText = await response.text();
+        let payload = {};
+        try { payload = responseText ? JSON.parse(responseText) : {}; } catch { payload = {}; }
+        if (requestId !== cancellationsState.requestId) return;
+        if (!response.ok) {
+          console.error('[Cancellations API]', { status: response.status, body: responseText.slice(0, 800) });
+          throw Object.assign(new Error(friendlyApiError(response.status, payload)), { status: response.status, payload });
+        }
+        cancellationsState.payload = {
+          ...payload,
+          summary: payload?.summary ?? {},
+          distributions: payload?.distributions ?? {},
+          clients: Array.isArray(payload?.clients) ? payload.clients : [],
+          warnings: Array.isArray(payload?.warnings) ? payload.warnings : [],
+          quality: payload?.quality || { warnings: [] },
+          interactionDefinition: payload?.interactionDefinition || null
+        };
+        fillCancellationsFilters();
+        try { renderCancellations(); } catch (renderError) { console.error('[Cancellations] render error', renderError); throw renderError; }
+        const warnCount = (cancellationsState.payload.warnings || []).length;
+        if (status) {
+          status.textContent = warnCount ? '● Base conectada com alertas' : '● Base conectada';
+          status.style.color = warnCount ? 'var(--color-warning)' : 'var(--color-success)';
+        }
+        showSourceWarningsAlert(
+          '#cSourceAlert',
+          'cancellations-data-quality-warning',
+          'Atenção à cobertura dos dados de cancelamento',
+          [
+            ...(cancellationsState.payload.warnings || []),
+            ...(cancellationsState.payload.quality?.warnings || [])
+          ],
+          {
+            message: 'Alguns indicadores dependem de datas, reuniões e atualizações financeiras válidas. Registros sem informação suficiente não são tratados como zero.',
+            note: 'Os KPIs disponíveis continuam sendo exibidos com a cobertura real de cada métrica.'
+          }
+        );
+        const updated = document.querySelector('#cUpdated');
+        if (updated) {
+          updated.textContent = cancellationsState.payload.generatedAt
+            ? `Atualizado em ${new Date(cancellationsState.payload.generatedAt).toLocaleString('pt-BR')}`
+            : 'Dados carregados';
+        }
+        if (empty) {
+          empty.style.display = cancellationsState.payload.clients.length ? 'none' : 'block';
+          empty.textContent = 'Nenhum cancelamento encontrado para os filtros selecionados.';
+        }
+      } catch (error) {
+        if (requestId !== cancellationsState.requestId) return;
+        if (error?.code === 'AUTH_REQUIRED' || error?.code === 'AUTH_FORBIDDEN' || error?.message === 'AUTH_REQUIRED') return;
+        console.error('[Cancellations API]', { status: error?.status || 0, error: error.message });
+        if (status) { status.textContent = '● Falha na atualização'; status.style.color = 'var(--color-danger)'; }
+        const updated = document.querySelector('#cUpdated');
+        if (updated) updated.textContent = error.message || friendlyApiError(0, null, true);
+        if (empty) {
+          empty.style.display = 'block';
+          empty.textContent = 'Não foi possível carregar os dados de cancelamento. As demais páginas continuam disponíveis.';
+        }
+      } finally {
+        if (requestId === cancellationsState.requestId) {
+          cancellationsState.loading = false;
+          if (refresh) { refresh.disabled = false; refresh.textContent = 'Atualizar'; }
+        }
+      }
+    }
+
+    Object.values(cFilters).forEach(el => el?.addEventListener('input', () => { cancellationsState.page = 1; renderCancellations(); }));
+    document.querySelector('#cClear')?.addEventListener('click', () => {
+      if (cFilters.search) cFilters.search.value = '';
+      ['engineer', 'segment', 'reason', 'category', 'stayRange', 'meetingRange', 'hasReason', 'hasFinancial', 'hasInteraction'].forEach(k => {
+        if (cFilters[k]) cFilters[k].value = 'all';
+      });
+      ['from', 'to'].forEach(k => { if (cFilters[k]) cFilters[k].value = ''; });
+      cancellationsState.page = 1; renderCancellations();
+    });
+    document.querySelector('#cRefresh')?.addEventListener('click', loadCancellations);
+    document.querySelector('#cPrev')?.addEventListener('click', () => { cancellationsState.page -= 1; renderCancellations(); });
+    document.querySelector('#cNext')?.addEventListener('click', () => { cancellationsState.page += 1; renderCancellations(); });
+    document.querySelectorAll('#view-cancellations th[data-csort]').forEach(th => th.addEventListener('click', () => {
+      const key = th.dataset.csort;
+      if (cancellationsState.sortKey === key) cancellationsState.sortDir = cancellationsState.sortDir === 'asc' ? 'desc' : 'asc';
+      else { cancellationsState.sortKey = key; cancellationsState.sortDir = 'asc'; }
+      renderCancellations();
+    }));
+    document.querySelector('#cRows')?.addEventListener('click', e => {
+      const tr = e.target.closest('tr[data-cid]');
+      if (!tr || !cancellationsState.payload) return;
+      const client = cancellationsState.payload.clients.find(c => c.clientId === tr.dataset.cid);
+      if (client) openCancellationDrawer(client);
+    });
+
     /* -------- Assistente da Jornada (chatbot) -------- */
     const ASSISTANT_SUGGESTIONS = [
       'Quantos clientes ativos temos?',
+      'Quantos clientes cancelaram?',
+      'Qual o motivo mais comum de cancelamento?',
+      'Quanto tempo típico os clientes ficam antes de cancelar?',
       'Qual é a regra de cliente ativo?',
       'Onde está o dado de renda mensal?',
       'Como é calculada a permanência?',
@@ -5485,6 +6611,7 @@
         return;
       }
       portalStarted = true;
+      initStaticPortalAlerts();
       loadGeneral();
       setTimeout(() => { if (typeof showAssistantHintOnce === 'function') showAssistantHintOnce(); }, 2000);
       portalRefreshTimer = setInterval(() => {
@@ -5496,8 +6623,9 @@
         if (views.mechanisms.classList.contains('active')) loadMechanisms();
         if (views.financial.classList.contains('active')) loadFinancial();
         if (views.platform.classList.contains('active')) loadPlatform();
-        if (views.support.classList.contains('active')) loadSupport();
-        if (views.quality.classList.contains('active')) loadQuality();
+        if (views.support?.classList.contains('active')) loadSupport();
+        if (views.cancellations?.classList.contains('active')) loadCancellations();
+        if (views.quality?.classList.contains('active')) loadQuality();
       }, 5 * 60 * 1000);
     }
     function resetPortalApp() {
@@ -5506,6 +6634,7 @@
         clearInterval(portalRefreshTimer);
         portalRefreshTimer = null;
       }
+      clearPortalViewDismissedAlerts();
       qualityData = [];
       if (typeof generalState !== 'undefined') generalState.payload = null;
       if (typeof onboardingState !== 'undefined') onboardingState.payload = null;
@@ -5515,6 +6644,7 @@
       if (typeof financialState !== 'undefined') financialState.payload = null;
       if (typeof platformState !== 'undefined') platformState.payload = null;
       if (typeof supportState !== 'undefined') supportState.payload = null;
+      if (typeof cancellationsState !== 'undefined') cancellationsState.payload = null;
       if (typeof resetAssistant === 'function') resetAssistant();
     }
     window.startPortalApp = startPortalApp;

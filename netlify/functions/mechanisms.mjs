@@ -751,6 +751,28 @@ function buildPayload(clients, cmRows, mechanisms, cancellations = [], financial
       unit: "clients",
     }));
 
+  // Mecanismo mais utilizado: clientes distintos por mecanismo_id (coleção já deduplicada).
+  const topClientCount = topRecommended[0]?.clients || 0;
+  const topMechanismTies = topClientCount > 0
+    ? topRecommended
+      .filter((item) => item.clients === topClientCount)
+      .sort((a, b) => a.name.localeCompare(b.name, "pt-BR"))
+    : [];
+  const topMechanismLead = topMechanismTies[0] || null;
+  const topMechanism = topMechanismLead
+    ? {
+      id: topMechanismLead.mechanismId != null ? String(topMechanismLead.mechanismId) : null,
+      name: topMechanismLead.name,
+      clientCount: topMechanismLead.clients,
+      count: topMechanismLead.clients,
+      ties: topMechanismTies.slice(1).map((item) => ({
+        id: item.mechanismId != null ? String(item.mechanismId) : null,
+        name: item.name,
+        clientCount: item.clients,
+      })),
+    }
+    : null;
+
   const recCountOrder = ["1", "2", "3", "4", "5 ou mais"];
   const recommendationsPerClient = distributionOrdered(
     clientRows,
@@ -908,6 +930,7 @@ function buildPayload(clients, cmRows, mechanisms, cancellations = [], financial
           percent: clientsWithImpl ? Math.round((topFirst[1] / clientsWithImpl) * 1000) / 10 : null,
         }
         : null,
+      topMechanism,
       latestImplementationDate: (() => {
         const dates = clientRows.map((c) => c.lastImplementationDate).filter(Boolean).sort();
         return dates.length ? dates[dates.length - 1] : null;

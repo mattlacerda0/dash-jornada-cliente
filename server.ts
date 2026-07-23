@@ -9,7 +9,7 @@ async function loadEnvFile(path: string) {
     const separator = line.indexOf("=");
     const key = line.slice(0, separator).trim();
     const value = line.slice(separator + 1).trim().replace(/^(['"])(.*)\1$/, "$2");
-    if (/^[A-Za-z_][A-Za-z0-9_]*$/.test(key) && !Bun.env[key]) Bun.env[key] = value;
+    if (/^[A-Za-z_][A-Za-z0-9_]*$/.test(key) && !(String(Bun.env[key] || "").trim())) Bun.env[key] = value;
   }
 }
 
@@ -20,6 +20,9 @@ if (Bun.env.AUTH_SUPABASE_URL) process.env.AUTH_SUPABASE_URL = Bun.env.AUTH_SUPA
 if (Bun.env.AUTH_SUPABASE_ANON_KEY) process.env.AUTH_SUPABASE_ANON_KEY = Bun.env.AUTH_SUPABASE_ANON_KEY;
 if (Bun.env.DATA_SUPABASE_URL) process.env.DATA_SUPABASE_URL = Bun.env.DATA_SUPABASE_URL;
 if (Bun.env.DATA_SUPABASE_SERVICE_ROLE_KEY) process.env.DATA_SUPABASE_SERVICE_ROLE_KEY = Bun.env.DATA_SUPABASE_SERVICE_ROLE_KEY;
+if (Bun.env.PHARUS_SUPABASE_URL) process.env.PHARUS_SUPABASE_URL = Bun.env.PHARUS_SUPABASE_URL;
+if (Bun.env.PHARUS_SUPABASE_ANON_KEY) process.env.PHARUS_SUPABASE_ANON_KEY = Bun.env.PHARUS_SUPABASE_ANON_KEY;
+if (Bun.env.PHARUS_SUPABASE_SCHEMA) process.env.PHARUS_SUPABASE_SCHEMA = Bun.env.PHARUS_SUPABASE_SCHEMA;
 if (Bun.env.N8N_CHAT_WEBHOOK_URL) process.env.N8N_CHAT_WEBHOOK_URL = Bun.env.N8N_CHAT_WEBHOOK_URL;
 if (Bun.env.N8N_INTERNAL_API_TOKEN) process.env.N8N_INTERNAL_API_TOKEN = Bun.env.N8N_INTERNAL_API_TOKEN;
 
@@ -28,6 +31,7 @@ const onboardingHandler = (await import("./netlify/functions/onboarding.mjs")).d
 const patrimonialPlanHandler = (await import("./netlify/functions/patrimonial-plan.mjs")).default;
 const meetingsHandler = (await import("./netlify/functions/meetings.mjs")).default;
 const mechanismsHandler = (await import("./netlify/functions/mechanisms.mjs")).default;
+const pharusMechanismsHandler = (await import("./netlify/functions/pharus-mechanisms.mjs")).default;
 const financialUpdatesHandler = (await import("./netlify/functions/financial-updates.mjs")).default;
 const supportHandler = (await import("./netlify/functions/support.mjs")).default;
 const assistantHandler = (await import("./netlify/functions/assistant.mjs")).default;
@@ -209,6 +213,7 @@ const server = Bun.serve({
     if (url.pathname === "/api/patrimonial-plan") return patrimonialPlanHandler(request);
     if (url.pathname === "/api/meetings") return meetingsHandler(request);
     if (url.pathname === "/api/mechanisms") return mechanismsHandler(request);
+    if (url.pathname === "/api/pharus-mechanisms") return pharusMechanismsHandler(request);
     if (url.pathname === "/api/financial-updates") return financialUpdatesHandler(request);
     if (url.pathname === "/api/platform-usage") return platformUsageHandler(request);
     if (url.pathname === "/api/support") return supportHandler(request);

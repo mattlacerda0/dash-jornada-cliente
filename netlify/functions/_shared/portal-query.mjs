@@ -46,6 +46,7 @@ export function emptyFilters() {
     clientName: null,
     engineer: null,
     status: null,
+    client_status: null,
     segment: null,
     period: "all_time",
     dateFrom: null,
@@ -313,11 +314,28 @@ export function normalizePlanFilters(raw = {}) {
   const STATUS_MAP = {
     active: "Ativo", ativo: "Ativo", cancelled: "Cancelado", cancelado: "Cancelado",
     frozen: "Congelado", congelado: "Congelado",
+    active_or_frozen: "active_or_frozen",
+    active_and_frozen: "active_or_frozen",
   };
   const statusRaw = raw.client_status ?? raw.status ?? raw.clientStatus;
   if (statusRaw != null) {
-    const key = String(statusRaw).toLowerCase();
-    f.status = STATUS_MAP[key] || (["Ativo", "Cancelado", "Congelado"].includes(statusRaw) ? statusRaw : null);
+    const key = String(statusRaw).toLowerCase().trim().replace(/\s+/g, "_");
+    if (
+      key === "active_or_frozen" ||
+      key === "active_and_frozen" ||
+      key.includes("ativos_e_congel") ||
+      key.includes("ativos_ou_congel") ||
+      key.includes("ativa_e_congel") ||
+      /ativos?.+congel/.test(key)
+    ) {
+      f.status = "active_or_frozen";
+      f.client_status = "active_or_frozen";
+    } else {
+      f.status = STATUS_MAP[key] || (["Ativo", "Cancelado", "Congelado"].includes(statusRaw) ? statusRaw : null);
+      if (f.status === "Ativo") f.client_status = "active";
+      else if (f.status === "Cancelado") f.client_status = "cancelled";
+      else if (f.status === "Congelado") f.client_status = "frozen";
+    }
   }
   if (raw.segment) f.segment = String(raw.segment).toUpperCase() === "DADOS INSUFICIENTES" ? "Dados insuficientes" : String(raw.segment).toUpperCase();
   if (raw.engineer) f.engineer = raw.engineer;
@@ -383,10 +401,27 @@ function monthsBetween(a, b) {
 
 /* --------------------------- Domínio general ---------------------- */
 
+function matchesAnalyticalStatusFilter(analyticalStatus, filterStatus) {
+  if (!filterStatus) return true;
+  if (filterStatus === "active_or_frozen") {
+    return analyticalStatus === "Ativo" || analyticalStatus === "Congelado";
+  }
+  return analyticalStatus === filterStatus;
+}
+
 function applyGeneralFilters(rows, f) {
   return rows.filter((r) => {
     if (f.engineer && r.engineer !== f.engineer) return false;
-    if (f.status && r.analyticalStatus !== f.status) return false;
+    if (f.status && !matchesAnalyticalStatusFilter(r.analyticalStatus, f.status)) return false;
+    if (f.client_status) {
+      const want = String(f.client_status).toLowerCase();
+      const st = String(r.analyticalStatus || "");
+      if (want === "active" && st !== "Ativo") return false;
+      if (want === "frozen" && st !== "Congelado") return false;
+      if (want === "cancelled" && st !== "Cancelado") return false;
+      if (want === "unknown" && st !== "Não informado") return false;
+      if (want === "active_or_frozen" && st !== "Ativo" && st !== "Congelado") return false;
+    }
     if (f.segment && r.segmentLabel !== f.segment) return false;
     if (f.hasFinancialData === true && !r.hasFinancialProfile) return false;
     if (f.hasFinancialData === false && r.hasFinancialProfile) return false;
@@ -406,6 +441,12 @@ function applyGeneralFilters(rows, f) {
 const GENERAL_METRICS = {
   total_clients: { label: "Total de clientes", sources: [CLIENTS_ID], compute: (rows) => rows.length },
   active_clients: { label: "Clientes ativos", implied: { status: "Ativo" }, sources: [CLIENTS_STATUS, ...CANCEL_SOURCES], compute: (rows) => rows.length },
+  active_or_frozen_clients: {
+    label: "Clientes ativos e congelados",
+    implied: { status: "active_or_frozen" },
+    sources: [CLIENTS_STATUS, ...CANCEL_SOURCES],
+    compute: (rows) => rows.length,
+  },
   cancelled_clients: { label: "Clientes cancelados", implied: { status: "Cancelado" }, sources: [CLIENTS_STATUS, ...CANCEL_SOURCES], compute: (rows) => rows.length },
   frozen_clients: { label: "Clientes congelados", implied: { status: "Congelado" }, sources: [CLIENTS_STATUS], compute: (rows) => rows.length },
   clients_with_financial_data: { label: "Clientes com dados financeiros", sources: FINANCIAL_SOURCES, compute: (rows) => rows.filter((r) => r.hasFinancialProfile).length },

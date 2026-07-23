@@ -1,13 +1,13 @@
 ﻿const CLIENT_SELECT = "id,codigo,name,data_inicio_ciclo,created_at,status,engenheiro_patrimonial";
 
 function configurationError() {
-  if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+  if (!process.env.DATA_SUPABASE_URL || !process.env.DATA_SUPABASE_SERVICE_ROLE_KEY) {
     return "Configuração do Supabase ausente";
   }
   try {
-    if (new URL(process.env.SUPABASE_URL).protocol !== "https:") return "SUPABASE_URL deve usar HTTPS";
+    if (new URL(process.env.DATA_SUPABASE_URL).protocol !== "https:") return "DATA_SUPABASE_URL deve usar HTTPS";
   } catch {
-    return "SUPABASE_URL inválida";
+    return "DATA_SUPABASE_URL inválida";
   }
   return null;
 }
@@ -89,9 +89,9 @@ async function fetchAll(table, select = "*") {
   const pageSize = 1000;
   let offset = 0;
   const rows = [];
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const key = process.env.DATA_SUPABASE_SERVICE_ROLE_KEY;
   while (true) {
-    const url = new URL(`/rest/v1/${table}`, process.env.SUPABASE_URL);
+    const url = new URL(`/rest/v1/${table}`, process.env.DATA_SUPABASE_URL);
     url.searchParams.set("select", select);
     const response = await fetch(url, {
       headers: {
@@ -340,11 +340,22 @@ async function buildPayload() {
   };
 }
 
+/** Fonte única reutilizada pelo handler HTTP e pelo Assistente da Jornada. */
+export async function computeOnboardingPayload() {
+  const configError = configurationError();
+  if (configError) {
+    const err = new Error(configError);
+    err.code = "config";
+    throw err;
+  }
+  return buildPayload();
+}
+
 export default async () => {
   const configError = configurationError();
   if (configError) return Response.json({ error: configError }, { status: 503, headers: { "Cache-Control": "no-store" } });
   try {
-    return Response.json(await buildPayload(), { headers: { "Cache-Control": "no-store" } });
+    return Response.json(await computeOnboardingPayload(), { headers: { "Cache-Control": "no-store" } });
   } catch (error) {
     console.error("onboarding error", error);
     return Response.json({ error: "Não foi possível consolidar a jornada e onboarding" }, { status: 500, headers: { "Cache-Control": "no-store" } });

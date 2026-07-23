@@ -1,19 +1,17 @@
 ﻿import { computeGeneralDataPayload, measureBundle } from "../general-data.mjs";
 import { computeMeetingsPayload } from "../meetings.mjs";
+import { computeOnboardingPayload } from "../onboarding.mjs";
 
 /**
  * Motor central de consulta do portal ("Assistente da Jornada" global).
  *
- * Responsabilidades (o backend é a fonte de verdade; o Gemini apenas verbaliza):
- *  1. identificar domínio/página e métrica a partir da pergunta;
- *  2. extrair e validar os filtros presentes por domínio;
- *  3. resolver entidades (ex.: Engenheiro Patrimonial) contra os valores REAIS do payload;
- *  4. aplicar os filtros ANTES de calcular a métrica, reaproveitando as linhas já
- *     normalizadas/deduplicadas pelos compute*Payload dos dashboards (não duplica regra);
- *  5. montar o dados_contexto confiável enviado ao n8n.
+ * Arquitetura em duas etapas (plan → execute):
+ *  - Gemini (n8n mode=plan) interpreta a linguagem e propõe um query_plan;
+ *  - o backend valida o plano (allowlist), executa com compute*Payload dos dashboards
+ *    e devolve query_result; Gemini (mode=answer) apenas verbaliza.
+ *  - mode=rule usa o catálogo (sem número inventado).
  *
- * Fase 1: domínios `general` e `meetings`. Demais domínios ficam reconhecidos como
- * "ainda não disponível" (sem inventar valores) até as próximas fases.
+ * Fase 1: general, meetings, journey. Demais domínios: pending.
  */
 
 const SUPABASE = "public";
@@ -52,11 +50,17 @@ export function emptyFilters() {
     period: "all_time",
     dateFrom: null,
     dateTo: null,
+    periodLabel: null,
     attendanceStatus: null,
     frequency: null,
     firstMeeting: null,
     hasNoShow: null,
     hasReschedule: null,
+    hasFinancialData: null,
+    hasMonthlyIncome: null,
+    hasLiquidityReserve: null,
+    hasLastContribution: null,
+    onboardingStatus: null,
     mechanism: null,
     mechanismStatus: null,
     category: null,
@@ -271,6 +275,77 @@ function parseAttendanceFilter(n) {
   return {};
 }
 
+function parseFinancialFlags(n) {
+  const out = {};
+  if (/sem dados financeiros|sem perfil financeiro|nao (possuem|tem) dados financeiros/.test(n)) out.hasFinancialData = false;
+  else if (/possuem? dados financeiros|com dados financeiros|com perfil financeiro|possuem? perfil financeiro/.test(n)) out.hasFinancialData = true;
+  if (/com renda|com renda mensal|possuem? renda/.test(n)) out.hasMonthlyIncome = true;
+  if (/sem renda|sem renda mensal/.test(n)) out.hasMonthlyIncome = false;
+  if (/com reserva|possuem? reserva/.test(n)) out.hasLiquidityReserve = true;
+  if (/com aporte|possuem? aporte/.test(n)) out.hasLastContribution = true;
+  return out;
+}
+
+function parseFirstMeetingFilter(n) {
+  if (/nao (fizeram|fez|realizaram|realizou) a? ?primeira reuniao|sem primeira reuniao|sem a primeira reuniao|nao fizeram a primeira|clientes sem primeira/.test(n)) {
+    return { firstMeeting: "no", label: "Primeira reunião: não" };
+  }
+  if (/com primeira reuniao|realizaram a primeira reuniao|fizeram a primeira reuniao/.test(n)) {
+    return { firstMeeting: "yes", label: "Primeira reunião: sim" };
+  }
+  return {};
+}
+
+function parseOnboardingStatus(n) {
+  if (/concluiram onboarding|concluiu onboarding|onboarding conclu|completar.?am onboarding/.test(n)) {
+    return { onboardingStatus: "completed", label: "Onboarding: concluído" };
+  }
+  if (/onboarding aberto|nao concluiram onboarding|ainda no onboarding/.test(n)) {
+    return { onboardingStatus: "open", label: "Onboarding: aberto" };
+  }
+  return {};
+}
+
+/** Normaliza aliases do contrato Gemini (client_status, has_financial_data, etc.). */
+export function normalizePlanFilters(raw = {}) {
+  const f = emptyFilters();
+  if (!raw || typeof raw !== "object") return f;
+  const STATUS_MAP = {
+    active: "Ativo", ativo: "Ativo", cancelled: "Cancelado", cancelado: "Cancelado",
+    frozen: "Congelado", congelado: "Congelado",
+  };
+  const statusRaw = raw.client_status ?? raw.status ?? raw.clientStatus;
+  if (statusRaw != null) {
+    const key = String(statusRaw).toLowerCase();
+    f.status = STATUS_MAP[key] || (["Ativo", "Cancelado", "Congelado"].includes(statusRaw) ? statusRaw : null);
+  }
+  if (raw.segment) f.segment = String(raw.segment).toUpperCase() === "DADOS INSUFICIENTES" ? "Dados insuficientes" : String(raw.segment).toUpperCase();
+  if (raw.engineer) f.engineer = raw.engineer;
+  if (raw.search) f.search = raw.search;
+  const period = raw.period ?? raw.hiring_period ?? raw.update_period;
+  if (period) f.period = period;
+  if (raw.date_from || raw.dateFrom) f.dateFrom = raw.date_from || raw.dateFrom;
+  if (raw.date_to || raw.dateTo) f.dateTo = raw.date_to || raw.dateTo;
+  if (raw.period_label || raw.periodLabel) f.periodLabel = raw.period_label || raw.periodLabel;
+  if (raw.attendance_status || raw.attendanceStatus) f.attendanceStatus = raw.attendance_status || raw.attendanceStatus;
+  if (raw.has_no_show === true || raw.hasNoShow === true) f.hasNoShow = true;
+  if (raw.has_reschedule === true || raw.hasReschedule === true) f.hasReschedule = true;
+  const first = raw.first_meeting ?? raw.firstMeeting;
+  if (first === true || first === "yes") f.firstMeeting = "yes";
+  if (first === false || first === "no") f.firstMeeting = "no";
+  const hfd = raw.has_financial_data ?? raw.hasFinancialData;
+  if (hfd === true || hfd === false) f.hasFinancialData = hfd;
+  const hmi = raw.has_monthly_income ?? raw.hasMonthlyIncome;
+  if (hmi === true || hmi === false) f.hasMonthlyIncome = hmi;
+  const hlr = raw.has_liquidity_reserve ?? raw.hasLiquidityReserve;
+  if (hlr === true || hlr === false) f.hasLiquidityReserve = hlr;
+  const hlc = raw.has_last_contribution ?? raw.hasLastContribution;
+  if (hlc === true || hlc === false) f.hasLastContribution = hlc;
+  if (raw.onboarding_status || raw.onboardingStatus) f.onboardingStatus = raw.onboarding_status || raw.onboardingStatus;
+  if (raw.only_active_clients === true || raw.onlyActiveClients === true) f.status = "Ativo";
+  return f;
+}
+
 /* ------------------------------------------------------------------ */
 /* Catálogo de métricas por domínio                                    */
 /* ------------------------------------------------------------------ */
@@ -313,6 +388,14 @@ function applyGeneralFilters(rows, f) {
     if (f.engineer && r.engineer !== f.engineer) return false;
     if (f.status && r.analyticalStatus !== f.status) return false;
     if (f.segment && r.segmentLabel !== f.segment) return false;
+    if (f.hasFinancialData === true && !r.hasFinancialProfile) return false;
+    if (f.hasFinancialData === false && r.hasFinancialProfile) return false;
+    if (f.hasMonthlyIncome === true && r.monthlyIncome == null) return false;
+    if (f.hasMonthlyIncome === false && r.monthlyIncome != null) return false;
+    if (f.hasLiquidityReserve === true && r.liquidityReserve == null) return false;
+    if (f.hasLiquidityReserve === false && r.liquidityReserve != null) return false;
+    if (f.hasLastContribution === true && r.lastContribution == null) return false;
+    if (f.hasLastContribution === false && r.lastContribution != null) return false;
     if (f.dateFrom || f.dateTo) {
       if (!withinRange(r.acquisitionDate, f.dateFrom, f.dateTo)) return false;
     }
@@ -339,7 +422,11 @@ const GENERAL_METRICS = {
   median_last_contribution: { label: "Último aporte típico", type: "median", sources: [FINANCIAL_SOURCES[1]], compute: (rows) => measureBundle("lastContribution", rows.map((r) => r.lastContribution).filter((v) => v != null)).displayValue },
 };
 
-const GENERAL_ALLOWED_FILTERS = ["engineer", "status", "segment", "period", "dateFrom", "dateTo", "search", "clientId", "clientCode", "clientName"];
+const GENERAL_ALLOWED_FILTERS = [
+  "engineer", "status", "segment", "period", "dateFrom", "dateTo", "search",
+  "clientId", "clientCode", "clientName",
+  "hasFinancialData", "hasMonthlyIncome", "hasLiquidityReserve", "hasLastContribution",
+];
 
 /* --------------------------- Domínio meetings --------------------- */
 /*
@@ -526,6 +613,7 @@ function calculateMeetingSummaryPort(rows, mp, now) {
     totalReschedules,
     attendanceRate,
     clientsWithFirstMeeting: rows.filter((c) => c.firstMeetingCompleted === true).length,
+    clientsWithoutFirstMeeting: rows.filter((c) => c.firstMeetingCompleted === false).length,
     typicalDaysSinceLastMeeting: daysSinceStats.median,
     typicalIntervalDays: intervalStats.median,
     periodMonthDivisor: periodActive ? mp.divisor : null,
@@ -561,11 +649,103 @@ const MEETINGS_METRICS = {
   attendance_rate: { label: "Taxa de comparecimento (%)", field: "attendanceRate", type: "rate", definition: "completed_rate", sources: ATTENDANCE_SOURCE },
   average_meetings_per_month: { label: "Média de reuniões por mês", field: "averageMeetingsPerMonth", type: "rate", definition: "registered_per_month", sources: MEETING_SOURCES },
   clients_with_first_meeting: { label: "Clientes com primeira reunião", field: "clientsWithFirstMeeting", definition: "clients", sources: MEETING_SOURCES },
+  clients_without_first_meeting: { label: "Clientes sem primeira reunião", field: "clientsWithoutFirstMeeting", definition: "clients", sources: MEETING_SOURCES },
   days_since_last_meeting: { label: "Dias desde a última reunião (típico)", field: "typicalDaysSinceLastMeeting", type: "median", definition: "median_days", sources: MEETING_SOURCES },
   typical_interval: { label: "Intervalo típico entre reuniões (dias)", field: "typicalIntervalDays", type: "median", definition: "median_days", sources: MEETING_SOURCES },
+  typical_meeting_interval: { label: "Intervalo típico entre reuniões (dias)", field: "typicalIntervalDays", type: "median", definition: "median_days", sources: MEETING_SOURCES },
 };
 
 const MEETINGS_ALLOWED_FILTERS = ["engineer", "period", "dateFrom", "dateTo", "attendanceStatus", "hasNoShow", "hasReschedule", "firstMeeting", "frequency", "search", "clientId", "clientCode", "clientName"];
+
+/* --------------------------- Domínio journey (onboarding) --------- */
+/*
+ * Reutiliza computeOnboardingPayload. Regras confirmadas no código:
+ * - daysTo*: contratação (data_inicio_ciclo|created_at) → evento; média aritmética;
+ *   valores negativos entram na média (podem gerar média negativa, ex. entrega do plano).
+ * - completedOnboarding: estágio atual NÃO está em OPEN_ONBOARDING_STAGE_IDS.
+ * - totalOnboardingDays: transições a partir de estágios de início do onboarding.
+ */
+
+const JOURNEY_SOURCES = [
+  { schema: SUPABASE, table: "clients", column: "data_inicio_ciclo" },
+  { schema: SUPABASE, table: "client_journeys", column: "current_stage_id" },
+  { schema: SUPABASE, table: "client_meetings", column: "start_time" },
+  { schema: SUPABASE, table: "client_implementation_meeting_date", column: "meeting_date" },
+  { schema: SUPABASE, table: "client_mecanismos", column: "implemented_at" },
+];
+
+function avgFinite(values) {
+  const clean = values.filter((v) => v != null && Number.isFinite(v));
+  if (!clean.length) return null;
+  return Math.round((clean.reduce((a, b) => a + b, 0) / clean.length) * 100) / 100;
+}
+
+function statusMatchesRaw(rawStatus, analytical) {
+  const n = normalize(rawStatus);
+  if (analytical === "Ativo") return n.includes("ativ") && !n.includes("inativ");
+  if (analytical === "Cancelado") return n.includes("cancel") || n.includes("churn") || n.includes("encerr");
+  if (analytical === "Congelado") return n.includes("congel") || n.includes("pausad") || n.includes("freeze");
+  return true;
+}
+
+function applyJourneyFilters(rows, f) {
+  return rows.filter((r) => {
+    if (f.engineer && r.engineer !== f.engineer) return false;
+    if (f.status && !statusMatchesRaw(r.status, f.status)) return false;
+    if (f.onboardingStatus === "completed" && r.completedOnboarding !== true) return false;
+    if (f.onboardingStatus === "open" && r.completedOnboarding !== false) return false;
+    return true;
+  });
+}
+
+const JOURNEY_METRICS = {
+  average_days_to_first_meeting: {
+    label: "Média de dias até a primeira reunião",
+    type: "average",
+    definition: "average_days_contract_to_first_meeting",
+    sources: JOURNEY_SOURCES,
+    rule:
+      "Diferença em dias entre clients.data_inicio_ciclo (fallback created_at) e a primeira client_meetings.start_time. Usa média aritmética dos clientes com as duas datas. Intervalos negativos entram no cálculo.",
+    compute: (rows) => avgFinite(rows.map((r) => r.daysToFirstMeeting)),
+  },
+  average_days_to_plan_delivery: {
+    label: "Média de dias até a entrega do plano",
+    type: "average",
+    definition: "average_days_contract_to_plan",
+    sources: JOURNEY_SOURCES,
+    rule:
+      "Diferença em dias entre clients.data_inicio_ciclo e a primeira client_implementation_meeting_date.meeting_date. Média aritmética. Valores negativos (plano antes da contratação) entram no cálculo e podem gerar média negativa.",
+    compute: (rows) => avgFinite(rows.map((r) => r.daysToPlanDelivery)),
+  },
+  average_days_to_first_mechanism: {
+    label: "Média de dias até o primeiro mecanismo",
+    type: "average",
+    definition: "average_days_contract_to_first_mechanism",
+    sources: JOURNEY_SOURCES,
+    rule:
+      "Diferença em dias entre clients.data_inicio_ciclo e a primeira client_mecanismos.implemented_at (status implementado/concluído ou com data de implementação). Usa média aritmética dos clientes com as duas datas.",
+    compute: (rows) => avgFinite(rows.map((r) => r.daysToFirstImplementation)),
+  },
+  average_onboarding_days: {
+    label: "Média de dias de onboarding",
+    type: "average",
+    definition: "average_total_onboarding_days",
+    sources: JOURNEY_SOURCES,
+    rule:
+      "Média da duração das transições de client_journeys a partir dos estágios iniciais de onboarding até a próxima mudança de current_stage_id do mesmo client_id.",
+    compute: (rows) => avgFinite(rows.map((r) => r.totalOnboardingDays)),
+  },
+  completed_onboarding_clients: {
+    label: "Clientes que concluíram onboarding",
+    definition: "completed_onboarding",
+    sources: JOURNEY_SOURCES,
+    rule:
+      "Cliente com registro em client_journeys cujo estágio atual (current_stage_id) é diferente dos estágios abertos de onboarding. Sem jornada: não entra no numerador nem no denominador de cobertura.",
+    compute: (rows) => rows.filter((r) => r.completedOnboarding === true).length,
+  },
+};
+
+const JOURNEY_ALLOWED_FILTERS = ["search", "status", "engineer", "onboardingStatus"];
 
 /* ------------------------------------------------------------------ */
 /* Registro central de domínios                                        */
@@ -574,22 +754,32 @@ const MEETINGS_ALLOWED_FILTERS = ["engineer", "period", "dateFrom", "dateTo", "a
 export const portalDomains = {
   general: { compute: computeGeneralDataPayload, metrics: GENERAL_METRICS, allowedFilters: GENERAL_ALLOWED_FILTERS },
   meetings: { compute: computeMeetingsPayload, metrics: MEETINGS_METRICS, allowedFilters: MEETINGS_ALLOWED_FILTERS },
+  journey: { compute: computeOnboardingPayload, metrics: JOURNEY_METRICS, allowedFilters: JOURNEY_ALLOWED_FILTERS },
+  // Alias amigável
+  onboarding: { compute: computeOnboardingPayload, metrics: JOURNEY_METRICS, allowedFilters: JOURNEY_ALLOWED_FILTERS },
   // Fases seguintes:
+  patrimonial_plan: { pending: true },
   mechanisms: { pending: true },
   financial_updates: { pending: true },
+  platform_usage: { pending: true },
   support: { pending: true },
   quality: { pending: true },
 };
 
+/** Registro central usado pelo planejador (Gemini) e pelo executor. */
+export const portalQueryRegistry = portalDomains;
+
 /**
- * Cues de domínios de fases futuras. Detectados ANTES das métricas de general/meetings
- * para não roubar a intenção (ex.: "mecanismos dos clientes APEX" não é general).
+ * Cues de domínios de fases futuras. Detectados ANTES das métricas genéricas,
+ * mas DEPOIS das métricas explícitas de journey (ex.: média até primeiro mecanismo).
  */
 const PENDING_DOMAIN_CUES = [
   ["quality", /preenchiment|preenchid|campos? com alerta|qualidade dos dados|taxa de preenchimento|dados ausentes|valores ausentes|duplicad/],
   ["support", /chamad|ticket|atendimento|demanda|reclamac|elogio|escalonad|escalad|prioridade|priorit|\bsla\b/],
-  ["mechanisms", /mecanismo|implementad|implementac|\bapto\b|\baptos\b|elegiv/],
-  ["financial_updates", /atualizacao financeira|atualizaram os dados|atualizaram o cadastro|sem atualizac|sem atualizar|desatualizad|recencia|dias sem atualiz|nao atualizaram/],
+  ["platform_usage", /usuarios? (qv360|da plataforma)|fizeram login|realizaram login|total de logins|uso da plataforma|sessoes/],
+  ["patrimonial_plan", /plano patrimonial|qv360|app pharus|planos entregues|planos aprovados/],
+  ["mechanisms", /mecanismos? conclu|mecanismos? implement|taxa de implementacao|mecanismos? aptos|clientes com mecanismos/],
+  ["financial_updates", /atualizacao financeira|atualizaram os dados|atualizaram o cadastro|sem atualizac|sem atualizar|desatualizad|recencia financeira|dias sem atualiz|nao atualizaram/],
 ];
 
 function detectPendingDomain(n) {
@@ -601,15 +791,21 @@ function detectPendingDomain(n) {
 
 /**
  * Detecção de métrica (ordem importa: específicas antes das genéricas).
- * Cada entrada: [regex, domain, metricKey]. Métricas de valor típico (renda,
- * liquidez, aporte, permanência) vêm ANTES dos segmentos, pois o segmento é
- * apenas um filtro ("renda típica dos clientes PRIVATE" -> mediana + filtro).
  */
 const METRIC_PATTERNS = [
+  // journey — antes de mechanisms/pending
+  [/media ate o primeiro mecanismo na jornada|media.*primeiro mecanismo.*(jornada|onboarding)/, "journey", "average_days_to_first_mechanism"],
+  [/tempo tipico ate (a )?primeira implementacao|mediana ate (a )?primeira implementacao|mediana ate o primeiro mecanismo/, "mechanisms", "median_days_to_first_implementation"],
+  [/media ate (a )?primeira implementacao|media ate o primeiro mecanismo|dias ate o primeiro mecanismo/, "mechanisms", "average_days_to_first_implementation"],
+  [/media ate (a )?entrega do plano|dias ate (a )?entrega do plano|entrega do plano patrimonial/, "journey", "average_days_to_plan_delivery"],
+  [/media ate (a )?primeira reuniao|dias ate (a )?primeira reuniao|dias entre contratacao e primeira reuniao/, "journey", "average_days_to_first_meeting"],
+  [/media (de |do )?onboarding|tempo total de onboarding|onboarding total/, "journey", "average_onboarding_days"],
+  [/concluiram onboarding|concluiu onboarding|onboarding conclu|completar.?am onboarding/, "journey", "completed_onboarding_clients"],
   // meetings — específicas
   [/taxa de comparecimento|comparecimento|presenca/, "meetings", "attendance_rate"],
   [/no.?show|nao compareceu|nao compareceram|faltaram|faltas|ausenc/, "meetings", "no_show_meetings"],
   [/remarcad|reagendad/, "meetings", "rescheduled_meetings"],
+  [/nao (fizeram|fez|realizaram|realizou) a? ?primeira reuniao|sem primeira reuniao|sem a primeira reuniao|clientes sem primeira/, "meetings", "clients_without_first_meeting"],
   [/primeira reuniao|primeiras reunioes|first meeting/, "meetings", "clients_with_first_meeting"],
   [/reunioes por mes|media de reunioes|reunioes\/mes/, "meetings", "average_meetings_per_month"],
   [/intervalo (?:tipico|medio|entre)|intervalo entre reunioes/, "meetings", "typical_interval"],
@@ -643,9 +839,12 @@ const QUALITY_CUE = /qualidade|preenchid|ausente|faltando|falta de|confiab|nao c
 function detectIntent(n) {
   const hasValue = VALUE_CUE.test(n);
   const hasRule = RULE_CUE.test(n);
+  // Localização tem prioridade sobre "renda/valor" embutido na pergunta.
+  if (LOCATION_CUE.test(n)) return "location";
+  // "Como é calculada a média..." é regra, não valor (salvo se também pedir quantidade).
+  if (hasRule && !/\b(quant|qtd|numero|total de|quantos|quantas)\b/.test(n)) return "rule";
   if (hasValue && hasRule) return "mixed";
   if (hasValue) return "value";
-  if (LOCATION_CUE.test(n)) return "location";
   if (hasRule) return "rule";
   if (QUALITY_CUE.test(n)) return "quality";
   return "general";
@@ -668,52 +867,70 @@ export function resolvePortalQuestion(question, now = new Date()) {
 
   let domain = null;
   let metric = null;
-  const pendingDomain = detectPendingDomain(n);
-  if (pendingDomain) {
-    domain = pendingDomain; // fase futura: reconhecido, porém sem cálculo ainda
-  } else {
-    for (const [re, dom, key] of METRIC_PATTERNS) {
-      if (re.test(n)) { domain = dom; metric = key; break; }
-    }
+  // Métricas conhecidas (inclui journey) têm prioridade sobre pending.
+  for (const [re, dom, key] of METRIC_PATTERNS) {
+    if (re.test(n)) { domain = dom; metric = key; break; }
+  }
+  if (!metric) {
+    const pendingDomain = detectPendingDomain(n);
+    if (pendingDomain) domain = pendingDomain;
   }
 
   const filters = emptyFilters();
   const filterLabels = [];
 
-  // Período (global)
   const period = parsePeriod(n, now);
   const instants = rangeInstants(period, now);
   filters.period = period.period;
   filters.dateFrom = instants.from ? instants.from.toISOString() : null;
   filters.dateTo = instants.to ? instants.to.toISOString() : null;
+  filters.periodLabel = period.label;
   const periodLabel = period.label;
 
-  // Status, segmento, engenheiro, presença (globais)
   const status = parseStatusFilter(n);
   const segment = parseSegmentFilter(n);
   const engineerToken = parseEngineerToken(n);
   const attendance = parseAttendanceFilter(n);
+  const financial = parseFinancialFlags(n);
+  const firstMeeting = parseFirstMeetingFilter(n);
+  const onboarding = parseOnboardingStatus(n);
 
   if (status.status) filters.status = status.status;
   if (segment.segment) filters.segment = segment.segment;
-  if (engineerToken) filters.engineer = engineerToken; // token bruto; resolvido depois
+  if (engineerToken) filters.engineer = engineerToken;
   if (attendance.hasNoShow) filters.hasNoShow = true;
   if (attendance.hasReschedule) filters.hasReschedule = true;
   if (attendance.attendanceStatus) filters.attendanceStatus = attendance.attendanceStatus;
+  if (financial.hasFinancialData !== undefined) filters.hasFinancialData = financial.hasFinancialData;
+  if (financial.hasMonthlyIncome !== undefined) filters.hasMonthlyIncome = financial.hasMonthlyIncome;
+  if (financial.hasLiquidityReserve !== undefined) filters.hasLiquidityReserve = financial.hasLiquidityReserve;
+  if (financial.hasLastContribution !== undefined) filters.hasLastContribution = financial.hasLastContribution;
+  if (firstMeeting.firstMeeting) filters.firstMeeting = firstMeeting.firstMeeting;
+  if (onboarding.onboardingStatus) filters.onboardingStatus = onboarding.onboardingStatus;
 
-  // Métrica implica dimensão (evita filtro redundante e sustenta o rótulo).
+  // Perguntas cruzadas de status + dados financeiros usam contagem filtrada.
+  if (metric === "clients_with_financial_data" && filters.status) {
+    /* mantém métrica; filtros já aplicados */
+  } else if (metric === "cancelled_clients" && filters.hasFinancialData != null) {
+    metric = "clients_with_financial_data";
+  } else if (metric === "active_clients" && filters.hasFinancialData != null && !filters.segment) {
+    metric = "clients_with_financial_data";
+  }
+
   if (domain && metric) {
     const def = (portalDomains[domain]?.metrics || {})[metric];
     if (def?.implied) {
-      for (const [k, v] of Object.entries(def.implied)) filters[k] = v;
+      for (const [k, v] of Object.entries(def.implied)) {
+        if (filters[k] == null) filters[k] = v;
+      }
     }
   }
 
-  // Ambiguidade: entidade citada sem domínio/métrica claros (ex.: "dados recentes do Gabriel").
-  if (!metric && !domain && engineerToken) {
-    ambiguities.push("Sobre qual página você quer saber? (Dados Gerais, Reuniões, Mecanismos, Atualização Financeira, Atendimento ou Qualidade)");
-    ambiguities.push("Qual indicador você quer consultar?");
-    ambiguities.push(`Confirmar o Engenheiro Patrimonial mencionado: "${engineerToken}".`);
+  // Ambiguidade vaga
+  if (!metric && !domain && (engineerToken || /\b(dados|informac|recent|resumo|situacao|panorama)\b/.test(n))) {
+    ambiguities.push("Você quer consultar os clientes da carteira de um Engenheiro Patrimonial, um cliente específico ou outra página do portal?");
+    ambiguities.push("Qual indicador você quer consultar? (ex.: clientes ativos, no-shows, onboarding)");
+    if (engineerToken) ambiguities.push(`Confirmar o nome mencionado: "${engineerToken}".`);
   }
 
   return { domain, metric, intent, filters, filterLabels, ambiguities, warnings, periodLabel, periodMeta: period, _engineerToken: engineerToken };
@@ -756,6 +973,12 @@ function detectEngineerCandidates(nQuestion, engineers) {
 function validateFiltersForDomain(domain, filters) {
   const allowed = new Set(portalDomains[domain]?.allowedFilters || []);
   const warnings = [];
+  const checks = [
+    "attendanceStatus", "hasNoShow", "hasReschedule", "segment", "status",
+    "priority", "supportStatus", "requestedByClient", "mechanism", "mechanismStatus",
+    "category", "financialRecency", "hasFinancialData", "hasMonthlyIncome",
+    "hasLiquidityReserve", "hasLastContribution", "onboardingStatus", "firstMeeting",
+  ];
   const NAMES = {
     priority: "Prioridade (Atendimento)",
     supportStatus: "Status do chamado (Atendimento)",
@@ -767,10 +990,15 @@ function validateFiltersForDomain(domain, filters) {
     hasNoShow: "No-show (Reuniões)",
     hasReschedule: "Remarcação (Reuniões)",
     segment: "Segmento (Dados Gerais)",
-    status: "Status do cliente (Dados Gerais)",
+    status: "Status do cliente",
     financialRecency: "Recência financeira (Atualização Financeira)",
+    hasFinancialData: "Possui dados financeiros (Dados Gerais)",
+    hasMonthlyIncome: "Possui renda (Dados Gerais)",
+    hasLiquidityReserve: "Possui reserva (Dados Gerais)",
+    hasLastContribution: "Possui aporte (Dados Gerais)",
+    onboardingStatus: "Status de onboarding (Jornada)",
+    firstMeeting: "Primeira reunião (Reuniões)",
   };
-  const checks = ["attendanceStatus", "hasNoShow", "hasReschedule", "segment", "status", "priority", "supportStatus", "requestedByClient", "mechanism", "mechanismStatus", "category", "financialRecency"];
   for (const key of checks) {
     const present = filters[key] !== null && filters[key] !== false;
     if (present && !allowed.has(key)) {
@@ -786,11 +1014,298 @@ function buildFilterLabels(filters, period) {
   if (filters.engineer) labels.push(`Engenheiro Patrimonial: ${filters.engineer}`);
   if (filters.status) labels.push(`Status: ${filters.status}`);
   if (filters.segment) labels.push(`Segmento: ${filters.segment}`);
+  if (filters.hasFinancialData === true) labels.push("Possui dados financeiros");
+  if (filters.hasFinancialData === false) labels.push("Sem dados financeiros");
+  if (filters.hasMonthlyIncome === true) labels.push("Possui renda mensal");
+  if (filters.hasMonthlyIncome === false) labels.push("Sem renda mensal");
   if (filters.attendanceStatus === "nao_compareceu" || filters.hasNoShow) labels.push("Presença: no-show");
   else if (filters.attendanceStatus === "compareceu") labels.push("Presença: compareceu");
   if (filters.hasReschedule) labels.push("Remarcação: sim");
-  if (period && period.label) labels.push(`Período: ${period.label}`);
+  if (filters.firstMeeting === "yes") labels.push("Primeira reunião: sim");
+  if (filters.firstMeeting === "no") labels.push("Primeira reunião: não");
+  if (filters.onboardingStatus === "completed") labels.push("Onboarding: concluído");
+  if (filters.onboardingStatus === "open") labels.push("Onboarding: aberto");
+  const periodText = (period && period.label) || filters.periodLabel;
+  if (periodText) labels.push(`Período: ${periodText}`);
   return labels;
+}
+
+/* ------------------------------------------------------------------ */
+/* Validação e execução do query_plan                                  */
+/* ------------------------------------------------------------------ */
+
+const ALLOWED_INTENTS = new Set(["value", "rule", "location", "quality", "mixed", "general"]);
+const FORBIDDEN_PLAN_KEYS = new Set(["sql", "url", "query", "raw_sql", "endpoint"]);
+
+/** Catálogo compacto enviado ao modo plan do n8n (sem funções). */
+export function buildPlanCatalog() {
+  const domains = {};
+  for (const [name, cfg] of Object.entries(portalQueryRegistry)) {
+    if (cfg.pending) {
+      domains[name] = { pending: true, metrics: [], filters: [] };
+      continue;
+    }
+    domains[name] = {
+      pending: false,
+      metrics: Object.entries(cfg.metrics || {}).map(([id, m]) => ({
+        id,
+        label: m.label,
+        definition: m.definition || null,
+        rule: m.rule || null,
+      })),
+      filters: cfg.allowedFilters || [],
+    };
+  }
+  return domains;
+}
+
+function periodLabelFromKey(period) {
+  const map = {
+    last_30_days: "últimos 30 dias",
+    last_7_days: "últimos 7 dias",
+    last_90_days: "últimos 90 dias",
+    last_month: "mês passado",
+    previous_calendar_month: "mês passado",
+    this_month: "este mês",
+    this_year: "este ano",
+    last_year: "ano passado",
+    today: "hoje",
+    yesterday: "ontem",
+  };
+  return map[period] || null;
+}
+
+function parseYmd(iso) {
+  const m = String(iso).match(/(\d{4})-(\d{2})-(\d{2})/);
+  if (!m) return null;
+  return { y: Number(m[1]), m: Number(m[2]) - 1, d: Number(m[3]) };
+}
+
+function periodMetaFromPlan(filters, now = new Date()) {
+  if (filters.dateFrom || filters.dateTo) {
+    const from = filters.dateFrom ? parseYmd(filters.dateFrom) : null;
+    const to = filters.dateTo ? parseYmd(filters.dateTo) : null;
+    return { kind: "calendar", rollingDays: null, from, to, period: filters.period || "custom", label: filters.periodLabel };
+  }
+  const p = filters.period;
+  if (!p || p === "all_time" || p === "all") return { kind: "all", rollingDays: null, from: null, to: null, period: "all_time", label: null };
+  if (p === "last_30_days") return { kind: "rolling", rollingDays: 30, from: null, to: null, period: p, label: "últimos 30 dias" };
+  if (p === "last_7_days") return { kind: "rolling", rollingDays: 7, from: null, to: null, period: p, label: "últimos 7 dias" };
+  if (p === "last_90_days") return { kind: "rolling", rollingDays: 90, from: null, to: null, period: p, label: "últimos 90 dias" };
+  const fake = {
+    last_month: "mes passado",
+    previous_calendar_month: "mes passado",
+    this_month: "este mes",
+    this_year: "este ano",
+    last_year: "ano passado",
+    today: "hoje",
+    yesterday: "ontem",
+  }[p];
+  if (fake) return parsePeriod(fake, now);
+  return { kind: "all", rollingDays: null, from: null, to: null, period: "all_time", label: null };
+}
+
+/**
+ * Valida um query_plan vindo do Gemini (ou do planejador local).
+ */
+export function validateQueryPlan(rawPlan) {
+  const warnings = [];
+  const clarification = [];
+  if (!rawPlan || typeof rawPlan !== "object") {
+    return { ok: false, clarification: ["Não foi possível interpretar a consulta. Reformule a pergunta."], warnings };
+  }
+  for (const key of Object.keys(rawPlan)) {
+    if (FORBIDDEN_PLAN_KEYS.has(normalize(key))) {
+      return { ok: false, clarification: ["A consulta pedida não é permitida."], warnings: ["Campo proibido no plano."] };
+    }
+  }
+
+  let intent = ALLOWED_INTENTS.has(rawPlan.intent) ? rawPlan.intent : "value";
+  let domain = rawPlan.domain ? String(rawPlan.domain) : null;
+  if (domain === "onboarding") domain = "journey";
+  let metric = rawPlan.metric ? String(rawPlan.metric) : null;
+
+  if (rawPlan.clarification) clarification.push(String(rawPlan.clarification));
+  if (Array.isArray(rawPlan.ambiguities)) clarification.push(...rawPlan.ambiguities.map(String));
+
+  if (!domain && intent === "value") clarification.push("Qual página do portal você quer consultar?");
+  if (domain && !portalQueryRegistry[domain]) {
+    return { ok: false, clarification: [`Domínio desconhecido: ${domain}.`], warnings };
+  }
+  const cfg = domain ? portalQueryRegistry[domain] : null;
+  if (cfg?.pending) {
+    return {
+      ok: false,
+      plan: { intent, domain, metric, filters: normalizePlanFilters(rawPlan.filters), group_by: null, sort: null, limit: null },
+      warnings: ["Consulta a este indicador ainda não está disponível nesta fase."],
+      clarification: [],
+      pending: true,
+    };
+  }
+  if (domain && metric && cfg && !cfg.metrics?.[metric]) {
+    warnings.push(`Métrica "${metric}" não existe no domínio ${domain}.`);
+    metric = null;
+  }
+  if (intent === "value" && domain && !metric) clarification.push("Qual indicador você quer consultar?");
+
+  const filters = normalizePlanFilters(rawPlan.filters || {});
+  if (filters.period === "previous_calendar_month") filters.period = "last_month";
+  if (cfg && !cfg.pending) warnings.push(...validateFiltersForDomain(domain, filters));
+  if (rawPlan.group_by != null || rawPlan.sort != null || rawPlan.limit != null) {
+    warnings.push("Agrupamento/ordenação/limite ainda não são suportados e foram ignorados.");
+  }
+
+  const plan = {
+    intent,
+    domain,
+    metric,
+    filters,
+    group_by: null,
+    sort: null,
+    limit: null,
+    periodMeta: periodMetaFromPlan(filters),
+    periodLabel: filters.periodLabel || periodLabelFromKey(filters.period),
+  };
+
+  if (clarification.length) return { ok: false, plan, clarification, warnings };
+  if (intent === "rule" || intent === "location" || intent === "general") {
+    return { ok: true, plan, clarification: [], warnings, skipExecute: true };
+  }
+  if (!domain || !metric) {
+    return { ok: false, plan, clarification: clarification.length ? clarification : ["Faltam domínio ou métrica."], warnings };
+  }
+  return { ok: true, plan, clarification: [], warnings };
+}
+
+/** Executa um query_plan já validado reutilizando compute*Payload dos dashboards. */
+export async function executePortalQuery(queryPlan, now = new Date(), options = {}) {
+  const question = options.question || "";
+  const domain = queryPlan.domain === "onboarding" ? "journey" : queryPlan.domain;
+  const metric = queryPlan.metric;
+  const filters = { ...emptyFilters(), ...(queryPlan.filters || {}) };
+  const periodMeta = queryPlan.periodMeta || periodMetaFromPlan(filters, now);
+  const periodLabel = queryPlan.periodLabel || filters.periodLabel || periodLabelFromKey(filters.period);
+
+  const base = {
+    value: null,
+    label: null,
+    domain,
+    metric,
+    filters,
+    filter_labels: [],
+    sources: [],
+    warnings: [...(queryPlan.warnings || [])],
+    ambiguities: [],
+    realtime_database: false,
+    generated_at: nowIso(),
+    metric_definition: null,
+    metadata: null,
+    metric_rule: null,
+  };
+
+  const cfg = portalQueryRegistry[domain];
+  if (!cfg || cfg.pending || !cfg.metrics?.[metric]) {
+    base.warnings.push("Consulta a este indicador ainda não está disponível.");
+    return base;
+  }
+  const def = cfg.metrics[metric];
+
+  try {
+    const payload = await cfg.compute();
+
+    if ((cfg.allowedFilters || []).includes("engineer")) {
+      const engineers = uniqueEngineers(payload);
+      if (filters.engineer && !engineers.includes(filters.engineer)) {
+        const cands = detectEngineerCandidates(normalize(String(filters.engineer) + " " + question), engineers);
+        if (cands.length === 1) filters.engineer = cands[0];
+        else if (cands.length > 1) {
+          base.ambiguities.push(`Há mais de um Engenheiro Patrimonial correspondente: ${cands.join(", ")}. Qual deles?`);
+          filters.engineer = null;
+          return base;
+        } else if (options.engineerToken) {
+          base.warnings.push(`Engenheiro Patrimonial "${options.engineerToken}" não encontrado na base.`);
+          filters.engineer = null;
+        }
+      } else if (options.engineerToken && !filters.engineer) {
+        const cands = detectEngineerCandidates(normalize(question), engineers);
+        if (cands.length === 1) filters.engineer = cands[0];
+        else if (cands.length > 1) {
+          base.ambiguities.push(`Há mais de um Engenheiro Patrimonial correspondente: ${cands.join(", ")}. Qual deles?`);
+          return base;
+        }
+      } else if (!filters.engineer && question) {
+        const cands = detectEngineerCandidates(normalize(question), engineers);
+        if (cands.length === 1) filters.engineer = cands[0];
+        else if (cands.length > 1) {
+          base.ambiguities.push(`Há mais de um Engenheiro Patrimonial correspondente: ${cands.join(", ")}. Qual deles?`);
+          return base;
+        }
+      }
+    }
+
+    base.warnings.push(...validateFiltersForDomain(domain, filters));
+
+    let value;
+    if (domain === "general") {
+      const filtered = applyGeneralFilters(payload.clients || [], filters);
+      value = def.compute(filtered, filters);
+    } else if (domain === "meetings") {
+      const mf = {
+        engineer: filters.engineer || null,
+        attendance: filters.attendanceStatus || "all",
+        first: filters.firstMeeting || "all",
+        absence: filters.hasNoShow ? "yes" : "all",
+        reschedule: filters.hasReschedule ? "yes" : "all",
+      };
+      const view = getFilteredMeetings(payload, mf, periodMeta, now);
+      value = view.summary[def.field];
+      base.metric_definition = def.definition || null;
+      base.metadata = view.metadata;
+      filters.dateFrom = view.metadata.dateFrom;
+      filters.dateTo = view.metadata.dateTo;
+    } else if (domain === "journey") {
+      const filtered = applyJourneyFilters(payload.clients || [], filters);
+      value = def.compute(filtered, filters);
+      base.metric_definition = def.definition || null;
+      base.metric_rule = def.rule || null;
+      if (typeof value === "number" && value < 0) {
+        base.warnings.push("O indicador resultou negativo: há eventos com data anterior à contratação na base.");
+      }
+      if (metric === "average_onboarding_days" && (value === 0 || value == null)) {
+        base.warnings.push("Cobertura limitada para o tempo total de onboarding; verifique a base de client_journeys.");
+      }
+    }
+
+    base.value = value === undefined ? null : value;
+    base.label = def.label;
+    base.sources = def.sources || [];
+    base.filter_labels = buildFilterLabels(filters, { label: periodLabel });
+    base.filters = filters;
+    base.realtime_database = base.value != null;
+    if (base.value == null) base.warnings.push("Indicador não calculável com os dados disponíveis para este recorte.");
+    return base;
+  } catch (err) {
+    console.error("[portal-query] executePortalQuery", domain, metric, err?.message || err);
+    base.warnings.push("Não foi possível calcular o indicador no momento.");
+    return base;
+  }
+}
+
+export function localPlanToQueryPlan(local) {
+  return {
+    intent: local.intent,
+    domain: local.domain,
+    metric: local.metric,
+    filters: local.filters,
+    group_by: null,
+    sort: null,
+    limit: null,
+    periodMeta: local.periodMeta,
+    periodLabel: local.periodLabel,
+    ambiguities: local.ambiguities,
+    warnings: local.warnings,
+    _engineerToken: local._engineerToken,
+  };
 }
 
 /* ------------------------------------------------------------------ */
@@ -798,16 +1313,14 @@ function buildFilterLabels(filters, period) {
 /* ------------------------------------------------------------------ */
 
 /**
- * resolvePortalContext(question, now): planeja, carrega o payload do domínio,
- * resolve entidades, valida e aplica filtros e calcula a métrica.
- * Retorna { intent, dados_contexto } no formato esperado pelo /api/assistant.
+ * resolvePortalContext(question, now): planeja localmente, valida e executa.
+ * Mantido para compatibilidade; o /api/assistant preferencialmente usa
+ * o fluxo plan (n8n) → validateQueryPlan → executePortalQuery.
  */
 export async function resolvePortalContext(question, now = new Date()) {
   const plan = resolvePortalQuestion(question, now);
   const { intent } = plan;
 
-  // Intenções sem valor usam o catálogo do agente (regra/localização), exceto
-  // quando a pergunta é vaga com uma entidade citada -> pedimos esclarecimento.
   if (intent !== "value" && intent !== "mixed") {
     const ambiguities = [...plan.ambiguities];
     const nq = normalize(question);
@@ -816,117 +1329,44 @@ export async function resolvePortalContext(question, now = new Date()) {
         const payload = await computeGeneralDataPayload();
         const cands = detectEngineerCandidates(nq, uniqueEngineers(payload));
         if (cands.length) {
-          ambiguities.push("Sobre qual página você quer saber? (Dados Gerais, Reuniões, Mecanismos, Atualização Financeira, Atendimento ou Qualidade)");
+          ambiguities.push("Você quer consultar os clientes da carteira de um Engenheiro Patrimonial, um cliente específico ou outra página do portal?");
           ambiguities.push("Qual indicador você quer consultar?");
           ambiguities.push(cands.length === 1 ? `Confirmar o Engenheiro Patrimonial: ${cands[0]}.` : `Qual Engenheiro Patrimonial? ${cands.join(", ")}.`);
         }
-      } catch {
-        /* sem payload disponível: mantém sem ambiguidade adicional */
-      }
+      } catch { /* ignore */ }
     }
     if (ambiguities.length) {
       return {
         intent,
         dados_contexto: {
-          domain: null,
-          metric: null,
-          value: null,
-          label: null,
-          filters: plan.filters,
-          filter_labels: [],
-          sources: [],
-          warnings: [...plan.warnings],
-          ambiguities,
-          realtime_database: false,
-          generated_at: nowIso(),
+          domain: null, metric: null, value: null, label: null,
+          filters: plan.filters, filter_labels: [], sources: [],
+          warnings: [...plan.warnings], ambiguities,
+          realtime_database: false, generated_at: nowIso(),
         },
       };
     }
     return { intent, dados_contexto: null };
   }
 
-  const base = {
-    domain: plan.domain,
-    metric: plan.metric,
-    value: null,
-    label: null,
-    filters: plan.filters,
-    filter_labels: [],
-    sources: [],
-    warnings: [...plan.warnings],
-    ambiguities: [...plan.ambiguities],
-    realtime_database: false,
-    generated_at: nowIso(),
-  };
-
-  // Sem métrica reconhecida ou domínio de fase futura: não inventar.
-  const domainCfg = plan.domain ? portalDomains[plan.domain] : null;
-  if (!plan.metric || !domainCfg || domainCfg.pending || !domainCfg.metrics?.[plan.metric]) {
-    if (plan.domain && domainCfg?.pending) {
-      base.warnings.push("Consulta a este indicador ainda não está disponível.");
-    } else if (!plan.metric) {
-      base.warnings.push("Métrica ainda não disponível para consulta.");
-    }
-    return { intent, dados_contexto: base };
+  const qp = localPlanToQueryPlan(plan);
+  const validated = validateQueryPlan(qp);
+  if (validated.pending || !validated.ok) {
+    return {
+      intent,
+      dados_contexto: {
+        domain: qp.domain, metric: qp.metric, value: null, label: null,
+        filters: qp.filters, filter_labels: [], sources: [],
+        warnings: validated.warnings || [],
+        ambiguities: validated.clarification || [],
+        realtime_database: false, generated_at: nowIso(),
+      },
+    };
   }
 
-  try {
-    const payload = await domainCfg.compute();
-    const def = domainCfg.metrics[plan.metric];
-
-    // Resolução de entidade: Engenheiro Patrimonial (contra os nomes reais).
-    if (portalDomains[plan.domain]?.allowedFilters?.includes("engineer")) {
-      const engineers = uniqueEngineers(payload);
-      const cands = detectEngineerCandidates(normalize(question), engineers);
-      if (cands.length === 1) {
-        plan.filters.engineer = cands[0];
-      } else if (cands.length > 1) {
-        plan.filters.engineer = null;
-        base.ambiguities.push(`Há mais de um Engenheiro Patrimonial correspondente: ${cands.join(", ")}. Qual deles?`);
-      } else {
-        if (plan._engineerToken) {
-          base.warnings.push(`Engenheiro Patrimonial "${plan._engineerToken}" não encontrado na base.`);
-        }
-        plan.filters.engineer = null;
-      }
-    }
-
-    // Validação de filtros por domínio (filtros incompatíveis geram warning).
-    base.warnings.push(...validateFiltersForDomain(plan.domain, plan.filters));
-
-    // Cálculo com filtros aplicados (fonte de verdade = backend).
-    let value;
-    if (plan.domain === "general") {
-      const filtered = applyGeneralFilters(payload.clients || [], plan.filters);
-      value = def.compute(filtered, plan.filters);
-    } else if (plan.domain === "meetings") {
-      // Fonte única: mesma coleção/dedup/filtros/fórmulas do dashboard Reuniões.
-      const mf = {
-        engineer: plan.filters.engineer || null,
-        attendance: plan.filters.attendanceStatus || "all",
-        first: plan.filters.firstMeeting || "all",
-        absence: plan.filters.hasNoShow ? "yes" : "all",
-        reschedule: plan.filters.hasReschedule ? "yes" : "all",
-      };
-      const view = getFilteredMeetings(payload, mf, plan.periodMeta, now);
-      value = view.summary[def.field];
-      base.metric_definition = def.definition || null;
-      base.metadata = view.metadata;
-      // Alinha o intervalo reportado ao realmente aplicado pela tela.
-      base.filters.dateFrom = view.metadata.dateFrom;
-      base.filters.dateTo = view.metadata.dateTo;
-    }
-
-    base.value = value === undefined ? null : value;
-    base.label = def.label;
-    base.sources = def.sources || [];
-    base.filter_labels = buildFilterLabels(plan.filters, { label: plan.periodLabel });
-    base.realtime_database = base.value != null;
-    if (base.value == null) base.warnings.push("Indicador não calculável com os dados disponíveis para este recorte.");
-    return { intent, dados_contexto: base };
-  } catch (err) {
-    console.error("[portal-query] falha ao calcular", plan.domain, plan.metric, err?.message || err);
-    base.warnings.push("Não foi possível calcular o indicador no momento.");
-    return { intent, dados_contexto: base };
-  }
+  const result = await executePortalQuery(validated.plan, now, {
+    question,
+    engineerToken: plan._engineerToken,
+  });
+  return { intent, dados_contexto: result, query_plan: validated.plan };
 }

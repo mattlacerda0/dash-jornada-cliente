@@ -55,6 +55,110 @@
     .metric-label{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--color-text-subtle);font-weight:700;display:flex;align-items:center;gap:6px}
     .metric-value{font-size:30px;font-weight:700;margin:7px 0 2px}.metric-note{font-size:12px;color:var(--color-text-muted)}
     .help{cursor:help;color:var(--color-text-subtle);border:1px solid var(--color-border);border-radius:999px;width:16px;height:16px;display:inline-grid;place-items:center;font-size:10px}
+    .mech-explainer{margin:0 0 18px;padding:14px 16px;border:1px solid var(--color-border);border-radius:var(--radius-md);background:#242424}
+    .mech-explainer p{margin:0;font-size:13px;line-height:1.55;color:var(--color-text-muted)}
+    .mech-explainer strong{color:var(--color-text);font-weight:600}
+    .mech-unit-defs{display:flex;flex-wrap:wrap;gap:8px 18px;margin-top:10px}
+    .mech-unit-defs span{font-size:12px;color:var(--color-text-muted)}
+    .mech-unit-defs b{color:var(--color-text);font-weight:600}
+    .kpi-block-label{margin:18px 0 10px;font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--color-text-muted)}
+    .kpi-block-label:first-of-type{margin-top:4px}
+    /* Mecanismos: destaque laranja (sem azul) */
+    #view-mechanisms .metric.kpi-primary{
+      border-color:rgba(244,121,32,.42);
+      border-top:2px solid var(--color-primary);
+      background:linear-gradient(180deg,var(--color-primary-tint),transparent);
+    }
+    #view-mechanisms .metric.kpi-secondary{
+      border-color:var(--color-border);
+      background:linear-gradient(145deg,var(--color-surface),#171717);
+      opacity:1;
+    }
+    #view-mechanisms .metric.kpi-secondary .metric-value{font-size:26px}
+    #view-mechanisms .metric.highlight{border-top-color:var(--color-primary)}
+    #view-mechanisms .summary.kpis-mech-3{grid-template-columns:repeat(3,1fr)}
+    #view-mechanisms .summary.kpis-mech-4{grid-template-columns:repeat(4,1fr)}
+    #view-mechanisms .summary.kpis-mech-2{grid-template-columns:repeat(2,1fr)}
+    #view-mechanisms .unused-types-box{
+      margin:0 0 18px;
+      padding:14px 16px 14px 42px;
+      border:1px solid rgba(246,189,75,.45);
+      border-radius:var(--radius-md);
+      background:rgba(246,189,75,.1);
+      position:relative;
+    }
+    #view-mechanisms .unused-types-box::before{
+      content:"!";
+      position:absolute;left:14px;top:14px;
+      width:20px;height:20px;border-radius:50%;
+      display:grid;place-items:center;
+      font-size:12px;font-weight:800;color:#1a1408;
+      background:var(--color-warning);
+    }
+    #view-mechanisms .unused-types-box h3{margin:0 0 6px;font-size:14px;color:#ffe0a1}
+    #view-mechanisms .unused-types-box p{margin:0 0 10px;font-size:12px;color:#f0d48a;line-height:1.45}
+    #view-mechanisms .unused-types-box ul{margin:0;padding-left:18px;font-size:13px;line-height:1.6;color:var(--color-text)}
+    #view-mechanisms .type-stat-row .bar-fill-clients{background:rgba(244,121,32,.8)}
+    #view-mechanisms .type-stat-row .bar-fill-impl{background:rgba(66,201,133,.8)}
+    #view-mechanisms .help{
+      position:relative;
+      cursor:help;
+      color:var(--color-text-subtle);
+      border:1px solid var(--color-border-strong);
+    }
+    #view-mechanisms .help:hover,
+    #view-mechanisms .help:focus-visible{
+      border-color:rgba(244,121,32,.55);
+      color:#ffc093;
+    }
+    #view-mechanisms .help[data-tip]::after{
+      content:attr(data-tip);
+      position:absolute;
+      left:50%;
+      bottom:calc(100% + 8px);
+      transform:translateX(-50%);
+      width:min(260px,70vw);
+      padding:10px 12px;
+      border-radius:10px;
+      background:#141414;
+      border:1px solid rgba(246,189,75,.4);
+      color:var(--color-text);
+      font-size:11px;
+      font-weight:500;
+      letter-spacing:0;
+      text-transform:none;
+      line-height:1.4;
+      white-space:normal;
+      text-align:left;
+      box-shadow:var(--shadow-card);
+      opacity:0;
+      pointer-events:none;
+      z-index:40;
+      transition:opacity .12s ease;
+    }
+    #view-mechanisms .help[data-tip]:hover::after,
+    #view-mechanisms .help[data-tip]:focus-visible::after{opacity:1}
+    #view-mechanisms .note-muted.warn-amber{
+      color:#f0d48a;
+      border-left:3px solid var(--color-warning);
+      padding-left:10px;
+      margin-top:10px;
+    }
+    .type-stat-row{display:grid;grid-template-columns:minmax(120px,1.2fr) minmax(140px,1.4fr) 72px;gap:10px;align-items:center;margin:0 0 10px;font-size:12px}
+    .type-stat-row .bars{display:grid;gap:4px}
+    .type-stat-row .bar-track{height:8px;border-radius:999px;background:rgba(255,255,255,.06);overflow:hidden}
+    .type-stat-row .bar-fill-clients{display:block;height:100%;background:rgba(244,121,32,.75)}
+    .type-stat-row .bar-fill-impl{display:block;height:100%;background:rgba(66,201,133,.75)}
+    .type-stat-meta{color:var(--color-text-muted);font-size:11px}
+    .ep-table{width:100%;border-collapse:collapse;font-size:13px}
+    .ep-table th,.ep-table td{padding:8px 10px;border-bottom:1px solid var(--color-border);text-align:left}
+    .ep-table th{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--color-text-muted);cursor:pointer}
+    .ep-table td.num,.ep-table th.num{text-align:right}
+    .ep-table tr.sample-small td{color:var(--color-text-muted)}
+    .catalog-coverage{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:8px}
+    .catalog-coverage .cov-item{padding:12px;border:1px solid var(--color-border);border-radius:10px;background:#202020}
+    .catalog-coverage .cov-item b{display:block;font-size:22px;margin-top:4px}
+    .catalog-coverage .cov-item span{font-size:12px;color:var(--color-text-muted)}
     .section-head{display:flex;justify-content:space-between;align-items:end;margin:30px 0 14px}.section-head h2{font-size:18px;margin:0 0 3px}.section-head p,.counter{font-size:12px;color:var(--color-text-muted);margin:0}
     .cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
     .field-card{padding:18px;transition:.18s ease}.field-card:hover{transform:translateY(-2px);border-color:var(--color-border-strong)}
@@ -176,8 +280,8 @@
     @media(max-width:780px){.acquisition-summary{grid-template-columns:1fr 1fr}.acquisition-chart-grid[data-cols="6"]{min-width:420px}}
     .timeline{display:grid;gap:10px;margin-top:12px}.timeline-item{border:1px solid var(--color-border);border-radius:10px;padding:12px;background:#1a1a1a}.timeline-item .meta{font-size:11px;color:var(--color-text-subtle);margin-top:4px}
     .indicator-matrix{display:grid;gap:12px}.indicator-row{display:grid;grid-template-columns:minmax(210px,1.15fr) 132px minmax(150px,.7fr) minmax(260px,1.55fr) 120px;gap:0;border:1px solid var(--color-border);border-radius:var(--radius-md);overflow:hidden;background:#202020}.indicator-cell{padding:13px 14px;border-right:1px solid var(--color-border);font-size:13px}.indicator-cell:last-child{border-right:0}.indicator-head{background:#2b2f34;color:var(--color-text);font-weight:700;text-transform:uppercase;letter-spacing:.04em}.indicator-status{display:flex;align-items:center;font-weight:700}.indicator-status.sim{background:rgba(66,201,133,.14);color:#c7f5dd}.indicator-status.no{background:rgba(239,107,115,.16);color:#ffb9bd}.indicator-status.base{background:rgba(246,189,75,.13);color:#ffe0a1}.indicator-coverage{font-weight:700;color:var(--color-text)}.indicator-coverage span{display:block;margin-top:2px;color:var(--color-text-muted);font-size:11px;font-weight:500}.viability-stack{grid-template-columns:1fr}
-    @media(max-width:1100px){.cards,.charts{grid-template-columns:1fr}.summary,.summary.kpis-8{grid-template-columns:repeat(2,1fr)}.filters,.filters.general,.filters.meetings,.filters.mechanisms,.filters.financial{grid-template-columns:1fr 1fr}.month-row{grid-template-columns:64px minmax(100px,1fr) minmax(160px,1fr)}.month-val{white-space:normal}}
-    @media(max-width:780px){.layout{grid-template-columns:1fr}.sidebar{display:none}main{padding:20px}.page-header{display:block}.status{text-align:left;margin-top:12px}.filters,.filters.general,.filters.mechanisms,.filters.financial,.summary,.cards,.charts{grid-template-columns:1fr}.topbar{padding:0 20px}.status-actions{align-items:flex-start;justify-content:space-between}.hbar{grid-template-columns:minmax(108px,36%) minmax(48px,1fr) minmax(96px,104px);gap:8px;margin:9px 0}.hbar-val{font-size:11px}.month-row{grid-template-columns:1fr;gap:8px}.month-val{text-align:left}.month-count{margin-left:0;width:100%}}
+    @media(max-width:1100px){.cards,.charts{grid-template-columns:1fr}.summary,.summary.kpis-8,#view-mechanisms .summary.kpis-mech-3,#view-mechanisms .summary.kpis-mech-4,#view-mechanisms .summary.kpis-mech-2{grid-template-columns:repeat(2,1fr)}.filters,.filters.general,.filters.meetings,.filters.mechanisms,.filters.financial{grid-template-columns:1fr 1fr}.month-row{grid-template-columns:64px minmax(100px,1fr) minmax(160px,1fr)}.month-val{white-space:normal}}
+    @media(max-width:780px){.layout{grid-template-columns:1fr}.sidebar{display:none}main{padding:20px}.page-header{display:block}.status{text-align:left;margin-top:12px}.filters,.filters.general,.filters.mechanisms,.filters.financial,.summary,.cards,.charts,#view-mechanisms .summary.kpis-mech-3,#view-mechanisms .summary.kpis-mech-4,#view-mechanisms .summary.kpis-mech-2{grid-template-columns:1fr}.topbar{padding:0 20px}.status-actions{align-items:flex-start;justify-content:space-between}.hbar{grid-template-columns:minmax(108px,36%) minmax(48px,1fr) minmax(96px,104px);gap:8px;margin:9px 0}.hbar-val{font-size:11px}.month-row{grid-template-columns:1fr;gap:8px}.month-val{text-align:left}.month-count{margin-left:0;width:100%}#view-mechanisms .help[data-tip]::after{left:0;transform:none;width:min(240px,78vw)}}
     #portal-root[hidden],#auth-root[hidden]{display:none!important}
     /* Auth Guard: portal só existe visualmente quando autenticado */
     body:not([data-auth="authenticated"]) #portal-root{display:none!important;visibility:hidden!important;pointer-events:none!important}
@@ -268,11 +372,18 @@
     .asst-msg-badge{display:inline-flex;align-items:center;gap:5px;font-size:10px;text-transform:uppercase;letter-spacing:.05em;font-weight:700;padding:2px 8px;border-radius:999px;margin-bottom:6px}
     .asst-msg-badge.realtime{background:rgba(66,201,133,.16);color:#8ee0b5}
     .asst-msg-badge.rules{background:rgba(105,168,255,.14);color:#a9caff}
+    .asst-msg-badge.location{background:rgba(246,189,75,.14);color:#f0d48a}
+    .asst-msg-badge.clarify{background:rgba(239,107,115,.12);color:#ffb0b5}
+    .asst-metric-block{margin-top:8px;padding:8px 10px;border:1px solid var(--color-border);border-radius:10px;background:var(--color-surface)}
+    .asst-metric-main{font-size:18px;font-weight:700;line-height:1.2;color:var(--color-text)}
+    .asst-metric-sub{margin-top:4px;font-size:11px;color:var(--color-text-muted);line-height:1.4}
     .asst-msg-text{white-space:pre-wrap}
     .asst-sources{margin-top:8px;border-top:1px solid var(--color-border);padding-top:6px}
     .asst-sources summary{cursor:pointer;font-size:12px;color:var(--color-text-muted)}
     .asst-sources ul{margin:6px 0 0;padding-left:16px}
     .asst-sources li{font-size:12px;color:var(--color-text);font-family:ui-monospace,monospace}
+    .asst-filter-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+    .asst-filter-chip{font-size:11px;line-height:1.3;padding:3px 8px;border-radius:999px;border:1px solid var(--color-border);background:var(--color-surface);color:var(--color-text-muted)}
     .asst-warnings{margin-top:8px;display:flex;flex-direction:column;gap:4px}
     .asst-warning{font-size:12px;color:var(--color-warning);background:rgba(246,189,75,.1);border:1px solid rgba(246,189,75,.3);border-radius:8px;padding:6px 8px;line-height:1.4}
     .asst-retry{margin-top:8px;height:30px;padding:0 12px;border-radius:8px;border:1px solid var(--color-border-strong);background:transparent;color:var(--color-text);cursor:pointer;font-size:12px}
@@ -747,7 +858,7 @@
             <div>
               <div class="eyebrow">Portal · Jornada do Cliente</div>
               <h1>Implementação de Mecanismos</h1>
-              <p>Acompanhamento da disponibilidade, andamento e conclusão dos mecanismos previstos para os clientes.</p>
+              <p>Acompanhamento das recomendações de mecanismos por cliente — disponibilidade, andamento e conclusão.</p>
             </div>
             <div class="status-actions">
               <div class="status"><b id="kStatus" style="color:var(--color-warning)">● Conectando ao Supabase</b><span id="kUpdated">Calculando indicadores…</span></div>
@@ -773,8 +884,9 @@
                 </button>
               </div>
             </div>
+            <label>Segmento<select id="kSegment"><option value="all">Todos</option></select></label>
             <label>Engenheiro Patrimonial<select id="kEngineer"><option value="all">Todos</option></select></label>
-            <label>Status do mecanismo<select id="kMechStatus">
+            <label>Status do vínculo<select id="kMechStatus">
               <option value="all">Todos</option>
               <option value="Apto">Apto</option>
               <option value="Em andamento">Em andamento</option>
@@ -782,6 +894,14 @@
             </select></label>
             <label>Mecanismo<select id="kMechanism"><option value="all">Todos</option></select></label>
             <label>Mercado / dimensão<select id="kCategory"><option value="all">Todos</option></select></label>
+            <label>Qtd. de mecanismos<select id="kMechCountBand">
+              <option value="all">Todas</option>
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+              <option value="5 ou mais">5+</option>
+            </select></label>
             <label>Período de implementação<select id="kPeriod">
               <option value="all">Todo o histórico</option>
               <option value="30">Últimos 30 dias</option>
@@ -803,18 +923,43 @@
             <button class="btn" id="kClear" type="button">Limpar filtros</button>
           </section>
 
-          <section class="summary kpis-8" id="kKpis1"></section>
-          <section class="summary kpis-8" id="kKpis2"></section>
+          <aside class="mech-explainer" aria-label="Unidades dos indicadores">
+            <p>Os indicadores distinguem três unidades: <strong>cliente</strong> (pessoa/conta distinta), <strong>tipo de mecanismo</strong> (item do catálogo) e <strong>vínculo cliente + mecanismo</strong> (combinação única após deduplicação). Um cliente com 3 mecanismos gera 3 vínculos.</p>
+            <div class="mech-unit-defs">
+              <span><b>Cliente</b> — pessoa/conta distinta na carteira</span>
+              <span><b>Tipo de mecanismo</b> — item cadastrado em <code>mecanismos</code></span>
+              <span><b>Vínculo</b> — combinação única cliente + mecanismo <span class="help" tabindex="0" data-tip="Após deduplicação por client_id + mecanismo_id. O percentual implementado usa vínculos como denominador, nunca a contagem de tipos.">?</span></span>
+            </div>
+          </aside>
 
-          <div class="section-head"><div><h2>Distribuições</h2><p>Leitura do andamento e da conclusão dos mecanismos.</p></div></div>
+          <div class="kpi-block-label">Cobertura</div>
+          <section class="summary kpis-mech-3" id="kKpisCoverage"></section>
+          <div class="kpi-block-label">Andamento</div>
+          <section class="summary kpis-mech-4" id="kKpisProgress"></section>
+          <div class="kpi-block-label">Tempo e evolução</div>
+          <section class="summary kpis-mech-2" id="kKpisTime"></section>
+          <aside class="unused-types-box" id="kUnusedTypes"></aside>
+
+          <div class="section-head"><div><h2>Distribuições</h2><p>Unidade marcada em cada gráfico: clientes, vínculos ou tipos do catálogo.</p></div></div>
           <section class="charts">
-            <article class="chart-card"><h3>Status dos mecanismos</h3><p>Quantidade e percentual na carteira filtrada</p><div id="kChartStatus"></div></article>
-            <article class="chart-card"><h3>Percentual implementado por cliente</h3><p>Faixas de conclusão</p><div id="kChartPct"></div></article>
+            <article class="chart-card"><h3>Status dos vínculos</h3><p>Unidade: vínculos (cliente + mecanismo) · quantidade e % do total</p><div id="kChartStatus"></div></article>
+            <article class="chart-card"><h3>Quantidade de mecanismos por cliente</h3><p>Unidade: clientes filtrados · faixas 1, 2, 3, 4, 5+</p><div id="kChartRecCount"></div></article>
+            <article class="chart-card"><h3>Cobertura do catálogo</h3><p>Unidade: tipos de mecanismo · utilizados × sem utilização</p><div id="kChartCatalog"></div></article>
+            <article class="chart-card" style="grid-column:1/-1">
+              <div class="month-chart-head">
+                <div>
+                  <h3>Utilização por tipo de mecanismo</h3>
+                  <p>Clientes vinculados e implementações por tipo do catálogo</p>
+                </div>
+                <button class="btn engineers-toggle" id="kToggleTypes" type="button">Menos utilizados</button>
+              </div>
+              <div id="kChartTypes"></div>
+            </article>
             <article class="chart-card" style="grid-column:1/-1">
               <div class="month-chart-head">
                 <div>
                   <h3>Implementações por mês</h3>
-                  <p>Somente mecanismos concluídos com data válida</p>
+                  <p>Unidade: vínculos concluídos com implemented_at válido</p>
                 </div>
                 <div class="seg" id="kMonthRangeSeg" role="group" aria-label="Período do gráfico mensal">
                   <button type="button" data-k-month-range="6" class="active">Últimos 6 meses</button>
@@ -824,25 +969,33 @@
               <div class="month-legend"><span class="month-count" id="kMonthCount"></span></div>
               <div id="kChartMonths"></div>
             </article>
-            <article class="chart-card"><h3>Tempo até a primeira implementação</h3><p>Da entrada do cliente à primeira conclusão</p><div id="kChartFirst"></div></article>
-            <article class="chart-card"><h3>Dias desde a última implementação</h3><p>Recência da última conclusão</p><div id="kChartSince"></div></article>
+            <article class="chart-card"><h3>Tempo até a primeira implementação</h3><p>Unidade: clientes · da entrada à primeira conclusão</p><div id="kChartFirst"></div></article>
+            <article class="chart-card"><h3>Dias desde a última implementação</h3><p>Unidade: clientes · recência da última conclusão</p><div id="kChartSince"></div></article>
+            <article class="chart-card"><h3>Andamento por segmento</h3><p>Unidade: vínculos · clientes, implementados e %</p><div id="kChartSegment"></div></article>
             <article class="chart-card" style="grid-column:1/-1">
-              <h3 id="kCatTitle">Mecanismos implementados por mercado</h3>
-              <p>Somente status Implementado</p>
-              <div id="kChartCats"></div>
-              <button class="btn engineers-toggle" id="kToggleCats" type="button">Ver todos</button>
-            </article>
-            <article class="chart-card" style="grid-column:1/-1">
-              <h3>Mecanismos mais implementados</h3>
-              <p>Clientes distintos que concluíram cada mecanismo</p>
-              <div id="kChartTop"></div>
-              <button class="btn engineers-toggle" id="kToggleTop" type="button">Ver todos</button>
+              <h3>Análise por Engenheiro Patrimonial</h3>
+              <p>Clique nos cabeçalhos para ordenar. Amostras pequenas (&lt; 5 clientes) ficam destacadas.</p>
+              <div class="table-wrap" style="max-height:420px;margin-top:0">
+                <table class="ep-table" id="kEpTable">
+                  <thead>
+                    <tr>
+                      <th data-ep-sort="engineer">EP</th>
+                      <th class="num" data-ep-sort="clients">Clientes</th>
+                      <th class="num" data-ep-sort="links">Vínculos</th>
+                      <th class="num" data-ep-sort="implemented">Implementados</th>
+                      <th class="num" data-ep-sort="implementationPercent">% implementado</th>
+                      <th class="num" data-ep-sort="typicalDaysToFirstImplementation">Dias típicos até 1ª</th>
+                    </tr>
+                  </thead>
+                  <tbody></tbody>
+                </table>
+              </div>
             </article>
           </section>
 
           <section class="table-panel">
             <div class="section-head" style="margin:0">
-              <div><h2>Detalhamento por cliente</h2><p>Clique em uma linha para ver os mecanismos.</p></div>
+              <div><h2>Detalhamento por cliente</h2><p>Clique em uma linha para ver os vínculos.</p></div>
               <span class="counter" id="kCounter"></span>
             </div>
             <div class="table-wrap">
@@ -852,18 +1005,16 @@
                     <th data-ksort="clientName">Cliente</th>
                     <th data-ksort="clientCode">Código</th>
                     <th data-ksort="clientStatus">Status</th>
-                    <th data-ksort="engineer">Engenheiro Patrimonial</th>
-                    <th data-ksort="available" class="num">Disponíveis</th>
+                    <th data-ksort="segment">Segmento</th>
+                    <th data-ksort="engineer">EP</th>
+                    <th data-ksort="available" class="num">Qtd mecanismos</th>
                     <th data-ksort="eligible" class="num">Aptos</th>
-                    <th data-ksort="inProgress" class="num">Em andamento</th>
-                    <th data-ksort="implemented" class="num">Implementados</th>
+                    <th data-ksort="inProgress" class="num">Iniciados</th>
+                    <th data-ksort="implemented" class="num">Concluídos</th>
                     <th data-ksort="implementationPercent" class="num">% implementado</th>
-                    <th data-ksort="firstMechanismName">Primeiro mecanismo</th>
-                    <th data-ksort="firstImplementationDate">Primeira implementação</th>
-                    <th data-ksort="daysToFirstImplementation" class="num">Dias até a 1ª</th>
-                    <th data-ksort="lastImplementationDate">Última implementação</th>
-                    <th data-ksort="daysSinceLastImplementation" class="num">Dias desde a última</th>
-                    <th data-ksort="hasImplementationLast30Days">Últimos 30 dias</th>
+                    <th data-ksort="firstImplementationDate">Primeira impl.</th>
+                    <th data-ksort="lastImplementationDate">Última impl.</th>
+                    <th data-ksort="daysToFirstImplementation" class="num">Dias até 1ª</th>
                   </tr>
                 </thead>
                 <tbody id="kRows"></tbody>
@@ -1352,6 +1503,20 @@
       if (!isPortalAuthenticated()) return;
       document.querySelectorAll('[data-nav]').forEach(b => b.classList.toggle('active', b === btn));
       Object.entries(views).forEach(([key, el]) => el.classList.toggle('active', key === btn.dataset.nav));
+      window.__portalCurrentPage = btn.dataset.nav || 'general';
+      // Canonical page ids for the assistant
+      const pageMap = {
+        general: 'general',
+        journey: 'journey',
+        plan: 'patrimonial_plan',
+        meetings: 'meetings',
+        mechanisms: 'mechanisms',
+        financial: 'financial_updates',
+        platform: 'platform_usage',
+        support: 'support',
+        quality: 'quality',
+      };
+      window.__portalCurrentPageCanonical = pageMap[btn.dataset.nav] || btn.dataset.nav || 'general';
       if (btn.dataset.nav === 'general' && !generalState.payload) loadGeneral();
       if (btn.dataset.nav === 'journey' && !onboardingState.payload) loadOnboarding();
       if (btn.dataset.nav === 'plan' && !planState.payload) loadPlan();
@@ -1362,6 +1527,12 @@
       if (btn.dataset.nav === 'support' && !supportState.payload) loadSupport();
       if (btn.dataset.nav === 'quality' && !qualityData.length) loadQuality();
     }));
+    window.__portalCurrentPage = document.querySelector('[data-nav].active')?.dataset?.nav || 'general';
+    window.__portalCurrentPageCanonical = ({
+      general: 'general', journey: 'journey', plan: 'patrimonial_plan', meetings: 'meetings',
+      mechanisms: 'mechanisms', financial: 'financial_updates', platform: 'platform_usage',
+      support: 'support', quality: 'quality',
+    })[window.__portalCurrentPage] || window.__portalCurrentPage;
 
     /* -------- Quality (existing behavior + descriptions) -------- */
     let qualityData = [];
@@ -1412,10 +1583,14 @@
         { indicator: 'Quantidade de faltas/remarcações/cancelamentos', viability: 'Parcial', metric: 'meeting_attendance quando disponível', coverage: fixedCoverage(0, 0, 0), base: 'BASE QV' },
       ]);
       renderViabilityMatrix(document.querySelector('#qMechanismsMatrix'), [
-        { indicator: 'Quantidade total de mecanismos disponíveis', viability: 'Sim', metric: 'client_mecanismos + mecanismos', coverage: fixedCoverage(0, 0, 0), base: 'BASE QV' },
-        { indicator: 'Quantidade implementada', viability: 'Sim', metric: 'client_mecanismos.status implementado/concluído', coverage: fixedCoverage(0, 0, 0), base: 'BASE QV' },
-        { indicator: 'Percentual implementado', viability: 'Sim', metric: 'Implementados / disponíveis', coverage: fixedCoverage(0, 0, 0), base: 'BASE QV' },
-        { indicator: 'Implementação nos últimos 30 dias', viability: 'Sim', metric: 'implemented_at nos últimos 30 dias', coverage: fixedCoverage(0, 0, 0), base: 'BASE QV' },
+        { indicator: 'Clientes com mecanismos', viability: 'Sim', metric: 'count(distinct client_id) em client_mecanismos após dedupe; filtros de status do cliente', coverage: fixedCoverage(mechanismsState.payload?.summary?.clientsWithMechanisms, mechanismsState.payload?.summary?.portfolioClients, mechanismsState.payload?.summary?.mechanismCoveragePercent), base: 'BASE QV' },
+        { indicator: 'Vínculos cliente + mecanismo', viability: 'Sim', metric: 'count(distinct client_id, mecanismo_id) em client_mecanismos', coverage: fixedCoverage(mechanismsState.payload?.summary?.availableMechanisms, mechanismsState.payload?.summary?.availableMechanisms, 100), base: 'BASE QV' },
+        { indicator: 'Tipos utilizados / catálogo', viability: 'Sim', metric: 'tipos com ≥1 vínculo ÷ count(*) em public.mecanismos', coverage: fixedCoverage(mechanismsState.payload?.summary?.typesUsed, mechanismsState.payload?.summary?.catalogMechanisms, mechanismsState.payload?.summary?.catalogCoveragePercent), base: 'BASE QV' },
+        { indicator: 'Status normalizado', viability: 'Sim', metric: 'apto→Apto; iniciado→Em andamento; concluido→Implementado', coverage: fixedCoverage(0, 0, 0), base: 'BASE QV' },
+        { indicator: 'Vínculos implementados', viability: 'Sim', metric: 'status Implementado após dedupe', coverage: fixedCoverage(mechanismsState.payload?.summary?.implementedMechanisms, mechanismsState.payload?.summary?.availableMechanisms, mechanismsState.payload?.summary?.implementationPercent), base: 'BASE QV' },
+        { indicator: 'Percentual implementado', viability: 'Sim', metric: 'implementados ÷ vínculos (nunca ÷ tipos)', coverage: fixedCoverage(mechanismsState.payload?.summary?.implementedMechanisms, mechanismsState.payload?.summary?.availableMechanisms, mechanismsState.payload?.summary?.implementationPercent), base: 'BASE QV' },
+        { indicator: 'Primeira implementação', viability: 'Sim', metric: 'min(implemented_at) por cliente − data_inicio_ciclo/created_at; negativos excluídos', coverage: fixedCoverage(0, 0, 0), base: 'BASE QV' },
+        { indicator: 'Implementação recente (30 dias)', viability: 'Sim', metric: 'clientes únicos com implemented_at nos últimos 30 dias', coverage: fixedCoverage(mechanismsState.payload?.summary?.clientsWithRecentImplementation, mechanismsState.payload?.summary?.clientsWithMechanisms, mechanismsState.payload?.summary?.recentImplementationPercent), base: 'BASE QV' },
       ]);
       renderViabilityMatrix(document.querySelector('#qFinancialMatrix'), [
         { indicator: 'Dados financeiros cadastrados', viability: 'Sim', metric: 'client_financial_data por client_id', coverage: fixedCoverage(financialState.payload?.summary?.clientsWithFinancialData, financialState.payload?.summary?.totalClients, financialState.payload?.summary?.financialDataCoveragePercent), base: 'BASE QV' },
@@ -1935,18 +2110,20 @@
       }).join('') || '<div class="empty" style="display:block">Sem dados</div>';
     }
 
-    function donut(items) {
-      const colors = ['#f47920', '#69a8ff', '#42c985', '#f6bd4b', '#ef6b73', '#b48cff', '#7dd3c7'];
+    function donut(items, colorMap) {
+      const defaultColors = ['#f47920', '#69a8ff', '#42c985', '#f6bd4b', '#ef6b73', '#b48cff', '#7dd3c7'];
+      const colorFor = (item, idx) => (colorMap && colorMap[item.label]) || defaultColors[idx % defaultColors.length];
       const total = items.reduce((a, i) => a + i.count, 0) || 1;
       let offset = 0;
       const radius = 42, c = 2 * Math.PI * radius;
       const arcs = items.map((item, idx) => {
         const len = (item.count / total) * c;
-        const circle = `<circle cx="60" cy="60" r="${radius}" fill="none" stroke="${colors[idx % colors.length]}" stroke-width="14" stroke-dasharray="${len} ${c - len}" stroke-dashoffset="${-offset}" transform="rotate(-90 60 60)"></circle>`;
+        const stroke = colorFor(item, idx);
+        const circle = `<circle cx="60" cy="60" r="${radius}" fill="none" stroke="${stroke}" stroke-width="14" stroke-dasharray="${len} ${c - len}" stroke-dashoffset="${-offset}" transform="rotate(-90 60 60)"></circle>`;
         offset += len;
         return circle;
       }).join('');
-      const legend = items.map((item, idx) => `<div><i style="background:${colors[idx % colors.length]}"></i>${escapeHtml(item.label)} — ${fmt.format(item.count)} (${pct(item.percent)})</div>`).join('');
+      const legend = items.map((item, idx) => `<div><i style="background:${colorFor(item, idx)}"></i>${escapeHtml(item.label)} — ${fmt.format(item.count)} (${pct(item.percent)})</div>`).join('');
       return `<div class="donut-wrap"><svg class="donut" viewBox="0 0 120 120">${arcs}<circle cx="60" cy="60" r="28" fill="#141414"></circle></svg><div class="legend">${legend}</div></div>`;
     }
 
@@ -3200,18 +3377,27 @@
 
     /* -------- Implementação de Mecanismos -------- */
     const K_STATUS_FILTER = { active: 'Ativo', cancelled: 'Cancelado', frozen: 'Congelado', unknown: 'Não informado' };
+    const K_STATUS_LABELS = {
+      Apto: 'Aptos',
+      'Em andamento': 'Em andamento',
+      Implementado: 'Implementados',
+      'Não informado': 'Outros / não classificados'
+    };
     const mechanismsState = {
       payload: null, page: 1, pageSize: 25, sortKey: 'clientName', sortDir: 'asc',
-      clientStatusFilter: 'all', monthRange: '6', showAllCats: false, showAllTop: false,
+      clientStatusFilter: 'all', monthRange: '6', showTypesAsc: false,
+      epSortKey: 'links', epSortDir: 'desc',
       loading: false, requestId: 0
     };
     const kFilters = {
       search: document.querySelector('#kSearch'),
       clientStatus: document.querySelector('#kClientStatus'),
+      segment: document.querySelector('#kSegment'),
       engineer: document.querySelector('#kEngineer'),
       mechStatus: document.querySelector('#kMechStatus'),
       mechanism: document.querySelector('#kMechanism'),
       category: document.querySelector('#kCategory'),
+      mechCountBand: document.querySelector('#kMechCountBand'),
       period: document.querySelector('#kPeriod'),
       hasImpl: document.querySelector('#kHasImpl'),
       recent: document.querySelector('#kRecent'),
@@ -3249,13 +3435,33 @@
       });
     }
 
+    function catalogMechanismList() {
+      const fromCatalog = mechanismsState.payload?.catalog?.mechanisms;
+      if (Array.isArray(fromCatalog) && fromCatalog.length) return fromCatalog;
+      const unused = mechanismsState.payload?.summary?.unusedCatalogTypes || [];
+      const typeStats = mechanismsState.payload?.distributions?.typeStats || [];
+      const byId = new Map();
+      for (const t of typeStats) {
+        if (t.mechanismId) byId.set(String(t.mechanismId), { id: String(t.mechanismId), name: t.name });
+      }
+      for (const t of unused) {
+        if (t.id) byId.set(String(t.id), { id: String(t.id), name: t.name });
+      }
+      return [...byId.values()];
+    }
+
     function filteredMechanismClients() {
       const clients = mechanismsState.payload?.clients || [];
       const q = kFilters.search.value.trim().toLowerCase();
       const statusLabel = K_STATUS_FILTER[mechanismsState.clientStatusFilter] || null;
       return clients.filter(c => {
         if (statusLabel && c.clientStatus !== statusLabel) return false;
+        if (kFilters.segment?.value && kFilters.segment.value !== 'all' && c.segment !== kFilters.segment.value) return false;
         if (kFilters.engineer.value !== 'all' && c.engineer !== kFilters.engineer.value) return false;
+        if (kFilters.mechCountBand?.value && kFilters.mechCountBand.value !== 'all') {
+          const band = c.mechanismsCountBand || (c.available >= 5 ? '5 ou mais' : String(c.available || 0));
+          if (band !== kFilters.mechCountBand.value) return false;
+        }
         if (kFilters.hasImpl.value === 'yes' && !(c.implemented > 0)) return false;
         if (kFilters.hasImpl.value === 'no' && c.implemented > 0) return false;
         if (kFilters.recent.value === 'yes' && !c.hasImplementationLast30Days) return false;
@@ -3274,10 +3480,7 @@
           if (!has) return false;
         }
         if (kFilters.period.value !== 'all') {
-          if (!clientMechsInPeriod(c).length && kFilters.period.value !== 'all') {
-            // keep clients with impl in period OR if filtering "has period impl" - require at least one
-            return false;
-          }
+          if (!clientMechsInPeriod(c).length) return false;
         }
         if (q) {
           const hay = `${c.clientName} ${c.clientCode || ''} ${c.clientId}`.toLowerCase();
@@ -3309,23 +3512,151 @@
       const implemented = rows.reduce((a, c) => a + c.implemented, 0);
       const inProgress = rows.reduce((a, c) => a + c.inProgress, 0);
       const eligible = rows.reduce((a, c) => a + c.eligible, 0);
+      const unrecognized = rows.reduce((a, c) => a + (c.mechanisms || []).filter(m => m.status === 'Não informado').length, 0);
       const firstStats = robustStatsClient(rows.map(c => c.daysToFirstImplementation).filter(v => v != null && v >= 0));
       const sinceStats = robustStatsClient(rows.map(c => c.daysSinceLastImplementation).filter(v => v != null && v >= 0));
       const recent = rows.filter(c => c.hasImplementationLast30Days);
+      const recPerClient = rows.map(c => c.available).filter(v => v != null);
+      const recStats = robustStatsClient(recPerClient);
+      const baseSummary = mechanismsState.payload?.summary || {};
+      const statusLabel = K_STATUS_FILTER[mechanismsState.clientStatusFilter] || null;
+      let portfolioClients = baseSummary.portfolioClients ?? null;
+      if (statusLabel && baseSummary.portfolioByStatus) {
+        portfolioClients = baseSummary.portfolioByStatus[statusLabel] ?? 0;
+      }
+      const clientsWithout = portfolioClients == null ? null : Math.max(0, portfolioClients - rows.length);
+      const coverage = portfolioClients ? Math.round((rows.length / portfolioClients) * 1000) / 10 : null;
+
+      const catalog = catalogMechanismList();
+      const catalogIds = new Set(catalog.map(m => String(m.id)));
+      const catalogMechanisms = baseSummary.catalogMechanisms ?? catalog.length ?? null;
+      const usedIds = new Set();
+      for (const c of rows) {
+        for (const m of c.mechanisms || []) {
+          const id = m.mechanismId != null ? String(m.mechanismId) : null;
+          if (id && catalogIds.has(id)) usedIds.add(id);
+        }
+      }
+      const typesUsed = usedIds.size;
+      const unusedCatalogTypes = catalog
+        .filter(m => !usedIds.has(String(m.id)))
+        .map(m => ({ id: String(m.id), name: m.name || 'Não informado' }))
+        .sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'));
+      const typesUnused = unusedCatalogTypes.length;
+      const catalogCoveragePercent = catalogMechanisms
+        ? Math.round((typesUsed / catalogMechanisms) * 1000) / 10
+        : null;
+
       return {
         clientsWithMechanisms: rows.length,
         availableMechanisms: available,
         implementedMechanisms: implemented,
         inProgressMechanisms: inProgress,
         eligibleMechanisms: eligible,
+        unrecognizedRecommendations: unrecognized,
         implementationPercent: available ? Math.min(100, Math.round((implemented / available) * 1000) / 10) : null,
-        averageDaysToFirstImplementation: firstStats.mean == null ? null : Math.round(firstStats.mean),
+        averageDaysToFirstImplementation: firstStats.mean == null ? null : Math.round(firstStats.mean * 100) / 100,
         typicalDaysToFirstImplementation: firstStats.median == null ? null : Math.round(firstStats.median),
         clientsWithRecentImplementation: recent.length,
         recentImplementationPercent: rows.length ? Math.round((recent.length / rows.length) * 1000) / 10 : null,
         averageDaysSinceLastImplementation: sinceStats.mean == null ? null : Math.round(sinceStats.mean),
-        typicalDaysSinceLastImplementation: sinceStats.median == null ? null : Math.round(sinceStats.median)
+        typicalDaysSinceLastImplementation: sinceStats.median == null ? null : Math.round(sinceStats.median),
+        catalogMechanisms,
+        typesUsed,
+        typesUnused,
+        unusedCatalogTypes,
+        catalogCoveragePercent,
+        portfolioClients,
+        clientsWithoutMechanisms: clientsWithout,
+        mechanismCoveragePercent: coverage,
+        averageRecommendationsPerClient: rows.length ? Math.round((available / rows.length) * 100) / 100 : null,
+        medianRecommendationsPerClient: recStats.median == null ? null : Math.round(recStats.median * 10) / 10,
+        clientsWithNoImplementation: rows.filter(c => c.implemented === 0).length,
+        partitionComplete: (implemented + inProgress + eligible + unrecognized) === available,
       };
+    }
+
+    function recomputeTypeStats(rows) {
+      const catalog = catalogMechanismList();
+      const map = new Map(catalog.map(m => [String(m.id), {
+        mechanismId: String(m.id),
+        name: m.name || 'Não informado',
+        clientsLinked: 0,
+        implemented: 0
+      }]));
+      for (const c of rows) {
+        const seen = new Set();
+        const seenImpl = new Set();
+        for (const m of c.mechanisms || []) {
+          const id = m.mechanismId != null ? String(m.mechanismId) : null;
+          if (!id || !map.has(id)) continue;
+          if (!seen.has(id)) {
+            seen.add(id);
+            map.get(id).clientsLinked += 1;
+          }
+          if (m.status === 'Implementado' && !seenImpl.has(id)) {
+            seenImpl.add(id);
+            map.get(id).implemented += 1;
+          }
+        }
+      }
+      return [...map.values()].map(item => ({
+        ...item,
+        implementationPercent: item.clientsLinked
+          ? Math.round((item.implemented / item.clientsLinked) * 1000) / 10
+          : null
+      }));
+    }
+
+    function recomputeBySegment(rows) {
+      const map = new Map(SEGMENT_ORDER.map(s => [s, { segment: s, clients: 0, links: 0, implemented: 0 }]));
+      for (const c of rows) {
+        const seg = SEGMENT_ORDER.includes(c.segment) ? c.segment : 'Dados insuficientes';
+        const cur = map.get(seg);
+        cur.clients += 1;
+        cur.links += c.available;
+        cur.implemented += c.implemented;
+      }
+      return SEGMENT_ORDER.map(seg => {
+        const row = map.get(seg);
+        return {
+          ...row,
+          implementationPercent: row.links
+            ? Math.round((row.implemented / row.links) * 1000) / 10
+            : null
+        };
+      }).filter(r => r.clients > 0 || r.links > 0);
+    }
+
+    function recomputeByEngineer(rows) {
+      const epMap = new Map();
+      for (const c of rows) {
+        const key = c.engineer || 'Não informado';
+        const cur = epMap.get(key) || {
+          engineer: key, clients: 0, links: 0, implemented: 0, firstDays: []
+        };
+        cur.clients += 1;
+        cur.links += c.available;
+        cur.implemented += c.implemented;
+        if (c.daysToFirstImplementation != null && c.daysToFirstImplementation >= 0) {
+          cur.firstDays.push(c.daysToFirstImplementation);
+        }
+        epMap.set(key, cur);
+      }
+      return [...epMap.values()].map(row => ({
+        engineer: row.engineer,
+        clients: row.clients,
+        links: row.links,
+        implemented: row.implemented,
+        implementationPercent: row.links
+          ? Math.round((row.implemented / row.links) * 1000) / 10
+          : null,
+        typicalDaysToFirstImplementation: (() => {
+          const med = robustStatsClient(row.firstDays).median;
+          return med == null ? null : Math.round(med);
+        })(),
+        sampleSmall: row.clients < 5
+      }));
     }
 
     function distCount(rows, keyFn, ordered) {
@@ -3390,85 +3721,194 @@
       if (bars) bars.scrollTop = 0;
     }
 
+    function renderTypeStatsChart(typeStats) {
+      const sorted = [...typeStats].sort((a, b) => {
+        const cmp = a.clientsLinked - b.clientsLinked || a.name.localeCompare(b.name, 'pt-BR');
+        return mechanismsState.showTypesAsc ? cmp : -cmp;
+      });
+      const maxClients = Math.max(...sorted.map(t => t.clientsLinked), 1);
+      const html = sorted.map(t => {
+        const pctVal = t.implementationPercent == null ? '—' : pct(t.implementationPercent);
+        const wClients = (t.clientsLinked / maxClients) * 100;
+        const wImpl = t.clientsLinked ? (t.implemented / maxClients) * 100 : 0;
+        return `<div class="type-stat-row" title="${escapeHtml(t.name)}: ${fmt.format(t.clientsLinked)} clientes · ${fmt.format(t.implemented)} implementados (${pctVal})">
+          <div class="truncate" title="${escapeHtml(t.name)}">${escapeHtml(t.name)}</div>
+          <div class="bars">
+            <div class="bar-track"><span class="bar-fill-clients" style="width:${wClients}%"></span></div>
+            <div class="bar-track"><span class="bar-fill-impl" style="width:${wImpl}%"></span></div>
+            <div class="type-stat-meta">${fmt.format(t.clientsLinked)} vinculados · ${fmt.format(t.implemented)} impl.</div>
+          </div>
+          <div class="num">${pctVal}</div>
+        </div>`;
+      }).join('') || '<div class="empty" style="display:block">Sem tipos no catálogo</div>';
+      document.querySelector('#kChartTypes').innerHTML = html;
+      const toggle = document.querySelector('#kToggleTypes');
+      if (toggle) toggle.textContent = mechanismsState.showTypesAsc ? 'Mais utilizados' : 'Menos utilizados';
+    }
+
+    function renderEpTable(byEngineer) {
+      const key = mechanismsState.epSortKey;
+      const dir = mechanismsState.epSortDir;
+      const sorted = [...byEngineer].sort((a, b) => {
+        const av = a[key], bv = b[key];
+        let cmp = 0;
+        if (av == null && bv == null) cmp = 0;
+        else if (av == null) cmp = 1;
+        else if (bv == null) cmp = -1;
+        else if (typeof av === 'number' && typeof bv === 'number') cmp = av - bv;
+        else cmp = String(av).localeCompare(String(bv), 'pt-BR', { numeric: true });
+        return dir === 'asc' ? cmp : -cmp;
+      });
+      const tbody = document.querySelector('#kEpTable tbody');
+      if (!tbody) return;
+      tbody.innerHTML = sorted.map(row => `
+        <tr class="${row.sampleSmall ? 'sample-small' : ''}" title="${row.sampleSmall ? 'Amostra pequena (< 5 clientes)' : ''}">
+          <td>${escapeHtml(row.engineer)}${row.sampleSmall ? ' *' : ''}</td>
+          <td class="num">${fmt.format(row.clients)}</td>
+          <td class="num">${fmt.format(row.links)}</td>
+          <td class="num">${fmt.format(row.implemented)}</td>
+          <td class="num">${row.implementationPercent == null ? '—' : pct(row.implementationPercent)}</td>
+          <td class="num">${row.typicalDaysToFirstImplementation == null ? '—' : fmt.format(row.typicalDaysToFirstImplementation) + ' d'}</td>
+        </tr>`).join('') || '<tr><td colspan="6">Sem dados</td></tr>';
+    }
+
     function renderMechanisms() {
       if (!mechanismsState.payload) return;
       const rows = applyMechanismFilters();
       const summary = calculateMechanismSummary(rows);
+      const links = summary.availableMechanisms;
       const allMechs = rows.flatMap(c => c.mechanisms || []);
-      const statusDist = distCount(allMechs, m => m.status, ['Apto', 'Em andamento', 'Implementado', 'Não informado']);
-      const pctDist = distCount(rows, c => c.percentRange, ['0%', 'De 1% a 25%', 'De 26% a 50%', 'De 51% a 75%', 'De 76% a 99%', '100%', 'Sem mecanismos disponíveis']);
+
+      const statusRaw = distCount(allMechs, m => m.status, ['Apto', 'Em andamento', 'Implementado', 'Não informado']);
+      const statusDist = statusRaw.map(i => ({
+        ...i,
+        label: K_STATUS_LABELS[i.label] || i.label,
+        percent: links ? Math.round((i.count / links) * 1000) / 10 : 0
+      }));
+      const statusSum = statusDist.reduce((a, i) => a + i.count, 0);
+
       const firstDist = distCount(rows, c => c.daysToFirstRange, ['Até 7 dias', 'De 8 a 15 dias', 'De 16 a 30 dias', 'De 31 a 60 dias', 'De 61 a 90 dias', 'Mais de 90 dias', 'Sem implementação']);
       const sinceDist = distCount(rows, c => c.daysSinceLastRange, ['Até 30 dias', 'De 31 a 60 dias', 'De 61 a 90 dias', 'De 91 a 180 dias', 'Mais de 180 dias', 'Nunca implementou']);
 
-      const catMap = new Map();
-      for (const m of allMechs) {
-        if (m.status !== 'Implementado') continue;
-        const label = m.dimension || m.market || m.category || 'Não informado';
-        catMap.set(label, (catMap.get(label) || 0) + 1);
+      const recCountBands = ['1', '2', '3', '4', '5 ou mais'];
+      const recCountDist = distCount(rows, c => {
+        const n = c.available || 0;
+        if (n <= 0) return null;
+        if (n >= 5) return '5 ou mais';
+        return String(n);
+      }, recCountBands).filter(i => i.label);
+
+      const typeStats = recomputeTypeStats(rows);
+      const bySegment = recomputeBySegment(rows);
+      const byEngineer = recomputeByEngineer(rows);
+      const unused = summary.unusedCatalogTypes || [];
+      const unusedNames = unused.map(t => t.name).join(', ');
+
+      const unusedTip = unusedNames
+        ? `Esses tipos existem no catálogo, mas ainda não foram utilizados em clientes: ${unusedNames}.`
+        : 'Nenhum tipo sem utilização no conjunto filtrado.';
+      const typesValue = summary.catalogMechanisms == null
+        ? fmt.format(summary.typesUsed)
+        : `${fmt.format(summary.typesUsed)} de ${fmt.format(summary.catalogMechanisms)}`;
+      const avgDays = summary.averageDaysToFirstImplementation;
+      const avgNote = avgDays == null
+        ? '—'
+        : (Number.isInteger(avgDays)
+          ? fmt.format(avgDays)
+          : Number(avgDays).toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 2 }));
+
+      document.querySelector('#kKpisCoverage').innerHTML = `
+        <article class="metric kpi-primary"><div class="metric-label">Clientes com mecanismos <span class="help" tabindex="0" data-tip="Cada cliente é contado uma única vez, mesmo que possua vários mecanismos.">?</span></div><div class="metric-value">${fmt.format(summary.clientsWithMechanisms)}</div><div class="metric-note">Clientes distintos com pelo menos um mecanismo vinculado.</div></article>
+        <article class="metric kpi-secondary"><div class="metric-label">Tipos utilizados <span class="help" tabindex="0" data-tip="Existem ${summary.catalogMechanisms == null ? '—' : fmt.format(summary.catalogMechanisms)} tipos cadastrados no catálogo e ${fmt.format(summary.typesUsed)} já aparecem vinculados a pelo menos um cliente.">?</span></div><div class="metric-value">${typesValue}</div><div class="metric-note">Tipos do catálogo que já estão vinculados a clientes.</div></article>
+        <article class="metric kpi-secondary"><div class="metric-label">Tipos sem utilização <span class="help" tabindex="0" data-tip="${escapeHtml(unusedTip)}">?</span></div><div class="metric-value">${fmt.format(summary.typesUnused)}</div><div class="metric-note">Tipos ainda não vinculados a nenhum cliente.</div></article>`;
+
+      document.querySelector('#kKpisProgress').innerHTML = `
+        <article class="metric kpi-primary"><div class="metric-label">Mecanismos implementados <span class="help" tabindex="0" data-tip="Conta as combinações entre cliente e mecanismo que chegaram ao status concluído.">?</span></div><div class="metric-value">${fmt.format(summary.implementedMechanisms)}</div><div class="metric-note">Vínculos com status concluído.</div></article>
+        <article class="metric kpi-secondary"><div class="metric-label">Em andamento <span class="help" tabindex="0" data-tip="Mecanismos iniciados e ainda não concluídos.">?</span></div><div class="metric-value">${fmt.format(summary.inProgressMechanisms)}</div><div class="metric-note">Mecanismos iniciados e ainda não concluídos.</div></article>
+        <article class="metric kpi-secondary"><div class="metric-label">Aptos para iniciar <span class="help" tabindex="0" data-tip="Mecanismos disponíveis que ainda não foram iniciados.">?</span></div><div class="metric-value">${fmt.format(summary.eligibleMechanisms)}</div><div class="metric-note">Mecanismos disponíveis que ainda não foram iniciados.</div></article>
+        <article class="metric kpi-primary"><div class="metric-label">Percentual implementado <span class="help" tabindex="0" data-tip="Calculado dividindo os vínculos concluídos pelos vínculos únicos entre cliente e mecanismo.">?</span></div><div class="metric-value">${summary.implementationPercent == null ? '—' : pct(summary.implementationPercent)}</div><div class="metric-note">${fmt.format(summary.implementedMechanisms)} implementados de ${fmt.format(summary.availableMechanisms)} vínculos previstos.</div></article>`;
+
+      document.querySelector('#kKpisTime').innerHTML = `
+        <article class="metric kpi-primary"><div class="metric-label">Tempo típico até a primeira implementação <span class="help" tabindex="0" data-tip="Mostra o tempo entre a contratação do cliente e a primeira implementação concluída. A mediana é exibida como valor principal por sofrer menos influência de casos muito longos.">?</span></div><div class="metric-value">${summary.typicalDaysToFirstImplementation == null ? '—' : fmt.format(summary.typicalDaysToFirstImplementation) + ' d'}</div><div class="metric-note">Mediana entre contratação e primeira conclusão.<br>Média: ${avgNote} dias.</div></article>
+        <article class="metric kpi-secondary"><div class="metric-label">Clientes com implementação recente <span class="help" tabindex="0" data-tip="Cada cliente é contado uma única vez, mesmo que tenha concluído mais de um mecanismo no período.">?</span></div><div class="metric-value">${fmt.format(summary.clientsWithRecentImplementation)}</div><div class="metric-note">Clientes com pelo menos uma conclusão nos últimos 30 dias.</div></article>`;
+
+      const unusedBox = document.querySelector('#kUnusedTypes');
+      if (unusedBox) {
+        if (!unused.length) {
+          unusedBox.innerHTML = `<h3>Tipos sem utilização</h3><p>Todos os tipos do catálogo estão vinculados a pelo menos um cliente no conjunto filtrado.</p>`;
+        } else {
+          unusedBox.innerHTML = `<h3>Tipos sem utilização (${fmt.format(unused.length)})</h3>
+            <p>Esses tipos existem no catálogo, mas ainda não foram vinculados a nenhum cliente.</p>
+            <ul>${unused.map(t => `<li>${escapeHtml(t.name)}</li>`).join('')}</ul>`;
+        }
       }
-      const catTotal = [...catMap.values()].reduce((a, b) => a + b, 0) || 1;
-      const cats = [...catMap.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], 'pt-BR'))
-        .map(([label, count]) => ({ label, count, percent: Math.round((count / catTotal) * 1000) / 10 }));
 
-      const topMap = new Map();
-      for (const m of allMechs) {
-        if (m.status !== 'Implementado') continue;
-        const key = m.mechanismId || m.name;
-        const cur = topMap.get(key) || { label: m.name, count: 0 };
-        cur.count += 1;
-        topMap.set(key, cur);
-      }
-      const withImpl = rows.filter(c => c.implemented > 0).length || 1;
-      const tops = [...topMap.values()].sort((a, b) => b.count - a.count || a.label.localeCompare(b.label, 'pt-BR'))
-        .map(i => ({ label: i.label, count: i.count, percent: Math.round((i.count / withImpl) * 1000) / 10 }));
+      const mechStatusColors = {
+        'Implementado': '#42c985',
+        'Em andamento': '#f47920',
+        'Apto': '#9a9a9a',
+        'Outros / não classificados': '#f6bd4b',
+        'Não informado': '#f6bd4b'
+      };
+      const statusNoteClass = statusSum === links ? 'note-muted' : 'note-muted warn-amber';
+      document.querySelector('#kChartStatus').innerHTML = donut(statusDist, mechStatusColors) +
+        (links ? `<p class="${statusNoteClass}">Soma dos status: ${fmt.format(statusSum)} · Vínculos: ${fmt.format(links)}${statusSum === links ? ' · partição OK' : ' · divergência'}</p>` : '');
+      document.querySelector('#kChartRecCount').innerHTML = hBars(recCountDist);
 
-      const dim = mechanismsState.payload.summary?.dimensionLabel || 'mercado';
-      document.querySelector('#kCatTitle').textContent = `Mecanismos implementados por ${dim}`;
+      const catalogTotal = summary.catalogMechanisms || 0;
+      const covPct = summary.catalogCoveragePercent == null ? '—' : pct(summary.catalogCoveragePercent);
+      document.querySelector('#kChartCatalog').innerHTML = `
+        <div class="catalog-coverage">
+          <div class="cov-item"><span>Tipos utilizados</span><b>${fmt.format(summary.typesUsed)}</b></div>
+          <div class="cov-item"><span>Tipos sem utilização</span><b>${fmt.format(summary.typesUnused)}</b></div>
+          <div class="cov-item"><span>Total no catálogo</span><b>${catalogTotal ? fmt.format(catalogTotal) : '—'}</b></div>
+          <div class="cov-item"><span>Cobertura do catálogo</span><b>${covPct}</b></div>
+        </div>`;
 
-      document.querySelector('#kKpis1').innerHTML = `
-        <article class="metric highlight"><div class="metric-label">Clientes com mecanismos</div><div class="metric-value">${fmt.format(summary.clientsWithMechanisms)}</div><div class="metric-note">Carteira filtrada</div></article>
-        <article class="metric"><div class="metric-label">Mecanismos disponíveis <span class="help" title="Quantidade de mecanismos distintos cadastrados para os clientes da carteira selecionada.">?</span></div><div class="metric-value">${fmt.format(summary.availableMechanisms)}</div><div class="metric-note">Após deduplicação cliente+mecanismo</div></article>
-        <article class="metric"><div class="metric-label">Mecanismos implementados <span class="help" title="Mecanismos que chegaram ao estado concluído.">?</span></div><div class="metric-value">${fmt.format(summary.implementedMechanisms)}</div><div class="metric-note">Status normalizado: Implementado</div></article>
-        <article class="metric"><div class="metric-label">Percentual implementado <span class="help" title="Proporção dos mecanismos concluídos em relação ao total de mecanismos cadastrados.">?</span></div><div class="metric-value">${summary.implementationPercent == null ? '—' : pct(summary.implementationPercent)}</div><div class="metric-note">Soma implementados / soma disponíveis</div></article>`;
-      document.querySelector('#kKpis2').innerHTML = `
-        <article class="metric"><div class="metric-label">Em andamento</div><div class="metric-value">${fmt.format(summary.inProgressMechanisms)}</div><div class="metric-note">Status: iniciado</div></article>
-        <article class="metric"><div class="metric-label">Aptos para iniciar</div><div class="metric-value">${fmt.format(summary.eligibleMechanisms)}</div><div class="metric-note">Status: apto</div></article>
-        <article class="metric"><div class="metric-label">Tempo típico até a primeira implementação <span class="help" title="Mediana de dias entre a entrada do cliente e a primeira implementação concluída. A mediana sofre menos influência de extremos.">?</span></div><div class="metric-value">${(summary.typicalDaysToFirstImplementation ?? summary.averageDaysToFirstImplementation) == null ? '—' : fmt.format(summary.typicalDaysToFirstImplementation ?? summary.averageDaysToFirstImplementation) + ' d'}</div><div class="metric-note">Mediana · média ${summary.averageDaysToFirstImplementation == null ? '—' : fmt.format(summary.averageDaysToFirstImplementation) + ' d'}</div></article>
-        <article class="metric highlight"><div class="metric-label">Clientes com implementação recente <span class="help" title="Implementação concluída nos últimos 30 dias.">?</span></div><div class="metric-value">${fmt.format(summary.clientsWithRecentImplementation)}</div><div class="metric-note">${summary.recentImplementationPercent == null ? '—' : pct(summary.recentImplementationPercent)} da carteira filtrada</div></article>`;
-
-      document.querySelector('#kChartStatus').innerHTML = donut(statusDist);
-      document.querySelector('#kChartPct').innerHTML = hBars(pctDist);
+      renderTypeStatsChart(typeStats);
       renderMechanismMonths(rows);
       document.querySelector('#kChartFirst').innerHTML = hBars(firstDist);
       document.querySelector('#kChartSince').innerHTML = hBars(sinceDist);
-      document.querySelector('#kChartCats').innerHTML = hBars(cats, mechanismsState.showAllCats ? null : 8);
-      document.querySelector('#kToggleCats').textContent = mechanismsState.showAllCats ? 'Ver principais' : 'Ver todos';
-      document.querySelector('#kChartTop').innerHTML = hBars(tops, mechanismsState.showAllTop ? null : 8);
-      document.querySelector('#kToggleTop').textContent = mechanismsState.showAllTop ? 'Ver principais' : 'Ver todos';
+
+      const segItems = bySegment.map(s => ({
+        label: s.segment,
+        count: s.links,
+        percent: s.implementationPercent == null ? 0 : s.implementationPercent
+      }));
+      const segMax = Math.max(...segItems.map(i => i.count), 1);
+      document.querySelector('#kChartSegment').innerHTML = segItems.map(i => {
+        const row = bySegment.find(s => s.segment === i.label);
+        const metric = `${fmt.format(row.clients)} cl. · ${fmt.format(row.implemented)}/${fmt.format(row.links)} · ${row.implementationPercent == null ? '—' : pct(row.implementationPercent)}`;
+        return `<div class="hbar" title="${escapeHtml(i.label)}: ${metric}">
+          <div class="hbar-label" title="${escapeHtml(i.label)}">${escapeHtml(i.label)}</div>
+          <div class="hbar-track"><span style="width:${(i.count / segMax) * 100}%"></span></div>
+          <div class="hbar-val">${metric}</div>
+        </div>`;
+      }).join('') || '<div class="empty" style="display:block">Sem dados</div>';
+
+      renderEpTable(byEngineer);
 
       const pages = Math.max(1, Math.ceil(rows.length / mechanismsState.pageSize));
       if (mechanismsState.page > pages) mechanismsState.page = pages;
       const start = (mechanismsState.page - 1) * mechanismsState.pageSize;
       const pageRows = rows.slice(start, start + mechanismsState.pageSize);
       document.querySelector('#kRows').innerHTML = pageRows.map(c => {
-        const stale = c.daysSinceLastImplementation != null && c.daysSinceLastImplementation > 90;
         const never = c.implemented === 0;
+        const stale = c.daysSinceLastImplementation != null && c.daysSinceLastImplementation > 90;
         return `<tr data-kid="${escapeHtml(c.clientId)}" class="${never ? 'row-alert' : stale ? 'row-warn' : ''}">
           <td class="truncate" title="${escapeHtml(c.clientName)}">${escapeHtml(c.clientName)}</td>
           <td>${escapeHtml(c.clientCode || 'Não informado')}</td>
           <td>${statusBadge(c.clientStatus)}</td>
+          <td>${segmentBadge(c)}</td>
           <td class="truncate" title="${escapeHtml(c.engineer)}">${escapeHtml(c.engineer)}</td>
           <td class="num">${fmt.format(c.available)}</td>
           <td class="num">${fmt.format(c.eligible)}</td>
           <td class="num">${fmt.format(c.inProgress)}</td>
           <td class="num">${fmt.format(c.implemented)}</td>
           <td class="num">${pctBadge(c.implementationPercent)}</td>
-          <td class="truncate" title="${escapeHtml(c.firstMechanismName || '')}">${escapeHtml(c.firstMechanismName || 'Não informado')}</td>
           <td>${dateBR(c.firstImplementationDate)}</td>
-          <td class="num">${c.daysToFirstImplementation == null ? '—' : fmt.format(c.daysToFirstImplementation) + ' d'}</td>
           <td>${dateBR(c.lastImplementationDate)}</td>
-          <td class="num">${c.daysSinceLastImplementation == null ? (never ? 'Nunca' : '—') : fmt.format(c.daysSinceLastImplementation) + ' d'}</td>
-          <td>${c.hasImplementationLast30Days ? '<span class="badge active">Sim</span>' : '<span class="badge unavailable">Não</span>'}</td>
+          <td class="num">${c.daysToFirstImplementation == null ? '—' : fmt.format(c.daysToFirstImplementation) + ' d'}</td>
         </tr>`;
       }).join('');
       document.querySelector('#kEmpty').style.display = rows.length ? 'none' : 'block';
@@ -3483,28 +3923,32 @@
       document.querySelector('#drawerSub').textContent = `Código ${client.clientCode || 'Não informado'} · ID ${client.clientId}`;
       const items = [
         ['Status', client.clientStatus],
+        ['Segmento', client.segment || 'Dados insuficientes'],
         ['Engenheiro Patrimonial', client.engineer],
-        ['Disponíveis', fmt.format(client.available)],
+        ['Qtd mecanismos', fmt.format(client.available)],
         ['Aptos', fmt.format(client.eligible)],
-        ['Em andamento', fmt.format(client.inProgress)],
-        ['Implementados', fmt.format(client.implemented)],
-        ['Percentual implementado', client.implementationPercent == null ? 'Não informado' : pct(client.implementationPercent)],
-        ['Primeiro mecanismo', client.firstMechanismName || 'Não informado'],
+        ['Iniciados', fmt.format(client.inProgress)],
+        ['Concluídos', fmt.format(client.implemented)],
+        ['% implementado', client.implementationPercent == null ? 'Não informado' : pct(client.implementationPercent)],
         ['Primeira implementação', dateBR(client.firstImplementationDate)],
-        ['Dias até a primeira', client.daysToFirstImplementation == null ? 'Não informado' : `${fmt.format(client.daysToFirstImplementation)} dias`],
         ['Última implementação', dateBR(client.lastImplementationDate)],
-        ['Dias desde a última', client.daysSinceLastImplementation == null ? 'Nunca implementou' : `${fmt.format(client.daysSinceLastImplementation)} dias`],
+        ['Dias até a 1ª', client.daysToFirstImplementation == null ? 'Não informado' : `${fmt.format(client.daysToFirstImplementation)} dias`],
         ['Implementação nos últimos 30 dias', client.hasImplementationLast30Days ? 'Sim' : 'Não'],
       ];
-      const list = (client.mechanisms || []).map(m => `
+      const list = (client.mechanisms || []).map(m => {
+        const dim = m.dimension || m.market || m.category || 'Sem dimensão';
+        const warn = (m.qualityWarnings || m.warnings || []).map(w => `<div class="meta" style="color:#ffb4b8">${escapeHtml(w)}</div>`).join('');
+        return `
         <div class="mech-item">
           <strong>${escapeHtml(m.name)}</strong>
-          <div class="meta">${escapeHtml(m.status)} · ${escapeHtml(m.dimension || m.market || m.category || 'Sem dimensão')} · ${dateBR(m.implementedAt)}</div>
-          <div class="meta">Valor aplicado: ${m.appliedValue == null ? 'Não informado' : money(m.appliedValue)} · Fonte: ${escapeHtml(m.source || 'Não informado')}</div>
-        </div>`).join('') || '<div class="empty" style="display:block">Sem mecanismos</div>';
+          <div class="meta">${escapeHtml(m.status)} · ${escapeHtml(dim)} · ${dateBR(m.implementedAt)}</div>
+          <div class="meta">Fonte: ${escapeHtml(m.source || 'Não informado')}${m.appliedValue != null ? ` · Valor: ${money(m.appliedValue)}` : ''}</div>
+          ${warn}
+        </div>`;
+      }).join('') || '<div class="empty" style="display:block">Sem vínculos</div>';
       document.querySelector('#drawerGrid').innerHTML =
         items.map(([k, v]) => `<div class="drawer-item"><span>${k}</span><strong>${escapeHtml(String(v))}</strong></div>`).join('') +
-        `<div class="drawer-section" style="grid-column:1/-1"><h3>Mecanismos do cliente</h3><div class="mech-list">${list}</div></div>`;
+        `<div class="drawer-section" style="grid-column:1/-1"><h3>Vínculos do cliente</h3><div class="mech-list">${list}</div></div>`;
       document.querySelector('#drawerWarnings').innerHTML = (client.dataWarnings || []).map(w => `<li>${escapeHtml(w)}</li>`).join('') || '<li style="color:var(--color-text-muted)">Nenhum alerta</li>';
       document.querySelector('#drawer').classList.add('open');
       document.querySelector('#drawer').setAttribute('aria-hidden', 'false');
@@ -3528,9 +3972,8 @@
         mechanismsState.page = 1;
         setKClientStatus('all');
         const clients = payload.clients || [];
+        fillSelect(kFilters.segment, SEGMENT_ORDER.filter(s => clients.some(c => c.segment === s)), 'Todos');
         fillSelect(kFilters.engineer, [...new Set(clients.map(c => c.engineer))].sort((a, b) => a.localeCompare(b, 'pt-BR')), 'Todos');
-        fillSelect(kFilters.mechanism, (payload.catalog?.mechanisms || []).map(m => m.name), 'Todos');
-        // use ids in options - rebuild manually
         const mechSelect = kFilters.mechanism;
         const curMech = mechSelect.value;
         mechSelect.innerHTML = '<option value="all">Todos</option>' + (payload.catalog?.mechanisms || []).map(m =>
@@ -3538,7 +3981,7 @@
         if ([...mechSelect.options].some(o => o.value === curMech)) mechSelect.value = curMech;
         const dims = [...new Set(clients.flatMap(c => (c.mechanisms || []).map(m => m.dimension || m.market || m.category || 'Não informado')))].sort((a, b) => a.localeCompare(b, 'pt-BR'));
         fillSelect(kFilters.category, dims, 'Todos');
-        fillSelect(kFilters.pctRange, ['0%', 'De 1% a 25%', 'De 26% a 50%', 'De 51% a 75%', 'De 76% a 99%', '100%', 'Sem mecanismos disponíveis'], 'Todas');
+        fillSelect(kFilters.pctRange, ['0%', 'De 1% a 25%', 'De 26% a 50%', 'De 51% a 75%', 'De 76% a 99%', '100%', 'Sem recomendações'], 'Todas');
         renderMechanisms();
         const hasWarnings = Boolean(payload.quality?.warnings?.length);
         status.textContent = hasWarnings ? '● Supabase conectado com alertas' : '● Supabase conectado';
@@ -3576,7 +4019,9 @@
     });
     document.querySelector('#kClear').addEventListener('click', () => {
       kFilters.search.value = '';
-      ['engineer', 'mechStatus', 'mechanism', 'category', 'period', 'hasImpl', 'recent', 'pctRange'].forEach(k => kFilters[k].value = 'all');
+      ['segment', 'engineer', 'mechStatus', 'mechanism', 'category', 'mechCountBand', 'period', 'hasImpl', 'recent', 'pctRange'].forEach(k => {
+        if (kFilters[k]) kFilters[k].value = 'all';
+      });
       setKClientStatus('all');
       mechanismsState.page = 1;
       renderMechanisms();
@@ -3584,8 +4029,10 @@
     document.querySelector('#kRefresh').addEventListener('click', loadMechanisms);
     document.querySelector('#kPrev').addEventListener('click', () => { mechanismsState.page -= 1; renderMechanisms(); });
     document.querySelector('#kNext').addEventListener('click', () => { mechanismsState.page += 1; renderMechanisms(); });
-    document.querySelector('#kToggleCats').addEventListener('click', () => { mechanismsState.showAllCats = !mechanismsState.showAllCats; renderMechanisms(); });
-    document.querySelector('#kToggleTop').addEventListener('click', () => { mechanismsState.showAllTop = !mechanismsState.showAllTop; renderMechanisms(); });
+    document.querySelector('#kToggleTypes')?.addEventListener('click', () => {
+      mechanismsState.showTypesAsc = !mechanismsState.showTypesAsc;
+      renderMechanisms();
+    });
     document.querySelector('#kMonthRangeSeg')?.addEventListener('click', (event) => {
       const btn = event.target.closest('[data-k-month-range]');
       if (!btn) return;
@@ -3596,6 +4043,12 @@
       const key = th.dataset.ksort;
       if (mechanismsState.sortKey === key) mechanismsState.sortDir = mechanismsState.sortDir === 'asc' ? 'desc' : 'asc';
       else { mechanismsState.sortKey = key; mechanismsState.sortDir = 'desc'; }
+      renderMechanisms();
+    }));
+    document.querySelectorAll('#kEpTable th[data-ep-sort]').forEach(th => th.addEventListener('click', () => {
+      const key = th.dataset.epSort;
+      if (mechanismsState.epSortKey === key) mechanismsState.epSortDir = mechanismsState.epSortDir === 'asc' ? 'desc' : 'asc';
+      else { mechanismsState.epSortKey = key; mechanismsState.epSortDir = 'desc'; }
       renderMechanisms();
     }));
     document.querySelector('#kRows').addEventListener('click', e => {
@@ -4624,6 +5077,14 @@
       loading: false,
       sessionId: newAssistantSession(),
       messages: [],
+      conversationContext: {
+        last_domain: null,
+        last_metric: null,
+        last_filters: {},
+        last_intent: null,
+        last_aggregation: null,
+        current_page: null,
+      },
     };
     let assistantLastFocus = null;
     const asstEls = {
@@ -4690,10 +5151,69 @@
       }
       // assistant
       const bubble = asstNode('div', 'asst-msg assistant');
-      const badge = asstNode('span', `asst-msg-badge ${msg.realtimeDatabase ? 'realtime' : 'rules'}`,
-        msg.realtimeDatabase ? 'Consulta em tempo real' : 'Base de regras');
+      const kind = msg.responseKind || (msg.realtimeDatabase ? 'realtime' : 'rules');
+      const badgeMap = {
+        realtime: ['realtime', 'Consulta em tempo real'],
+        rule: ['rules', 'Regra do indicador'],
+        rules: ['rules', 'Regra do indicador'],
+        location: ['location', 'Fonte do dado'],
+        clarification: ['clarify', 'Esclarecimento'],
+        general: ['rules', 'Base de regras'],
+      };
+      const [badgeClass, badgeText] = badgeMap[kind] || badgeMap.general;
+      const badge = asstNode('span', `asst-msg-badge ${badgeClass}`, badgeText);
       bubble.appendChild(badge);
       bubble.appendChild(asstNode('div', 'asst-msg-text', msg.content));
+
+      if (msg.realtimeDatabase && msg.value != null && kind === 'realtime') {
+        const block = asstNode('div', 'asst-metric-block');
+        const main = asstNode('div', 'asst-metric-main');
+        const unit = msg.unit || '';
+        const fmtVal = (v) => {
+          if (v == null) return '—';
+          if (typeof v === 'object') return null;
+          if (typeof v === 'number') return Number.isInteger(v) ? fmt.format(v) : String(v).replace('.', ',');
+          return String(v);
+        };
+        if (msg.aggregation === 'comparison' && msg.value && typeof msg.value === 'object') {
+          main.textContent = `Mediana ${fmtVal(msg.value.median)} · Média ${fmtVal(msg.value.average)}${unit === 'days' ? ' dias' : ''}`;
+        } else {
+          const displayed = fmtVal(msg.value);
+          main.textContent = unit === 'days' ? `${displayed} dias`
+            : unit === 'percent' ? `${displayed}%`
+            : unit === 'clients' ? `${displayed} clientes`
+            : unit === 'mechanisms' ? `${displayed} mecanismos`
+            : displayed;
+        }
+        block.appendChild(main);
+        const details = [];
+        if (msg.aggregation === 'median') details.push('Mediana');
+        if (msg.aggregation === 'average') details.push('Média');
+        if (msg.value_detail?.average != null && msg.aggregation === 'median') {
+          const avgTxt = fmtVal(msg.value_detail.average);
+          details.push(unit === 'days' ? `média ${avgTxt} dias` : `média ${avgTxt}`);
+        }
+        if (msg.value_detail?.median != null && msg.aggregation === 'average') {
+          const medTxt = fmtVal(msg.value_detail.median);
+          details.push(unit === 'days' ? `mediana ${medTxt} dias` : `mediana ${medTxt}`);
+        }
+        if (msg.sample_size != null) {
+          const sampleLabel = unit === 'days' || msg.domain === 'mechanisms'
+            ? 'clientes considerados'
+            : 'registros considerados';
+          details.push(`${fmt.format(msg.sample_size)} ${sampleLabel}`);
+        }
+        if (details.length) block.appendChild(asstNode('div', 'asst-metric-sub', details.join(' · ')));
+        bubble.appendChild(block);
+      }
+
+      if (Array.isArray(msg.filterLabels) && msg.filterLabels.length) {
+        const chips = asstNode('div', 'asst-filter-chips');
+        msg.filterLabels.forEach((label) => {
+          chips.appendChild(asstNode('span', 'asst-filter-chip', label));
+        });
+        bubble.appendChild(chips);
+      }
 
       if (Array.isArray(msg.sources) && msg.sources.length) {
         const details = asstNode('details', 'asst-sources');
@@ -4771,7 +5291,17 @@
         const response = await apiFetch('/api/assistant', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ pergunta, session_id: assistantState.sessionId }),
+          body: JSON.stringify({
+            pergunta,
+            session_id: assistantState.sessionId,
+            conversation_context: assistantState.conversationContext,
+            portal_context: {
+              current_page: window.__portalCurrentPageCanonical
+                || window.__portalCurrentPage
+                || document.querySelector('[data-nav].active')?.dataset?.nav
+                || 'general',
+            },
+          }),
         });
         status = response.status;
         payload = await response.json().catch(() => null);
@@ -4781,12 +5311,38 @@
         if (typeof payload.session_id === 'string' && payload.session_id) {
           assistantState.sessionId = payload.session_id;
         }
+        if (payload.conversation_context && typeof payload.conversation_context === 'object') {
+          assistantState.conversationContext = {
+            last_domain: payload.conversation_context.last_domain ?? null,
+            last_metric: payload.conversation_context.last_metric ?? null,
+            last_filters: payload.conversation_context.last_filters || {},
+            last_intent: payload.conversation_context.last_intent ?? null,
+            last_aggregation: payload.conversation_context.last_aggregation ?? null,
+            current_page: payload.conversation_context.current_page
+              ?? window.__portalCurrentPage
+              ?? null,
+          };
+        }
+        const kind = payload.response_kind
+          || (payload.intent === 'location' ? 'location'
+            : (payload.intent === 'definition' || payload.intent === 'formula' || payload.intent === 'rule') ? 'rule'
+            : payload.intent === 'clarification' ? 'clarification'
+            : payload.realtime_database ? 'realtime' : 'rules');
         assistantState.messages.push({
           role: 'assistant',
           content: typeof payload.answer === 'string' ? payload.answer : '',
           intent: payload.intent || 'general',
+          responseKind: kind,
+          domain: payload.domain || null,
+          metric: payload.metric || null,
+          value: payload.value,
+          value_detail: payload.value_detail,
+          sample_size: payload.sample_size,
+          unit: payload.unit,
+          aggregation: payload.aggregation,
           sources: Array.isArray(payload.sources) ? payload.sources : [],
           warnings: Array.isArray(payload.warnings) ? payload.warnings : [],
+          filterLabels: Array.isArray(payload.filter_labels) ? payload.filter_labels : [],
           realtimeDatabase: payload.realtime_database === true,
           createdAt: payload.generated_at || new Date().toISOString(),
         });
@@ -4845,6 +5401,14 @@
       assistantState.messages = [];
       assistantState.loading = false;
       assistantState.sessionId = newAssistantSession();
+      assistantState.conversationContext = {
+        last_domain: null,
+        last_metric: null,
+        last_filters: {},
+        last_intent: null,
+        last_aggregation: null,
+        current_page: window.__portalCurrentPage || null,
+      };
       renderAssistant();
       updateAssistantSendState();
       asstEls.input.focus();
@@ -4855,6 +5419,14 @@
       assistantState.messages = [];
       assistantState.loading = false;
       assistantState.sessionId = newAssistantSession();
+      assistantState.conversationContext = {
+        last_domain: null,
+        last_metric: null,
+        last_filters: {},
+        last_intent: null,
+        last_aggregation: null,
+        current_page: window.__portalCurrentPage || null,
+      };
       asstEls.input.value = '';
     }
 

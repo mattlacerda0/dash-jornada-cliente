@@ -3,7 +3,15 @@
     "installCommand":  "echo \"skip install\"",
     "builds":  [
                    {
-                       "src":  "api/*.js",
+                       "src":  "api/quality.js",
+                       "use":  "@vercel/node"
+                   },
+                   {
+                       "src":  "api/assistant.js",
+                       "use":  "@vercel/node"
+                   },
+                   {
+                       "src":  "api/assistant-data.js",
                        "use":  "@vercel/node"
                    },
                    {
@@ -21,16 +29,60 @@
                ],
     "routes":  [
                    {
-                       "src":  "/api/financial-updates",
-                       "dest":  "/api/quality.js?fn=financial-updates"
-                   },
-                   {
-                       "src":  "/api/satisfaction",
-                       "dest":  "/api/quality.js?fn=satisfaction"
+                       "src":  "/api/auth-config",
+                       "dest":  "/api/quality.js?fn=auth-config"
                    },
                    {
                        "src":  "/api/quality",
                        "dest":  "/api/quality.js?fn=quality"
+                   },
+                   {
+                       "src":  "/api/general-data",
+                       "dest":  "/api/quality.js?fn=general-data"
+                   },
+                   {
+                       "src":  "/api/onboarding",
+                       "dest":  "/api/quality.js?fn=onboarding"
+                   },
+                   {
+                       "src":  "/api/patrimonial-plan",
+                       "dest":  "/api/quality.js?fn=patrimonial-plan"
+                   },
+                   {
+                       "src":  "/api/meetings",
+                       "dest":  "/api/quality.js?fn=meetings"
+                   },
+                   {
+                       "src":  "/api/mechanisms",
+                       "dest":  "/api/quality.js?fn=mechanisms"
+                   },
+                   {
+                       "src":  "/api/pharus-mechanisms",
+                       "dest":  "/api/quality.js?fn=pharus-mechanisms"
+                   },
+                   {
+                       "src":  "/api/financial-updates",
+                       "dest":  "/api/quality.js?fn=financial-updates"
+                   },
+                   {
+                       "src":  "/api/engagement",
+                       "dest":  "/api/quality.js?fn=engagement"
+                   },
+                   {
+                       "src":  "/api/platform-usage",
+                       "dest":  "/api/quality.js?fn=platform-usage"
+                   },
+                   {
+                       "src":  "/api/support",
+                       "dest":  "/api/quality.js?fn=support"
+                   },
+                   {
+                       "src":  "/api/cancellations",
+                       "dest":  "/api/quality.js?fn=cancellations"
+                   },
+                   {
+                       "src":  "/api/satisfaction",
+                       "dest":  "/api/quality.js?fn=satisfaction"
                    },
                    {
                        "src":  "/api/(.*)",

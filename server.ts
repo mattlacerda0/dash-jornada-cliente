@@ -41,6 +41,7 @@ const pharusMechanismsHandler = (await import("./netlify/functions/pharus-mechan
 const financialUpdatesHandler = (await import("./netlify/functions/financial-updates.mjs")).default;
 const engagementHandler = (await import("./netlify/functions/engagement.mjs")).default;
 const supportHandler = (await import("./netlify/functions/support.mjs")).default;
+const cancellationsHandler = (await import("./netlify/functions/cancellations.mjs")).default;
 const satisfactionHandler = (await import("./netlify/functions/satisfaction.mjs")).default;
 const assistantHandler = (await import("./netlify/functions/assistant.mjs")).default;
 const assistantDataHandler = (await import("./netlify/functions/assistant-data.mjs")).default;
@@ -228,6 +229,7 @@ const server = Bun.serve({
     if (url.pathname === "/api/engagement") return engagementHandler(request);
     if (url.pathname === "/api/platform-usage") return platformUsageHandler(request);
     if (url.pathname === "/api/support") return supportHandler(request);
+    if (url.pathname === "/api/cancellations") return cancellationsHandler(request);
     if (url.pathname === "/api/satisfaction") return satisfactionHandler(request);
     if (url.pathname === "/api/assistant") return assistantHandler(request);
     if (url.pathname === "/api/assistant-data") return assistantDataHandler(request);

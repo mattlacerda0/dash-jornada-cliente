@@ -1655,12 +1655,15 @@
           </div>
           <section class="charts viability-stack">
             <article class="chart-card"><h3>Dados Gerais</h3><p>Indicadores usados na primeira aba</p><div class="indicator-matrix" id="qGeneralMatrix"></div></article>
+            <article class="chart-card"><h3>Jornada e onboarding</h3><p>Indicadores usados na tela de jornada</p><div class="indicator-matrix" id="qJourneyMatrix"></div></article>
+            <article class="chart-card"><h3>Plano Patrimonial</h3><p>Indicadores consolidados de QV360 + App Pharus</p><div class="indicator-matrix" id="qPlanMatrix"></div></article>
             <article class="chart-card"><h3>Reuniões</h3><p>Indicadores usados na tela de reuniões</p><div class="indicator-matrix" id="qMeetingsMatrix"></div></article>
             <article class="chart-card"><h3>Mecanismos</h3><p>Indicadores usados na tela de mecanismos</p><div class="indicator-matrix" id="qMechanismsMatrix"></div></article>
             <article class="chart-card"><h3>App Pharus · Mecanismos sugeridos</h3><p>Fonte: App Pharus — não misturar com implementação BASE QV</p><div class="indicator-matrix" id="qPharusMechanismsMatrix"></div></article>
             <article class="chart-card"><h3>Atualização Financeira</h3><p>Indicadores novos da tela financeira</p><div class="indicator-matrix" id="qFinancialMatrix"></div></article>
             <article class="chart-card"><h3>Engajamento</h3><p>Indicadores de respostas, interações e pesquisas</p><div class="indicator-matrix" id="qEngagementMatrix"></div></article>
             <article class="chart-card"><h3>Uso da Plataforma</h3><p>Indicadores novos calculados pelo QV360</p><div class="indicator-matrix" id="qPlatformMatrix"></div></article>
+            <article class="chart-card"><h3>Atendimento</h3><p>Indicadores de acionamentos em research.acionamentos</p><div class="indicator-matrix" id="qSupportMatrix"></div></article>
             <article class="chart-card"><h3>Cancelamento</h3><p>Indicadores da BASE QV (sem App Pharus nesta versão)</p><div class="indicator-matrix" id="qCancellationsMatrix"></div></article>
             <article class="chart-card"><h3>Pesquisa de Satisfação</h3><p>NPS, CSAT e evolução temporal</p><div class="indicator-matrix" id="qSatisfactionMatrix"></div></article>
           </section>
@@ -2206,26 +2209,67 @@
       return indicators.map(item => ({ indicator: item.indicator, viability: item.viability || 'Sim', metric: item.metric || item.calculation || base, coverage: fixedCoverage(item.value, item.total, item.coverage), base }));
     }
     function renderQualityMatrices() {
+      const journeySummary = onboardingState.payload?.summary || {};
+      const planSummary = planState.payload?.summary || {};
+      const supportRows = supportState.payload ? filteredSupportTickets() : [];
+      const supportSummary = supportRows.length ? computeSupportSummary(supportRows) : {};
       renderViabilityMatrix(document.querySelector('#qGeneralMatrix'), [
         { indicator: 'ID do cliente', viability: 'Sim', metric: 'clients.id', coverage: fixedCoverage(0, 0, 0), base: 'BASE QV' },
         { indicator: 'Data de contratação', viability: 'Sim', metric: 'vw_info_cliente.data_assinatura_contrato; fallback clients.data_inicio_ciclo/created_at', coverage: fixedCoverage(0, 0, 0), base: 'BASE QV' },
+        { indicator: 'Data de cancelamento', viability: 'Sim', metric: 'cancellations.churn_efetivado_at; fallback clients.data_churn', coverage: fixedCoverage(0, 0, 0), base: 'BASE QV' },
+        { indicator: 'Tempo de permanência', viability: 'Sim', metric: 'Data de cancelamento ou data atual - data de contratação/criação', coverage: fixedCoverage(0, 0, 0), base: 'BASE QV' },
         { indicator: 'Status atual', viability: 'Sim', metric: 'clients.status normalizado com cancelamentos', coverage: fixedCoverage(0, 0, 0), base: 'BASE QV' },
+        { indicator: 'Segmento do cliente', viability: 'Sim', metric: 'clients.segmentacao normalizada', coverage: fixedCoverage(0, 0, 0), base: 'BASE QV' },
+        { indicator: 'Engenheiro Patrimonial responsável', viability: 'Sim', metric: 'clients.engenheiro_patrimonial', coverage: fixedCoverage(0, 0, 0), base: 'BASE QV' },
         { indicator: 'Perfil financeiro', viability: 'Sim', metric: 'client_financial_data por client_id', coverage: fixedCoverage(0, 0, 0), base: 'BASE QV' },
+        { indicator: 'Última renda mensal', viability: 'Sim', metric: 'client_financial_data.ultima_renda_mensal', coverage: fixedCoverage(0, 0, 0), base: 'BASE QV' },
+        { indicator: 'Último aporte', viability: 'Sim', metric: 'client_financial_data.ultimo_aporte', coverage: fixedCoverage(0, 0, 0), base: 'BASE QV' },
+        { indicator: 'Reserva de liquidez', viability: 'Sim', metric: 'client_financial_data.reserva_liquidez', coverage: fixedCoverage(0, 0, 0), base: 'BASE QV' },
+        { indicator: 'Imóvel, carro e consórcio', viability: 'Sim', metric: 'client_financial_data.possui_imovel/possui_carro/possui_consorcio', coverage: fixedCoverage(0, 0, 0), base: 'BASE QV' },
+        { indicator: 'Evolução mensal da aquisição de clientes', viability: 'Sim', metric: 'Agrupamento mensal pela data oficial de contratação', coverage: fixedCoverage(0, 0, 0), base: 'BASE QV' },
+      ]);
+      renderViabilityMatrix(document.querySelector('#qJourneyMatrix'), [
+        { indicator: 'Dias entre contratação e primeira reunião', viability: 'Sim', metric: 'clients.data_inicio_ciclo → primeira client_meetings.start_time; diferenças negativas excluídas; mediana', coverage: fixedCoverage(journeySummary.firstMeetingCount, journeySummary.totalClients, journeySummary.firstMeetingCoveragePercent), base: 'BASE QV' },
+        { indicator: 'Dias entre contratação e entrega do plano patrimonial', viability: 'Sim', metric: 'clients.data_inicio_ciclo → primeira client_implementation_meeting_date.meeting_date; diferenças negativas excluídas; mediana', coverage: fixedCoverage(journeySummary.planDeliveryCount, journeySummary.totalClients, journeySummary.planDeliveryCoveragePercent), base: 'BASE QV' },
+        { indicator: 'Dias entre contratação e aprovação do plano', viability: 'Sim', metric: 'Status e datas do plano patrimonial por cliente quando disponíveis', coverage: fixedCoverage(journeySummary.planApprovalCount, journeySummary.totalClients, journeySummary.planApprovalCoveragePercent), base: 'BASE QV' },
+        { indicator: 'Dias entre contratação e primeiro mecanismo implementado', viability: 'Sim', metric: 'clients.data_inicio_ciclo → primeira client_mecanismos.implemented_at; diferenças negativas excluídas; mediana', coverage: fixedCoverage(journeySummary.firstImplementationCount, journeySummary.totalClients, journeySummary.firstImplementationCoveragePercent), base: 'BASE QV' },
+        { indicator: 'Tempo total de onboarding', viability: 'Sim', metric: 'client_journeys.started_at em estágios iniciais → próxima mudança do mesmo client_id; diferenças negativas excluídas; mediana', coverage: fixedCoverage(journeySummary.totalOnboardingCount, journeySummary.totalClients, journeySummary.totalOnboardingCoveragePercent), base: 'BASE QV' },
+        { indicator: 'Concluiu onboarding (Sim/Não)', viability: 'Sim', metric: 'current_stage_id fora da lista de estágios iniciais/abertos', coverage: fixedCoverage(journeySummary.completedOnboarding, journeySummary.totalClients, journeySummary.completedPercent), base: 'BASE QV' },
+        { indicator: 'Percentual do onboarding concluído', viability: 'Sim', metric: 'Clientes concluídos ÷ clientes com jornada', coverage: fixedCoverage(journeySummary.completedOnboarding, journeySummary.totalClients, journeySummary.completedPercent), base: 'BASE QV' },
+        { indicator: 'Tempo médio para cada etapa da jornada', viability: 'Sim', metric: 'Diferença entre mudanças em client_journeys.current_stage_id; eixo journey_stages.name', coverage: fixedCoverage(journeySummary.stageDurationCount, journeySummary.totalClients, journeySummary.stageDurationCoveragePercent), base: 'BASE QV' },
+      ]);
+      renderViabilityMatrix(document.querySelector('#qPlanMatrix'), [
+        { indicator: 'Plano entregue (Sim/Não)', viability: 'Sim', metric: 'Cliente com plano entregue em QV360 + App Pharus, somando fontes complementares', coverage: fixedCoverage(planSummary.planDelivered, planSummary.totalClients, planSummary.totalClients ? (planSummary.planDelivered || 0) / planSummary.totalClients * 100 : 0), base: 'QV360 + App Pharus' },
+        { indicator: 'Plano aprovado (Sim/Não)', viability: 'Sim', metric: 'Cliente com plano aprovado em QV360 + App Pharus, somando fontes complementares', coverage: fixedCoverage(planSummary.planApproved, planSummary.totalClients, planSummary.totalClients ? (planSummary.planApproved || 0) / planSummary.totalClients * 100 : 0), base: 'QV360 + App Pharus' },
+        { indicator: 'Dias até aprovação', viability: 'Sim', metric: 'Data de aprovação - data de contratação/início de ciclo; diferenças negativas excluídas', coverage: fixedCoverage(planSummary.daysToApprovalCount, planSummary.totalClients, planSummary.daysToApprovalCoveragePercent), base: 'QV360 + App Pharus' },
+        { indicator: 'Plano revisado posteriormente?', viability: 'Sim', metric: 'Cliente com revisão posterior registrada nas fontes do plano', coverage: fixedCoverage(planSummary.revisedLater, planSummary.totalClients, planSummary.totalClients ? (planSummary.revisedLater || 0) / planSummary.totalClients * 100 : 0), base: 'QV360 + App Pharus' },
+        { indicator: 'Quantidade de revisões', viability: 'Sim', metric: 'Soma de revisões registradas por cliente nas fontes do plano', coverage: fixedCoverage(planSummary.revisionsTotal, planSummary.totalClients, planSummary.totalClients ? (planSummary.revisionsTotal || 0) / planSummary.totalClients * 100 : 0), base: 'QV360 + App Pharus' },
+        { indicator: 'Clientes registrados por fonte', viability: 'Sim', metric: 'Contagem de clientes QV360 e App Pharus por fonte', coverage: fixedCoverage(planSummary.totalClients, planSummary.totalClients, planSummary.totalClients ? 100 : 0), base: 'QV360 + App Pharus' },
       ]);
       renderViabilityMatrix(document.querySelector('#qMeetingsMatrix'), [
         { indicator: 'Quantidade total de reuniões', viability: 'Sim', metric: 'client_meetings + manual_meetings por cliente', coverage: fixedCoverage(0, 0, 0), base: 'BASE QV' },
         { indicator: 'Média de reuniões por mês', viability: 'Sim', metric: 'Total de reuniões / meses desde início', coverage: fixedCoverage(0, 0, 0), base: 'BASE QV' },
         { indicator: 'Dias desde a última reunião', viability: 'Sim', metric: 'Data atual - última reunião', coverage: fixedCoverage(0, 0, 0), base: 'BASE QV' },
-        { indicator: 'Quantidade de faltas/remarcações/cancelamentos', viability: 'Parcial', metric: 'meeting_attendance quando disponível', coverage: fixedCoverage(0, 0, 0), base: 'BASE QV' },
+        { indicator: 'Intervalo médio entre reuniões', viability: 'Sim', metric: 'Média dos intervalos entre reuniões do mesmo cliente', coverage: fixedCoverage(0, 0, 0), base: 'BASE QV' },
+        { indicator: 'Quantidade de faltas do cliente', viability: 'Parcial', metric: 'meeting_attendance/no-show quando disponível', coverage: fixedCoverage(0, 0, 0), base: 'BASE QV' },
+        { indicator: 'Quantidade de remarcações', viability: 'Parcial', metric: 'Registros remarcados em meeting_attendance/client_meetings quando disponível', coverage: fixedCoverage(0, 0, 0), base: 'BASE QV' },
+        { indicator: 'Quantidade de reuniões canceladas', viability: 'Parcial', metric: 'Status/campo de cancelamento nas fontes de reunião quando disponível', coverage: fixedCoverage(0, 0, 0), base: 'BASE QV' },
+        { indicator: 'Cliente realizou primeira reunião? (Sim/Não)', viability: 'Sim', metric: 'Existe ao menos uma reunião realizada/válida por cliente', coverage: fixedCoverage(0, 0, 0), base: 'BASE QV' },
       ]);
       renderViabilityMatrix(document.querySelector('#qMechanismsMatrix'), [
+        { indicator: 'Quantidade total de mecanismos disponíveis para o cliente', viability: 'Sim', metric: 'count(distinct client_id, mecanismo_id) em client_mecanismos após dedupe', coverage: fixedCoverage(mechanismsState.payload?.summary?.availableMechanisms, mechanismsState.payload?.summary?.availableMechanisms, mechanismsState.payload?.summary?.availableMechanisms ? 100 : 0), base: 'BASE QV' },
         { indicator: 'Clientes com mecanismos', viability: 'Sim', metric: 'count(distinct client_id) em client_mecanismos após dedupe; filtros de status do cliente', coverage: fixedCoverage(mechanismsState.payload?.summary?.clientsWithMechanisms, mechanismsState.payload?.summary?.portfolioClients, mechanismsState.payload?.summary?.mechanismCoveragePercent), base: 'BASE QV' },
         { indicator: 'Vínculos cliente + mecanismo', viability: 'Sim', metric: 'count(distinct client_id, mecanismo_id) em client_mecanismos', coverage: fixedCoverage(mechanismsState.payload?.summary?.availableMechanisms, mechanismsState.payload?.summary?.availableMechanisms, 100), base: 'BASE QV' },
         { indicator: 'Tipos utilizados / catálogo', viability: 'Sim', metric: 'tipos com ≥1 vínculo ÷ count(*) em public.mecanismos', coverage: fixedCoverage(mechanismsState.payload?.summary?.typesUsed, mechanismsState.payload?.summary?.catalogMechanisms, mechanismsState.payload?.summary?.catalogCoveragePercent), base: 'BASE QV' },
         { indicator: 'Status normalizado', viability: 'Sim', metric: 'apto→Apto; iniciado→Em andamento; concluido→Implementado', coverage: fixedCoverage(0, 0, 0), base: 'BASE QV' },
-        { indicator: 'Vínculos implementados', viability: 'Sim', metric: 'status Implementado após dedupe', coverage: fixedCoverage(mechanismsState.payload?.summary?.implementedMechanisms, mechanismsState.payload?.summary?.availableMechanisms, mechanismsState.payload?.summary?.implementationPercent), base: 'BASE QV' },
+        { indicator: 'Quantidade implementada', viability: 'Sim', metric: 'status Implementado após dedupe', coverage: fixedCoverage(mechanismsState.payload?.summary?.implementedMechanisms, mechanismsState.payload?.summary?.availableMechanisms, mechanismsState.payload?.summary?.implementationPercent), base: 'BASE QV' },
         { indicator: 'Percentual implementado', viability: 'Sim', metric: 'implementados ÷ vínculos (nunca ÷ tipos)', coverage: fixedCoverage(mechanismsState.payload?.summary?.implementedMechanisms, mechanismsState.payload?.summary?.availableMechanisms, mechanismsState.payload?.summary?.implementationPercent), base: 'BASE QV' },
-        { indicator: 'Primeira implementação', viability: 'Sim', metric: 'min(implemented_at) por cliente − data_inicio_ciclo/created_at; negativos excluídos', coverage: fixedCoverage(0, 0, 0), base: 'BASE QV' },
+        { indicator: 'Primeiro mecanismo implementado (Sim/Não)', viability: 'Sim', metric: 'Cliente com ao menos um implemented_at válido', coverage: fixedCoverage(mechanismsState.payload?.summary?.clientsWithImplementedMechanisms, mechanismsState.payload?.summary?.clientsWithMechanisms, mechanismsState.payload?.summary?.clientsWithImplementedPercent), base: 'BASE QV' },
+        { indicator: 'Dias até primeira implementação', viability: 'Sim', metric: 'min(implemented_at) por cliente − data_inicio_ciclo/created_at; negativos excluídos', coverage: fixedCoverage(0, 0, 0), base: 'BASE QV' },
+        { indicator: 'Última implementação realizada', viability: 'Sim', metric: 'max(implemented_at) por cliente', coverage: fixedCoverage(mechanismsState.payload?.summary?.implementedMechanisms, mechanismsState.payload?.summary?.availableMechanisms, mechanismsState.payload?.summary?.implementationPercent), base: 'BASE QV' },
+        { indicator: 'Dias desde a última implementação', viability: 'Sim', metric: 'Data atual - max(implemented_at) por cliente', coverage: fixedCoverage(mechanismsState.payload?.summary?.implementedMechanisms, mechanismsState.payload?.summary?.availableMechanisms, mechanismsState.payload?.summary?.implementationPercent), base: 'BASE QV' },
+        { indicator: 'Média de implementações por mês', viability: 'Sim', metric: 'Implementações concluídas / meses desde contratação ou primeira implementação', coverage: fixedCoverage(mechanismsState.payload?.summary?.implementedMechanisms, mechanismsState.payload?.summary?.availableMechanisms, mechanismsState.payload?.summary?.implementationPercent), base: 'BASE QV' },
+        { indicator: 'Mecanismos implementados por categoria', viability: 'Parcial', metric: 'Agregação por categoria/tipo do catálogo de mecanismos quando preenchido', coverage: fixedCoverage(mechanismsState.payload?.summary?.typesUsed, mechanismsState.payload?.summary?.catalogMechanisms, mechanismsState.payload?.summary?.catalogCoveragePercent), base: 'BASE QV' },
         { indicator: 'Implementação recente (30 dias)', viability: 'Sim', metric: 'clientes únicos com implemented_at nos últimos 30 dias', coverage: fixedCoverage(mechanismsState.payload?.summary?.clientsWithRecentImplementation, mechanismsState.payload?.summary?.clientsWithMechanisms, mechanismsState.payload?.summary?.recentImplementationPercent), base: 'BASE QV' },
       ]);
       renderViabilityMatrix(document.querySelector('#qPharusMechanismsMatrix'), [
@@ -2244,15 +2288,15 @@
         { indicator: 'Quantidade de atualizações financeiras', viability: 'Parcial', metric: 'Base atual registra o estado financeiro mais recente; sem histórico completo de eventos', coverage: fixedCoverage(financialState.payload?.summary?.clientsWithFinancialData, financialState.payload?.summary?.totalClients, financialState.payload?.summary?.financialDataCoveragePercent), base: 'BASE QV' },
         { indicator: 'Patrimônio atualizado recentemente (Sim/Não)', viability: 'Parcial', metric: 'Proxy por recência dos dados financeiros', coverage: fixedCoverage(financialState.payload?.summary?.updatedLast30Days, financialState.payload?.summary?.totalClients, financialState.payload?.summary?.updatedLast30DaysPercentOfPortfolio), base: 'BASE QV' },
       ]);
-      renderViabilityMatrix(document.querySelector('#qEngagementMatrix'), indicatorRowsFromPayload(engagementState.payload, [
-        { indicator: 'Tempo médio de resposta às solicitações', viability: 'Parcial', metric: 'Fallback BASE QV: cycle_change_requests/freeze_change_requests/tasks' },
-        { indicator: 'Quantidade de respostas', viability: 'Sim', metric: 'App Pharus + QV360: form_submissions e scheduled_meeting_evaluation; fallback BASE QV parcial' },
-        { indicator: 'Quantidade de interações', viability: 'Sim', metric: 'App Pharus + QV360: form_submissions + avaliações + reuniões + outputs' },
-        { indicator: 'Quantidade de mensagens respondidas', viability: 'Sem dado', metric: 'Sem tabela confiável de mensagens cliente ↔ EP' },
-        { indicator: 'Quantidade de mensagens ignoradas', viability: 'Sem dado', metric: 'Exige sent_at/responded_at/sender_type/message_status' },
-        { indicator: 'Tempo médio entre interação do EP e resposta do cliente', viability: 'Sem dado', metric: 'Sem pareamento confiável entre ação do EP e resposta posterior do cliente' },
-        { indicator: 'Cliente respondeu pesquisas? (Sim/Não)', viability: 'Sim', metric: 'App Pharus + QV360: form_submissions ou scheduled_meeting_evaluation por user_id' },
-      ], 'App Pharus + QV360 / fallback BASE QV'));
+      renderViabilityMatrix(document.querySelector('#qEngagementMatrix'), [
+        { indicator: 'Tempo médio de resposta às solicitações', viability: 'Sem dado', metric: 'Indicador pausado nesta versão; aguardando fonte confiável e regra de pareamento', coverage: fixedCoverage(0, 0, 0), base: 'Sem dado' },
+        { indicator: 'Quantidade de respostas', viability: 'Sem dado', metric: 'Indicador pausado nesta versão; não usar App Pharus/QV360/BASE QV para este cálculo por enquanto', coverage: fixedCoverage(0, 0, 0), base: 'Sem dado' },
+        { indicator: 'Quantidade de interações', viability: 'Sem dado', metric: 'Indicador pausado nesta versão; eventos de formulários, avaliações, reuniões e outputs não serão consolidados', coverage: fixedCoverage(0, 0, 0), base: 'Sem dado' },
+        { indicator: 'Quantidade de mensagens respondidas', viability: 'Sem dado', metric: 'Sem tabela confiável de mensagens cliente ↔ EP', coverage: fixedCoverage(0, 0, 0), base: 'Sem dado' },
+        { indicator: 'Quantidade de mensagens ignoradas', viability: 'Sem dado', metric: 'Exige sent_at/responded_at/sender_type/message_status', coverage: fixedCoverage(0, 0, 0), base: 'Sem dado' },
+        { indicator: 'Tempo médio entre interação do EP e resposta do cliente', viability: 'Sem dado', metric: 'Sem pareamento confiável entre ação do EP e resposta posterior do cliente', coverage: fixedCoverage(0, 0, 0), base: 'Sem dado' },
+        { indicator: 'Cliente respondeu pesquisas? (Sim/Não)', viability: 'Sem dado', metric: 'Indicador pausado nesta versão; resposta de pesquisa não será calculada', coverage: fixedCoverage(0, 0, 0), base: 'Sem dado' },
+      ]);
       renderViabilityMatrix(document.querySelector('#qPlatformMatrix'), indicatorRowsFromPayload(platformState.payload, [
         { indicator: 'Realizou login? (Sim/Não)', viability: 'Viável somente no QV360', metric: 'login_history por user_id ou core_user.last_login' },
         { indicator: 'Número total de logins', viability: 'Viável somente no QV360', metric: 'Contagem de login_history' },
@@ -2264,6 +2308,15 @@
         { indicator: 'Frequência semanal de acesso', viability: 'Viável somente no QV360', metric: 'Logins / semanas' },
         { indicator: 'Frequência mensal de acesso', viability: 'Viável somente no QV360', metric: 'Logins / meses' },
       ], 'QV360 / public'));
+      renderViabilityMatrix(document.querySelector('#qSupportMatrix'), [
+        { indicator: 'Quantidade de chamados', viability: 'Sim', metric: 'count(*) em research.acionamentos, via Business Data; fallback n8n quando REST não expõe schema', coverage: fixedCoverage(supportSummary.totalTickets, supportState.payload?.tickets?.length, supportState.payload?.tickets?.length ? 100 : 0), base: 'Business Data / research' },
+        { indicator: 'Quantidade de reclamações', viability: 'Parcial', metric: 'Contagem por tipo_solicitacao/título/descrição quando classificado como reclamação', coverage: fixedCoverage((supportState.payload?.tickets || []).filter(t => supportFold(`${t.type || ''} ${t.title || ''} ${t.description || ''}`).includes('reclam')).length, supportState.payload?.tickets?.length, supportState.payload?.tickets?.length ? ((supportState.payload?.tickets || []).filter(t => supportFold(`${t.type || ''} ${t.title || ''} ${t.description || ''}`).includes('reclam')).length / supportState.payload.tickets.length) * 100 : 0), base: 'Business Data / research' },
+        { indicator: 'Quantidade de elogios', viability: 'Parcial', metric: 'Contagem por tipo_solicitacao/título/descrição quando classificado como elogio', coverage: fixedCoverage((supportState.payload?.tickets || []).filter(t => supportFold(`${t.type || ''} ${t.title || ''} ${t.description || ''}`).includes('elog')).length, supportState.payload?.tickets?.length, supportState.payload?.tickets?.length ? ((supportState.payload?.tickets || []).filter(t => supportFold(`${t.type || ''} ${t.title || ''} ${t.description || ''}`).includes('elog')).length / supportState.payload.tickets.length) * 100 : 0), base: 'Business Data / research' },
+        { indicator: 'Tempo médio de resolução', viability: 'Sem dado', metric: 'Necessário resolved_at/closed_at confiável; a tela atual usa abertura/status, sem data final estruturada validada', coverage: fixedCoverage(0, supportState.payload?.tickets?.length, 0), base: 'Business Data / research' },
+        { indicator: 'Escalou algum problema? (Sim/Não)', viability: 'Parcial', metric: 'Proxy por prioridade Urgente/Alta ou status/descrição indicando escalonamento; requer regra de negócio final', coverage: fixedCoverage((supportState.payload?.tickets || []).filter(t => ['Urgente', 'Alta'].includes(t.priority)).length, supportState.payload?.tickets?.length, supportState.payload?.tickets?.length ? ((supportState.payload?.tickets || []).filter(t => ['Urgente', 'Alta'].includes(t.priority)).length / supportState.payload.tickets.length) * 100 : 0), base: 'Business Data / research' },
+        { indicator: 'Cliente identificado', viability: 'Sim', metric: 'Acionamentos com vínculo de cliente/e-mail identificado', coverage: fixedCoverage(supportSummary.identifiedClients, supportSummary.totalTickets, supportSummary.identifiedPercent), base: 'Business Data / research' },
+        { indicator: 'Prioridade, área, tipo, origem e período', viability: 'Sim', metric: 'Distribuições por priority, area/setor, tipo_solicitacao, origin e opened_at', coverage: fixedCoverage(supportSummary.totalTickets, supportState.payload?.tickets?.length, supportState.payload?.tickets?.length ? 100 : 0), base: 'Business Data / research' },
+      ]);
       renderViabilityMatrix(document.querySelector('#qCancellationsMatrix'), [
         { indicator: 'Total de cancelamentos', viability: 'Sim', metric: 'count(distinct client_id) com data consolidada válida', coverage: fixedCoverage(0, 0, 0), base: 'BASE QV' },
         { indicator: 'Motivo do cancelamento', viability: 'Sim', metric: 'cancellations.motivo (+ fallback clients.motivo_churn)', coverage: fixedCoverage(0, 0, 0), base: 'BASE QV' },
@@ -4907,37 +4960,27 @@
     }
     function renderEngagement() {
       if (!engagementState.payload) return;
-      const payload = engagementState.payload;
-      const summary = payload.summary || {};
-      const rows = filteredEngagementClients();
-      const avgResponse = summary.averageRequestResponseDays == null ? '—' : `${fmt.format(summary.averageRequestResponseDays)} d`;
       document.querySelector('#eKpis').innerHTML = `
-        <article class="metric highlight"><div class="metric-label">Clientes distintos consolidados</div><div class="metric-value">${fmt.format(summary.totalClients || 0)}</div><div class="metric-note">Distinct client_id · QV360 + App Pharus</div></article>
-        <article class="metric"><div class="metric-label">Tempo médio de resposta</div><div class="metric-value">${avgResponse}</div><div class="metric-note">Fallback BASE QV · ${fmt.format(summary.responseTimeSample || 0)} registros</div></article>
-        <article class="metric"><div class="metric-label">Quantidade de respostas</div><div class="metric-value">${fmt.format(summary.totalResponses || 0)}</div><div class="metric-note">${fmt.format(summary.clientsWithResponses || 0)} clientes com resposta</div></article>
-        <article class="metric"><div class="metric-label">Quantidade de interações</div><div class="metric-value">${fmt.format(summary.totalInteractions || 0)}</div><div class="metric-note">Submissões, avaliações, reuniões e outputs</div></article>
+        <article class="metric highlight"><div class="metric-label">Clientes distintos consolidados</div><div class="metric-value">Sem dado</div><div class="metric-note">Indicador pausado nesta versão</div></article>
+        <article class="metric"><div class="metric-label">Tempo médio de resposta</div><div class="metric-value">Sem dado</div><div class="metric-note">Sem fonte confiável aplicada</div></article>
+        <article class="metric"><div class="metric-label">Quantidade de respostas</div><div class="metric-value">Sem dado</div><div class="metric-note">Sem fonte confiável aplicada</div></article>
+        <article class="metric"><div class="metric-label">Quantidade de interações</div><div class="metric-value">Sem dado</div><div class="metric-note">Sem fonte confiável aplicada</div></article>
         <article class="metric"><div class="metric-label">Mensagens respondidas</div><div class="metric-value">Sem dado</div><div class="metric-note">Sem tabela cliente ↔ EP confiável</div></article>
         <article class="metric"><div class="metric-label">Mensagens ignoradas</div><div class="metric-value">Sem dado</div><div class="metric-note">Faltam sent_at/responded_at/status</div></article>
         <article class="metric"><div class="metric-label">Tempo EP → cliente</div><div class="metric-value">Sem dado</div><div class="metric-note">Sem pareamento confiável</div></article>
-        <article class="metric"><div class="metric-label">Responderam pesquisas</div><div class="metric-value">${fmt.format(summary.clientsWithSurvey || 0)}</div><div class="metric-note">${pct(summary.totalClients ? (summary.clientsWithSurvey || 0) / summary.totalClients * 100 : 0)} da base consolidada</div></article>`;
-      document.querySelector('#eChartSources').innerHTML = hBars(payload.distributions?.bySource || []);
-      document.querySelector('#eChartSurvey').innerHTML = donut(payload.distributions?.bySurvey || []);
-      document.querySelector('#eChartResponses').innerHTML = hBars(payload.distributions?.byResponseVolume || []);
-      document.querySelector('#eChartLimits').innerHTML = hBars([
-        { label: 'Mensagens respondidas', count: 0, percent: 0 },
-        { label: 'Mensagens ignoradas', count: 0, percent: 0 },
-        { label: 'EP → resposta cliente', count: 0, percent: 0 },
-      ]);
-      const pages = Math.max(1, Math.ceil(rows.length / engagementState.pageSize));
-      if (engagementState.page > pages) engagementState.page = pages;
-      const start = (engagementState.page - 1) * engagementState.pageSize;
-      const pageRows = rows.slice(start, start + engagementState.pageSize);
-      document.querySelector('#eRows').innerHTML = pageRows.map(c => `<tr><td class="truncate" title="${escapeHtml(c.clientName || 'Não informado')}">${escapeHtml(c.clientName || 'Não informado')}</td><td>${escapeHtml(c.source || 'Não informado')}</td><td class="num">${fmt.format(c.responses || 0)}</td><td class="num">${fmt.format(c.interactions || 0)}</td><td>${boolLabel(c.surveyAnswered)}</td><td>${dateBR(c.lastInteractionAt)}</td></tr>`).join('');
-      document.querySelector('#eCounter').textContent = `${rows.length} de ${(payload.clients || []).length} clientes`;
-      document.querySelector('#ePageInfo').textContent = `Página ${engagementState.page} de ${pages}`;
-      document.querySelector('#eEmpty').style.display = rows.length ? 'none' : 'block';
-      document.querySelector('#ePrev').disabled = engagementState.page <= 1;
-      document.querySelector('#eNext').disabled = engagementState.page >= pages;
+        <article class="metric"><div class="metric-label">Responderam pesquisas</div><div class="metric-value">Sem dado</div><div class="metric-note">Indicador pausado nesta versão</div></article>`;
+      const semDadoChart = '<div class="empty" style="display:block">Sem dado</div>';
+      document.querySelector('#eChartSources').innerHTML = semDadoChart;
+      document.querySelector('#eChartSurvey').innerHTML = semDadoChart;
+      document.querySelector('#eChartResponses').innerHTML = semDadoChart;
+      document.querySelector('#eChartLimits').innerHTML = semDadoChart;
+      document.querySelector('#eRows').innerHTML = '';
+      document.querySelector('#eCounter').textContent = 'Sem dado';
+      document.querySelector('#ePageInfo').textContent = 'Página 1 de 1';
+      document.querySelector('#eEmpty').style.display = 'block';
+      document.querySelector('#eEmpty').textContent = 'Sem dado';
+      document.querySelector('#ePrev').disabled = true;
+      document.querySelector('#eNext').disabled = true;
     }
     async function loadEngagement() {
       if (!isPortalAuthenticated()) return;
@@ -4947,19 +4990,22 @@
       const refresh = document.querySelector('#eRefresh');
       const status = document.querySelector('#eStatus');
       refresh.disabled = true; refresh.textContent = 'Atualizando...';
-      status.textContent = '● Atualizando dados'; status.style.color = 'var(--color-warning)';
+      status.textContent = '● Montando tela'; status.style.color = 'var(--color-warning)';
       try {
-        const response = await apiFetch(`/api/engagement?t=${Date.now()}`, { cache: 'no-store' });
-        const payload = await response.json().catch(() => ({}));
         if (requestId !== engagementState.requestId) return;
-        if (!response.ok) throw Object.assign(new Error(friendlyApiError(response.status, payload)), { status: response.status, payload });
-        engagementState.payload = payload;
+        engagementState.payload = {
+          generatedAt: new Date().toISOString(),
+          summary: {},
+          distributions: {},
+          clients: [],
+          quality: { warnings: [] },
+        };
         engagementState.page = 1;
         renderEngagement();
-        const warnings = (payload.quality?.warnings || []).length;
-        status.textContent = warnings ? '● Fontes conectadas com alertas' : '● Fontes conectadas';
-        status.style.color = warnings ? 'var(--color-warning)' : 'var(--color-success)';
-        document.querySelector('#eUpdated').textContent = `Atualizado em ${new Date(payload.generatedAt).toLocaleString('pt-BR')}`;
+        renderQualityMatrices();
+        status.textContent = '● Sem dado';
+        status.style.color = 'var(--color-text-muted)';
+        document.querySelector('#eUpdated').textContent = 'Indicadores de engajamento pausados nesta versão';
       } catch (error) {
         if (requestId !== engagementState.requestId) return;
         if (error?.code === 'AUTH_REQUIRED' || error?.code === 'AUTH_FORBIDDEN' || error?.message === 'AUTH_REQUIRED') return;
@@ -5773,12 +5819,14 @@
     function supportFold(v) {
       return String(v || '').normalize('NFD').replace(/\p{M}/gu, '').toLowerCase().trim().replace(/\s+/g, ' ');
     }
-    /** Área do gráfico: somente App Pharus, QV360 Web ou Não informado. */
+    /** Área do gráfico: preserva a área real enviada pelo payload. */
     function normalizeSupportAreaChart(raw) {
       const token = supportFold(raw);
+      if (!token) return 'Não informado';
       if (token === 'app pharus') return 'App Pharus';
       if (token === 'qv360 web') return 'QV360 Web';
-      return 'Não informado';
+      if (token === 'qv360 app') return 'QV360 App';
+      return String(raw || '').trim().replace(/\s+/g, ' ') || 'Não informado';
     }
     function supportStatusBadge(label) {
       const cls = S_STATUS_BADGE[label] || 'unavailable';
@@ -5827,6 +5875,14 @@
       const urgentTickets = rows.filter(t => t.priority === 'Urgente').length;
       const identifiedClients = rows.filter(t => t.clientIdentified).length;
       const unidentifiedClients = rows.filter(t => !t.clientIdentified).length;
+      const resolvedTickets = rows.filter(t => t.isResolved).length;
+      const resolutionValues = rows
+        .map(t => t.resolutionHours)
+        .filter(v => v != null && Number.isFinite(v) && v >= 0)
+        .sort((a, b) => a - b);
+      const medianResolutionHours = resolutionValues.length
+        ? Math.round(resolutionValues[Math.floor((resolutionValues.length - 1) / 2)] * 10) / 10
+        : null;
       const p = (n, d) => d ? Math.round((n / d) * 1000) / 10 : 0;
       const areaMap = new Map();
       rows.forEach(t => {
@@ -5842,7 +5898,14 @@
         totalTickets, openTickets, urgentTickets, identifiedClients, unidentifiedClients,
         identifiedPercent: p(identifiedClients, totalTickets),
         unidentifiedPercent: p(unidentifiedClients, totalTickets),
-        topArea, dataSufficiency
+        resolvedTickets,
+        resolutionRate: p(resolvedTickets, totalTickets),
+        medianResolutionHours,
+        complaints: null,
+        compliments: null,
+        escalatedTickets: null,
+        topArea,
+        dataSufficiency
       };
     }
 
@@ -5873,7 +5936,7 @@
         }
         return entries;
       };
-      const byArea = dist(t => normalizeSupportAreaChart(t.area), S_AREA_CHART_ORDER);
+      const byArea = dist(t => normalizeSupportAreaChart(t.area));
       const byType = dist(t => (t.type === 'Não informado' ? null : t.type));
       const byPriority = dist(t => t.priority, ['Urgente', 'Alta', 'Média', 'Baixa', 'Não informado']);
       const now = new Date();
@@ -5920,7 +5983,7 @@
       fill(sFilters.status, uniq(t => t.status), 'Todos');
       fill(sFilters.priority, ['Urgente', 'Alta', 'Média', 'Baixa', 'Não informado'].filter(p => tickets.some(t => t.priority === p)), 'Todas');
       fill(sFilters.type, uniq(t => t.type), 'Todos');
-      fill(sFilters.area, S_AREA_CHART_ORDER.filter(a => tickets.some(t => normalizeSupportAreaChart(t.area) === a)), 'Todas');
+      fill(sFilters.area, uniq(t => normalizeSupportAreaChart(t.area)), 'Todas');
       fill(sFilters.origin, uniq(t => t.origin), 'Todas');
       fill(sFilters.requester, uniq(t => t.requester), 'Todos');
     }
@@ -6010,6 +6073,8 @@
       const rows = filteredSupportTickets();
       const summary = computeSupportSummary(rows);
       const dist = computeSupportDistributions(rows);
+      const valueOrMissing = value => value == null ? 'Sem dado' : fmt.format(value);
+      const hoursOrMissing = value => value == null ? 'Sem dado' : `${fmt.format(Math.round(value))} h`;
 
       document.querySelector('#sKpis').innerHTML = `
         <article class="metric"><div class="metric-label">Total de acionamentos</div><div class="metric-value">${fmt.format(summary.totalTickets)}</div><div class="metric-note">Quantidade de solicitações registradas no período.</div></article>
@@ -6017,7 +6082,11 @@
         <article class="metric"><div class="metric-label">Acionamentos urgentes</div><div class="metric-value">${fmt.format(summary.urgentTickets)}</div><div class="metric-note">Solicitações registradas com prioridade urgente.</div></article>
         <article class="metric"><div class="metric-label">Clientes identificados</div><div class="metric-value">${fmt.format(summary.identifiedClients)}</div><div class="metric-note">${pct(summary.identifiedPercent)} · Acionamentos vinculados a um cliente encontrado na base.</div></article>
         <article class="metric"><div class="metric-label">Clientes não identificados</div><div class="metric-value">${fmt.format(summary.unidentifiedClients)}</div><div class="metric-note">Acionamentos sem vínculo confirmado com um cliente.</div></article>
-        <article class="metric"><div class="metric-label">Área com mais acionamentos</div><div class="metric-value" style="font-size:${summary.topArea ? '20px' : '18px'}">${escapeHtml(summary.topArea || 'Não informado')}</div><div class="metric-note">Área com maior volume no período.</div></article>`;
+        <article class="metric"><div class="metric-label">Área com mais acionamentos</div><div class="metric-value" style="font-size:${summary.topArea ? '20px' : '18px'}">${escapeHtml(summary.topArea || 'Não informado')}</div><div class="metric-note">Área com maior volume no período.</div></article>
+        <article class="metric"><div class="metric-label">Reclamações</div><div class="metric-value">${valueOrMissing(summary.complaints)}</div><div class="metric-note">Classificação ainda não estruturada na fonte.</div></article>
+        <article class="metric"><div class="metric-label">Elogios</div><div class="metric-value">${valueOrMissing(summary.compliments)}</div><div class="metric-note">Classificação ainda não estruturada na fonte.</div></article>
+        <article class="metric"><div class="metric-label">Tempo médio de resolução</div><div class="metric-value">${hoursOrMissing(summary.medianResolutionHours)}</div><div class="metric-note">Mediana em horas quando resolved_at existe.</div></article>
+        <article class="metric"><div class="metric-label">Escalonados</div><div class="metric-value">${valueOrMissing(summary.escalatedTickets)}</div><div class="metric-note">Regra de escalonamento ainda não confirmada.</div></article>`;
 
       document.querySelector('#sChartArea').innerHTML = hBars(dist.byArea || []);
       const typeEl = document.querySelector('#sChartType');

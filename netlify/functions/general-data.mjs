@@ -2,7 +2,7 @@
 import { dataConfigurationError } from "./_shared/env.mjs";
 
 const CLIENT_SELECT =
-  "id,codigo,name,data_inicio_ciclo,created_at,status,segmentacao,engenheiro_patrimonial,data_churn";
+  "id,codigo,name,data_inicio_ciclo,data_fim_ciclo,created_at,status,segmentacao,engenheiro_patrimonial,data_churn,ciclo,valor_total_pago,contrato_assinado,davos_contrato_assinado";
 const CANCEL_SELECT =
   "id,client_id,distrato_assinado_at,data_pedido,intencao_registrada_at,archived_at,updated_at,created_at";
 const FINANCIAL_SELECT =
@@ -22,7 +22,12 @@ const USED_FIELDS = [
   { table: "clients", column: "codigo", role: "clientCode" },
   { table: "clients", column: "name", role: "clientName" },
   { table: "clients", column: "data_inicio_ciclo", role: "contractDateCycleStart" },
+  { table: "clients", column: "data_fim_ciclo", role: "cycleEndDate" },
   { table: "clients", column: "created_at", role: "acquisitionFallbackCreated" },
+  { table: "clients", column: "ciclo", role: "currentCycle" },
+  { table: "clients", column: "valor_total_pago", role: "totalPaidValue" },
+  { table: "clients", column: "contrato_assinado", role: "contractSignedFlag" },
+  { table: "clients", column: "davos_contrato_assinado", role: "davosContractSignedFlag" },
   { table: "clients", column: "status", role: "rawStatus" },
   { table: "clients", column: "segmentacao", role: "segment" },
   { table: "clients", column: "engenheiro_patrimonial", role: "engineer" },
@@ -972,6 +977,14 @@ function buildPayload(clients, cancellations, financialRows, signatureMap, signa
       clientCode: blankToNull(client.codigo),
       clientName: blankToNull(client.name) || "Não informado",
       contractDate: contractDate ? contractDate.toISOString() : null,
+      cycleStartDate: parseDate(client.data_inicio_ciclo)?.toISOString() ?? null,
+      cycleEndDate: parseDate(client.data_fim_ciclo)?.toISOString() ?? null,
+      currentCycle: toNumber(client.ciclo),
+      renewalCount: Math.max(0, (toNumber(client.ciclo) ?? 0) - 1),
+      renewed: (toNumber(client.ciclo) ?? 0) > 1,
+      renewalValue: toNumber(client.valor_total_pago),
+      contractSigned: toBool(client.contrato_assinado),
+      davosContractSigned: toBool(client.davos_contrato_assinado),
       acquisitionDate: acquisition.date ? acquisition.date.toISOString() : null,
       acquisitionDateSource: acquisition.source,
       cancellationDate: cancellationDate ? cancellationDate.toISOString() : null,

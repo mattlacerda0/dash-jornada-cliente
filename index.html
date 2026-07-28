@@ -94,6 +94,7 @@
     #view-cancellations .metric.kpi-secondary .metric-value{font-size:26px}
     #view-cancellations .charts.cancel-charts{grid-template-columns:repeat(2,minmax(0,1fr))}
     #view-cancellations .chart-card.cancel-span-all{grid-column:1/-1}
+    #view-renewal .charts.renewal-charts{grid-template-columns:repeat(3,minmax(0,1fr))}
     #view-mechanisms .unused-types-box.portal-alert::before{display:none}
     #view-mechanisms .unused-types-box.portal-alert h3{margin:0 0 4px;font-size:15px;color:#ffd37b}
     #view-mechanisms .unused-types-box.portal-alert p{margin:0 0 6px;font-size:13px;color:var(--color-text);line-height:1.5}
@@ -379,8 +380,8 @@
     @media(max-width:780px){.acquisition-summary{grid-template-columns:1fr 1fr}.acquisition-chart-grid[data-cols="6"]{min-width:420px}}
     .timeline{display:grid;gap:10px;margin-top:12px}.timeline-item{border:1px solid var(--color-border);border-radius:10px;padding:12px;background:#1a1a1a}.timeline-item .meta{font-size:11px;color:var(--color-text-subtle);margin-top:4px}
     .indicator-matrix{display:grid;gap:12px}.indicator-row{display:grid;grid-template-columns:minmax(210px,1.15fr) 132px minmax(150px,.7fr) minmax(260px,1.55fr) 120px;gap:0;border:1px solid var(--color-border);border-radius:var(--radius-md);overflow:hidden;background:#202020}.indicator-cell{padding:13px 14px;border-right:1px solid var(--color-border);font-size:13px}.indicator-cell:last-child{border-right:0}.indicator-head{background:#2b2f34;color:var(--color-text);font-weight:700;text-transform:uppercase;letter-spacing:.04em}.indicator-status{display:flex;align-items:center;font-weight:700}.indicator-status.sim{background:rgba(66,201,133,.14);color:#c7f5dd}.indicator-status.no{background:rgba(239,107,115,.16);color:#ffb9bd}.indicator-status.base{background:rgba(246,189,75,.13);color:#ffe0a1}.indicator-coverage{font-weight:700;color:var(--color-text)}.indicator-coverage span{display:block;margin-top:2px;color:var(--color-text-muted);font-size:11px;font-weight:500}.viability-stack{grid-template-columns:1fr}
-    @media(max-width:1100px){.cards,.charts{grid-template-columns:1fr}.summary,.summary.kpis-8,#view-support .summary.kpis-support-6,#view-mechanisms .summary.kpis-mech-3,#view-mechanisms .summary.kpis-mech-4,#view-mechanisms .summary.kpis-mech-2,#view-cancellations .summary.kpis-cancel-primary,#view-cancellations .summary.kpis-cancel-secondary,#view-cancellations .summary.kpis-cancel-quality{grid-template-columns:repeat(2,1fr)}.filters,.filters.general,.filters.meetings,.filters.mechanisms,.filters.financial{grid-template-columns:1fr 1fr}.month-row{grid-template-columns:64px minmax(100px,1fr) minmax(160px,1fr)}.month-val{white-space:normal}}
-    @media(max-width:780px){.layout{grid-template-columns:1fr}.sidebar{display:none}main{padding:20px}.page-header{display:block}.status{text-align:left;margin-top:12px}.filters,.filters.general,.filters.mechanisms,.filters.financial,.summary,.cards,.charts,#view-support .summary.kpis-support-6,#view-mechanisms .summary.kpis-mech-3,#view-mechanisms .summary.kpis-mech-4,#view-mechanisms .summary.kpis-mech-2,#view-cancellations .summary.kpis-cancel-primary,#view-cancellations .summary.kpis-cancel-secondary,#view-cancellations .summary.kpis-cancel-quality{grid-template-columns:1fr}.topbar{padding:0 20px}.status-actions{align-items:flex-start;justify-content:space-between}.hbar{grid-template-columns:minmax(108px,36%) minmax(48px,1fr) minmax(96px,104px);gap:8px;margin:9px 0}.hbar-val{font-size:11px}.month-row{grid-template-columns:1fr;gap:8px}.month-val{text-align:left}.month-count{margin-left:0;width:100%}#view-mechanisms .help[data-tip]::after{left:0;transform:none;width:min(240px,78vw)}}
+    @media(max-width:1100px){.cards,.charts,#view-renewal .charts.renewal-charts{grid-template-columns:1fr}.summary,.summary.kpis-8,#view-support .summary.kpis-support-6,#view-mechanisms .summary.kpis-mech-3,#view-mechanisms .summary.kpis-mech-4,#view-mechanisms .summary.kpis-mech-2,#view-cancellations .summary.kpis-cancel-primary,#view-cancellations .summary.kpis-cancel-secondary,#view-cancellations .summary.kpis-cancel-quality{grid-template-columns:repeat(2,1fr)}.filters,.filters.general,.filters.meetings,.filters.mechanisms,.filters.financial{grid-template-columns:1fr 1fr}.month-row{grid-template-columns:64px minmax(100px,1fr) minmax(160px,1fr)}.month-val{white-space:normal}}
+    @media(max-width:780px){.layout{grid-template-columns:1fr}.sidebar{display:none}main{padding:20px}.page-header{display:block}.status{text-align:left;margin-top:12px}.filters,.filters.general,.filters.mechanisms,.filters.financial,.summary,.cards,.charts,#view-renewal .charts.renewal-charts,#view-support .summary.kpis-support-6,#view-mechanisms .summary.kpis-mech-3,#view-mechanisms .summary.kpis-mech-4,#view-mechanisms .summary.kpis-mech-2,#view-cancellations .summary.kpis-cancel-primary,#view-cancellations .summary.kpis-cancel-secondary,#view-cancellations .summary.kpis-cancel-quality{grid-template-columns:1fr}.topbar{padding:0 20px}.status-actions{align-items:flex-start;justify-content:space-between}.hbar{grid-template-columns:minmax(108px,36%) minmax(48px,1fr) minmax(96px,104px);gap:8px;margin:9px 0}.hbar-val{font-size:11px}.month-row{grid-template-columns:1fr;gap:8px}.month-val{text-align:left}.month-count{margin-left:0;width:100%}#view-mechanisms .help[data-tip]::after{left:0;transform:none;width:min(240px,78vw)}}
     #portal-root[hidden],#auth-root[hidden]{display:none!important}
     /* Auth Guard: portal só existe visualmente quando autenticado */
     body:not([data-auth="authenticated"]) #portal-root{display:none!important;visibility:hidden!important;pointer-events:none!important}
@@ -565,6 +566,8 @@
         <button type="button" data-nav="platform"><span class="nav-icon">◫</span>Uso da Plataforma</button>
         <button type="button" data-nav="support"><span class="nav-icon">☎</span>Atendimento</button>
         <button type="button" data-nav="cancellations"><span class="nav-icon">✕</span>Cancelamento</button>
+        <button type="button" data-nav="renewal"><span class="nav-icon">↻</span>Renovação</button>
+        <button type="button" data-nav="performance"><span class="nav-icon">▤</span>Performance</button>
         <button type="button" data-nav="quality"><span class="nav-icon">▦</span>Qualidade</button>
       </nav>
     </aside>
@@ -1520,6 +1523,145 @@
         </div>
       </section>
 
+      <section class="view" id="view-renewal">
+        <div class="container">
+          <header class="page-header">
+            <div>
+              <div class="eyebrow">BASE QV · public.clients</div>
+              <h1>Renovação</h1>
+              <p>Leitura parcial de renovação a partir do ciclo atual do cliente na BASE QV.</p>
+            </div>
+            <div class="status-actions">
+              <div class="status"><b id="rStatus" style="color:var(--color-warning)">● Aguardando consulta</b><span id="rUpdated">Fonte: clients.ciclo</span></div>
+              <button class="btn" id="rRefresh" type="button">Atualizar</button>
+            </div>
+          </header>
+
+          <section class="filters general" aria-label="Filtros de renovação">
+            <label>Busca<input id="rSearch" placeholder="Nome, código, ID ou EP" /></label>
+            <label>Engenheiro Patrimonial<select id="rEngineer"><option value="all">Todos</option></select></label>
+            <label>Renovou?<select id="rRenewed"><option value="all">Todos</option><option value="yes">Sim</option><option value="no">Não</option></select></label>
+            <label>Ciclo<select id="rCycle"><option value="all">Todos</option></select></label>
+            <button class="btn" id="rClear" type="button">Limpar filtros</button>
+          </section>
+
+          <section class="summary" id="rKpis"></section>
+
+          <div class="section-head"><div><h2>Distribuições</h2><p>Renovação por ciclo e Engenheiro Patrimonial.</p></div></div>
+          <section class="charts renewal-charts">
+            <article class="chart-card"><h3>Renovou?</h3><p>Ciclo &gt; 1</p><div id="rChartRenewed"></div></article>
+            <article class="chart-card"><h3>Quantidade de renovações</h3><p>Ciclo atual menos 1 por cliente</p><div id="rChartRenewalCount"></div></article>
+            <article class="chart-card"><h3>Renovados por EP</h3><p>Clientes com Ciclo &gt; 1</p><div id="rChartEngineer"></div></article>
+          </section>
+
+          <section class="table-panel">
+            <div class="section-head" style="margin:0">
+              <div><h2>Clientes e renovação</h2><p>Clique nos cabeçalhos para ordenar.</p></div>
+              <span class="counter" id="rCounter"></span>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th data-rsort="clientName">Cliente</th>
+                    <th data-rsort="clientCode">Código</th>
+                    <th data-rsort="engineer">EP</th>
+                    <th data-rsort="renewed">Renovou?</th>
+                    <th data-rsort="currentCycle" class="num">Ciclo atual</th>
+                    <th data-rsort="renewalCount" class="num">Qtde. renovações</th>
+                    <th data-rsort="cycleStartDate">Início ciclo atual</th>
+                    <th data-rsort="cycleEndDate">Fim ciclo atual</th>
+                    <th>Tempo até renovação</th>
+                    <th>Renovou no prazo?</th>
+                    <th>Valor da renovação</th>
+                  </tr>
+                </thead>
+                <tbody id="rRows"></tbody>
+              </table>
+            </div>
+            <div class="empty" id="rEmpty">Nenhum cliente encontrado para os filtros selecionados.</div>
+            <div class="pagination">
+              <div id="rPageInfo"></div>
+              <div>
+                <button class="btn" id="rPrev" type="button">Anterior</button>
+                <button class="btn" id="rNext" type="button">Próxima</button>
+              </div>
+            </div>
+          </section>
+        </div>
+      </section>
+
+      <section class="view" id="view-performance">
+        <div class="container">
+          <header class="page-header">
+            <div>
+              <div class="eyebrow">BASE QV · Performance por EP</div>
+              <h1>Performance</h1>
+              <p>Consolidação por Engenheiro Patrimonial com carteira, cancelamentos, reuniões e mecanismos implementados.</p>
+            </div>
+            <div class="status-actions">
+              <div class="status"><b id="perfStatus" style="color:var(--color-warning)">● Aguardando consulta</b><span id="perfUpdated">Fontes: Dados Gerais, Reuniões, Mecanismos e Cancelamento</span></div>
+              <button class="btn" id="perfRefresh" type="button">Atualizar</button>
+            </div>
+          </header>
+
+          <section class="filters general" aria-label="Filtros de performance">
+            <label>Busca<input id="perfSearch" placeholder="Engenheiro Patrimonial" /></label>
+            <label>Faixa de cancelamento<select id="perfCancelBand">
+              <option value="all">Todas</option>
+              <option value="low">Até 10%</option>
+              <option value="medium">10% a 25%</option>
+              <option value="high">Acima de 25%</option>
+            </select></label>
+            <button class="btn" id="perfClear" type="button">Limpar filtros</button>
+          </section>
+
+          <section class="summary" id="perfKpis"></section>
+          <div class="section-head"><div><h2>Distribuições</h2><p>Ranking e comparação entre Engenheiros Patrimoniais.</p></div></div>
+          <section class="charts">
+            <article class="chart-card"><h3>Taxa de cancelamento por EP</h3><p>Cancelados ÷ clientes da carteira do EP</p><div id="perfChartChurn"></div></article>
+            <article class="chart-card"><h3>Reuniões por EP</h3><p>Total de reuniões vinculadas aos clientes</p><div id="perfChartMeetings"></div></article>
+            <article class="chart-card"><h3>Mecanismos implementados por EP</h3><p>Total de vínculos implementados</p><div id="perfChartMechanisms"></div></article>
+            <article class="chart-card"><h3>Indicadores sem dado confiável</h3><p>NPS, tempo de resposta e renovação</p><div id="perfChartMissing"></div></article>
+          </section>
+
+          <section class="table-panel">
+            <div class="section-head" style="margin:0">
+              <div><h2>Performance por Engenheiro Patrimonial</h2><p>Clique nos cabeçalhos para ordenar.</p></div>
+              <span class="counter" id="perfCounter"></span>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th data-perfsort="engineer">EP responsável</th>
+                    <th data-perfsort="clients" class="num">Clientes</th>
+                    <th data-perfsort="cancelled" class="num">Cancelados</th>
+                    <th data-perfsort="churnRate" class="num">Taxa cancelamento</th>
+                    <th data-perfsort="totalMeetings" class="num">Reuniões</th>
+                    <th data-perfsort="meetingsPerClient" class="num">Média reuniões/cliente</th>
+                    <th data-perfsort="implementedMechanisms" class="num">Mecanismos implementados</th>
+                    <th data-perfsort="implementedPerClient" class="num">Média mecanismos/cliente</th>
+                    <th>NPS médio</th>
+                    <th>Tempo médio de resposta</th>
+                    <th>Taxa de renovação</th>
+                  </tr>
+                </thead>
+                <tbody id="perfRows"></tbody>
+              </table>
+            </div>
+            <div class="empty" id="perfEmpty">Nenhum EP encontrado para os filtros selecionados.</div>
+            <div class="pagination">
+              <div id="perfPageInfo"></div>
+              <div>
+                <button class="btn" id="perfPrev" type="button">Anterior</button>
+                <button class="btn" id="perfNext" type="button">Próxima</button>
+              </div>
+            </div>
+          </section>
+        </div>
+      </section>
+
       <section class="view" id="view-quality">
         <div class="container">
           <header class="page-header">
@@ -1557,6 +1699,8 @@
             <article class="chart-card"><h3>Atualização Financeira</h3><p>Indicadores novos da tela financeira</p><div class="indicator-matrix" id="qFinancialMatrix"></div></article>
             <article class="chart-card"><h3>Uso da Plataforma</h3><p>Indicadores novos calculados pelo QV360</p><div class="indicator-matrix" id="qPlatformMatrix"></div></article>
             <article class="chart-card"><h3>Cancelamento</h3><p>Indicadores da BASE QV (sem App Pharus nesta versão)</p><div class="indicator-matrix" id="qCancellationsMatrix"></div></article>
+            <article class="chart-card"><h3>Renovação</h3><p>Indicadores parciais por ciclo do cliente</p><div class="indicator-matrix" id="qRenewalMatrix"></div></article>
+            <article class="chart-card"><h3>Performance</h3><p>Indicadores por Engenheiro Patrimonial</p><div class="indicator-matrix" id="qPerformanceMatrix"></div></article>
           </section>
           <div class="section-head"><div><h2>Preenchimento por coluna</h2><p>Cada cartão compara valores vazios ou nulos com o total de registros da tabela.</p></div><span class="counter" id="counter"></span></div>
           <section class="cards" id="cards"></section>
@@ -2015,6 +2159,8 @@
       platform: document.querySelector('#view-platform'),
       support: document.querySelector('#view-support'),
       cancellations: document.querySelector('#view-cancellations'),
+      renewal: document.querySelector('#view-renewal'),
+      performance: document.querySelector('#view-performance'),
       quality: document.querySelector('#view-quality')
     };
     document.querySelectorAll('[data-nav]').forEach(btn => btn.addEventListener('click', () => {
@@ -2037,6 +2183,8 @@
         platform: 'platform_usage',
         support: 'support',
         cancellations: 'cancellations',
+        renewal: 'renewal',
+        performance: 'performance',
         quality: 'quality',
       };
       window.__portalCurrentPageCanonical = pageMap[btn.dataset.nav] || btn.dataset.nav || 'general';
@@ -2049,6 +2197,8 @@
       if (btn.dataset.nav === 'platform' && !platformState.payload) loadPlatform();
       if (btn.dataset.nav === 'support' && !supportState.payload) loadSupport();
       if (btn.dataset.nav === 'cancellations' && !cancellationsState.payload) loadCancellations();
+      if (btn.dataset.nav === 'renewal' && !renewalState.payload) loadRenewal();
+      if (btn.dataset.nav === 'performance' && !performanceState.payload) loadPerformance();
       if (btn.dataset.nav === 'quality' && !qualityData.length) loadQuality();
       remountPortalAlertsForPage(btn.dataset.nav);
     }));
@@ -2056,7 +2206,7 @@
     window.__portalCurrentPageCanonical = ({
       general: 'general', journey: 'journey', plan: 'patrimonial_plan', meetings: 'meetings',
       mechanisms: 'mechanisms', financial: 'financial_updates', platform: 'platform_usage',
-      support: 'support', cancellations: 'cancellations', quality: 'quality',
+      support: 'support', cancellations: 'cancellations', renewal: 'renewal', performance: 'performance', quality: 'quality',
     })[window.__portalCurrentPage] || window.__portalCurrentPage;
 
     /* -------- Quality (existing behavior + descriptions) -------- */
@@ -2154,6 +2304,22 @@
         { indicator: 'Dias desde a última reunião', viability: 'Sim', metric: 'Interação v1 = última reunião realizada antes do cancelamento', coverage: fixedCoverage(0, 0, 0), base: 'BASE QV' },
         { indicator: 'Mecanismos antes do cancelamento', viability: 'Sem dados', metric: 'Fonte localizada parcialmente no App Pharus, mas ainda sem evidência de implementação e data de conclusão', base: 'App Pharus' },
         { indicator: 'Último acesso antes do cancelamento', viability: 'Sem dados', metric: 'Pendente App Pharus — não exibido nesta versão', base: 'App Pharus' },
+      ]);
+      renderViabilityMatrix(document.querySelector('#qRenewalMatrix'), [
+        { indicator: 'Renovou? (Sim/Não)', viability: 'Parcial', metric: 'Proxy: clients.ciclo > 1', coverage: fixedCoverage(renewalState.payload?.summary?.clientsWithCycle, renewalState.payload?.summary?.totalClients, renewalState.payload?.summary?.cycleCoveragePercent), base: 'BASE QV' },
+        { indicator: 'Quantidade de renovações', viability: 'Parcial', metric: 'Proxy: max(clients.ciclo - 1, 0)', coverage: fixedCoverage(renewalState.payload?.summary?.clientsWithCycle, renewalState.payload?.summary?.totalClients, renewalState.payload?.summary?.cycleCoveragePercent), base: 'BASE QV' },
+        { indicator: 'Tempo até renovação', viability: 'Sem dado', metric: 'Falta histórico do primeiro contrato/ciclo e evento real de renovação', coverage: fixedCoverage(0, 0, 0), base: 'Sem dado' },
+        { indicator: 'Renovou no prazo?', viability: 'Sem dado', metric: 'Falta data do fim do ciclo anterior e data real de renovação', coverage: fixedCoverage(0, 0, 0), base: 'Sem dado' },
+        { indicator: 'Valor da renovação', viability: 'Sem dado', metric: 'clients.valor_total_pago não representa valor de renovação; apenas 1 cliente com valor > 0 na auditoria', coverage: fixedCoverage(0, renewalState.payload?.summary?.totalClients, 0), base: 'Sem dado' },
+      ]);
+      renderViabilityMatrix(document.querySelector('#qPerformanceMatrix'), [
+        { indicator: 'EP responsável', viability: 'Sim', metric: 'clients.engenheiro_patrimonial normalizado por cliente', coverage: fixedCoverage(performanceState.payload?.summary?.clientsWithEngineer, performanceState.payload?.summary?.totalClients, performanceState.payload?.summary?.engineerCoveragePercent), base: 'BASE QV' },
+        { indicator: 'Taxa média de cancelamento do EP', viability: 'Sim', metric: 'Clientes cancelados do EP ÷ total de clientes do EP', coverage: fixedCoverage(performanceState.payload?.summary?.clientsWithCancellationStatus, performanceState.payload?.summary?.totalClients, performanceState.payload?.summary?.churnCoveragePercent), base: 'BASE QV' },
+        { indicator: 'NPS médio do EP', viability: 'Sem dado', metric: 'Sem vínculo confiável entre resposta de NPS e EP responsável nesta versão', coverage: fixedCoverage(0, 0, 0), base: 'Sem dado' },
+        { indicator: 'Média de reuniões do EP', viability: 'Sim', metric: 'Soma de reuniões dos clientes do EP ÷ clientes do EP', coverage: fixedCoverage(performanceState.payload?.summary?.clientsWithMeetingData, performanceState.payload?.summary?.totalClients, performanceState.payload?.summary?.meetingCoveragePercent), base: 'BASE QV' },
+        { indicator: 'Média de mecanismos implementados pelo EP', viability: 'Sim', metric: 'Soma de mecanismos implementados dos clientes do EP ÷ clientes do EP', coverage: fixedCoverage(performanceState.payload?.summary?.clientsWithMechanismData, performanceState.payload?.summary?.totalClients, performanceState.payload?.summary?.mechanismCoveragePercent), base: 'BASE QV' },
+        { indicator: 'Tempo médio de resposta do EP', viability: 'Sem dado', metric: 'Sem pareamento confiável entre solicitação, EP e resposta nesta versão', coverage: fixedCoverage(0, 0, 0), base: 'Sem dado' },
+        { indicator: 'Taxa de renovação do EP', viability: 'Sem dado', metric: 'Sem evento/campo confiável de renovação vinculado ao EP nesta versão', coverage: fixedCoverage(0, 0, 0), base: 'Sem dado' },
       ]);
     }
     function renderQuality() {
@@ -6182,6 +6348,441 @@
       if (client) openCancellationDrawer(client);
     });
 
+    /* -------- Renovação (BASE QV) -------- */
+    const renewalState = {
+      payload: null,
+      loading: false,
+      requestId: 0,
+      page: 1,
+      pageSize: 25,
+      sortKey: 'currentCycle',
+      sortDir: 'desc',
+    };
+    const rFilters = {
+      search: document.querySelector('#rSearch'),
+      engineer: document.querySelector('#rEngineer'),
+      renewed: document.querySelector('#rRenewed'),
+      cycle: document.querySelector('#rCycle'),
+    };
+    const renewalNumber = value => {
+      const n = Number(value);
+      return Number.isFinite(n) ? n : null;
+    };
+    const renewalCycle = client => renewalNumber(client.currentCycle);
+    const renewalCount = client => Math.max(0, (renewalCycle(client) ?? 0) - 1);
+    const renewalWasRenewed = client => (renewalCycle(client) ?? 0) > 1;
+    const renewalText = value => value == null || !Number.isFinite(value) ? 'Sem dado' : fmt.format(value);
+    function buildRenewalPayload(generalPayload) {
+      const source = generalPayload?.clients || [];
+      const rows = source.map(client => {
+        const currentCycle = renewalCycle(client);
+        const count = Math.max(0, (currentCycle ?? 0) - 1);
+        const renewalValue = renewalNumber(client.renewalValue);
+        return {
+          clientId: client.clientId,
+          clientCode: client.clientCode,
+          clientName: client.clientName || 'Não informado',
+          engineer: client.engineer || 'Não informado',
+          status: client.status || client.analyticalStatus || 'Não informado',
+          currentCycle,
+          renewed: currentCycle != null ? currentCycle > 1 : null,
+          renewalCount: currentCycle != null ? count : null,
+          cycleStartDate: client.cycleStartDate || client.contractDate || null,
+          cycleEndDate: client.cycleEndDate || null,
+          renewalTimeDays: null,
+          renewedOnTime: null,
+          renewalValue: renewalValue && renewalValue > 0 ? renewalValue : null,
+          dataQuality: [
+            'Renovação calculada por proxy de clients.ciclo',
+            'Sem evento histórico de renovação',
+          ],
+        };
+      });
+      const totalClients = rows.length;
+      const clientsWithCycle = rows.filter(r => r.currentCycle != null).length;
+      const renewedClients = rows.filter(r => r.renewed === true).length;
+      const totalRenewals = rows.reduce((a, r) => a + (r.renewalCount || 0), 0);
+      const maxCycle = rows.reduce((a, r) => Math.max(a, r.currentCycle || 0), 0);
+      return {
+        generatedAt: new Date().toISOString(),
+        clients: rows,
+        summary: {
+          totalClients,
+          clientsWithCycle,
+          cycleCoveragePercent: totalClients ? Math.round((clientsWithCycle / totalClients) * 1000) / 10 : 0,
+          renewedClients,
+          notRenewedClients: totalClients - renewedClients,
+          renewedPercent: totalClients ? Math.round((renewedClients / totalClients) * 1000) / 10 : 0,
+          totalRenewals,
+          maxCycle,
+          renewalValueAvailable: rows.filter(r => r.renewalValue != null).length,
+        },
+      };
+    }
+    function fillRenewalFilters() {
+      const clients = renewalState.payload?.clients || [];
+      fillSelect(rFilters.engineer, [...new Set(clients.map(c => c.engineer).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'pt-BR')), 'Todos');
+      fillSelect(rFilters.cycle, [...new Set(clients.map(c => c.currentCycle).filter(v => v != null))].sort((a, b) => a - b), 'Todos');
+    }
+    function filteredRenewalClients() {
+      const clients = renewalState.payload?.clients || [];
+      const q = (rFilters.search?.value || '').trim().toLowerCase();
+      return clients.filter(c => {
+        if (q && !`${c.clientName} ${c.clientCode} ${c.clientId} ${c.engineer}`.toLowerCase().includes(q)) return false;
+        if (rFilters.engineer?.value !== 'all' && c.engineer !== rFilters.engineer.value) return false;
+        if (rFilters.renewed?.value === 'yes' && c.renewed !== true) return false;
+        if (rFilters.renewed?.value === 'no' && c.renewed === true) return false;
+        if (rFilters.cycle?.value !== 'all' && String(c.currentCycle) !== String(rFilters.cycle.value)) return false;
+        return true;
+      });
+    }
+    function renderRenewal() {
+      if (!renewalState.payload) return;
+      const summary = renewalState.payload.summary || {};
+      const rows = filteredRenewalClients();
+      document.querySelector('#rKpis').innerHTML = `
+        <article class="metric highlight"><div class="metric-label">Renovaram</div><div class="metric-value">${fmt.format(summary.renewedClients || 0)}</div><div class="metric-note">${pct(summary.renewedPercent || 0)} - Ciclo > 1</div></article>
+        <article class="metric"><div class="metric-label">Quantidade de renovações</div><div class="metric-value">${fmt.format(summary.totalRenewals || 0)}</div><div class="metric-note">Ciclo atual menos 1 por cliente</div></article>
+        <article class="metric"><div class="metric-label">Maior ciclo atual</div><div class="metric-value">${fmt.format(summary.maxCycle || 0)}</div><div class="metric-note">Campo clients.ciclo</div></article>
+        <article class="metric"><div class="metric-label">Tempo até renovação</div><div class="metric-value">Sem dado</div><div class="metric-note">Sem histórico do primeiro ciclo/evento real</div></article>
+        <article class="metric"><div class="metric-label">Renovou no prazo?</div><div class="metric-value">Sem dado</div><div class="metric-note">Falta fim do ciclo anterior + data de renovação</div></article>
+        <article class="metric"><div class="metric-label">Valor da renovação</div><div class="metric-value">Sem dado</div><div class="metric-note">clients.valor_total_pago não é valor de renovação</div></article>`;
+
+      document.querySelector('#rChartRenewed').innerHTML = donut([
+        { label: 'Sim', count: summary.renewedClients || 0, percent: summary.renewedPercent || 0 },
+        { label: 'Não', count: summary.notRenewedClients || 0, percent: 100 - (summary.renewedPercent || 0) },
+      ]);
+      const cycleCounts = new Map();
+      rows.forEach(r => {
+        const label = r.renewalCount == null ? 'Sem dado' : `${r.renewalCount} renovação${r.renewalCount === 1 ? '' : 'ões'}`;
+        cycleCounts.set(label, (cycleCounts.get(label) || 0) + 1);
+      });
+      document.querySelector('#rChartRenewalCount').innerHTML = hBars([...cycleCounts.entries()].map(([label, count]) => ({ label, count, percent: rows.length ? count / rows.length * 100 : 0 })));
+      const byEngineer = new Map();
+      rows.filter(r => r.renewed).forEach(r => byEngineer.set(r.engineer, (byEngineer.get(r.engineer) || 0) + 1));
+      document.querySelector('#rChartEngineer').innerHTML = hBars([...byEngineer.entries()].sort((a, b) => b[1] - a[1]).map(([label, count]) => ({ label, count, percent: summary.renewedClients ? count / summary.renewedClients * 100 : 0 })), 10);
+
+      const key = renewalState.sortKey;
+      const sorted = [...rows].sort((a, b) => {
+        const av = a[key], bv = b[key];
+        let cmp = typeof av === 'number' || typeof bv === 'number'
+          ? Number(av ?? -Infinity) - Number(bv ?? -Infinity)
+          : String(av ?? '').localeCompare(String(bv ?? ''), 'pt-BR');
+        return renewalState.sortDir === 'asc' ? cmp : -cmp;
+      });
+      const pages = Math.max(1, Math.ceil(sorted.length / renewalState.pageSize));
+      if (renewalState.page > pages) renewalState.page = pages;
+      if (renewalState.page < 1) renewalState.page = 1;
+      const start = (renewalState.page - 1) * renewalState.pageSize;
+      const pageRows = sorted.slice(start, start + renewalState.pageSize);
+      document.querySelector('#rRows').innerHTML = pageRows.map(c => `
+        <tr>
+          <td class="truncate" title="${escapeHtml(c.clientName)}">${escapeHtml(c.clientName)}</td>
+          <td>${escapeHtml(c.clientCode || 'Não informado')}</td>
+          <td class="truncate" title="${escapeHtml(c.engineer)}">${escapeHtml(c.engineer)}</td>
+          <td>${c.renewed === true ? 'Sim' : c.renewed === false ? 'Não' : 'Sem dado'}</td>
+          <td class="num">${renewalText(c.currentCycle)}</td>
+          <td class="num">${renewalText(c.renewalCount)}</td>
+          <td>${dateBR(c.cycleStartDate)}</td>
+          <td>${dateBR(c.cycleEndDate)}</td>
+          <td>Sem dado</td>
+          <td>Sem dado</td>
+          <td>Sem dado</td>
+        </tr>`).join('');
+      setText('#rCounter', `${sorted.length} de ${(renewalState.payload.clients || []).length} clientes`);
+      setText('#rPageInfo', `Página ${renewalState.page} de ${pages}`);
+      const empty = document.querySelector('#rEmpty');
+      if (empty) empty.style.display = sorted.length ? 'none' : 'block';
+      document.querySelector('#rPrev').disabled = renewalState.page <= 1;
+      document.querySelector('#rNext').disabled = renewalState.page >= pages;
+    }
+    async function loadRenewal() {
+      if (!isPortalAuthenticated()) return;
+      if (renewalState.loading) return;
+      renewalState.loading = true;
+      const requestId = ++renewalState.requestId;
+      const refresh = document.querySelector('#rRefresh');
+      const status = document.querySelector('#rStatus');
+      if (refresh) { refresh.disabled = true; refresh.textContent = 'Atualizando…'; }
+      if (status) { status.textContent = '● Atualizando dados'; status.style.color = 'var(--color-warning)'; }
+      try {
+        const response = await apiFetch(`/api/general-data?t=${Date.now()}`, { cache: 'no-store' });
+        const payload = await response.json().catch(() => ({}));
+        if (requestId !== renewalState.requestId) return;
+        if (!response.ok) throw Object.assign(new Error(friendlyApiError(response.status, payload)), { status: response.status, payload });
+        renewalState.payload = buildRenewalPayload(payload);
+        renewalState.page = 1;
+        fillRenewalFilters();
+        renderRenewal();
+        renderQualityMatrices();
+        if (status) { status.textContent = '● Base conectada com proxy'; status.style.color = 'var(--color-warning)'; }
+        setText('#rUpdated', `Atualizado em ${new Date(renewalState.payload.generatedAt).toLocaleString('pt-BR')}`);
+      } catch (error) {
+        if (requestId !== renewalState.requestId) return;
+        if (error?.code === 'AUTH_REQUIRED' || error?.code === 'AUTH_FORBIDDEN' || error?.message === 'AUTH_REQUIRED') return;
+        console.error('[Renewal API]', { status: error?.status || 0, error: error.message });
+        if (status) { status.textContent = '● Falha na atualização'; status.style.color = 'var(--color-danger)'; }
+        setText('#rUpdated', error.message || friendlyApiError(0, null, true));
+      } finally {
+        if (requestId === renewalState.requestId) {
+          renewalState.loading = false;
+          if (refresh) { refresh.disabled = false; refresh.textContent = 'Atualizar'; }
+        }
+      }
+    }
+    Object.values(rFilters).forEach(el => el?.addEventListener('input', () => { renewalState.page = 1; renderRenewal(); }));
+    document.querySelector('#rClear')?.addEventListener('click', () => {
+      if (rFilters.search) rFilters.search.value = '';
+      ['engineer', 'renewed', 'cycle'].forEach(k => { if (rFilters[k]) rFilters[k].value = 'all'; });
+      renewalState.page = 1;
+      renderRenewal();
+    });
+    document.querySelector('#rRefresh')?.addEventListener('click', loadRenewal);
+    document.querySelector('#rPrev')?.addEventListener('click', () => { renewalState.page -= 1; renderRenewal(); });
+    document.querySelector('#rNext')?.addEventListener('click', () => { renewalState.page += 1; renderRenewal(); });
+    document.querySelectorAll('#view-renewal th[data-rsort]').forEach(th => th.addEventListener('click', () => {
+      const key = th.dataset.rsort;
+      if (renewalState.sortKey === key) renewalState.sortDir = renewalState.sortDir === 'asc' ? 'desc' : 'asc';
+      else { renewalState.sortKey = key; renewalState.sortDir = 'asc'; }
+      renderRenewal();
+    }));
+
+    /* -------- Performance do Engenheiro Patrimonial -------- */
+    const performanceState = {
+      payload: null,
+      loading: false,
+      requestId: 0,
+      page: 1,
+      pageSize: 25,
+      sortKey: 'clients',
+      sortDir: 'desc',
+    };
+    const perfFilters = {
+      search: document.querySelector('#perfSearch'),
+      cancelBand: document.querySelector('#perfCancelBand'),
+    };
+    const perfPct = (num, den) => den ? Math.round((num / den) * 1000) / 10 : 0;
+    const perfMetric = value => value == null || !Number.isFinite(value) ? 'Sem dado' : fmt.format(value);
+    const perfPercent = value => value == null || !Number.isFinite(value) ? 'Sem dado' : pct(value);
+    const perfEngineerKey = value => String(value || '').trim() || 'Não informado';
+    const perfIsCancelled = client => {
+      const status = String(client?.analyticalStatus || client?.status || client?.rawStatus || '').toLowerCase();
+      return Boolean(client?.cancellationDate) || status.includes('cancel');
+    };
+    const perfGet = (map, key) => {
+      const id = String(key || '');
+      return map.get(id) || null;
+    };
+    function buildPerformancePayload(sources) {
+      const generalClients = sources.general?.clients || [];
+      const meetingMap = new Map((sources.meetings?.clients || []).map(c => [String(c.clientId), c]));
+      const mechanismMap = new Map((sources.mechanisms?.clients || []).map(c => [String(c.clientId), c]));
+      const cancellationIds = new Set((sources.cancellations?.clients || []).map(c => String(c.clientId)));
+      const byEngineer = new Map();
+      const ensure = engineer => {
+        const key = perfEngineerKey(engineer);
+        if (!byEngineer.has(key)) {
+          byEngineer.set(key, {
+            engineer: key,
+            clients: 0,
+            activeClients: 0,
+            cancelled: 0,
+            totalMeetings: 0,
+            clientsWithMeetingData: 0,
+            implementedMechanisms: 0,
+            availableMechanisms: 0,
+            clientsWithMechanismData: 0,
+          });
+        }
+        return byEngineer.get(key);
+      };
+      generalClients.forEach(client => {
+        const row = ensure(client.engineer);
+        const clientId = String(client.clientId || '');
+        row.clients += 1;
+        if (!perfIsCancelled(client)) row.activeClients += 1;
+        if (perfIsCancelled(client) || cancellationIds.has(clientId)) row.cancelled += 1;
+        const meeting = perfGet(meetingMap, clientId);
+        if (meeting) {
+          row.clientsWithMeetingData += 1;
+          row.totalMeetings += Number(meeting.totalMeetings || 0);
+        }
+        const mechanism = perfGet(mechanismMap, clientId);
+        if (mechanism) {
+          row.clientsWithMechanismData += 1;
+          row.availableMechanisms += Number(mechanism.availableMechanisms || 0);
+          row.implementedMechanisms += Number(mechanism.implementedMechanisms || 0);
+        }
+      });
+      const rows = [...byEngineer.values()]
+        .filter(r => r.clients > 0)
+        .map(r => ({
+          ...r,
+          churnRate: perfPct(r.cancelled, r.clients),
+          meetingsPerClient: r.clients ? Math.round((r.totalMeetings / r.clients) * 10) / 10 : null,
+          implementedPerClient: r.clients ? Math.round((r.implementedMechanisms / r.clients) * 10) / 10 : null,
+          npsAverage: null,
+          responseTimeDays: null,
+          renewalRate: null,
+        }));
+      const totalClients = generalClients.length;
+      const clientsWithEngineer = generalClients.filter(c => perfEngineerKey(c.engineer) !== 'Não informado').length;
+      const clientsWithMeetingData = rows.reduce((a, r) => a + r.clientsWithMeetingData, 0);
+      const clientsWithMechanismData = rows.reduce((a, r) => a + r.clientsWithMechanismData, 0);
+      return {
+        generatedAt: new Date().toISOString(),
+        rows,
+        summary: {
+          totalEngineers: rows.length,
+          totalClients,
+          clientsWithEngineer,
+          engineerCoveragePercent: perfPct(clientsWithEngineer, totalClients),
+          clientsWithCancellationStatus: totalClients,
+          churnCoveragePercent: totalClients ? 100 : 0,
+          clientsWithMeetingData,
+          meetingCoveragePercent: perfPct(clientsWithMeetingData, totalClients),
+          clientsWithMechanismData,
+          mechanismCoveragePercent: perfPct(clientsWithMechanismData, totalClients),
+          totalCancelled: rows.reduce((a, r) => a + r.cancelled, 0),
+          totalMeetings: rows.reduce((a, r) => a + r.totalMeetings, 0),
+          totalImplementedMechanisms: rows.reduce((a, r) => a + r.implementedMechanisms, 0),
+        },
+      };
+    }
+    function filteredPerformanceRows() {
+      const q = (perfFilters.search?.value || '').trim().toLowerCase();
+      const band = perfFilters.cancelBand?.value || 'all';
+      return (performanceState.payload?.rows || []).filter(row => {
+        if (q && !row.engineer.toLowerCase().includes(q)) return false;
+        if (band === 'low' && row.churnRate > 10) return false;
+        if (band === 'medium' && (row.churnRate <= 10 || row.churnRate > 25)) return false;
+        if (band === 'high' && row.churnRate <= 25) return false;
+        return true;
+      });
+    }
+    function renderPerformance() {
+      if (!performanceState.payload) return;
+      const summary = performanceState.payload.summary || {};
+      const rows = filteredPerformanceRows();
+      const avgChurn = summary.totalClients ? perfPct(summary.totalCancelled, summary.totalClients) : null;
+      const avgMeetings = summary.totalClients ? Math.round((summary.totalMeetings / summary.totalClients) * 10) / 10 : null;
+      const avgMechanisms = summary.totalClients ? Math.round((summary.totalImplementedMechanisms / summary.totalClients) * 10) / 10 : null;
+      document.querySelector('#perfKpis').innerHTML = `
+        <article class="metric highlight"><div class="metric-label">EPs analisados</div><div class="metric-value">${fmt.format(summary.totalEngineers || 0)}</div><div class="metric-note">${fmt.format(summary.totalClients || 0)} clientes na base consolidada</div></article>
+        <article class="metric"><div class="metric-label">Taxa média de cancelamento</div><div class="metric-value">${perfPercent(avgChurn)}</div><div class="metric-note">Cancelados ÷ carteira total</div></article>
+        <article class="metric"><div class="metric-label">Média de reuniões por cliente</div><div class="metric-value">${perfMetric(avgMeetings)}</div><div class="metric-note">Total de reuniões ÷ clientes</div></article>
+        <article class="metric"><div class="metric-label">Média de mecanismos por cliente</div><div class="metric-value">${perfMetric(avgMechanisms)}</div><div class="metric-note">Implementados ÷ clientes</div></article>
+        <article class="metric"><div class="metric-label">NPS médio do EP</div><div class="metric-value">Sem dado</div><div class="metric-note">Sem vínculo confiável NPS ↔ EP</div></article>
+        <article class="metric"><div class="metric-label">Taxa de renovação do EP</div><div class="metric-value">Sem dado</div><div class="metric-note">Sem evento confiável de renovação</div></article>`;
+
+      const topByChurn = [...rows].filter(r => r.clients >= 3).sort((a, b) => b.churnRate - a.churnRate).slice(0, 10);
+      const topByMeetings = [...rows].sort((a, b) => b.totalMeetings - a.totalMeetings).slice(0, 10);
+      const topByMechanisms = [...rows].sort((a, b) => b.implementedMechanisms - a.implementedMechanisms).slice(0, 10);
+      document.querySelector('#perfChartChurn').innerHTML = hBars(topByChurn.map(r => ({ label: r.engineer, count: Math.round(r.churnRate), percent: r.churnRate })));
+      document.querySelector('#perfChartMeetings').innerHTML = hBars(topByMeetings.map(r => ({ label: r.engineer, count: r.totalMeetings, percent: perfPct(r.totalMeetings, summary.totalMeetings) })));
+      document.querySelector('#perfChartMechanisms').innerHTML = hBars(topByMechanisms.map(r => ({ label: r.engineer, count: r.implementedMechanisms, percent: perfPct(r.implementedMechanisms, summary.totalImplementedMechanisms) })));
+      document.querySelector('#perfChartMissing').innerHTML = hBars([
+        { label: 'NPS médio do EP', count: 0, percent: 0 },
+        { label: 'Tempo médio de resposta do EP', count: 0, percent: 0 },
+        { label: 'Taxa de renovação do EP', count: 0, percent: 0 },
+      ]);
+
+      const key = performanceState.sortKey;
+      const dir = performanceState.sortDir;
+      const sorted = [...rows].sort((a, b) => {
+        const av = a[key], bv = b[key];
+        let cmp = typeof av === 'number' || typeof bv === 'number'
+          ? (Number(av ?? -Infinity) - Number(bv ?? -Infinity))
+          : String(av ?? '').localeCompare(String(bv ?? ''), 'pt-BR');
+        return dir === 'asc' ? cmp : -cmp;
+      });
+      const pages = Math.max(1, Math.ceil(sorted.length / performanceState.pageSize));
+      if (performanceState.page > pages) performanceState.page = pages;
+      if (performanceState.page < 1) performanceState.page = 1;
+      const start = (performanceState.page - 1) * performanceState.pageSize;
+      const pageRows = sorted.slice(start, start + performanceState.pageSize);
+      document.querySelector('#perfRows').innerHTML = pageRows.map(r => `
+        <tr>
+          <td class="truncate" title="${escapeHtml(r.engineer)}">${escapeHtml(r.engineer)}</td>
+          <td class="num">${fmt.format(r.clients)}</td>
+          <td class="num">${fmt.format(r.cancelled)}</td>
+          <td class="num">${pct(r.churnRate)}</td>
+          <td class="num">${fmt.format(r.totalMeetings)}</td>
+          <td class="num">${perfMetric(r.meetingsPerClient)}</td>
+          <td class="num">${fmt.format(r.implementedMechanisms)}</td>
+          <td class="num">${perfMetric(r.implementedPerClient)}</td>
+          <td>Sem dado</td>
+          <td>Sem dado</td>
+          <td>Sem dado</td>
+        </tr>`).join('');
+      setText('#perfCounter', `${sorted.length} de ${(performanceState.payload.rows || []).length} EPs`);
+      setText('#perfPageInfo', `Página ${performanceState.page} de ${pages}`);
+      const empty = document.querySelector('#perfEmpty');
+      if (empty) empty.style.display = sorted.length ? 'none' : 'block';
+      document.querySelector('#perfPrev').disabled = performanceState.page <= 1;
+      document.querySelector('#perfNext').disabled = performanceState.page >= pages;
+    }
+    async function loadPerformance() {
+      if (!isPortalAuthenticated()) return;
+      if (performanceState.loading) return;
+      performanceState.loading = true;
+      const requestId = ++performanceState.requestId;
+      const refresh = document.querySelector('#perfRefresh');
+      const status = document.querySelector('#perfStatus');
+      if (refresh) { refresh.disabled = true; refresh.textContent = 'Atualizando…'; }
+      if (status) { status.textContent = '● Atualizando dados'; status.style.color = 'var(--color-warning)'; }
+      try {
+        const endpoints = {
+          general: '/api/general-data',
+          meetings: '/api/meetings',
+          mechanisms: '/api/mechanisms',
+          cancellations: '/api/cancellations',
+        };
+        const entries = await Promise.all(Object.entries(endpoints).map(async ([key, url]) => {
+          const response = await apiFetch(`${url}?t=${Date.now()}`, { cache: 'no-store' });
+          const payload = await response.json().catch(() => ({}));
+          if (!response.ok) throw Object.assign(new Error(friendlyApiError(response.status, payload)), { status: response.status, payload });
+          return [key, payload];
+        }));
+        if (requestId !== performanceState.requestId) return;
+        performanceState.payload = buildPerformancePayload(Object.fromEntries(entries));
+        performanceState.page = 1;
+        renderPerformance();
+        renderQualityMatrices();
+        if (status) { status.textContent = '● Bases conectadas'; status.style.color = 'var(--color-success)'; }
+        setText('#perfUpdated', `Atualizado em ${new Date(performanceState.payload.generatedAt).toLocaleString('pt-BR')}`);
+      } catch (error) {
+        if (requestId !== performanceState.requestId) return;
+        if (error?.code === 'AUTH_REQUIRED' || error?.code === 'AUTH_FORBIDDEN' || error?.message === 'AUTH_REQUIRED') return;
+        console.error('[Performance API]', { status: error?.status || 0, error: error.message });
+        if (status) { status.textContent = '● Falha na atualização'; status.style.color = 'var(--color-danger)'; }
+        setText('#perfUpdated', error.message || friendlyApiError(0, null, true));
+        const empty = document.querySelector('#perfEmpty');
+        if (empty) { empty.style.display = 'block'; empty.textContent = 'Não foi possível carregar a performance.'; }
+      } finally {
+        if (requestId === performanceState.requestId) {
+          performanceState.loading = false;
+          if (refresh) { refresh.disabled = false; refresh.textContent = 'Atualizar'; }
+        }
+      }
+    }
+    Object.values(perfFilters).forEach(el => el?.addEventListener('input', () => { performanceState.page = 1; renderPerformance(); }));
+    document.querySelector('#perfClear')?.addEventListener('click', () => {
+      if (perfFilters.search) perfFilters.search.value = '';
+      if (perfFilters.cancelBand) perfFilters.cancelBand.value = 'all';
+      performanceState.page = 1;
+      renderPerformance();
+    });
+    document.querySelector('#perfRefresh')?.addEventListener('click', loadPerformance);
+    document.querySelector('#perfPrev')?.addEventListener('click', () => { performanceState.page -= 1; renderPerformance(); });
+    document.querySelector('#perfNext')?.addEventListener('click', () => { performanceState.page += 1; renderPerformance(); });
+    document.querySelectorAll('#view-performance th[data-perfsort]').forEach(th => th.addEventListener('click', () => {
+      const key = th.dataset.perfsort;
+      if (performanceState.sortKey === key) performanceState.sortDir = performanceState.sortDir === 'asc' ? 'desc' : 'asc';
+      else { performanceState.sortKey = key; performanceState.sortDir = 'asc'; }
+      renderPerformance();
+    }));
+
     /* -------- Assistente da Jornada (chatbot) -------- */
     const ASSISTANT_SUGGESTIONS = [
       'Quantos clientes ativos temos?',
@@ -6625,6 +7226,8 @@
         if (views.platform.classList.contains('active')) loadPlatform();
         if (views.support?.classList.contains('active')) loadSupport();
         if (views.cancellations?.classList.contains('active')) loadCancellations();
+        if (views.renewal?.classList.contains('active')) loadRenewal();
+        if (views.performance?.classList.contains('active')) loadPerformance();
         if (views.quality?.classList.contains('active')) loadQuality();
       }, 5 * 60 * 1000);
     }
@@ -6645,6 +7248,8 @@
       if (typeof platformState !== 'undefined') platformState.payload = null;
       if (typeof supportState !== 'undefined') supportState.payload = null;
       if (typeof cancellationsState !== 'undefined') cancellationsState.payload = null;
+      if (typeof renewalState !== 'undefined') renewalState.payload = null;
+      if (typeof performanceState !== 'undefined') performanceState.payload = null;
       if (typeof resetAssistant === 'function') resetAssistant();
     }
     window.startPortalApp = startPortalApp;

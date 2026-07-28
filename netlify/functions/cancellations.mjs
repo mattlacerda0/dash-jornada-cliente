@@ -9,6 +9,10 @@
 import { requireCorporateAuth } from "./_shared/auth.mjs";
 import { dataConfigurationError } from "./_shared/env.mjs";
 import { calculateClientSegment } from "./general-data.mjs";
+import {
+  CANCELLATION_REASON_CATEGORIES,
+  categorizeCancellationReason,
+} from "./_shared/cancellation-reason-category.mjs";
 
 const CLIENT_SELECT =
   "id,codigo,name,status,data_inicio_ciclo,created_at,engenheiro_patrimonial,segmentacao,data_churn,motivo_churn";
@@ -538,11 +542,16 @@ function buildPayload(clients, cancellations, financialRows, calendlyRows, manua
       if (!cancellationDate) dataWarnings.push("Data de cancelamento ausente");
     }
 
-    const motivoNorm = normalizeLabel(cancelInfo.motivo || client.motivo_churn);
-    const categoriaNorm = normalizeLabel(cancelInfo.motivoCategoria);
+    // Motivo original: public.cancellations.motivo (fallback clients.motivo_churn).
+    // NÃO usar motivo_categoria como entrada da classificação.
+    const motivoSource = cancelInfo.motivo != null ? cancelInfo.motivo : client.motivo_churn;
+    const motivoNorm = normalizeLabel(motivoSource);
     const hasReason = Boolean(motivoNorm.raw);
+    const categorized = categorizeCancellationReason(motivoNorm.raw);
+    const reasonCategory = categorized.category;
+    // Campo DB preservado apenas para referência — não alimenta o gráfico/filtro principal.
+    const dbCategoryNorm = normalizeLabel(cancelInfo.motivoCategoria);
     if (!hasReason) dataWarnings.push("Motivo ausente");
-    if (!categoriaNorm.raw) dataWarnings.push("Categoria ausente");
     if (multiples.has(client.id) || multiples.has(clientId)) {
       dataWarnings.push("Duplicidade de cancelamento (múltiplos processos ativos)");
     }
@@ -624,8 +633,13 @@ function buildPayload(clients, cancellations, financialRows, calendlyRows, manua
       reason: motivoNorm.label,
       reasonRaw: motivoNorm.raw,
       hasReason,
-      category: categoriaNorm.label,
-      categoryRaw: categoriaNorm.raw,
+      /** Categoria analítica calculada a partir de cancellations.motivo. */
+      reasonCategory,
+      /** Alias usado pela UI/filtro (categoria calculada, não motivo_categoria). */
+      category: reasonCategory,
+      categoryRaw: reasonCategory,
+      /** Valor bruto de motivo_categoria no banco (não usado na classificação). */
+      dbMotivoCategoria: dbCategoryNorm.raw,
       meetingsBeforeCancellation: meetingsBeforeCount,
       meetingsBeforeBand: meetingCountBand(meetingsBeforeCount),
       lastMeetingDate: lastMeeting?.startTime ? lastMeeting.startTime.toISOString() : null,
@@ -676,6 +690,11 @@ function buildPayload(clients, cancellations, financialRows, calendlyRows, manua
   const interactionStats = robustStats(rows.map((r) => r.daysWithoutInteraction).filter((d) => d != null));
   const insufficientDataClients = rows.filter((r) => r.insufficientData).length;
 
+  const byReasonCategory = distributionFrom(rows, (r) => r.reasonCategory || r.category);
+  const topReasonCategory = byReasonCategory[0]?.label || null;
+  const othersCount = rows.filter((r) => (r.reasonCategory || r.category) === "Outros motivos").length;
+  const notInformedCount = rows.filter((r) => (r.reasonCategory || r.category) === "Não informado").length;
+
   const byEngineer = distributionFrom(rows, (r) => (r.engineer === "Não informado" ? null : r.engineer)).map((e) => ({
     ...e,
     sampleSize: e.count,
@@ -690,6 +709,12 @@ function buildPayload(clients, cancellations, financialRows, calendlyRows, manua
       label: "Dias desde a última reunião antes do cancelamento",
       rule: "Última reunião com presença confirmada (compareceu) com data <= cancelamento.",
       pendingAppPharus: ["mecanismos implementados antes do cancelamento", "último acesso antes do cancelamento"],
+    },
+    reasonCategorization: {
+      sourceField: "public.cancellations.motivo",
+      fallbackField: "public.clients.motivo_churn",
+      categories: CANCELLATION_REASON_CATEGORIES,
+      note: "Categorias analíticas calculadas no backend. motivo_categoria do banco não é a fonte.",
     },
     summary: {
       totalCancellations: total,
@@ -711,10 +736,14 @@ function buildPayload(clients, cancellations, financialRows, calendlyRows, manua
       interactionSampleSize: interactionStats.validCount,
       insufficientDataClients,
       topReason: distributionFrom(rows.filter((r) => r.hasReason), (r) => r.reason)[0]?.label || null,
+      topReasonCategory,
+      othersReasonCategoryCount: othersCount,
+      notInformedReasonCategoryCount: notInformedCount,
     },
     distributions: {
       byReason: distributionFrom(rows, (r) => (r.hasReason ? r.reason : null)),
-      byCategory: distributionFrom(rows, (r) => (r.categoryRaw ? r.category : null)),
+      byCategory: byReasonCategory,
+      byReasonCategory,
       byMonth: buildCancelMonthSeries(rows.map((r) => parseDate(r.cancellationDate)).filter(Boolean), now, 12),
       byStayRange: distributionFrom(rows, (r) => r.stayRange, STAY_RANGES),
       byMeetingCount: distributionFrom(rows, (r) => r.meetingsBeforeBand, MEETING_RANGES),

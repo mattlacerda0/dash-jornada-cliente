@@ -629,12 +629,51 @@ export const portalMetricRegistry = {
   },
   top_cancellation_reason: {
     domain: "cancellations",
-    label: "Motivo mais comum de cancelamento",
+    label: "Motivo original mais comum de cancelamento",
     payloadPath: "summary.topReason",
     sampleSizePath: "summary.withReason",
     unit: "label",
     aggregation: "top",
-    definition: "Motivo com maior volume entre cancelamentos com motivo informado.",
+    definition: "Texto original de motivo com maior volume entre cancelamentos com motivo informado.",
+  },
+  top_cancellation_reason_category: {
+    domain: "cancellations",
+    label: "Principal categoria de cancelamento",
+    payloadPath: "summary.topReasonCategory",
+    sampleSizePath: "summary.totalCancellations",
+    unit: "label",
+    aggregation: "top",
+    definition: "Categoria analítica com maior volume (distributions.byReasonCategory).",
+  },
+  cancellations_by_inactivity: {
+    domain: "cancellations",
+    label: "Cancelamentos por inatividade",
+    distributionLookup: {
+      path: "distributions.byReasonCategory",
+      label: "Inatividade e falta de engajamento",
+    },
+    sampleSizePath: "summary.totalCancellations",
+    unit: "clients",
+    aggregation: "count",
+    definition: "Count na categoria Inatividade e falta de engajamento.",
+  },
+  cancellations_by_financial: {
+    domain: "cancellations",
+    label: "Cancelamentos por questões financeiras",
+    distributionLookup: { path: "distributions.byReasonCategory", label: "Questões financeiras" },
+    sampleSizePath: "summary.totalCancellations",
+    unit: "clients",
+    aggregation: "count",
+    definition: "Count na categoria Questões financeiras.",
+  },
+  cancellations_by_non_renewal: {
+    domain: "cancellations",
+    label: "Cancelamentos por não renovação",
+    distributionLookup: { path: "distributions.byReasonCategory", label: "Não renovação" },
+    sampleSizePath: "summary.totalCancellations",
+    unit: "clients",
+    aggregation: "count",
+    definition: "Count na categoria Não renovação.",
   },
 };
 
@@ -1050,7 +1089,8 @@ function applyCancellationClientFilters(clients, filters = {}) {
     if (filters.engineer && filters.engineer !== "all" && c.engineer !== filters.engineer) return false;
     if (filters.segment && filters.segment !== "all" && c.segment !== filters.segment) return false;
     if (filters.reason && filters.reason !== "all" && c.reason !== filters.reason) return false;
-    if (filters.category && filters.category !== "all" && c.category !== filters.category) return false;
+    if (filters.category && filters.category !== "all"
+      && (c.reasonCategory || c.category) !== filters.category) return false;
     if (filters.hasReason === "yes" && !c.hasReason) return false;
     if (filters.hasReason === "no" && c.hasReason) return false;
     return true;
@@ -1075,11 +1115,17 @@ function recomputeCancellationsSummaryLikeDashboard(rows) {
   const financialStats = cancelRobustStats(rows.map((r) => r.daysSinceFinancialUpdate).filter((d) => d != null));
   const interactionStats = cancelRobustStats(rows.map((r) => r.daysWithoutInteraction).filter((d) => d != null));
   const reasonMap = new Map();
+  const categoryMap = new Map();
   for (const r of rows) {
-    if (!r.hasReason || !r.reason) continue;
-    reasonMap.set(r.reason, (reasonMap.get(r.reason) || 0) + 1);
+    if (r.hasReason && r.reason) {
+      reasonMap.set(r.reason, (reasonMap.get(r.reason) || 0) + 1);
+    }
+    const cat = r.reasonCategory || r.category;
+    if (cat) categoryMap.set(cat, (categoryMap.get(cat) || 0) + 1);
   }
   const topReason = [...reasonMap.entries()]
+    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], "pt-BR"))[0]?.[0] || null;
+  const topReasonCategory = [...categoryMap.entries()]
     .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], "pt-BR"))[0]?.[0] || null;
   return {
     totalCancellations,
@@ -1099,5 +1145,6 @@ function recomputeCancellationsSummaryLikeDashboard(rows) {
     interactionSampleSize: interactionStats.validCount,
     insufficientDataClients: rows.filter((r) => r.insufficientData).length,
     topReason,
+    topReasonCategory,
   };
 }

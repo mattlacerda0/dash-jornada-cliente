@@ -20,9 +20,8 @@ const SUPABASE = "public";
 const CLIENTS_ID = { schema: SUPABASE, table: "clients", column: "id" };
 const CLIENTS_STATUS = { schema: SUPABASE, table: "clients", column: "status" };
 const CANCEL_SOURCES = [
+  { schema: SUPABASE, table: "cancellations", column: "churn_efetivado_at" },
   { schema: SUPABASE, table: "cancellations", column: "distrato_assinado_at" },
-  { schema: SUPABASE, table: "cancellations", column: "data_pedido" },
-  { schema: SUPABASE, table: "cancellations", column: "intencao_registrada_at" },
 ];
 const FINANCIAL_SEGMENT_SOURCES = [
   { schema: SUPABASE, table: "client_financial_data", column: "ultima_renda_mensal" },
@@ -64,7 +63,7 @@ export const METRICS = {
   frozen_clients: {
     source: "general",
     label: "Clientes congelados",
-    sources: [CLIENTS_STATUS],
+    sources: [CLIENTS_STATUS, ...CANCEL_SOURCES],
     value: (p) => p.summary.frozenClients,
   },
   clients_with_financial_data: {

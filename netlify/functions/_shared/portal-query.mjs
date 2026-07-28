@@ -372,9 +372,8 @@ const CLIENTS_ID = { schema: SUPABASE, table: "clients", column: "id" };
 const CLIENTS_STATUS = { schema: SUPABASE, table: "clients", column: "status" };
 const CLIENTS_ENGINEER = { schema: SUPABASE, table: "clients", column: "engenheiro_patrimonial" };
 const CANCEL_SOURCES = [
+  { schema: SUPABASE, table: "cancellations", column: "churn_efetivado_at" },
   { schema: SUPABASE, table: "cancellations", column: "distrato_assinado_at" },
-  { schema: SUPABASE, table: "cancellations", column: "data_pedido" },
-  { schema: SUPABASE, table: "cancellations", column: "intencao_registrada_at" },
 ];
 const FINANCIAL_SOURCES = [
   { schema: SUPABASE, table: "client_financial_data", column: "ultima_renda_mensal" },
@@ -448,7 +447,7 @@ const GENERAL_METRICS = {
     compute: (rows) => rows.length,
   },
   cancelled_clients: { label: "Clientes cancelados", implied: { status: "Cancelado" }, sources: [CLIENTS_STATUS, ...CANCEL_SOURCES], compute: (rows) => rows.length },
-  frozen_clients: { label: "Clientes congelados", implied: { status: "Congelado" }, sources: [CLIENTS_STATUS], compute: (rows) => rows.length },
+  frozen_clients: { label: "Clientes congelados", implied: { status: "Congelado" }, sources: [CLIENTS_STATUS, ...CANCEL_SOURCES], compute: (rows) => rows.length },
   clients_with_financial_data: { label: "Clientes com dados financeiros", sources: FINANCIAL_SOURCES, compute: (rows) => rows.filter((r) => r.hasFinancialProfile).length },
   apex_clients: { label: "Clientes APEX", implied: { segment: "APEX" }, sources: FINANCIAL_SOURCES, compute: (rows) => rows.length },
   private_clients: { label: "Clientes PRIVATE", implied: { segment: "PRIVATE" }, sources: FINANCIAL_SOURCES, compute: (rows) => rows.length },

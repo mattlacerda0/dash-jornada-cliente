@@ -82,7 +82,8 @@ export const portalMetricRegistry = {
     sampleSizePath: "summary.totalClients",
     unit: "clients",
     aggregation: "count",
-    definition: "Clientes com status analítico Ativo após consolidação com cancelamentos.",
+    definition:
+      "Clientes com status analítico Ativo: status bruto ativo e sem churn_efetivado_at nem distrato_assinado_at (registro não arquivado).",
   },
   active_or_frozen_clients: {
     domain: "general",
@@ -95,7 +96,8 @@ export const portalMetricRegistry = {
     sampleSizePath: "summary.totalClients",
     unit: "clients",
     aggregation: "count",
-    definition: "Clientes com status analítico Ativo ou Congelado.",
+    definition:
+      "Clientes com status analítico Ativo ou Congelado (sem churn_efetivado_at nem distrato_assinado_at).",
     aliases: [
       "clientes ativos e congelados",
       "ativos e congelados",
@@ -111,7 +113,8 @@ export const portalMetricRegistry = {
     sampleSizePath: "summary.totalClients",
     unit: "clients",
     aggregation: "count",
-    definition: "Clientes com status analítico Cancelado.",
+    definition:
+      "Cliente cancelado é aquele que possui churn efetivado ou distrato assinado em registro não arquivado.",
   },
   frozen_clients: {
     domain: "general",
@@ -120,7 +123,8 @@ export const portalMetricRegistry = {
     sampleSizePath: "summary.totalClients",
     unit: "clients",
     aggregation: "count",
-    definition: "Clientes com status analítico Congelado.",
+    definition:
+      "Cliente com status bruto congelado e sem churn efetivado ou distrato assinado.",
   },
   median_stay_days: {
     domain: "general",
@@ -553,30 +557,94 @@ export const portalMetricRegistry = {
   /* ---------- CANCELAMENTO (BASE QV) ---------- */
   total_cancellations: {
     domain: "cancellations",
-    label: "Total de cancelamentos",
-    payloadPath: "summary.totalCancellations",
-    sampleSizePath: "summary.totalCancellations",
+    label: "Cancelamentos efetivados",
+    payloadPath: "summary.effectiveCancellations",
+    sampleSizePath: "summary.totalDistinctClients",
     unit: "clients",
     aggregation: "count",
-    definition: "Clientes com data consolidada de cancelamento válida na BASE QV.",
+    definition:
+      "Clientes com churn_efetivado_at ou distrato_assinado_at (não arquivados). Intenção/pedido não contam.",
+  },
+  cancellation_intentions: {
+    domain: "cancellations",
+    label: "Intenções de cancelamento",
+    payloadPath: "summary.intentionsRegistered",
+    sampleSizePath: "summary.totalDistinctClients",
+    unit: "clients",
+    aggregation: "count",
+    definition: "Clientes com intencao_registrada_at; não retira da carteira ativa.",
+  },
+  cancellation_orders: {
+    domain: "cancellations",
+    label: "Pedidos de cancelamento",
+    payloadPath: "summary.ordersRegistered",
+    sampleSizePath: "summary.totalDistinctClients",
+    unit: "clients",
+    aggregation: "count",
+    definition: "Clientes com data_pedido; não retira da carteira ativa.",
+  },
+  cancellation_intention_to_order_rate: {
+    domain: "cancellations",
+    label: "Conversão intenção → pedido",
+    payloadPath: "summary.funnel.rateIntentionToOrder.rate",
+    sampleSizePath: "summary.funnel.rateIntentionToOrder.denominator",
+    unit: "percent",
+    aggregation: "rate",
+    definition: "Pedidos / intenções (clientes distintos).",
+  },
+  cancellation_intention_to_effective_rate: {
+    domain: "cancellations",
+    label: "Conversão intenção → efetivado",
+    payloadPath: "summary.funnel.rateIntentionToEffective.rate",
+    sampleSizePath: "summary.funnel.rateIntentionToEffective.denominator",
+    unit: "percent",
+    aggregation: "rate",
+    definition: "Efetivados com intenção / intenções.",
+  },
+  cancellation_passed_retention: {
+    domain: "cancellations",
+    label: "Passaram por retenção",
+    payloadPath: "summary.retention.passedRetentionCount",
+    sampleSizePath: "summary.totalDistinctClients",
+    unit: "clients",
+    aggregation: "count",
+    definition: "passou_retencao=true (não implica cliente retido).",
+  },
+  median_order_to_effective_days: {
+    domain: "cancellations",
+    label: "Mediana entre pedido e cancelamento efetivado",
+    payloadPath: "summary.timing.medianOrderToEffective.median",
+    sampleSizePath: "summary.timing.medianOrderToEffective.sampleSize",
+    unit: "days",
+    aggregation: "median",
+    definition: "Mediana de dias entre data_pedido e data analítica (churn/distrato).",
+  },
+  cancellation_distrato_signed_without_date: {
+    domain: "cancellations",
+    label: "Distrato textual assinado sem data",
+    payloadPath: "summary.distratoTextSignedWithoutDate",
+    sampleSizePath: "summary.totalRecordsRead",
+    unit: "records",
+    aggregation: "count",
+    definition: "Registros com distrato='Assinado' e distrato_assinado_at vazio.",
   },
   cancellations_with_reason: {
     domain: "cancellations",
     label: "Cancelamentos com motivo informado",
-    payloadPath: "summary.withReason",
-    sampleSizePath: "summary.totalCancellations",
+    payloadPath: "summary.efetivadoReasonCoverage.withReason",
+    sampleSizePath: "summary.effectiveCancellations",
     unit: "clients",
     aggregation: "count",
-    definition: "Clientes cancelados com motivo preenchido.",
+    definition: "Efetivados com motivo preenchido.",
   },
   cancellations_without_reason: {
     domain: "cancellations",
     label: "Cancelamentos sem motivo",
-    payloadPath: "summary.withoutReason",
-    sampleSizePath: "summary.totalCancellations",
+    payloadPath: "summary.efetivadoReasonCoverage.withoutReason",
+    sampleSizePath: "summary.effectiveCancellations",
     unit: "clients",
     aggregation: "count",
-    definition: "Clientes cancelados sem motivo preenchido.",
+    definition: "Efetivados sem motivo preenchido.",
   },
   median_days_to_cancellation: {
     domain: "cancellations",
@@ -586,7 +654,7 @@ export const portalMetricRegistry = {
     sampleSizePath: "summary.staySampleSize",
     unit: "days",
     aggregation: "median",
-    definition: "Mediana de dias entre contratação e data consolidada de cancelamento.",
+    definition: "Mediana de dias entre contratação e data analítica de cancelamento (churn/distrato).",
   },
   average_days_to_cancellation: {
     domain: "cancellations",
@@ -595,7 +663,7 @@ export const portalMetricRegistry = {
     sampleSizePath: "summary.staySampleSize",
     unit: "days",
     aggregation: "average",
-    definition: "Média de dias entre contratação e cancelamento.",
+    definition: "Média de dias entre contratação e cancelamento efetivado.",
   },
   median_meetings_before_cancellation: {
     domain: "cancellations",
@@ -1107,16 +1175,26 @@ function cancelRobustStats(values) {
 
 /** Reagrega summary a partir dos clients já calculados pelo dashboard Cancelamento. */
 function recomputeCancellationsSummaryLikeDashboard(rows) {
-  const totalCancellations = rows.length;
+  const totalDistinctClients = rows.length;
+  const intentionsRegistered = rows.filter((r) => r.hasIntencao).length;
+  const ordersRegistered = rows.filter((r) => r.hasPedido).length;
+  const effectiveCancellations = rows.filter((r) => r.hasEfetivado).length;
+  const efetivados = rows.filter((r) => r.hasEfetivado);
   const withReason = rows.filter((r) => r.hasReason).length;
-  const withoutReason = totalCancellations - withReason;
-  const stayStats = cancelRobustStats(rows.map((r) => r.daysToCancellation));
-  const meetingStats = cancelRobustStats(rows.map((r) => r.meetingsBeforeCancellation));
-  const financialStats = cancelRobustStats(rows.map((r) => r.daysSinceFinancialUpdate).filter((d) => d != null));
-  const interactionStats = cancelRobustStats(rows.map((r) => r.daysWithoutInteraction).filter((d) => d != null));
+  const withoutReason = totalDistinctClients - withReason;
+  const efetivadoWithReason = efetivados.filter((r) => r.hasReason).length;
+  const efetivadoWithoutReason = effectiveCancellations - efetivadoWithReason;
+  const stayStats = cancelRobustStats(efetivados.map((r) => r.daysToCancellation));
+  const meetingStats = cancelRobustStats(efetivados.map((r) => r.meetingsBeforeCancellation));
+  const financialStats = cancelRobustStats(
+    efetivados.map((r) => r.daysSinceFinancialUpdate).filter((d) => d != null),
+  );
+  const interactionStats = cancelRobustStats(
+    efetivados.map((r) => r.daysWithoutInteraction).filter((d) => d != null),
+  );
   const reasonMap = new Map();
   const categoryMap = new Map();
-  for (const r of rows) {
+  for (const r of efetivados) {
     if (r.hasReason && r.reason) {
       reasonMap.set(r.reason, (reasonMap.get(r.reason) || 0) + 1);
     }
@@ -1127,10 +1205,53 @@ function recomputeCancellationsSummaryLikeDashboard(rows) {
     .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], "pt-BR"))[0]?.[0] || null;
   const topReasonCategory = [...categoryMap.entries()]
     .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], "pt-BR"))[0]?.[0] || null;
+
+  const rate = (num, den) => (den ? Math.round((num / den) * 1000) / 10 : null);
+  const efetivadosComPedido = efetivados.filter((r) => r.hasPedido).length;
+  const efetivadosComIntencao = efetivados.filter((r) => r.hasIntencao).length;
+
   return {
-    totalCancellations,
+    totalDistinctClients,
+    intentionsRegistered,
+    ordersRegistered,
+    effectiveCancellations,
+    totalCancellations: effectiveCancellations,
     withReason,
     withoutReason,
+    efetivadoReasonCoverage: {
+      withReason: efetivadoWithReason,
+      withoutReason: efetivadoWithoutReason,
+    },
+    funnel: {
+      intentions: intentionsRegistered,
+      orders: ordersRegistered,
+      effective: effectiveCancellations,
+      rateIntentionToOrder: {
+        rate: rate(ordersRegistered, intentionsRegistered),
+        numerator: ordersRegistered,
+        denominator: intentionsRegistered,
+      },
+      rateOrderToEffective: {
+        rate: rate(efetivadosComPedido, ordersRegistered),
+        numerator: efetivadosComPedido,
+        denominator: ordersRegistered,
+      },
+      rateIntentionToEffective: {
+        rate: rate(efetivadosComIntencao, intentionsRegistered),
+        numerator: efetivadosComIntencao,
+        denominator: intentionsRegistered,
+      },
+    },
+    retention: {
+      passedRetentionCount: rows.filter((r) => r.passouRetencao === true).length,
+    },
+    timing: {
+      medianOrderToEffective: {
+        median: cancelRobustStats(rows.map((r) => r.daysPedidoToEfetivado)).median,
+        sampleSize: cancelRobustStats(rows.map((r) => r.daysPedidoToEfetivado)).validCount,
+      },
+    },
+    distratoTextSignedWithoutDate: rows.filter((r) => r.distratoTextSignedWithoutDate).length,
     medianDaysToCancellation: stayStats.median,
     averageDaysToCancellation: stayStats.mean,
     staySampleSize: stayStats.validCount,

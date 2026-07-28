@@ -1468,9 +1468,13 @@
           </div>
           <section class="summary kpis-cancel-quality" id="cKpisQuality"></section>
 
-          <div class="section-head"><div><h2>Distribuições</h2><p>Motivos, tempo até o cancelamento e sinais anteriores.</p></div></div>
+          <div class="section-head"><div><h2>Distribuições</h2><p>Categorias analíticas de motivo, tempo até o cancelamento e sinais anteriores.</p></div></div>
           <section class="charts cancel-charts">
-            <article class="chart-card cancel-span-all"><h3>Cancelamentos por motivo</h3><p>Quantidade e percentual</p><div id="cChartReason"></div></article>
+            <article class="chart-card cancel-span-all">
+              <h3>Cancelamentos por motivo <span class="help" title="Categorias analíticas calculadas a partir do texto original de cancellations.motivo. O texto original é preservado na tabela.">?</span></h3>
+              <p>Motivos agrupados em categorias analíticas.</p>
+              <div id="cChartReason"></div>
+            </article>
             <article class="chart-card cancel-span-all"><h3>Cancelamentos por mês</h3><p>Últimos 12 meses · data consolidada</p><div id="cChartMonths"></div></article>
             <article class="chart-card"><h3>Tempo até cancelamento</h3><p>Faixas de permanência</p><div id="cChartStay"></div></article>
             <article class="chart-card"><h3>Reuniões antes do cancelamento</h3><p>Presença confirmada</p><div id="cChartMeetings"></div></article>
@@ -1495,8 +1499,8 @@
                     <th data-csort="hireDate">Data de contratação</th>
                     <th data-csort="cancellationDate">Data de cancelamento</th>
                     <th data-csort="daysToCancellation" class="num">Tempo até cancelamento</th>
-                    <th data-csort="reason">Motivo</th>
-                    <th data-csort="category">Categoria</th>
+                    <th data-csort="reason">Motivo original</th>
+                    <th data-csort="reasonCategory">Categoria do motivo</th>
                     <th data-csort="meetingsBeforeCancellation" class="num">Reuniões antes</th>
                     <th data-csort="financialUpdateDate">Última atualização financeira</th>
                     <th data-csort="daysSinceFinancialUpdate" class="num">Dias sem atualização financeira</th>
@@ -2147,7 +2151,7 @@
       renderViabilityMatrix(document.querySelector('#qCancellationsMatrix'), [
         { indicator: 'Total de cancelamentos', viability: 'Sim', metric: 'count(distinct client_id) com data consolidada válida', coverage: fixedCoverage(0, 0, 0), base: 'BASE QV' },
         { indicator: 'Motivo do cancelamento', viability: 'Sim', metric: 'cancellations.motivo (+ fallback clients.motivo_churn)', coverage: fixedCoverage(0, 0, 0), base: 'BASE QV' },
-        { indicator: 'Categoria do motivo', viability: 'Sim', metric: 'cancellations.motivo_categoria', coverage: fixedCoverage(0, 0, 0), base: 'BASE QV' },
+        { indicator: 'Categoria do motivo', viability: 'Sim', metric: 'Categoria analítica calculada a partir de cancellations.motivo (não usa motivo_categoria)', coverage: fixedCoverage(0, 0, 0), base: 'BASE QV' },
         { indicator: 'Tempo até cancelamento', viability: 'Sim', metric: 'cancelamento - (data_inicio_ciclo | created_at); mediana', coverage: fixedCoverage(0, 0, 0), base: 'BASE QV' },
         { indicator: 'Reuniões antes do cancelamento', viability: 'Sim', metric: 'Presença confirmada (compareceu) com data <= cancelamento', coverage: fixedCoverage(0, 0, 0), base: 'BASE QV' },
         { indicator: 'Última atualização financeira', viability: 'Sim', metric: 'client_financial_data.updated_at|created_at <= cancelamento', coverage: fixedCoverage(0, 0, 0), base: 'BASE QV' },
@@ -5777,6 +5781,21 @@
     const C_MEETING_RANGES = ['0 reuniões', '1 a 2', '3 a 5', '6 a 10', 'Mais de 10', 'Dados insuficientes'];
     const C_FINANCIAL_RANGES = ['Até 30 dias antes', '31 a 60 dias', '61 a 90 dias', '91 a 180 dias', 'Mais de 180 dias', 'Sem atualização anterior'];
     const C_SEGMENTS = ['APEX', 'PRIVATE', 'PRINCIPAL', 'DEBTS', 'OVER', 'Dados insuficientes'];
+    const C_REASON_CATEGORIES = [
+      'Questões financeiras',
+      'Insatisfação com serviço ou atendimento',
+      'Mudança de profissional ou estratégia',
+      'Questões pessoais',
+      'Problemas de adesão ou expectativa',
+      'Não renovação',
+      'Inatividade e falta de engajamento',
+      'Cancelamento sem detalhamento',
+      'Outros motivos',
+      'Não informado'
+    ];
+    function cancellationReasonCategoryOf(c) {
+      return c?.reasonCategory || c?.category || 'Não informado';
+    }
 
     function cancelDaysText(v) {
       if (v == null) return 'Não calculável';
@@ -5849,7 +5868,7 @@
         if (cFilters.engineer?.value !== 'all' && c.engineer !== cFilters.engineer.value) return false;
         if (cFilters.segment?.value !== 'all' && c.segment !== cFilters.segment.value) return false;
         if (cFilters.reason?.value !== 'all' && c.reason !== cFilters.reason.value) return false;
-        if (cFilters.category?.value !== 'all' && c.category !== cFilters.category.value) return false;
+        if (cFilters.category?.value !== 'all' && cancellationReasonCategoryOf(c) !== cFilters.category.value) return false;
         if (cFilters.stayRange?.value !== 'all' && c.stayRange !== cFilters.stayRange.value) return false;
         if (cFilters.meetingRange?.value !== 'all' && c.meetingsBeforeBand !== cFilters.meetingRange.value) return false;
         if (cFilters.hasReason?.value === 'yes' && !c.hasReason) return false;
@@ -5876,6 +5895,7 @@
       const financialStats = cancelRobustStats(rows.map(r => r.daysSinceFinancialUpdate).filter(d => d != null));
       const interactionStats = cancelRobustStats(rows.map(r => r.daysWithoutInteraction).filter(d => d != null));
       const topReason = cancelDist(rows.filter(r => r.hasReason), r => r.reason)[0]?.label || null;
+      const topReasonCategory = cancelDist(rows, r => cancellationReasonCategoryOf(r))[0]?.label || null;
       return {
         totalCancellations: total,
         withReason,
@@ -5895,14 +5915,16 @@
         averageDaysWithoutInteraction: interactionStats.mean,
         interactionSampleSize: interactionStats.validCount,
         insufficientDataClients: rows.filter(r => r.insufficientData).length,
-        topReason
+        topReason,
+        topReasonCategory
       };
     }
 
     function computeCancellationsDistributions(rows) {
       return {
         byReason: cancelDist(rows, r => (r.hasReason ? r.reason : null)),
-        byCategory: cancelDist(rows, r => (r.categoryRaw ? r.category : null)),
+        byCategory: cancelDist(rows, r => cancellationReasonCategoryOf(r)),
+        byReasonCategory: cancelDist(rows, r => cancellationReasonCategoryOf(r)),
         byMonth: cancelMonthSeries(rows),
         byStayRange: cancelDist(rows, r => r.stayRange, C_STAY_RANGES),
         byMeetingCount: cancelDist(rows, r => r.meetingsBeforeBand, C_MEETING_RANGES),
@@ -5923,8 +5945,8 @@
       const uniq = (getter) => [...new Set(clients.map(getter).filter(v => v && v !== 'Não informado'))].sort((a, b) => a.localeCompare(b, 'pt-BR'));
       fill(cFilters.engineer, uniq(c => c.engineer), 'Todos');
       fill(cFilters.segment, C_SEGMENTS.filter(s => clients.some(c => c.segment === s)), 'Todos');
-      fill(cFilters.reason, uniq(c => c.hasReason ? c.reason : null), 'Todos');
-      fill(cFilters.category, uniq(c => c.categoryRaw ? c.category : null), 'Todas');
+      fill(cFilters.reason, uniq(c => c.hasReason ? (c.reasonRaw || c.reason) : null), 'Todos');
+      fill(cFilters.category, C_REASON_CATEGORIES, 'Todas');
       fill(cFilters.stayRange, C_STAY_RANGES.filter(r => clients.some(c => c.stayRange === r)), 'Todas');
       fill(cFilters.meetingRange, C_MEETING_RANGES.filter(r => clients.some(c => c.meetingsBeforeBand === r)), 'Todas');
     }
@@ -5965,7 +5987,6 @@
         : `<div class="drawer-section" style="grid-column:1/-1"><h3>Reuniões anteriores</h3><p style="margin:0;color:var(--color-text-muted);font-size:13px">Nenhuma reunião realizada com presença confirmada antes do cancelamento.</p></div>`;
       const missing = [];
       if (!client.hasReason) missing.push('Motivo');
-      if (!client.categoryRaw) missing.push('Categoria');
       if (client.hireDate == null) missing.push('Data de contratação');
       if (client.daysToCancellation == null) missing.push('Tempo até cancelamento');
       if (client.daysSinceFinancialUpdate == null) missing.push('Atualização financeira anterior');
@@ -5980,8 +6001,8 @@
         ['Fonte da data de cancelamento', client.cancellationDateSource || 'Não informado'],
         ['Estágio', client.cancellationStage || 'Não informado'],
         ['Permanência', client.daysToCancellation == null ? 'Não calculável' : `${cancelDaysText(client.daysToCancellation)} (${client.stayRange})`],
-        ['Motivo', client.reason || 'Não informado'],
-        ['Categoria', client.category || 'Não informado'],
+        ['Motivo original', client.reasonRaw || client.reason || 'Não informado'],
+        ['Categoria do motivo', cancellationReasonCategoryOf(client)],
         ['Reuniões antes do cancelamento', client.meetingsBeforeCancellation == null ? 'Não calculável' : fmt.format(client.meetingsBeforeCancellation)],
         ['Última atualização financeira', dateBR(client.financialUpdateDate)],
         ['Dias sem atualização financeira', cancelDaysText(client.daysSinceFinancialUpdate)],
@@ -6018,7 +6039,7 @@
         <article class="metric"><div class="metric-label">Cancelamentos sem motivo</div><div class="metric-value">${fmt.format(summary.withoutReason)}</div><div class="metric-note">${pct(summary.withoutReasonPercent)} · Clientes cancelados sem motivo preenchido.</div></article>
         <article class="metric"><div class="metric-label">Cancelamentos com dados insuficientes</div><div class="metric-value">${fmt.format(summary.insufficientDataClients)}</div><div class="metric-note">Clientes sem pelo menos um indicador importante calculável.</div></article>`);
 
-      setHtml('#cChartReason', hBars(dist.byReason || [], 15));
+      setHtml('#cChartReason', hBars(dist.byReasonCategory || dist.byCategory || [], null));
       renderCancelMonthChart(dist.byMonth || []);
       setHtml('#cChartStay', hBars(dist.byStayRange || []));
       setHtml('#cChartMeetings', hBars(dist.byMeetingCount || []));
@@ -6054,8 +6075,8 @@
           <td>${dateBR(c.hireDate)}</td>
           <td>${dateBR(c.cancellationDate)}</td>
           <td class="num">${cancelDaysText(c.daysToCancellation)}</td>
-          <td class="truncate" title="${escapeHtml(c.reason)}">${escapeHtml(c.reason || 'Não informado')}</td>
-          <td class="truncate">${escapeHtml(c.category || 'Não informado')}</td>
+          <td class="truncate" title="${escapeHtml(c.reasonRaw || c.reason || '')}">${escapeHtml(c.reasonRaw || c.reason || 'Não informado')}</td>
+          <td class="truncate" title="${escapeHtml(cancellationReasonCategoryOf(c))}">${escapeHtml(cancellationReasonCategoryOf(c))}</td>
           <td class="num">${c.meetingsBeforeCancellation == null ? 'Não calculável' : fmt.format(c.meetingsBeforeCancellation)}</td>
           <td>${dateBR(c.financialUpdateDate)}</td>
           <td class="num">${cancelDaysText(c.daysSinceFinancialUpdate)}</td>

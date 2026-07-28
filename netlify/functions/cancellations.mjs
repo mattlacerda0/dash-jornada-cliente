@@ -1,10 +1,11 @@
 /**
- * Cancelamentos — BASE QV (public.*).
- * App Pharus (mecanismos / último acesso) fica fora desta versão.
+ * Cancelamentos — processo operacional (BASE QV / public.*).
  *
- * Reuniões antes do cancelamento: somente realizadas com presença confirmada
- * (attendanceStatus === compareceu), mesma normalização do dashboard Reuniões.
- * Interação v1: última reunião realizada antes do cancelamento.
+ * Universo: 1 linha por client_id não arquivado em public.cancellations
+ * (intenção, pedido ou efetivado). Cancelamento analítico = só churn/distrato.
+ *
+ * App Pharus (mecanismos / último acesso) fica fora desta versão.
+ * Reuniões antes do cancelamento: presença confirmada (compareceu).
  */
 import { requireCorporateAuth } from "./_shared/auth.mjs";
 import { dataConfigurationError } from "./_shared/env.mjs";
@@ -13,21 +14,28 @@ import {
   CANCELLATION_REASON_CATEGORIES,
   categorizeCancellationReason,
 } from "./_shared/cancellation-reason-category.mjs";
+import { parseFlexibleDate } from "./_shared/analytical-cancellation.mjs";
+import {
+  CANCELLATION_PROCESS_SELECT,
+  STAGE,
+  STAGE_KEYS,
+  buildCancellationProcessMap,
+  medianOf,
+  rateOrInsufficient,
+  validPositiveDays,
+  blankToNull,
+  toNumber,
+} from "./_shared/cancellation-process.mjs";
 
 const CLIENT_SELECT =
-  "id,codigo,name,status,data_inicio_ciclo,created_at,engenheiro_patrimonial,segmentacao,data_churn,motivo_churn";
-const CANCEL_SELECT =
-  "id,client_id,motivo,motivo_categoria,distrato_assinado_at,data_pedido,intencao_registrada_at,archived_at,updated_at,created_at";
-const FINANCIAL_SELECT = "id,client_id,ultima_renda_mensal,ultimo_aporte,reserva_liquidez,valor_imoveis_quitados,cheque_especial,parcelamento_cartao,credito_pessoal,credito_consignado,created_at,updated_at";
-const CALENDLY_SELECT = "id,client_id,calendly_event_uri,event_name,start_time,end_time,host_email,manually_linked";
+  "id,codigo,name,status,data_inicio_ciclo,created_at,engenheiro_patrimonial,segmentacao,motivo_churn";
+const CANCEL_SELECT = CANCELLATION_PROCESS_SELECT;
+const FINANCIAL_SELECT =
+  "id,client_id,ultima_renda_mensal,ultimo_aporte,reserva_liquidez,valor_imoveis_quitados,cheque_especial,parcelamento_cartao,credito_pessoal,credito_consignado,created_at,updated_at";
+const CALENDLY_SELECT =
+  "id,client_id,calendly_event_uri,event_name,start_time,end_time,host_email,manually_linked";
 const MANUAL_SELECT = "id,client_id,title,start_time,end_time,google_event_id";
 const ATTENDANCE_SELECT = "calendly_event_uri,status,remarcado,link_gravacao,created_at,updated_at";
-
-const STAGE_RANK = {
-  "Distrato assinado": 3,
-  "Pedido de cancelamento": 2,
-  "Intenção registrada": 1,
-};
 
 const SEGMENT_LABELS = ["APEX", "PRIVATE", "PRINCIPAL", "DEBTS", "OVER", "Dados insuficientes"];
 
@@ -51,14 +59,27 @@ const FINANCIAL_RANGES = [
   "Sem atualização anterior",
 ];
 
+const EXCLUSIVE_STAGE_ORDER = [
+  STAGE.INTENCAO,
+  STAGE.PEDIDO,
+  STAGE.EFETIVADO,
+  STAGE.NENHUMA,
+];
+
 const USED_FIELDS = [
   { schema: "public", table: "cancellations", column: "client_id", role: "join" },
   { schema: "public", table: "cancellations", column: "motivo", role: "reason" },
-  { schema: "public", table: "cancellations", column: "motivo_categoria", role: "category" },
-  { schema: "public", table: "cancellations", column: "distrato_assinado_at", role: "cancelDate1" },
-  { schema: "public", table: "cancellations", column: "data_pedido", role: "cancelDate2" },
-  { schema: "public", table: "cancellations", column: "intencao_registrada_at", role: "cancelDate3" },
+  { schema: "public", table: "cancellations", column: "motivo_categoria", role: "categoryRef" },
+  { schema: "public", table: "cancellations", column: "churn_efetivado_at", role: "cancellationDatePriority1" },
+  { schema: "public", table: "cancellations", column: "distrato_assinado_at", role: "cancellationDatePriority2" },
+  { schema: "public", table: "cancellations", column: "data_pedido", role: "operationalOnly" },
+  { schema: "public", table: "cancellations", column: "intencao_registrada_at", role: "operationalOnly" },
   { schema: "public", table: "cancellations", column: "archived_at", role: "softDelete" },
+  { schema: "public", table: "cancellations", column: "passou_retencao", role: "retention" },
+  { schema: "public", table: "cancellations", column: "desfecho", role: "retentionOutcome" },
+  { schema: "public", table: "cancellations", column: "tratativa", role: "operations" },
+  { schema: "public", table: "cancellations", column: "valor_pago", role: "financial" },
+  { schema: "public", table: "cancellations", column: "valor_a_reembolsar", role: "financial" },
   { schema: "public", table: "clients", column: "id", role: "clientId" },
   { schema: "public", table: "clients", column: "data_inicio_ciclo", role: "hireDate" },
   { schema: "public", table: "clients", column: "created_at", role: "hireFallback" },
@@ -67,62 +88,6 @@ const USED_FIELDS = [
   { schema: "public", table: "client_meetings", column: "start_time", role: "meetingStart" },
   { schema: "public", table: "meeting_attendance", column: "status", role: "attendance" },
 ];
-
-function blankToNull(value) {
-  if (value == null) return null;
-  if (typeof value === "string" && !value.trim()) return null;
-  return value;
-}
-
-function toNumber(value) {
-  if (value == null || value === "") return null;
-  const n = Number(value);
-  return Number.isFinite(n) ? n : null;
-}
-
-function toBool(value) {
-  const raw = blankToNull(value);
-  if (raw == null) return null;
-  if (typeof raw === "boolean") return raw;
-  if (typeof raw === "number") return raw !== 0;
-  const s = String(raw).trim().toLowerCase();
-  if (["true", "t", "1", "sim", "yes", "y"].includes(s)) return true;
-  if (["false", "f", "0", "nao", "não", "no", "n"].includes(s)) return false;
-  return null;
-}
-
-/** Datas defensivas: ISO date, timestamp, DD/MM/YYYY — sem cast frágil. */
-function parseDate(value) {
-  const raw = blankToNull(value);
-  if (!raw) return null;
-  if (raw instanceof Date) return Number.isNaN(raw.getTime()) ? null : raw;
-  const text = String(raw).trim();
-  if (!text) return null;
-  if (/^\d{4}-\d{2}-\d{2}$/.test(text)) {
-    const [y, m, d] = text.split("-").map(Number);
-    const date = new Date(Date.UTC(y, m - 1, d));
-    return Number.isNaN(date.getTime()) ? null : date;
-  }
-  const br = text.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})(?:\s|$)/);
-  if (br) {
-    let y = Number(br[3]);
-    if (y < 100) y += 2000;
-    const d = Number(br[1]);
-    const m = Number(br[2]);
-    const date = new Date(Date.UTC(y, m - 1, d));
-    return Number.isNaN(date.getTime()) ? null : date;
-  }
-  const date = new Date(text);
-  return Number.isNaN(date.getTime()) ? null : date;
-}
-
-function startOfDay(date) {
-  return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
-}
-
-function daysBetween(start, end) {
-  return Math.floor((startOfDay(end).getTime() - startOfDay(start).getTime()) / 86400000);
-}
 
 function foldToken(value) {
   return String(value || "")
@@ -137,24 +102,6 @@ function normalizeLabel(raw, fallback = "Não informado") {
   const trimmed = blankToNull(typeof raw === "string" ? raw.trim().replace(/\s+/g, " ") : raw);
   if (trimmed == null) return { key: "", label: fallback, raw: null };
   return { key: foldToken(trimmed), label: String(trimmed), raw: String(trimmed) };
-}
-
-function cancellationStageFromDates(distrato, pedido, intencao) {
-  if (distrato) return "Distrato assinado";
-  if (pedido) return "Pedido de cancelamento";
-  if (intencao) return "Intenção registrada";
-  return null;
-}
-
-function consolidatedCancelDate(distrato, pedido, intencao) {
-  return distrato || pedido || intencao || null;
-}
-
-function cancelDateSource(distrato, pedido, intencao) {
-  if (distrato) return "distrato_assinado_at";
-  if (pedido) return "data_pedido";
-  if (intencao) return "intencao_registrada_at";
-  return null;
 }
 
 function stayRangeFromMonths(months) {
@@ -193,6 +140,18 @@ function pct(part, total) {
   return Math.round((part / total) * 1000) / 10;
 }
 
+function startOfDay(date) {
+  return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
+}
+
+function daysBetween(start, end) {
+  return Math.floor((startOfDay(end).getTime() - startOfDay(start).getTime()) / 86400000);
+}
+
+function toIso(date) {
+  return date instanceof Date && !Number.isNaN(date.getTime()) ? date.toISOString() : null;
+}
+
 function percentile(sorted, p) {
   if (!sorted.length) return null;
   if (sorted.length === 1) return sorted[0];
@@ -215,7 +174,9 @@ function robustStats(values) {
 function normalizeAttendanceStatus(status) {
   const s = foldToken(status).replace(/_/g, " ");
   if (!s) return "desconhecido";
-  if (["compareceu", "realizado", "realizada", "concluido", "concluida", "presente"].includes(s)) return "compareceu";
+  if (["compareceu", "realizado", "realizada", "concluido", "concluida", "presente"].includes(s)) {
+    return "compareceu";
+  }
   if (["nao compareceu", "faltou", "ausente", "no show", "noshow"].includes(s) || s.includes("nao compare")) {
     return "nao_compareceu";
   }
@@ -253,85 +214,13 @@ async function fetchAll(table, select, order = "id.asc") {
   return rows;
 }
 
-/** Mesma dedupe do Dados Gerais + motivo/categoria do registro vencedor. */
-function buildCancellationMap(cancellations) {
-  const map = new Map();
-  const activeProcessCounts = new Map();
-  const now = startOfDay(new Date());
-  let formatWarnings = 0;
-
-  for (const row of cancellations) {
-    const clientId = blankToNull(row.client_id);
-    if (!clientId) continue;
-    if (parseDate(row.archived_at)) continue;
-
-    const rawDistrato = blankToNull(row.distrato_assinado_at);
-    const rawPedido = blankToNull(row.data_pedido);
-    const rawIntencao = blankToNull(row.intencao_registrada_at);
-    const distrato = parseDate(rawDistrato);
-    const pedido = parseDate(rawPedido);
-    const intencao = parseDate(rawIntencao);
-    if ((rawDistrato && !distrato) || (rawPedido && !pedido) || (rawIntencao && !intencao)) formatWarnings += 1;
-
-    const consolidated = consolidatedCancelDate(distrato, pedido, intencao);
-    if (!consolidated) continue;
-
-    const stage = cancellationStageFromDates(distrato, pedido, intencao);
-    const updated = parseDate(row.updated_at) || parseDate(row.created_at) || consolidated;
-    const rank = STAGE_RANK[stage] || 0;
-    activeProcessCounts.set(clientId, (activeProcessCounts.get(clientId) || 0) + 1);
-
-    const warnings = [];
-    if (startOfDay(consolidated) > now) warnings.push("Data de cancelamento futura");
-
-    const candidate = {
-      date: consolidated,
-      stage,
-      rank,
-      updated,
-      warnings,
-      dateSource: cancelDateSource(distrato, pedido, intencao),
-      motivo: blankToNull(row.motivo),
-      motivoCategoria: blankToNull(row.motivo_categoria),
-      cancellationRowId: blankToNull(row.id),
-    };
-
-    const current = map.get(clientId);
-    if (!current) {
-      map.set(clientId, candidate);
-      continue;
-    }
-    const better =
-      candidate.rank > current.rank
-      || (candidate.rank === current.rank
-        && (candidate.date > current.date
-          || (candidate.date.getTime() === current.date.getTime() && candidate.updated > current.updated)));
-    if (better) {
-      map.set(clientId, {
-        ...candidate,
-        warnings: [...new Set([...current.warnings, ...candidate.warnings])],
-      });
-    } else {
-      map.set(clientId, {
-        ...current,
-        warnings: [...new Set([...current.warnings, ...candidate.warnings])],
-      });
-    }
-  }
-
-  const multiples = new Set(
-    [...activeProcessCounts.entries()].filter(([, n]) => n > 1).map(([id]) => id),
-  );
-  return { map, multiples, formatWarnings };
-}
-
 function buildFinancialMap(rows) {
   const map = new Map();
   for (const row of rows) {
     const clientId = blankToNull(row.client_id);
     if (!clientId) continue;
-    const updated = parseDate(row.updated_at);
-    const created = parseDate(row.created_at);
+    const updated = parseFlexibleDate(row.updated_at);
+    const created = parseFlexibleDate(row.created_at);
     let date = null;
     let source = "unavailable";
     if (updated) {
@@ -370,7 +259,7 @@ function buildAttendanceMap(rows) {
   for (const row of rows) {
     const uri = blankToNull(row.calendly_event_uri);
     if (!uri) continue;
-    const updated = parseDate(row.updated_at) || parseDate(row.created_at) || new Date(0);
+    const updated = parseFlexibleDate(row.updated_at) || parseFlexibleDate(row.created_at) || new Date(0);
     const current = map.get(uri);
     if (!current || updated > current.updated) {
       map.set(uri, { updated, status: normalizeAttendanceStatus(row.status) });
@@ -392,13 +281,15 @@ function consolidateMeetings(calendlyRows, manualRows, attendanceMap) {
 
   for (const row of calendlyRows) {
     const clientId = blankToNull(row.client_id);
-    const start = parseDate(row.start_time);
+    const start = parseFlexibleDate(row.start_time);
     const uri = blankToNull(row.calendly_event_uri);
     const dedupe = uri || `cm:${row.id}`;
     if (seenUris.has(dedupe)) continue;
     seenUris.add(dedupe);
     const title = blankToNull(row.event_name) || "Reunião";
-    const comp = clientId && start ? `${clientId}|${start.toISOString().slice(0, 16)}|${foldToken(title)}` : null;
+    const comp = clientId && start
+      ? `${clientId}|${start.toISOString().slice(0, 16)}|${foldToken(title)}`
+      : null;
     if (comp) seenComposite.add(comp);
     const attendance = uri ? attendanceMap.get(uri) : null;
     push(clientId ? String(clientId) : null, {
@@ -411,15 +302,16 @@ function consolidateMeetings(calendlyRows, manualRows, attendanceMap) {
 
   for (const row of manualRows) {
     const clientId = blankToNull(row.client_id);
-    const start = parseDate(row.start_time);
+    const start = parseFlexibleDate(row.start_time);
     const title = blankToNull(row.title) || "Reunião manual";
     const googleId = blankToNull(row.google_event_id);
     if (googleId && seenUris.has(`g:${googleId}`)) continue;
-    const comp = clientId && start ? `${clientId}|${start.toISOString().slice(0, 16)}|${foldToken(title)}` : null;
+    const comp = clientId && start
+      ? `${clientId}|${start.toISOString().slice(0, 16)}|${foldToken(title)}`
+      : null;
     if (comp && seenComposite.has(comp)) continue;
     if (googleId) seenUris.add(`g:${googleId}`);
     if (comp) seenComposite.add(comp);
-    // Manual sem attendance: presença desconhecida (não conta como realizada).
     push(clientId ? String(clientId) : null, {
       startTime: start,
       attendanceStatus: "desconhecido",
@@ -476,57 +368,166 @@ function buildCancelMonthSeries(dates, now, monthsBack = 12) {
   return [...buckets.entries()].map(([month, count]) => ({ month, label: month, count }));
 }
 
+function pushWarning(list, code, message, extra = {}) {
+  list.push({ code, message, severity: extra.severity || "warning", ...extra });
+}
+
+function enrichMeetingsAndFinancial({
+  clientId,
+  client,
+  cancellationDate,
+  now,
+  meetingsByClient,
+  financialMap,
+  dataWarnings,
+}) {
+  if (!cancellationDate) {
+    return {
+      meetingsBeforeCancellation: null,
+      meetingsBeforeBand: "Dados insuficientes",
+      lastMeetingDate: null,
+      daysSinceLastMeeting: null,
+      lastInteractionDate: null,
+      daysWithoutInteraction: null,
+      financialUpdateDate: null,
+      financialUpdateSource: "unavailable",
+      daysSinceFinancialUpdate: null,
+      financialRecencyBand: "Sem atualização anterior",
+      meetingsSummary: null,
+      segmentInfo: calculateClientSegment(
+        { monthlyIncome: null, liquidityReserve: null, lastContribution: null, paidPropertiesValue: null },
+        {},
+      ),
+    };
+  }
+
+  const meetings = meetingsByClient.get(clientId) || [];
+  const completedBefore = meetings
+    .filter((m) => {
+      if (!m.startTime || m.startTime > now) return false;
+      if (m.attendanceStatus !== "compareceu") return false;
+      return startOfDay(m.startTime) <= startOfDay(cancellationDate);
+    })
+    .sort((a, b) => a.startTime - b.startTime);
+
+  const meetingsAfterCancel = meetings.filter(
+    (m) => m.startTime
+      && m.attendanceStatus === "compareceu"
+      && startOfDay(m.startTime) > startOfDay(cancellationDate),
+  );
+  if (meetingsAfterCancel.length) dataWarnings.push("Reunião posterior ao cancelamento");
+
+  const meetingsBeforeCount = completedBefore.length;
+  const lastMeeting = completedBefore.length ? completedBefore[completedBefore.length - 1] : null;
+  let daysSinceLastMeeting = null;
+  if (lastMeeting?.startTime) {
+    const d = daysBetween(lastMeeting.startTime, cancellationDate);
+    if (d >= 0) daysSinceLastMeeting = d;
+  } else {
+    dataWarnings.push("Cliente sem reunião realizada anterior ao cancelamento");
+  }
+
+  const financial = financialMap.get(clientId) || financialMap.get(client?.id) || null;
+  let financialUpdateDate = null;
+  let financialUpdateSource = "unavailable";
+  let daysSinceFinancialUpdate = null;
+  if (financial?.date) {
+    if (startOfDay(financial.date) > startOfDay(cancellationDate)) {
+      dataWarnings.push("Atualização financeira posterior ao cancelamento");
+    } else {
+      financialUpdateDate = financial.date;
+      financialUpdateSource = financial.source;
+      daysSinceFinancialUpdate = daysBetween(financial.date, cancellationDate);
+      if (daysSinceFinancialUpdate < 0) {
+        daysSinceFinancialUpdate = null;
+        dataWarnings.push("Valor negativo em dias sem atualização financeira");
+      }
+    }
+  } else {
+    dataWarnings.push("Cliente sem atualização financeira anterior");
+  }
+
+  const segmentInfo = calculateClientSegment(
+    {
+      monthlyIncome: financial?.monthlyIncome ?? null,
+      liquidityReserve: financial?.liquidityReserve ?? null,
+      lastContribution: financial?.lastContribution ?? null,
+      paidPropertiesValue: financial?.paidPropertiesValue ?? null,
+    },
+    financial?.debt || {},
+  );
+
+  return {
+    meetingsBeforeCancellation: meetingsBeforeCount,
+    meetingsBeforeBand: meetingCountBand(meetingsBeforeCount),
+    lastMeetingDate: toIso(lastMeeting?.startTime),
+    daysSinceLastMeeting,
+    lastInteractionDate: toIso(lastMeeting?.startTime),
+    daysWithoutInteraction: daysSinceLastMeeting,
+    financialUpdateDate: toIso(financialUpdateDate),
+    financialUpdateSource,
+    daysSinceFinancialUpdate,
+    financialRecencyBand: financialRecencyBand(daysSinceFinancialUpdate),
+    meetingsSummary: completedBefore.slice(-5).map((m) => ({
+      title: m.title,
+      startTime: m.startTime.toISOString(),
+      source: m.source,
+    })),
+    segmentInfo,
+  };
+}
+
 function buildPayload(clients, cancellations, financialRows, calendlyRows, manualRows, attendanceRows) {
   const now = new Date();
-  const { map: cancelMap, multiples, formatWarnings } = buildCancellationMap(cancellations);
+  const process = buildCancellationProcessMap(cancellations, { includeArchived: false });
+  const {
+    map: processMap,
+    multiples,
+    rowsWithoutClientId,
+    archivedRows,
+    distratoTextSignedWithoutDate,
+    invalidDateCount,
+    invalidDateSamples,
+  } = process;
+
   const financialMap = buildFinancialMap(financialRows);
   const attendanceMap = buildAttendanceMap(attendanceRows);
   const meetingsByClient = consolidateMeetings(calendlyRows, manualRows, attendanceMap);
   const clientById = new Map(clients.map((c) => [String(c.id), c]));
 
   const structuredWarnings = [];
-  if (formatWarnings) {
-    structuredWarnings.push({
-      code: "DATE_FORMAT",
-      message: `${formatWarnings} valor(es) de data de cancelamento com formato inconsistente (não parseável).`,
-    });
-  }
-
-  // Orphans: cancel map sem cliente (agregado — não 1 aviso por registro)
-  let orphanCancelCount = 0;
-  for (const clientId of cancelMap.keys()) {
-    if (!clientById.has(String(clientId))) orphanCancelCount += 1;
-  }
-  if (orphanCancelCount) {
-    structuredWarnings.push({
-      code: "ORPHAN_CANCEL",
-      label: "Cancelamentos sem cliente correspondente",
-      count: orphanCancelCount,
-      severity: "warning",
-      message: `${orphanCancelCount} cancelamento(s) sem cliente encontrado.`,
-    });
-  }
-
   const rows = [];
-  const seenClientIds = new Set();
 
-  const considerClient = (client, cancelInfo, dateSourceOverride = null) => {
-    const clientId = String(client.id);
-    if (seenClientIds.has(clientId)) return;
-    if (!cancelInfo?.date) return;
-    seenClientIds.add(clientId);
+  let orphanCancelCount = 0;
+  let efetivadoSemIntencao = 0;
+  let efetivadoSemPedido = 0;
+  let pedidoSemIntencao = 0;
+  let intencaoSemMotivo = 0;
+  let motivoSemCategoria = 0;
+  let passouSemDataRetencao = 0;
+  let tratativaSemDesfecho = 0;
+  let semEtapa = 0;
+  let datasOrdemInconsistente = 0;
+  let clientsDistratoTextSignedWithoutDate = 0;
+  let chronologicalIssueClients = 0;
 
-    const dataWarnings = [...(cancelInfo.warnings || [])];
-    const cancellationDate = cancelInfo.date;
-    const hireCycle = parseDate(client.data_inicio_ciclo);
-    const createdAt = parseDate(client.created_at);
+  for (const [clientId, proc] of processMap.entries()) {
+    const client = clientById.get(String(clientId));
+    if (!client) orphanCancelCount += 1;
+
+    const dataWarnings = [];
+    const cancellationDate = proc.analyticalCancellationAt || null;
+    const cancellationDateSource = proc.analyticalSource || null;
+
+    const hireCycle = client ? parseFlexibleDate(client.data_inicio_ciclo) : null;
+    const createdAt = client ? parseFlexibleDate(client.created_at) : null;
     const hireDate = hireCycle || createdAt;
     const hireSource = hireCycle ? "data_inicio_ciclo" : createdAt ? "created_at" : null;
 
     let daysToCancellation = null;
     let stayMonths = null;
     let stayRange = "Dados insuficientes";
-    if (hireDate && cancellationDate) {
+    if (proc.hasEfetivado && hireDate && cancellationDate) {
       const days = daysBetween(hireDate, cancellationDate);
       if (days < 0) {
         dataWarnings.push("Cancelamento anterior à contratação");
@@ -537,178 +538,453 @@ function buildPayload(clients, cancellations, financialRows, calendlyRows, manua
         stayMonths = Math.floor(days / 30);
         stayRange = stayRangeFromMonths(stayMonths);
       }
-    } else {
+    } else if (proc.hasEfetivado) {
       if (!hireDate) dataWarnings.push("Data de contratação ausente");
       if (!cancellationDate) dataWarnings.push("Data de cancelamento ausente");
     }
 
-    // Motivo original: public.cancellations.motivo (fallback clients.motivo_churn).
-    // NÃO usar motivo_categoria como entrada da classificação.
-    const motivoSource = cancelInfo.motivo != null ? cancelInfo.motivo : client.motivo_churn;
+    // Motivo: cancellations.motivo (já no process map); fallback clients.motivo_churn
+    const motivoSource = proc.motivo != null
+      ? proc.motivo
+      : (client ? blankToNull(client.motivo_churn) : null);
     const motivoNorm = normalizeLabel(motivoSource);
     const hasReason = Boolean(motivoNorm.raw);
     const categorized = categorizeCancellationReason(motivoNorm.raw);
     const reasonCategory = categorized.category;
-    // Campo DB preservado apenas para referência — não alimenta o gráfico/filtro principal.
-    const dbCategoryNorm = normalizeLabel(cancelInfo.motivoCategoria);
+    const dbCategoryNorm = normalizeLabel(proc.motivoCategoriaDb);
+
     if (!hasReason) dataWarnings.push("Motivo ausente");
-    if (multiples.has(client.id) || multiples.has(clientId)) {
+    if (multiples.has(clientId) || multiples.has(String(clientId))) {
       dataWarnings.push("Duplicidade de cancelamento (múltiplos processos ativos)");
     }
 
-    const meetings = meetingsByClient.get(clientId) || [];
-    const completedBefore = meetings
-      .filter((m) => {
-        if (!m.startTime || m.startTime > now) return false;
-        if (m.attendanceStatus !== "compareceu") return false;
-        return startOfDay(m.startTime) <= startOfDay(cancellationDate);
-      })
-      .sort((a, b) => a.startTime - b.startTime);
+    const daysIntencaoToPedido = validPositiveDays(proc.intencaoAt, proc.pedidoAt);
+    const daysPedidoToEfetivado = validPositiveDays(proc.pedidoAt, cancellationDate);
+    const daysIntencaoToEfetivado = validPositiveDays(proc.intencaoAt, cancellationDate);
+    const daysInRetencao = validPositiveDays(proc.retentionStartAt, cancellationDate || now);
+    const daysEfetivadoToOffboarding = validPositiveDays(cancellationDate, proc.enteredOffboardingAt);
 
-    const meetingsAfterCancel = meetings.filter(
-      (m) => m.startTime && m.attendanceStatus === "compareceu" && startOfDay(m.startTime) > startOfDay(cancellationDate),
-    );
-    if (meetingsAfterCancel.length) dataWarnings.push("Reunião posterior ao cancelamento");
-
-    const meetingsBeforeCount = completedBefore.length;
-    const lastMeeting = completedBefore.length ? completedBefore[completedBefore.length - 1] : null;
-    let daysSinceLastMeeting = null;
-    if (lastMeeting?.startTime) {
-      const d = daysBetween(lastMeeting.startTime, cancellationDate);
-      if (d >= 0) daysSinceLastMeeting = d;
-    } else {
-      dataWarnings.push("Cliente sem reunião realizada anterior ao cancelamento");
+    // Quality counters
+    if (proc.hasEfetivado && !proc.hasIntencao) efetivadoSemIntencao += 1;
+    if (proc.hasEfetivado && !proc.hasPedido) efetivadoSemPedido += 1;
+    if (proc.hasPedido && !proc.hasIntencao) pedidoSemIntencao += 1;
+    if (proc.hasIntencao && !hasReason) intencaoSemMotivo += 1;
+    // Motivo preenchido mas categoria analítica ainda "Não informado"
+    if (hasReason && reasonCategory === "Não informado") {
+      motivoSemCategoria += 1;
+    }
+    if (proc.passouRetencao === true && !proc.retentionStartAt) passouSemDataRetencao += 1;
+    if (proc.hasTratativa && !proc.hasDesfecho) tratativaSemDesfecho += 1;
+    if (proc.exclusiveStageKey === STAGE_KEYS.NENHUMA) semEtapa += 1;
+    if (proc.distratoTextSignedWithoutDate) clientsDistratoTextSignedWithoutDate += 1;
+    if (proc.chronologicalIssues?.length) {
+      chronologicalIssueClients += 1;
+      datasOrdemInconsistente += proc.chronologicalIssues.length;
+      dataWarnings.push(...proc.chronologicalIssues.map((c) => `Ordem inconsistente: ${c}`));
     }
 
-    const financial = financialMap.get(clientId) || financialMap.get(client.id) || null;
-    let financialUpdateDate = null;
-    let financialUpdateSource = "unavailable";
-    let daysSinceFinancialUpdate = null;
-    if (financial?.date) {
-      if (startOfDay(financial.date) > startOfDay(cancellationDate)) {
-        dataWarnings.push("Atualização financeira posterior ao cancelamento");
-      } else {
-        financialUpdateDate = financial.date;
-        financialUpdateSource = financial.source;
-        daysSinceFinancialUpdate = daysBetween(financial.date, cancellationDate);
-        if (daysSinceFinancialUpdate < 0) {
-          daysSinceFinancialUpdate = null;
-          dataWarnings.push("Valor negativo em dias sem atualização financeira");
-        }
-      }
-    } else {
-      dataWarnings.push("Cliente sem atualização financeira anterior");
+    let enrichment = {
+      meetingsBeforeCancellation: null,
+      meetingsBeforeBand: "Dados insuficientes",
+      lastMeetingDate: null,
+      daysSinceLastMeeting: null,
+      lastInteractionDate: null,
+      daysWithoutInteraction: null,
+      financialUpdateDate: null,
+      financialUpdateSource: "unavailable",
+      daysSinceFinancialUpdate: null,
+      financialRecencyBand: "Sem atualização anterior",
+      meetingsSummary: null,
+      segmentInfo: null,
+    };
+
+    if (proc.hasEfetivado) {
+      enrichment = enrichMeetingsAndFinancial({
+        clientId: String(clientId),
+        client,
+        cancellationDate,
+        now,
+        meetingsByClient,
+        financialMap,
+        dataWarnings,
+      });
+    } else if (client) {
+      // Segment still useful without meetings
+      const financial = financialMap.get(String(clientId)) || financialMap.get(client.id) || null;
+      enrichment.segmentInfo = calculateClientSegment(
+        {
+          monthlyIncome: financial?.monthlyIncome ?? null,
+          liquidityReserve: financial?.liquidityReserve ?? null,
+          lastContribution: financial?.lastContribution ?? null,
+          paidPropertiesValue: financial?.paidPropertiesValue ?? null,
+        },
+        financial?.debt || {},
+      );
     }
 
-    const segmentInfo = calculateClientSegment(
-      {
-        monthlyIncome: financial?.monthlyIncome ?? null,
-        liquidityReserve: financial?.liquidityReserve ?? null,
-        lastContribution: financial?.lastContribution ?? null,
-        paidPropertiesValue: financial?.paidPropertiesValue ?? null,
-      },
-      financial?.debt || {},
-    );
+    const segmentLabel =
+      enrichment.segmentInfo?.segmentLabel
+      || normalizeLabel(client?.segmentacao, "Dados insuficientes").label
+      || "Dados insuficientes";
 
     const insufficientCore =
-      daysToCancellation == null
-      || meetingsBeforeCount == null
-      || (!hasReason && daysSinceFinancialUpdate == null && daysSinceLastMeeting == null);
+      proc.hasEfetivado
+      && (
+        daysToCancellation == null
+        || enrichment.meetingsBeforeCancellation == null
+        || (!hasReason && enrichment.daysSinceFinancialUpdate == null && enrichment.daysSinceLastMeeting == null)
+      );
 
     rows.push({
-      clientId,
-      clientCode: blankToNull(client.codigo) || "Não informado",
-      clientName: blankToNull(client.name) || "Não informado",
-      engineer: normalizeLabel(client.engenheiro_patrimonial).label,
-      segment: segmentInfo.segmentLabel || "Dados insuficientes",
-      analyticalStatus: "Cancelado",
-      hireDate: hireDate ? hireDate.toISOString() : null,
+      clientId: String(clientId),
+      clientCode: blankToNull(client?.codigo) || "Não informado",
+      clientName: blankToNull(client?.name) || "Não informado",
+      engineer: normalizeLabel(client?.engenheiro_patrimonial).label,
+      segment: segmentLabel,
+      exclusiveStage: proc.exclusiveStage,
+      exclusiveStageKey: proc.exclusiveStageKey,
+      intencaoAt: toIso(proc.intencaoAt),
+      pedidoAt: toIso(proc.pedidoAt),
+      churnEfetivadoAt: toIso(proc.churnEfetivadoAt),
+      distratoAssinadoAt: toIso(proc.distratoAssinadoAt),
+      cancellationDate: toIso(cancellationDate),
+      cancellationDateSource,
+      hasIntencao: Boolean(proc.hasIntencao),
+      hasPedido: Boolean(proc.hasPedido),
+      hasEfetivado: Boolean(proc.hasEfetivado),
+      analyticalStatus: proc.hasEfetivado ? "Cancelado" : null,
+      hireDate: toIso(hireDate),
       hireDateSource: hireSource,
-      cancellationDate: cancellationDate.toISOString(),
-      cancellationDateSource: dateSourceOverride || cancelInfo.dateSource || "cancellations",
-      cancellationStage: cancelInfo.stage || null,
       daysToCancellation,
       stayMonths,
       stayRange,
       reason: motivoNorm.label,
       reasonRaw: motivoNorm.raw,
-      hasReason,
-      /** Categoria analítica calculada a partir de cancellations.motivo. */
       reasonCategory,
-      /** Alias usado pela UI/filtro (categoria calculada, não motivo_categoria). */
       category: reasonCategory,
       categoryRaw: reasonCategory,
-      /** Valor bruto de motivo_categoria no banco (não usado na classificação). */
+      hasReason,
       dbMotivoCategoria: dbCategoryNorm.raw,
-      meetingsBeforeCancellation: meetingsBeforeCount,
-      meetingsBeforeBand: meetingCountBand(meetingsBeforeCount),
-      lastMeetingDate: lastMeeting?.startTime ? lastMeeting.startTime.toISOString() : null,
-      daysSinceLastMeeting,
-      lastInteractionDate: lastMeeting?.startTime ? lastMeeting.startTime.toISOString() : null,
-      daysWithoutInteraction: daysSinceLastMeeting,
+      passouRetencao: proc.passouRetencao,
+      desfecho: proc.desfecho,
+      isRetido: Boolean(proc.isRetido),
+      tratativa: proc.tratativa,
+      hasTratativa: Boolean(proc.hasTratativa),
+      hasDesfecho: Boolean(proc.hasDesfecho),
+      responsavel: proc.responsavel || "Não informado",
+      isCritical: Boolean(proc.isCritical),
+      estagioCliente: proc.estagioCliente,
+      isArchived: Boolean(proc.isArchived),
+      valorPago: proc.valorPago,
+      valorReembolso: proc.valorReembolso,
+      retentionStartAt: toIso(proc.retentionStartAt),
+      enteredOffboardingAt: toIso(proc.enteredOffboardingAt),
+      daysIntencaoToPedido,
+      daysPedidoToEfetivado,
+      daysIntencaoToEfetivado,
+      daysInRetencao,
+      daysEfetivadoToOffboarding,
+      meetingsBeforeCancellation: enrichment.meetingsBeforeCancellation,
+      meetingsBeforeBand: enrichment.meetingsBeforeBand,
+      lastMeetingDate: enrichment.lastMeetingDate,
+      daysSinceLastMeeting: enrichment.daysSinceLastMeeting,
+      lastInteractionDate: enrichment.lastInteractionDate,
+      daysWithoutInteraction: enrichment.daysWithoutInteraction,
       interactionDefinition: "last_completed_meeting_before_cancellation",
-      financialUpdateDate: financialUpdateDate ? financialUpdateDate.toISOString() : null,
-      financialUpdateSource,
-      daysSinceFinancialUpdate,
-      financialRecencyBand: financialRecencyBand(daysSinceFinancialUpdate),
+      financialUpdateDate: enrichment.financialUpdateDate,
+      financialUpdateSource: enrichment.financialUpdateSource,
+      daysSinceFinancialUpdate: enrichment.daysSinceFinancialUpdate,
+      financialRecencyBand: enrichment.financialRecencyBand,
       insufficientData: Boolean(insufficientCore),
-      meetingsSummary: completedBefore.slice(-5).map((m) => ({
-        title: m.title,
-        startTime: m.startTime.toISOString(),
-        source: m.source,
-      })),
+      meetingsSummary: enrichment.meetingsSummary,
       dataWarnings: [...new Set(dataWarnings)],
+      chronologicalIssues: proc.chronologicalIssues || [],
     });
-  };
-
-  for (const client of clients) {
-    const info = cancelMap.get(client.id) || cancelMap.get(String(client.id));
-    if (info?.date) {
-      considerClient(client, info);
-      continue;
-    }
-    // Fallback alinhado ao Dados Gerais: data_churn
-    const churn = parseDate(client.data_churn);
-    if (churn) {
-      considerClient(client, {
-        date: churn,
-        stage: null,
-        warnings: ["Data de cancelamento via clients.data_churn (fallback)"],
-        dateSource: "clients.data_churn",
-        motivo: blankToNull(client.motivo_churn),
-        motivoCategoria: null,
-      }, "clients.data_churn");
-    }
   }
 
-  const total = rows.length;
+  const totalDistinctClients = rows.length;
+  const efetivados = rows.filter((r) => r.hasEfetivado);
+  const intentionsRegistered = rows.filter((r) => r.hasIntencao).length;
+  const ordersRegistered = rows.filter((r) => r.hasPedido).length;
+  const effectiveCancellations = efetivados.length;
+
+  const pedidosComIntencao = rows.filter((r) => r.hasPedido && r.hasIntencao).length;
+  const efetivadosComPedido = efetivados.filter((r) => r.hasPedido).length;
+  const efetivadosComIntencao = efetivados.filter((r) => r.hasIntencao).length;
+
+  const funnel = {
+    intentions: intentionsRegistered,
+    orders: ordersRegistered,
+    effective: effectiveCancellations,
+    rateIntentionToOrder: rateOrInsufficient(pedidosComIntencao, intentionsRegistered),
+    rateOrderToEffective: rateOrInsufficient(efetivadosComPedido, ordersRegistered),
+    rateIntentionToEffective: rateOrInsufficient(efetivadosComIntencao, intentionsRegistered),
+  };
+
+  const exclusiveStages = distributionFrom(rows, (r) => r.exclusiveStage, EXCLUSIVE_STAGE_ORDER).map((e) => ({
+    label: e.label,
+    key:
+      e.label === STAGE.EFETIVADO ? STAGE_KEYS.EFETIVADO
+        : e.label === STAGE.PEDIDO ? STAGE_KEYS.PEDIDO
+          : e.label === STAGE.INTENCAO ? STAGE_KEYS.INTENCAO
+            : STAGE_KEYS.NENHUMA,
+    count: e.count,
+    percent: e.percent,
+  }));
+
+  const timing = {
+    medianIntentionToOrder: medianOf(rows.map((r) => r.daysIntencaoToPedido)),
+    medianOrderToEffective: medianOf(rows.map((r) => r.daysPedidoToEfetivado)),
+    medianIntentionToEffective: medianOf(rows.map((r) => r.daysIntencaoToEfetivado)),
+    medianRetentionDays: medianOf(rows.map((r) => r.daysInRetencao)),
+    medianEffectiveToOffboarding: medianOf(rows.map((r) => r.daysEfetivadoToOffboarding)),
+  };
+
+  const passouRetencaoRows = rows.filter((r) => r.passouRetencao === true);
+  const retainedCount = rows.filter((r) => r.isRetido).length;
+  const cancelledAfterRetentionCount = rows.filter((r) => r.passouRetencao === true && r.hasEfetivado).length;
+  const withoutOutcomeCount = passouRetencaoRows.filter((r) => !r.hasDesfecho).length;
+  const desfechoCoverage = rows.filter((r) => r.hasDesfecho).length;
+  const medianRetentionDays = timing.medianRetentionDays;
+
+  const retention = {
+    passedRetentionCount: passouRetencaoRows.length,
+    passedRetentionPercent: pct(passouRetencaoRows.length, totalDistinctClients || 1),
+    retainedCount,
+    cancelledAfterRetentionCount,
+    withoutOutcomeCount,
+    desfechoCoverage,
+    medianRetentionDays,
+  };
+
+  const byResponsible = distributionFrom(
+    rows,
+    (r) => (r.responsavel && r.responsavel !== "Não informado" ? r.responsavel : null),
+  ).map((e) => ({
+    label: e.label,
+    count: e.count,
+    percent: e.percent,
+  }));
+
+  const operations = {
+    byResponsible,
+    criticalCount: rows.filter((r) => r.isCritical).length,
+    withoutResponsibleCount: rows.filter((r) => !r.responsavel || r.responsavel === "Não informado").length,
+    withoutTratativaCount: rows.filter((r) => !r.hasTratativa).length,
+    withoutReasonCount: rows.filter((r) => !r.hasReason).length,
+    inRetentionCount: rows.filter((r) => r.passouRetencao === true).length,
+    inOffboardingCount: rows.filter((r) => r.enteredOffboardingAt).length,
+    archivedRecords: archivedRows,
+  };
+
+  const paidValues = rows.map((r) => r.valorPago).filter((v) => v != null);
+  const refundValues = rows.map((r) => r.valorReembolso).filter((v) => v != null);
+  const financialAvailable = paidValues.length > 0 || refundValues.length > 0;
+  const paidStats = medianOf(paidValues);
+  const refundStats = medianOf(refundValues);
+  const totalPaid = paidValues.length ? round1(paidValues.reduce((a, b) => a + b, 0)) : null;
+  const totalRefund = refundValues.length ? round1(refundValues.reduce((a, b) => a + b, 0)) : null;
+
+  const financial = financialAvailable
+    ? {
+        available: true,
+        totalPaid,
+        totalRefund,
+        medianPaid: paidStats.median,
+        medianRefund: refundStats.median,
+        differencePaidMinusRefund:
+          totalPaid != null && totalRefund != null ? round1(totalPaid - totalRefund) : null,
+        coveragePaid: pct(paidValues.length, totalDistinctClients || 1),
+        coverageRefund: pct(refundValues.length, totalDistinctClients || 1),
+      }
+    : {
+        available: false,
+        totalPaid: null,
+        totalRefund: null,
+        medianPaid: null,
+        medianRefund: null,
+        differencePaidMinusRefund: null,
+        coveragePaid: 0,
+        coverageRefund: 0,
+      };
+
   const withReason = rows.filter((r) => r.hasReason).length;
-  const withoutReason = total - withReason;
-  const stayStats = robustStats(rows.map((r) => r.daysToCancellation));
-  const meetingStats = robustStats(rows.map((r) => r.meetingsBeforeCancellation));
-  const financialStats = robustStats(rows.map((r) => r.daysSinceFinancialUpdate).filter((d) => d != null));
-  const interactionStats = robustStats(rows.map((r) => r.daysWithoutInteraction).filter((d) => d != null));
-  const insufficientDataClients = rows.filter((r) => r.insufficientData).length;
+  const withoutReason = totalDistinctClients - withReason;
+  const efetivadoWithReason = efetivados.filter((r) => r.hasReason).length;
+  const efetivadoWithoutReason = effectiveCancellations - efetivadoWithReason;
 
-  const byReasonCategory = distributionFrom(rows, (r) => r.reasonCategory || r.category);
-  const topReasonCategory = byReasonCategory[0]?.label || null;
-  const othersCount = rows.filter((r) => (r.reasonCategory || r.category) === "Outros motivos").length;
-  const notInformedCount = rows.filter((r) => (r.reasonCategory || r.category) === "Não informado").length;
+  const byReasonCategoryEfetivado = distributionFrom(efetivados, (r) => r.reasonCategory || r.category);
+  const topReasonCategory = byReasonCategoryEfetivado[0]?.label || null;
 
-  const byEngineer = distributionFrom(rows, (r) => (r.engineer === "Não informado" ? null : r.engineer)).map((e) => ({
+  const stayStats = robustStats(efetivados.map((r) => r.daysToCancellation));
+  const meetingStats = robustStats(efetivados.map((r) => r.meetingsBeforeCancellation));
+  const financialStats = robustStats(
+    efetivados.map((r) => r.daysSinceFinancialUpdate).filter((d) => d != null),
+  );
+  const interactionStats = robustStats(
+    efetivados.map((r) => r.daysWithoutInteraction).filter((d) => d != null),
+  );
+  const insufficientDataClients = efetivados.filter((r) => r.insufficientData).length;
+  const othersCount = efetivados.filter((r) => (r.reasonCategory || r.category) === "Outros motivos").length;
+  const notInformedCount = efetivados.filter((r) => (r.reasonCategory || r.category) === "Não informado").length;
+
+  const byEngineer = distributionFrom(
+    efetivados,
+    (r) => (r.engineer === "Não informado" ? null : r.engineer),
+  ).map((e) => ({
     ...e,
     sampleSize: e.count,
     percentOfCancellations: e.percent,
   }));
 
+  // --- quality warnings ---
+  if (distratoTextSignedWithoutDate) {
+    pushWarning(
+      structuredWarnings,
+      "DISTRATO_TEXT_WITHOUT_DATE",
+      `${distratoTextSignedWithoutDate} registro(s) com distrato textual "Assinado" sem distrato_assinado_at`
+        + (clientsDistratoTextSignedWithoutDate
+          ? ` (${clientsDistratoTextSignedWithoutDate} cliente(s) no mapa).`
+          : "."),
+      { count: distratoTextSignedWithoutDate, clients: clientsDistratoTextSignedWithoutDate },
+    );
+  }
+  if (efetivadoSemIntencao) {
+    pushWarning(
+      structuredWarnings,
+      "EFETIVADO_SEM_INTENCAO",
+      `${efetivadoSemIntencao} churn/efetivado(s) sem intenção registrada.`,
+      { count: efetivadoSemIntencao },
+    );
+  }
+  if (efetivadoSemPedido) {
+    pushWarning(
+      structuredWarnings,
+      "EFETIVADO_SEM_PEDIDO",
+      `${efetivadoSemPedido} churn/efetivado(s) sem pedido de cancelamento.`,
+      { count: efetivadoSemPedido },
+    );
+  }
+  if (pedidoSemIntencao) {
+    pushWarning(
+      structuredWarnings,
+      "PEDIDO_SEM_INTENCAO",
+      `${pedidoSemIntencao} pedido(s) sem intenção registrada.`,
+      { count: pedidoSemIntencao },
+    );
+  }
+  if (intencaoSemMotivo) {
+    pushWarning(
+      structuredWarnings,
+      "INTENCAO_SEM_MOTIVO",
+      `${intencaoSemMotivo} intenção(ões) sem motivo.`,
+      { count: intencaoSemMotivo },
+    );
+  }
+  if (motivoSemCategoria) {
+    pushWarning(
+      structuredWarnings,
+      "MOTIVO_SEM_CATEGORIA",
+      `${motivoSemCategoria} motivo(s) sem categoria analítica informativa (Não informado).`,
+      { count: motivoSemCategoria },
+    );
+  }
+  if (passouSemDataRetencao) {
+    pushWarning(
+      structuredWarnings,
+      "RETENCAO_SEM_DATA",
+      `${passouSemDataRetencao} caso(s) com passou_retencao=true sem data de retenção.`,
+      { count: passouSemDataRetencao },
+    );
+  }
+  if (tratativaSemDesfecho) {
+    pushWarning(
+      structuredWarnings,
+      "TRATATIVA_SEM_DESFECHO",
+      `${tratativaSemDesfecho} tratativa(s) sem desfecho.`,
+      { count: tratativaSemDesfecho },
+    );
+  }
+  if (semEtapa) {
+    pushWarning(
+      structuredWarnings,
+      "SEM_ETAPA",
+      `${semEtapa} cliente(s) não arquivado(s) sem etapa identificada.`,
+      { count: semEtapa },
+    );
+  }
+  if (invalidDateCount) {
+    pushWarning(
+      structuredWarnings,
+      "DATE_FORMAT",
+      `${invalidDateCount} valor(es) de data com formato inconsistente (não parseável)`
+        + (invalidDateSamples?.length ? `: ex. ${invalidDateSamples.slice(0, 3).join(", ")}.` : "."),
+      { count: invalidDateCount, samples: invalidDateSamples },
+    );
+  }
+  if (chronologicalIssueClients || datasOrdemInconsistente) {
+    pushWarning(
+      structuredWarnings,
+      "DATE_ORDER",
+      `${chronologicalIssueClients} cliente(s) com ordem de datas inconsistente.`,
+      { count: chronologicalIssueClients, issues: datasOrdemInconsistente },
+    );
+  }
+  if (multiples.size) {
+    pushWarning(
+      structuredWarnings,
+      "MULTIPLES",
+      `${multiples.size} cliente(s) com múltiplos registros de cancelamento ativos.`,
+      { count: multiples.size },
+    );
+  }
+  if (rowsWithoutClientId) {
+    pushWarning(
+      structuredWarnings,
+      "SEM_CLIENT_ID",
+      `${rowsWithoutClientId} registro(s) sem client_id.`,
+      { count: rowsWithoutClientId },
+    );
+  }
+  if (orphanCancelCount) {
+    pushWarning(
+      structuredWarnings,
+      "ORPHAN_CANCEL",
+      `${orphanCancelCount} cancelamento(s) sem cliente encontrado.`,
+      { count: orphanCancelCount, label: "Cancelamentos sem cliente correspondente" },
+    );
+  }
+  if (!financialAvailable) {
+    pushWarning(
+      structuredWarnings,
+      "FINANCIAL_COVERAGE_ZERO",
+      "Os campos valor_pago e valor_a_reembolsar não possuem cobertura suficiente.",
+      { count: 0 },
+    );
+  }
+  if (
+    passouRetencaoRows.length > 0
+    && withoutOutcomeCount / passouRetencaoRows.length > 0.5
+  ) {
+    pushWarning(
+      structuredWarnings,
+      "DESFECHO_COVERAGE_LOW",
+      `${withoutOutcomeCount} de ${passouRetencaoRows.length} casos com passou_retencao sem desfecho (>50%).`,
+      { count: withoutOutcomeCount },
+    );
+  }
+
   return {
     generatedAt: now.toISOString(),
-    source: "public.cancellations + public.clients (BASE QV)",
+    source: "public.cancellations + public.clients (BASE QV) — process map",
     interactionDefinition: {
       version: 1,
       label: "Dias desde a última reunião antes do cancelamento",
-      rule: "Última reunião com presença confirmada (compareceu) com data <= cancelamento.",
-      pendingAppPharus: ["mecanismos implementados antes do cancelamento", "último acesso antes do cancelamento"],
+      rule: "Última reunião com presença confirmada (compareceu) com data <= cancelamento (efetivados).",
+      pendingAppPharus: [
+        "mecanismos implementados antes do cancelamento",
+        "último acesso antes do cancelamento",
+      ],
     },
     reasonCategorization: {
       sourceField: "public.cancellations.motivo",
@@ -717,11 +993,48 @@ function buildPayload(clients, cancellations, financialRows, calendlyRows, manua
       note: "Categorias analíticas calculadas no backend. motivo_categoria do banco não é a fonte.",
     },
     summary: {
-      totalCancellations: total,
+      totalRecordsRead: (cancellations || []).length,
+      totalDistinctClients,
+      intentionsRegistered,
+      ordersRegistered,
+      effectiveCancellations,
+      /** Alias chatbot / métricas legado */
+      totalCancellations: effectiveCancellations,
+      archivedRecords: archivedRows,
+      funnel,
+      exclusiveStages,
+      timing,
+      retention,
+      operations,
+      financial,
       withReason,
       withoutReason,
-      withReasonPercent: pct(withReason, total || 1),
-      withoutReasonPercent: pct(withoutReason, total || 1),
+      withReasonPercent: pct(withReason, totalDistinctClients || 1),
+      withoutReasonPercent: pct(withoutReason, totalDistinctClients || 1),
+      distratoTextSignedWithoutDate,
+      clientsDistratoTextSignedWithoutDate,
+      tratativaCoverage: {
+        withTratativa: totalDistinctClients - operations.withoutTratativaCount,
+        withoutTratativa: operations.withoutTratativaCount,
+        percent: pct(totalDistinctClients - operations.withoutTratativaCount, totalDistinctClients || 1),
+      },
+      motivoCoverage: {
+        withReason,
+        withoutReason,
+        percent: pct(withReason, totalDistinctClients || 1),
+      },
+      chronologicalInconsistencyClients: chronologicalIssueClients,
+      efetivadoReasonCoverage: {
+        withReason: efetivadoWithReason,
+        withoutReason: efetivadoWithoutReason,
+        withReasonPercent: pct(efetivadoWithReason, effectiveCancellations || 1),
+        withoutReasonPercent: pct(efetivadoWithoutReason, effectiveCancellations || 1),
+      },
+      topReasonCategory,
+      topReason:
+        distributionFrom(efetivados.filter((r) => r.hasReason), (r) => r.reason)[0]?.label || null,
+      othersReasonCategoryCount: othersCount,
+      notInformedReasonCategoryCount: notInformedCount,
       medianDaysToCancellation: stayStats.median,
       averageDaysToCancellation: stayStats.mean,
       staySampleSize: stayStats.validCount,
@@ -735,31 +1048,57 @@ function buildPayload(clients, cancellations, financialRows, calendlyRows, manua
       averageDaysWithoutInteraction: interactionStats.mean,
       interactionSampleSize: interactionStats.validCount,
       insufficientDataClients,
-      topReason: distributionFrom(rows.filter((r) => r.hasReason), (r) => r.reason)[0]?.label || null,
-      topReasonCategory,
-      othersReasonCategoryCount: othersCount,
-      notInformedReasonCategoryCount: notInformedCount,
     },
     distributions: {
-      byReason: distributionFrom(rows, (r) => (r.hasReason ? r.reason : null)),
-      byCategory: byReasonCategory,
-      byReasonCategory,
-      byMonth: buildCancelMonthSeries(rows.map((r) => parseDate(r.cancellationDate)).filter(Boolean), now, 12),
-      byStayRange: distributionFrom(rows, (r) => r.stayRange, STAY_RANGES),
-      byMeetingCount: distributionFrom(rows, (r) => r.meetingsBeforeBand, MEETING_RANGES),
-      byFinancialRecency: distributionFrom(rows, (r) => r.financialRecencyBand, FINANCIAL_RANGES),
+      byExclusiveStage: exclusiveStages,
+      byReason: distributionFrom(efetivados, (r) => (r.hasReason ? r.reason : null)),
+      byCategory: byReasonCategoryEfetivado,
+      byReasonCategory: byReasonCategoryEfetivado,
+      byReasonCategoryByStage: {
+        all: distributionFrom(rows, (r) => r.reasonCategory || r.category),
+        intencao: distributionFrom(
+          rows.filter((r) => r.hasIntencao),
+          (r) => r.reasonCategory || r.category,
+        ),
+        pedido: distributionFrom(
+          rows.filter((r) => r.hasPedido),
+          (r) => r.reasonCategory || r.category,
+        ),
+        efetivado: byReasonCategoryEfetivado,
+      },
+      byEstagioCliente: {
+        all: distributionFrom(rows, (r) => r.estagioCliente),
+        efetivado: distributionFrom(efetivados, (r) => r.estagioCliente),
+      },
+      byMonth: buildCancelMonthSeries(
+        efetivados.map((r) => parseFlexibleDate(r.cancellationDate)).filter(Boolean),
+        now,
+        12,
+      ),
+      byResponsible,
+      byStayRange: distributionFrom(efetivados, (r) => r.stayRange, STAY_RANGES),
+      byMeetingCount: distributionFrom(efetivados, (r) => r.meetingsBeforeBand, MEETING_RANGES),
+      byFinancialRecency: distributionFrom(efetivados, (r) => r.financialRecencyBand, FINANCIAL_RANGES),
       byEngineer,
-      bySegment: distributionFrom(rows, (r) => r.segment, SEGMENT_LABELS),
+      bySegment: distributionFrom(efetivados, (r) => r.segment, SEGMENT_LABELS),
     },
     clients: rows,
     warnings: structuredWarnings,
     quality: {
       usedFields: USED_FIELDS,
       meetingRule: "presence_confirmed_compareceu_only",
+      warnings: structuredWarnings,
       pendingAppPharus: [
         "mecanismos implementados antes do cancelamento",
         "último acesso antes do cancelamento",
       ],
+      processMeta: {
+        rowsWithoutClientId,
+        archivedRows,
+        distratoTextSignedWithoutDate,
+        invalidDateCount,
+        multiples: multiples.size,
+      },
     },
   };
 }
@@ -810,7 +1149,7 @@ export default async (request) => {
     const payload = await computeCancellationsPayload();
     console.error(
       `[Cancellations] endpoint=/api/cancellations status=200 ms=${Date.now() - started} ` +
-        `total=${payload?.summary?.totalCancellations ?? "?"}`,
+        `total=${payload?.summary?.totalCancellations ?? "?"} distinct=${payload?.summary?.totalDistinctClients ?? "?"}`,
     );
     return Response.json(payload, { headers: { "Cache-Control": "no-store" } });
   } catch (error) {

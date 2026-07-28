@@ -16,7 +16,7 @@
     .layout{display:grid;grid-template-columns:238px minmax(0,1fr);min-height:calc(100vh - 64px)}
     .sidebar{border-right:1px solid var(--color-border);padding:24px 16px;background:#111}
     .sidebar-label,.eyebrow{font-size:11px;letter-spacing:.11em;text-transform:uppercase;color:var(--color-text-subtle);font-weight:700}
-    .nav{display:grid;gap:6px;margin-top:12px}.nav button{display:flex;align-items:center;gap:10px;width:100%;border:0;background:transparent;color:var(--color-text-muted);padding:10px 12px;border-radius:var(--radius-md);text-align:left;cursor:pointer}.nav button:hover{background:var(--color-surface-2);color:var(--color-text)}.nav button.active{background:var(--color-primary-soft);color:#ffab6f}.nav button[disabled]{opacity:.42;cursor:not-allowed}.nav-icon{width:22px;text-align:center}.soon{margin-left:auto;font-size:9px;text-transform:uppercase;color:var(--color-text-subtle)}
+    .nav{display:grid;gap:6px;margin-top:12px}.nav button{display:flex;align-items:center;gap:10px;width:100%;border:0;background:transparent;color:var(--color-text-muted);padding:10px 12px;border-radius:var(--radius-md);text-align:left;cursor:pointer}.nav button:hover{background:var(--color-surface-2);color:var(--color-text)}.nav button.active{background:var(--color-primary-soft);color:#ffab6f}.nav button[disabled]{opacity:.42;cursor:not-allowed}.nav-icon{width:18px;height:18px;flex:0 0 18px;display:inline-flex;align-items:center;justify-content:center;color:currentColor}.nav-icon svg{width:100%;height:100%;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.soon{margin-left:auto;font-size:9px;text-transform:uppercase;color:var(--color-text-subtle)}
     main{min-width:0;padding:32px}.container{max-width:1450px;margin:0 auto}.view{display:none}.view.active{display:block}
     .page-header{display:flex;justify-content:space-between;gap:24px;align-items:flex-start}.page-header h1{font-size:30px;line-height:1.2;margin:5px 0 8px}.page-header p{margin:0;color:var(--color-text-muted);max-width:720px}
     .status{font-size:12px;color:var(--color-text-muted);text-align:right}.status b{display:block;font-weight:600;margin-bottom:3px}
@@ -54,7 +54,36 @@
     .metric{padding:18px}.metric.highlight{border-top:2px solid var(--color-primary)}
     .metric-label{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--color-text-subtle);font-weight:700;display:flex;align-items:center;gap:6px}
     .metric-value{font-size:30px;font-weight:700;margin:7px 0 2px}.metric-note{font-size:12px;color:var(--color-text-muted)}
-    .help{cursor:help;color:var(--color-text-subtle);border:1px solid var(--color-border);border-radius:999px;width:16px;height:16px;display:inline-grid;place-items:center;font-size:10px}
+    .help{cursor:help;color:var(--color-text-subtle);border:1px solid var(--color-border);border-radius:999px;width:16px;height:16px;display:inline-grid;place-items:center;font-size:10px;position:relative}
+    .help:hover,.help:focus-visible{border-color:rgba(244,121,32,.55);color:#ffc093;outline:none}
+    .help[data-tip]::after{
+      content:attr(data-tip);
+      position:absolute;
+      left:50%;
+      bottom:calc(100% + 8px);
+      transform:translateX(-50%);
+      width:min(280px,70vw);
+      max-width:calc(100vw - 24px);
+      padding:10px 12px;
+      border-radius:10px;
+      background:#141414;
+      border:1px solid var(--color-border-strong);
+      color:var(--color-text);
+      font-size:11px;
+      font-weight:500;
+      letter-spacing:0;
+      text-transform:none;
+      line-height:1.45;
+      white-space:normal;
+      text-align:left;
+      box-shadow:var(--shadow-card);
+      opacity:0;
+      pointer-events:none;
+      z-index:40;
+    }
+    .help[data-tip]:hover::after,
+    .help[data-tip]:focus-visible::after,
+    .help[data-tip].is-open::after{opacity:1}
     .mech-explainer{margin:0 0 18px;padding:14px 16px;border:1px solid var(--color-border);border-radius:var(--radius-md);background:#242424}
     .mech-explainer p{margin:0;font-size:13px;line-height:1.55;color:var(--color-text-muted)}
     .mech-explainer strong{color:var(--color-text);font-weight:600}
@@ -79,10 +108,113 @@
     #view-mechanisms .summary.kpis-mech-3{grid-template-columns:repeat(3,1fr)}
     #view-mechanisms .summary.kpis-mech-4{grid-template-columns:repeat(4,1fr)}
     #view-mechanisms .summary.kpis-mech-2{grid-template-columns:repeat(2,1fr)}
-    /* Cancelamento: destaque laranja nos big numbers principais */
-    #view-cancellations .summary.kpis-cancel-primary{grid-template-columns:repeat(3,1fr);margin-bottom:12px}
-    #view-cancellations .summary.kpis-cancel-secondary{grid-template-columns:repeat(3,1fr)}
-    #view-cancellations .summary.kpis-cancel-quality{grid-template-columns:repeat(2,1fr);margin-top:12px}
+    /* Cancelamento: processo (intenção → pedido → efetivado) */
+    #view-cancellations .summary.kpis-cancel-primary{grid-template-columns:repeat(3,1fr);margin-bottom:8px}
+    #view-cancellations .summary.kpis-cancel-retention{grid-template-columns:repeat(3,1fr);margin-top:4px}
+    #view-cancellations .summary.kpis-cancel-ops{grid-template-columns:repeat(4,1fr);margin-top:4px}
+    #view-cancellations .cancel-timing-strip{
+      display:flex;flex-direction:column;gap:6px;
+      margin:4px 0 10px;padding:10px 12px;
+      border:1px solid var(--color-border);
+      border-radius:var(--radius-md);
+      background:linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,.015));
+      color:var(--color-text-muted);
+    }
+    #view-cancellations .cancel-timing-strip__head{
+      display:flex;align-items:center;gap:8px;min-width:0
+    }
+    #view-cancellations .cancel-timing-strip__icon{
+      width:14px;height:14px;flex:0 0 14px;display:inline-flex;align-items:center;justify-content:center;
+      color:var(--color-text-subtle)
+    }
+    #view-cancellations .cancel-timing-strip__icon svg{
+      width:100%;height:100%;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round
+    }
+    #view-cancellations .cancel-timing-strip__title{
+      font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;
+      color:var(--color-text-subtle);line-height:1.2
+    }
+    #view-cancellations .cancel-timing-strip__metrics{
+      display:flex;flex-wrap:wrap;align-items:center;gap:4px 0;
+      font-size:13px;line-height:1.45;color:var(--color-text);min-width:0
+    }
+    #view-cancellations .cancel-timing-item{
+      border:0;background:transparent;padding:0;margin:0;
+      color:inherit;font:inherit;cursor:help;border-bottom:1px dotted rgba(255,255,255,.22);
+      position:relative
+    }
+    #view-cancellations .cancel-timing-item:hover,
+    #view-cancellations .cancel-timing-item:focus-visible{
+      color:#ffc093;outline:none;border-bottom-color:rgba(244,121,32,.45)
+    }
+    #view-cancellations .cancel-timing-sep{
+      margin:0 8px;color:var(--color-text-subtle);user-select:none
+    }
+    #view-cancellations .has-tip[data-tip]{position:relative}
+    #view-cancellations .has-tip[data-tip]::after{
+      content:attr(data-tip);
+      position:absolute;
+      left:50%;
+      bottom:calc(100% + 8px);
+      transform:translateX(-50%);
+      width:min(260px,70vw);
+      max-width:calc(100vw - 24px);
+      padding:10px 12px;
+      border-radius:10px;
+      background:#141414;
+      border:1px solid var(--color-border-strong);
+      color:var(--color-text);
+      font-size:11px;
+      font-weight:500;
+      letter-spacing:0;
+      text-transform:none;
+      line-height:1.45;
+      white-space:normal;
+      text-align:left;
+      box-shadow:var(--shadow-card);
+      opacity:0;
+      pointer-events:none;
+      z-index:40;
+    }
+    #view-cancellations .has-tip[data-tip]:hover::after,
+    #view-cancellations .has-tip[data-tip]:focus-visible::after,
+    #view-cancellations .has-tip[data-tip].is-open::after{opacity:1}
+    @media(max-width:780px){
+      #view-cancellations .cancel-timing-strip{padding:8px 10px}
+      #view-cancellations .cancel-timing-strip__metrics{font-size:12px;gap:2px 0}
+      #view-cancellations .cancel-timing-sep{margin:0 6px}
+      #view-cancellations .has-tip[data-tip]::after{left:0;transform:none;width:min(240px,calc(100vw - 40px))}
+    }
+    #view-cancellations .cancel-kpi-note{display:none}
+    #view-cancellations .kpi-block-label{
+      display:flex;align-items:center;gap:8px;margin:16px 0 8px;
+      font-size:11px;letter-spacing:.11em;text-transform:uppercase;
+      color:var(--color-text-subtle);font-weight:700
+    }
+    #view-cancellations .kpi-block-label .help{
+      text-transform:none;letter-spacing:0;font-weight:600;flex:0 0 auto
+    }
+    #view-cancellations #cProcessExplainer.portal-alert{
+      padding:10px 12px;margin:12px 0 8px;gap:10px;align-items:flex-start
+    }
+    #view-cancellations #cProcessExplainer .portal-alert__icon{
+      width:18px;height:18px;margin-top:1px;display:inline-flex;align-items:center;justify-content:center
+    }
+    #view-cancellations #cProcessExplainer .portal-alert__icon svg{
+      width:100%;height:100%;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round
+    }
+    #view-cancellations #cProcessExplainer .portal-alert__content h3{
+      margin:0 0 2px;font-size:13px;line-height:1.3
+    }
+    #view-cancellations #cProcessExplainer .portal-alert__content p{
+      margin:0 0 4px;font-size:12px;line-height:1.4
+    }
+    #view-cancellations #cProcessExplainer .portal-alert__note{
+      font-size:11px;line-height:1.35;margin:0
+    }
+    #view-cancellations #cProcessExplainer .portal-alert__close{
+      top:8px;right:8px;width:28px;height:28px
+    }
     #view-cancellations .metric.kpi-primary{
       border-color:rgba(244,121,32,.45);
       border-top:2px solid var(--color-primary);
@@ -90,11 +222,38 @@
       box-shadow:0 0 0 1px rgba(244,121,32,.12),0 10px 28px rgba(244,121,32,.12),var(--shadow-card);
     }
     #view-cancellations .metric.kpi-primary .metric-label{color:#f0b07a}
-    #view-cancellations .metric.kpi-primary .metric-value{color:#ffc796}
+    #view-cancellations .metric.kpi-primary .metric-value{color:#ffc796;font-size:34px}
     #view-cancellations .metric.kpi-secondary .metric-value{font-size:26px}
     #view-cancellations .charts.cancel-charts{grid-template-columns:repeat(2,minmax(0,1fr))}
     #view-cancellations .chart-card.cancel-span-all{grid-column:1/-1}
     #view-renewal .charts.renewal-charts{grid-template-columns:repeat(3,minmax(0,1fr))}
+    #view-cancellations .cancel-funnel{
+      display:grid;grid-template-columns:1fr auto 1fr auto 1fr;gap:10px 8px;align-items:center;
+      padding:4px 0 8px
+    }
+    #view-cancellations .cancel-funnel-step{
+      border:1px solid var(--color-border);border-radius:10px;padding:14px 12px;
+      background:rgba(0,0,0,.18);text-align:center;min-width:0
+    }
+    #view-cancellations .cancel-funnel-step.is-effective{
+      border-color:rgba(244,121,32,.45);
+      background:linear-gradient(165deg,rgba(244,121,32,.12),rgba(0,0,0,.18) 70%)
+    }
+    #view-cancellations .cancel-funnel-label{
+      font-size:12px;color:var(--color-text-muted);margin-bottom:6px;line-height:1.3
+    }
+    #view-cancellations .cancel-funnel-count{
+      font-size:28px;font-weight:700;color:var(--color-text);letter-spacing:-.02em
+    }
+    #view-cancellations .cancel-funnel-step.is-effective .cancel-funnel-count{color:#ffc796}
+    #view-cancellations .cancel-funnel-rate{
+      font-size:12px;color:var(--color-text-muted);text-align:center;line-height:1.35;max-width:88px
+    }
+    #view-cancellations .cancel-funnel-rate b{display:block;color:#f0b07a;font-size:14px;margin-bottom:2px}
+    @media(max-width:900px){
+      #view-cancellations .cancel-funnel{grid-template-columns:1fr;gap:8px}
+      #view-cancellations .cancel-funnel-rate{max-width:none;padding:2px 0 6px}
+    }
     #view-mechanisms .unused-types-box.portal-alert::before{display:none}
     #view-mechanisms .unused-types-box.portal-alert h3{margin:0 0 4px;font-size:15px;color:#ffd37b}
     #view-mechanisms .unused-types-box.portal-alert p{margin:0 0 6px;font-size:13px;color:var(--color-text);line-height:1.5}
@@ -380,8 +539,8 @@
     @media(max-width:780px){.acquisition-summary{grid-template-columns:1fr 1fr}.acquisition-chart-grid[data-cols="6"]{min-width:420px}}
     .timeline{display:grid;gap:10px;margin-top:12px}.timeline-item{border:1px solid var(--color-border);border-radius:10px;padding:12px;background:#1a1a1a}.timeline-item .meta{font-size:11px;color:var(--color-text-subtle);margin-top:4px}
     .indicator-matrix{display:grid;gap:12px}.indicator-row{display:grid;grid-template-columns:minmax(210px,1.15fr) 132px minmax(150px,.7fr) minmax(260px,1.55fr) 120px;gap:0;border:1px solid var(--color-border);border-radius:var(--radius-md);overflow:hidden;background:#202020}.indicator-cell{padding:13px 14px;border-right:1px solid var(--color-border);font-size:13px}.indicator-cell:last-child{border-right:0}.indicator-head{background:#2b2f34;color:var(--color-text);font-weight:700;text-transform:uppercase;letter-spacing:.04em}.indicator-status{display:flex;align-items:center;font-weight:700}.indicator-status.sim{background:rgba(66,201,133,.14);color:#c7f5dd}.indicator-status.no{background:rgba(239,107,115,.16);color:#ffb9bd}.indicator-status.base{background:rgba(246,189,75,.13);color:#ffe0a1}.indicator-coverage{font-weight:700;color:var(--color-text)}.indicator-coverage span{display:block;margin-top:2px;color:var(--color-text-muted);font-size:11px;font-weight:500}.viability-stack{grid-template-columns:1fr}
-    @media(max-width:1100px){.cards,.charts,#view-renewal .charts.renewal-charts{grid-template-columns:1fr}.summary,.summary.kpis-8,#view-support .summary.kpis-support-6,#view-mechanisms .summary.kpis-mech-3,#view-mechanisms .summary.kpis-mech-4,#view-mechanisms .summary.kpis-mech-2,#view-cancellations .summary.kpis-cancel-primary,#view-cancellations .summary.kpis-cancel-secondary,#view-cancellations .summary.kpis-cancel-quality{grid-template-columns:repeat(2,1fr)}.filters,.filters.general,.filters.meetings,.filters.mechanisms,.filters.financial{grid-template-columns:1fr 1fr}.month-row{grid-template-columns:64px minmax(100px,1fr) minmax(160px,1fr)}.month-val{white-space:normal}}
-    @media(max-width:780px){.layout{grid-template-columns:1fr}.sidebar{display:none}main{padding:20px}.page-header{display:block}.status{text-align:left;margin-top:12px}.filters,.filters.general,.filters.mechanisms,.filters.financial,.summary,.cards,.charts,#view-renewal .charts.renewal-charts,#view-support .summary.kpis-support-6,#view-mechanisms .summary.kpis-mech-3,#view-mechanisms .summary.kpis-mech-4,#view-mechanisms .summary.kpis-mech-2,#view-cancellations .summary.kpis-cancel-primary,#view-cancellations .summary.kpis-cancel-secondary,#view-cancellations .summary.kpis-cancel-quality{grid-template-columns:1fr}.topbar{padding:0 20px}.status-actions{align-items:flex-start;justify-content:space-between}.hbar{grid-template-columns:minmax(108px,36%) minmax(48px,1fr) minmax(96px,104px);gap:8px;margin:9px 0}.hbar-val{font-size:11px}.month-row{grid-template-columns:1fr;gap:8px}.month-val{text-align:left}.month-count{margin-left:0;width:100%}#view-mechanisms .help[data-tip]::after{left:0;transform:none;width:min(240px,78vw)}}
+    @media(max-width:1100px){.cards,.charts,#view-renewal .charts.renewal-charts{grid-template-columns:1fr}.summary,.summary.kpis-8,#view-support .summary.kpis-support-6,#view-mechanisms .summary.kpis-mech-3,#view-mechanisms .summary.kpis-mech-4,#view-mechanisms .summary.kpis-mech-2,#view-cancellations .summary.kpis-cancel-primary,#view-cancellations .summary.kpis-cancel-secondary,#view-cancellations .summary.kpis-cancel-quality,#view-cancellations .summary.kpis-cancel-retention,#view-cancellations .summary.kpis-cancel-ops{grid-template-columns:repeat(2,1fr)}.filters,.filters.general,.filters.meetings,.filters.mechanisms,.filters.financial{grid-template-columns:1fr 1fr}.month-row{grid-template-columns:64px minmax(100px,1fr) minmax(160px,1fr)}.month-val{white-space:normal}}
+    @media(max-width:780px){.layout{grid-template-columns:1fr}.sidebar{display:none}main{padding:20px}.page-header{display:block}.status{text-align:left;margin-top:12px}.filters,.filters.general,.filters.mechanisms,.filters.financial,.summary,.cards,.charts,#view-renewal .charts.renewal-charts,#view-support .summary.kpis-support-6,#view-mechanisms .summary.kpis-mech-3,#view-mechanisms .summary.kpis-mech-4,#view-mechanisms .summary.kpis-mech-2,#view-cancellations .summary.kpis-cancel-primary,#view-cancellations .summary.kpis-cancel-secondary,#view-cancellations .summary.kpis-cancel-quality,#view-cancellations .summary.kpis-cancel-retention,#view-cancellations .summary.kpis-cancel-ops{grid-template-columns:1fr}.topbar{padding:0 20px}.status-actions{align-items:flex-start;justify-content:space-between}.hbar{grid-template-columns:minmax(108px,36%) minmax(48px,1fr) minmax(96px,104px);gap:8px;margin:9px 0}.hbar-val{font-size:11px}.month-row{grid-template-columns:1fr;gap:8px}.month-val{text-align:left}.month-count{margin-left:0;width:100%}#view-mechanisms .help[data-tip]::after{left:0;transform:none;width:min(240px,78vw)}}
     #portal-root[hidden],#auth-root[hidden]{display:none!important}
     /* Auth Guard: portal só existe visualmente quando autenticado */
     body:not([data-auth="authenticated"]) #portal-root{display:none!important;visibility:hidden!important;pointer-events:none!important}
@@ -557,20 +716,20 @@
     <aside class="sidebar">
       <div class="sidebar-label">Analytics</div>
       <nav class="nav" aria-label="Navegação principal">
-        <button type="button" class="active" data-nav="general"><span class="nav-icon">◎</span>Dados Gerais</button>
-        <button type="button" data-nav="journey"><span class="nav-icon">→</span>Jornada</button>
-        <button type="button" data-nav="plan"><span class="nav-icon">□</span>Plano Patrimonial</button>
-        <button type="button" data-nav="meetings"><span class="nav-icon">◎</span>Reuniões</button>
-        <button type="button" data-nav="mechanisms"><span class="nav-icon">◎</span>Mecanismos</button>
-        <button type="button" data-nav="financial"><span class="nav-icon">$</span>Atualização Financeira</button>
-        <button type="button" data-nav="engagement"><span class="nav-icon">◉</span>Engajamento</button>
-        <button type="button" data-nav="platform"><span class="nav-icon">◫</span>Uso da Plataforma</button>
-        <button type="button" data-nav="support"><span class="nav-icon">☎</span>Atendimento</button>
-        <button type="button" data-nav="cancellations"><span class="nav-icon">✕</span>Cancelamento</button>
-        <button type="button" data-nav="satisfaction"><span class="nav-icon">★</span>Pesquisa de Satisfação</button>
-        <button type="button" data-nav="renewal"><span class="nav-icon">↻</span>Renovação</button>
-        <button type="button" data-nav="performance"><span class="nav-icon">▤</span>Performance</button>
-        <button type="button" data-nav="quality"><span class="nav-icon">▦</span>Qualidade</button>
+        <button type="button" class="active" data-nav="general"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg></span>Dados Gerais</button>
+        <button type="button" data-nav="journey"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="6" cy="19" r="3"/><path d="M9 19h8.5a3.5 3.5 0 0 0 0-7h-11a3.5 3.5 0 0 1 0-7H15"/><circle cx="18" cy="5" r="3"/></svg></span>Jornada</button>
+        <button type="button" data-nav="plan"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/></svg></span>Plano Patrimonial</button>
+        <button type="button" data-nav="meetings"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/><path d="M8 18h.01"/><path d="M12 18h.01"/><path d="M16 18h.01"/></svg></span>Reuniões</button>
+        <button type="button" data-nav="mechanisms"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9c.3.6.9 1 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z"/></svg></span>Mecanismos</button>
+        <button type="button" data-nav="financial"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M16 8h-5a2.5 2.5 0 0 0 0 5h2a2.5 2.5 0 0 1 0 5H8"/><path d="M12 6v2"/><path d="M12 16v2"/></svg></span>Atualização Financeira</button>
+        <button type="button" data-nav="engagement"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"/><path d="M8 9h8"/><path d="M8 13h5"/></svg></span>Engajamento</button>
+        <button type="button" data-nav="platform"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="12" rx="2"/><path d="M8 20h8"/><path d="M12 16v4"/><rect x="15" y="10" width="6" height="10" rx="1.5"/></svg></span>Uso da Plataforma</button>
+        <button type="button" data-nav="support"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 14v-3a9 9 0 0 1 18 0v3"/><path d="M21 16v2a2 2 0 0 1-2 2h-1"/><path d="M3 14a2 2 0 0 0 2 2h1v-4H5a2 2 0 0 0-2 2Z"/><path d="M21 14a2 2 0 0 1-2 2h-1v-4h1a2 2 0 0 1 2 2Z"/><path d="M9 18h4a2 2 0 0 1 2 2v0a2 2 0 0 1-2 2h-1"/></svg></span>Atendimento</button>
+        <button type="button" data-nav="cancellations"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="m17 8 5 5"/><path d="m22 8-5 5"/></svg></span>Cancelamento</button>
+        <button type="button" data-nav="satisfaction"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 2 2.9 6 6.6.9-4.8 4.7 1.1 6.6L12 17.1l-5.8 3.1 1.1-6.6-4.8-4.7 6.6-.9z"/></svg></span>Pesquisa de Satisfação</button>
+        <button type="button" data-nav="renewal"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 0 1 15.4-6.4L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15.4 6.4L3 16"/><path d="M3 21v-5h5"/></svg></span>Renovação</button>
+        <button type="button" data-nav="performance"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="m7 15 4-4 3 3 5-7"/><path d="M18 7h1v1"/></svg></span>Performance</button>
+        <button type="button" data-nav="quality"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/><path d="m9 12 2 2 4-4"/></svg></span>Qualidade</button>
       </nav>
     </aside>
     <main>
@@ -583,7 +742,7 @@
               <p>Visão consolidada do perfil, vínculo e perfil financeiro dos clientes.</p>
             </div>
             <div class="status-actions">
-              <div class="status"><b id="gStatus" style="color:var(--color-warning)">● Conectando ao Supabase</b><span id="gUpdated">Calculando indicadores…</span></div>
+              <div class="status"><b id="gStatus" style="color:var(--color-warning)">? Conectando ao Supabase</b><span id="gUpdated">Calculando indicadores…</span></div>
               <button class="btn" id="gRefresh" type="button">Atualizar</button>
             </div>
           </header>
@@ -711,7 +870,7 @@
               <p>Indicadores consolidados somando os registros dos dois bancos de dados, sem priorizar uma fonte sobre a outra.</p>
             </div>
             <div class="status-actions">
-              <div class="status"><b id="pStatus" style="color:var(--color-warning)">● Aguardando consulta</b><span id="pUpdated">Fontes: QV360 e App Pharus</span></div>
+              <div class="status"><b id="pStatus" style="color:var(--color-warning)">? Aguardando consulta</b><span id="pUpdated">Fontes: QV360 e App Pharus</span></div>
               <button class="btn" id="pRefresh" type="button">Atualizar</button>
             </div>
           </header>
@@ -778,7 +937,7 @@
               <p>Construção da tela do tópico 2 com foco em prazos entre contratação, reunião, plano patrimonial, implementação e conclusão do onboarding.</p>
             </div>
             <div class="status-actions">
-              <div class="status"><b id="jStatus" style="color:var(--color-warning)">● Aguardando consulta</b><span id="jUpdated">Fonte única: BASE QV</span></div>
+              <div class="status"><b id="jStatus" style="color:var(--color-warning)">? Aguardando consulta</b><span id="jUpdated">Fonte única: BASE QV</span></div>
               <button class="btn" id="jRefresh" type="button">Atualizar</button>
             </div>
           </header>
@@ -799,9 +958,9 @@
           </div>
           <section class="journey-grid">
             <article class="chart-card"><h3>Dias até a primeira reunião</h3><p>Quantidade de clientes por faixa de dias</p><div id="jFirstMeetingChart"></div></article>
-            <article class="chart-card"><h3>Dias até entrega do plano patrimonial</h3><p>clients.data_inicio_ciclo → client_implementation_meeting_date.meeting_date</p><div id="jPlanDeliveryChart"></div></article>
-            <article class="chart-card"><h3>Dias até primeiro mecanismo implementado</h3><p>clients.data_inicio_ciclo → client_mecanismos.implemented_at</p><div id="jFirstImplementationChart"></div></article>
-            <article class="chart-card"><h3>Tempo total de onboarding</h3><p>Estágio inicial → próxima mudança em client_journeys</p><div id="jTotalOnboardingChart"></div></article>
+            <article class="chart-card"><h3>Dias até entrega do plano patrimonial</h3><p>clients.data_inicio_ciclo ? client_implementation_meeting_date.meeting_date</p><div id="jPlanDeliveryChart"></div></article>
+            <article class="chart-card"><h3>Dias até primeiro mecanismo implementado</h3><p>clients.data_inicio_ciclo ? client_mecanismos.implemented_at</p><div id="jFirstImplementationChart"></div></article>
+            <article class="chart-card"><h3>Tempo total de onboarding</h3><p>Estágio inicial ? próxima mudança em client_journeys</p><div id="jTotalOnboardingChart"></div></article>
             <article class="chart-card"><h3>Concluiu onboarding</h3><p>Sim/Não pelo estágio atual do cliente</p><div id="jCompletionChart"></div></article>
             <article class="chart-card"><h3>Tempo médio por etapa</h3><p>Eixo por journey_stages.name</p><div id="jStageDurationChart"></div></article>
           </section>
@@ -851,7 +1010,7 @@
               <p>Acompanhamento da frequência, recorrência e participação dos clientes nas reuniões da jornada.</p>
             </div>
             <div class="status-actions">
-              <div class="status"><b id="mStatus" style="color:var(--color-warning)">● Conectando ao Supabase</b><span id="mUpdated">Calculando indicadores…</span></div>
+              <div class="status"><b id="mStatus" style="color:var(--color-warning)">? Conectando ao Supabase</b><span id="mUpdated">Calculando indicadores…</span></div>
               <button class="btn" id="mRefresh" type="button">Atualizar</button>
             </div>
           </header>
@@ -972,7 +1131,7 @@
               <p>Acompanhamento das recomendações de mecanismos por cliente — disponibilidade, andamento e conclusão.</p>
             </div>
             <div class="status-actions">
-              <div class="status"><b id="kStatus" style="color:var(--color-warning)">● Conectando ao Supabase</b><span id="kUpdated">Calculando indicadores…</span></div>
+              <div class="status"><b id="kStatus" style="color:var(--color-warning)">? Conectando ao Supabase</b><span id="kUpdated">Calculando indicadores…</span></div>
               <button class="btn" id="kRefresh" type="button">Atualizar</button>
             </div>
           </header>
@@ -1036,7 +1195,7 @@
           </section>
 
           <aside class="portal-alert portal-alert--info mech-explainer" id="kUnitsExplainer" data-alert-id="mechanisms-units-explainer" role="status" aria-label="Unidades dos indicadores">
-            <div class="portal-alert__icon" aria-hidden="true">ℹ</div>
+            <div class="portal-alert__icon" aria-hidden="true">?</div>
             <div class="portal-alert__content">
               <h3>Unidades dos indicadores</h3>
               <p>Os indicadores distinguem três unidades: <strong>cliente</strong> (pessoa/conta distinta), <strong>tipo de mecanismo</strong> (item do catálogo) e <strong>vínculo cliente + mecanismo</strong> (combinação única após deduplicação). Um cliente com 3 mecanismos gera 3 vínculos.</p>
@@ -1160,7 +1319,7 @@
               <p>Acompanhamento da cobertura, frequência e recência das informações financeiras registradas para os clientes.</p>
             </div>
             <div class="status-actions">
-              <div class="status"><b id="fStatus" style="color:var(--color-warning)">● Conectando ao Supabase</b><span id="fUpdated">Calculando indicadores…</span></div>
+              <div class="status"><b id="fStatus" style="color:var(--color-warning)">? Conectando ao Supabase</b><span id="fUpdated">Calculando indicadores…</span></div>
               <button class="btn" id="fRefresh" type="button">Atualizar</button>
             </div>
           </header>
@@ -1343,7 +1502,7 @@
               <p>Acompanhamento de logins, sessões e frequência de acesso dos usuários.</p>
             </div>
             <div class="status-actions">
-              <div class="status"><b id="uStatus" style="color:var(--color-warning)">● Aguardando consulta</b><span id="uUpdated">Fonte: QV360.login_history</span></div>
+              <div class="status"><b id="uStatus" style="color:var(--color-warning)">? Aguardando consulta</b><span id="uUpdated">Fonte: QV360.login_history</span></div>
               <button class="btn" id="uRefresh" type="button">Atualizar</button>
             </div>
           </header>
@@ -1388,7 +1547,7 @@
               <p>Volume, área, tipo, prioridade e vínculo com clientes a partir dos acionamentos registrados.</p>
             </div>
             <div class="status-actions">
-              <div class="status"><b id="sStatus" style="color:var(--color-warning)">● Conectando à base</b><span id="sUpdated">Calculando indicadores…</span></div>
+              <div class="status"><b id="sStatus" style="color:var(--color-warning)">? Conectando à base</b><span id="sUpdated">Calculando indicadores…</span></div>
               <button class="btn" id="sRefresh" type="button">Atualizar</button>
             </div>
           </header>
@@ -1474,67 +1633,124 @@
             <div>
               <div class="eyebrow">BASE QV · public.cancellations</div>
               <h1>Cancelamento</h1>
-              <p>Análise dos motivos, permanência e sinais anteriores ao cancelamento dos clientes.</p>
+              <p>Processo em três etapas — intenção, pedido e cancelamento efetivado — com retenção, motivos e operação.</p>
             </div>
             <div class="status-actions">
-              <div class="status"><b id="cStatus" style="color:var(--color-warning)">● Conectando à base</b><span id="cUpdated">Calculando indicadores…</span></div>
+              <div class="status"><b id="cStatus" style="color:var(--color-warning)">? Conectando à base</b><span id="cUpdated">Calculando indicadores…</span></div>
               <button class="btn" id="cRefresh" type="button">Atualizar</button>
             </div>
           </header>
 
+          <aside class="portal-alert portal-alert--warning" id="cProcessExplainer" data-alert-id="cancellations-process-explainer" role="status" aria-label="Regra de cancelamento">
+            <div class="portal-alert__icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+            </div>
+            <div class="portal-alert__content">
+              <h3>Regra de cancelamento</h3>
+              <p>Intenção e pedido não retiram o cliente da carteira ativa. O cliente é considerado cancelado somente quando há churn efetivado ou distrato assinado.</p>
+              <p class="portal-alert__note">Registros arquivados não entram nos indicadores atuais.</p>
+            </div>
+            <button type="button" class="portal-alert__close" data-dismiss-portal-alert aria-label="Fechar aviso" title="Fechar">×</button>
+          </aside>
+
           <section class="filters financial" aria-label="Filtros de cancelamento">
             <label>Busca<input id="cSearch" placeholder="Nome, código ou ID" /></label>
-            <label>Engenheiro Patrimonial<select id="cEngineer"><option value="all">Todos</option></select></label>
-            <label>Segmento<select id="cSegment"><option value="all">Todos</option></select></label>
-            <label>Motivo<select id="cReason"><option value="all">Todos</option></select></label>
-            <label>Categoria<select id="cCategory"><option value="all">Todas</option></select></label>
-            <label>Período de cancelamento — de<input id="cFrom" type="date" /></label>
+            <label>Período — de<input id="cFrom" type="date" title="Data analítica se efetivado; senão pedido; senão intenção" /></label>
             <label>até<input id="cTo" type="date" /></label>
-            <label>Faixa de permanência<select id="cStayRange"><option value="all">Todas</option></select></label>
-            <label>Faixa de reuniões<select id="cMeetingRange"><option value="all">Todas</option></select></label>
-            <label>Possui motivo<select id="cHasReason">
+            <label>Etapa do cancelamento<select id="cStage" title="Padrão: efetivado (análises de churn). O funil e os 3 cards principais usam todas as etapas.">
+              <option value="all">Todas as etapas</option>
+              <option value="intencao">Intenção</option>
+              <option value="pedido">Pedido</option>
+              <option value="efetivado" selected>Cancelamento efetivado</option>
+            </select></label>
+            <label>Categoria motivo<select id="cCategory"><option value="all">Todas</option></select></label>
+            <label>Motivo original<select id="cReason"><option value="all">Todos</option></select></label>
+            <label>Responsável<select id="cResponsible"><option value="all">Todos</option></select></label>
+            <label>Estágio do cliente<select id="cEstagio"><option value="all">Todos</option></select></label>
+            <label>Passou por retenção<select id="cRetention">
               <option value="all">Todos</option>
               <option value="yes">Sim</option>
               <option value="no">Não</option>
             </select></label>
-            <label>Atualização financeira anterior<select id="cHasFinancial">
+            <label>Crítico<select id="cCritical">
               <option value="all">Todos</option>
               <option value="yes">Sim</option>
               <option value="no">Não</option>
             </select></label>
-            <label>Interação anterior (reunião)<select id="cHasInteraction">
+            <label>Arquivado<select id="cArchived">
               <option value="all">Todos</option>
+              <option value="no" selected>Não</option>
               <option value="yes">Sim</option>
-              <option value="no">Não</option>
             </select></label>
             <button class="btn" id="cClear" type="button">Limpar filtros</button>
           </section>
 
+          <div class="kpi-block-label">
+            Processo de cancelamento
+            <span
+              class="help"
+              tabindex="0"
+              role="button"
+              aria-label="Sobre a sobreposição das etapas do cancelamento"
+              data-tip="As etapas podem se sobrepor. Um mesmo cliente pode aparecer em intenção, pedido e efetivação. Os indicadores consideram registros não arquivados."
+            >?</span>
+          </div>
           <section class="summary kpis-cancel-primary" id="cKpisPrimary"></section>
-          <section class="summary kpis-cancel-secondary" id="cKpis"></section>
+
+          <section id="cKpisTiming" class="cancel-timing-strip-host" aria-live="polite"></section>
+
+          <div class="kpi-block-label">Retenção</div>
+          <section class="summary kpis-cancel-retention" id="cKpisRetention"></section>
+
+          <div class="kpi-block-label">Operações</div>
+          <section class="summary kpis-cancel-ops" id="cKpisOps"></section>
+
           <div id="cSourceAlertHost">
             <div id="cSourceAlert" data-alert-id="cancellations-data-quality-warning" hidden role="status"></div>
           </div>
-          <section class="summary kpis-cancel-quality" id="cKpisQuality"></section>
 
-          <div class="section-head"><div><h2>Distribuições</h2><p>Categorias analíticas de motivo, tempo até o cancelamento e sinais anteriores.</p></div></div>
+          <div class="section-head"><div><h2>Distribuições</h2><p>Funil do processo, etapa mais avançada, motivos e estágio do cliente. Motivos e tabela respeitam o filtro de etapa (padrão: efetivado).</p></div></div>
           <section class="charts cancel-charts">
             <article class="chart-card cancel-span-all">
-              <h3>Cancelamentos por motivo <span class="help" title="Categorias analíticas calculadas a partir do texto original de cancellations.motivo. O texto original é preservado na tabela.">?</span></h3>
-              <p>Motivos agrupados em categorias analíticas.</p>
+              <h3>Funil do processo</h3>
+              <p>Universo completo (não arquivado) · conversões entre etapas</p>
+              <div id="cChartFunnel"></div>
+            </article>
+            <article class="chart-card">
+              <h3>Etapa mais avançada do processo</h3>
+              <p>Distribuição exclusiva · um cliente em uma única etapa</p>
+              <div id="cChartExclusiveStage"></div>
+            </article>
+            <article class="chart-card">
+              <h3>Estágio do cliente</h3>
+              <p id="cChartEstagioSub">Conforme filtro de etapa</p>
+              <div id="cChartEstagio"></div>
+            </article>
+            <article class="chart-card cancel-span-all">
+              <h3>Motivos por categoria <span class="help" title="Categorias analíticas calculadas a partir do texto original de cancellations.motivo. O texto original é preservado na tabela.">?</span></h3>
+              <p id="cChartReasonSub">Categoria analítica · etapa: cancelamento efetivado</p>
               <div id="cChartReason"></div>
             </article>
-            <article class="chart-card cancel-span-all"><h3>Cancelamentos por mês</h3><p>Últimos 12 meses · data consolidada</p><div id="cChartMonths"></div></article>
-            <article class="chart-card"><h3>Tempo até cancelamento</h3><p>Faixas de permanência</p><div id="cChartStay"></div></article>
-            <article class="chart-card"><h3>Reuniões antes do cancelamento</h3><p>Presença confirmada</p><div id="cChartMeetings"></div></article>
-            <article class="chart-card"><h3>Última atualização financeira</h3><p>Dias antes do cancelamento</p><div id="cChartFinancial"></div></article>
-            <article class="chart-card"><h3>Cancelamentos por EP</h3><p>Quantidade e % dos cancelados</p><div id="cChartEngineer"></div></article>
-            <article class="chart-card cancel-span-all"><h3>Cancelamentos por segmento</h3><p>Mesma segmentação do Dados Gerais</p><div id="cChartSegment"></div></article>
+            <article class="chart-card cancel-span-all">
+              <h3>Cancelamentos efetivados por mês</h3>
+              <p>Últimos 12 meses · data analítica (churn/distrato)</p>
+              <div id="cChartMonths"></div>
+            </article>
+            <article class="chart-card">
+              <h3>Efetivados por EP</h3>
+              <p>Quantidade e % dos cancelamentos efetivados</p>
+              <div id="cChartEngineer"></div>
+            </article>
+            <article class="chart-card">
+              <h3>Efetivados por segmento</h3>
+              <p>Mesma segmentação do Dados Gerais</p>
+              <div id="cChartSegment"></div>
+            </article>
           </section>
 
           <section class="table-panel">
             <div class="section-head" style="margin:0">
-              <div><h2>Detalhamento dos cancelamentos</h2><p>Clique em uma linha para ver o detalhe.</p></div>
+              <div><h2>Detalhamento do processo</h2><p>Clique em uma linha para ver o detalhe. A tabela respeita os filtros (etapa padrão: efetivado).</p></div>
               <span class="counter" id="cCounter"></span>
             </div>
             <div class="table-wrap">
@@ -1542,26 +1758,26 @@
                 <thead>
                   <tr>
                     <th data-csort="clientName">Cliente</th>
-                    <th data-csort="clientCode">Código</th>
-                    <th data-csort="engineer">Engenheiro Patrimonial</th>
-                    <th data-csort="segment">Segmento</th>
-                    <th data-csort="hireDate">Data de contratação</th>
-                    <th data-csort="cancellationDate">Data de cancelamento</th>
-                    <th data-csort="daysToCancellation" class="num">Tempo até cancelamento</th>
+                    <th data-csort="exclusiveStage">Etapa mais avançada</th>
+                    <th data-csort="intencaoAt">Intenção</th>
+                    <th data-csort="pedidoAt">Pedido</th>
+                    <th data-csort="churnEfetivadoAt">Churn efetivado</th>
+                    <th data-csort="distratoAssinadoAt">Distrato assinado</th>
+                    <th data-csort="cancellationDate">Data analítica</th>
                     <th data-csort="reason">Motivo original</th>
-                    <th data-csort="reasonCategory">Categoria do motivo</th>
-                    <th data-csort="meetingsBeforeCancellation" class="num">Reuniões antes</th>
-                    <th data-csort="financialUpdateDate">Última atualização financeira</th>
-                    <th data-csort="daysSinceFinancialUpdate" class="num">Dias sem atualização financeira</th>
-                    <th data-csort="lastMeetingDate">Última reunião</th>
-                    <th data-csort="daysSinceLastMeeting" class="num">Dias sem reunião</th>
-                    <th data-csort="dataWarnings">Alertas</th>
+                    <th data-csort="reasonCategory">Categoria</th>
+                    <th data-csort="passouRetencao">Passou retenção</th>
+                    <th data-csort="desfecho">Desfecho</th>
+                    <th data-csort="responsavel">Responsável</th>
+                    <th data-csort="estagioCliente">Estágio cliente</th>
+                    <th data-csort="isCritical">Crítico</th>
+                    <th data-csort="isArchived">Arquivado</th>
                   </tr>
                 </thead>
                 <tbody id="cRows"></tbody>
               </table>
             </div>
-            <div class="empty" id="cEmpty">Nenhum cancelamento encontrado para os filtros selecionados.</div>
+            <div class="empty" id="cEmpty">Nenhum registro encontrado para os filtros selecionados.</div>
             <div class="pagination">
               <div id="cPageInfo"></div>
               <div>
@@ -1781,7 +1997,7 @@
             <div class="status-actions">
               <div class="status-wrap">
                 <button type="button" class="status-btn" id="connectionStatusBtn" data-has-alerts="false" aria-expanded="false" aria-controls="qualityAlertsPopover" title="">
-                  <div class="status"><b id="connectionStatus" style="color:var(--color-warning)">● Conectando ao Supabase</b><span id="updatedAt">Calculando indicadores…</span></div>
+                  <div class="status"><b id="connectionStatus" style="color:var(--color-warning)">? Conectando ao Supabase</b><span id="updatedAt">Calculando indicadores…</span></div>
                 </button>
                 <div class="alerts-popover" id="qualityAlertsPopover" role="dialog" aria-label="Alertas de qualidade" hidden></div>
               </div>
@@ -1792,7 +2008,7 @@
           <section class="filters" aria-label="Filtros globais">
             <label>Buscar coluna ou tabela<input id="search" placeholder="Ex.: data_inicio_ciclo" /></label>
             <label>Domínio<select id="domain"><option value="all">Todos os domínios</option></select></label>
-            <label>Preenchimento<select id="severity"><option value="all">Todos</option><option value="high">Alto (≥ 85%)</option><option value="medium">Médio (60%–84,9%)</option><option value="low">Baixo (&lt; 60%)</option></select></label>
+            <label>Preenchimento<select id="severity"><option value="all">Todos</option><option value="high">Alto (= 85%)</option><option value="medium">Médio (60%–84,9%)</option><option value="low">Baixo (&lt; 60%)</option></select></label>
             <button class="btn" id="clear">Limpar filtros</button>
           </section>
           <section class="summary" id="summary"></section>
@@ -1848,7 +2064,7 @@
       <strong>Tem alguma dúvida sobre os dados?</strong>
       <span>Pergunte ao Assistente da Jornada.</span>
     </div>
-    <button id="assistantHintClose" class="asst-hint-close" type="button" aria-label="Fechar aviso">✕</button>
+    <button id="assistantHintClose" class="asst-hint-close" type="button" aria-label="Fechar aviso">?</button>
   </div>
   <div id="assistantBackdrop" class="asst-backdrop" hidden></div>
   <div id="assistantPanel" class="asst-panel" role="dialog" aria-modal="true" aria-labelledby="assistantTitle" aria-hidden="true" hidden>
@@ -1858,8 +2074,8 @@
         <span>Pergunte sobre indicadores, regras e origem dos dados</span>
       </div>
       <div class="asst-header-actions">
-        <button id="assistantClear" class="asst-icon-btn" type="button" aria-label="Limpar conversa" title="Limpar conversa">↺</button>
-        <button id="assistantClose" class="asst-icon-btn" type="button" aria-label="Fechar assistente" title="Fechar">✕</button>
+        <button id="assistantClear" class="asst-icon-btn" type="button" aria-label="Limpar conversa" title="Limpar conversa">?</button>
+        <button id="assistantClose" class="asst-icon-btn" type="button" aria-label="Fechar assistente" title="Fechar">?</button>
       </div>
     </header>
     <div id="assistantBody" class="asst-body" role="log" aria-live="polite" aria-relevant="additions"></div>
@@ -1880,9 +2096,9 @@
     const money = v => v == null ? 'Não informado' : v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
     const moneyAvg = v => v == null ? '—' : v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 });
     const boolIcon = v => v === true
-      ? '<span class="bool-yes" title="Sim">✔</span>'
+      ? '<span class="bool-yes" title="Sim">?</span>'
       : v === false
-        ? '<span class="bool-no" title="Não">✖</span>'
+        ? '<span class="bool-no" title="Não">?</span>'
         : '<span class="bool-na" title="Não informado">—</span>';
     const boolLabel = v => v === true ? 'Sim' : v === false ? 'Não' : 'Não informado';
     const dateBR = iso => {
@@ -2036,10 +2252,10 @@
       }, true);
     }
     function portalAlertIcon(type) {
-      if (type === 'info') return 'ℹ';
-      if (type === 'success') return '✔';
-      if (type === 'error') return '✕';
-      return '⚠';
+      if (type === 'info') return '?';
+      if (type === 'success') return '?';
+      if (type === 'error') return '?';
+      return '?';
     }
     function severityRank(sev) {
       const s = String(sev || 'warning').toLowerCase();
@@ -2160,7 +2376,7 @@
         message: summaryMessage,
         note: options.note || '',
         extraHtml: buildWarningsExtraHtml(aggregated),
-        icon: '⚠'
+        icon: '?'
       });
     }
     function initStaticPortalAlerts() {
@@ -2174,7 +2390,38 @@
         }
       });
     }
+    function setupHelpTipInteractions() {
+      const tipSelector = '.help[data-tip], .has-tip[data-tip]';
+      const closeAll = (except = null) => {
+        document.querySelectorAll(`${tipSelector}.is-open`).forEach((el) => {
+          if (el !== except) el.classList.remove('is-open');
+        });
+      };
+      document.addEventListener('click', (event) => {
+        const help = event.target.closest?.(tipSelector);
+        if (help) {
+          event.preventDefault();
+          const open = help.classList.contains('is-open');
+          closeAll();
+          if (!open) help.classList.add('is-open');
+          return;
+        }
+        closeAll();
+      });
+      document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') closeAll();
+        const help = event.target.closest?.(tipSelector);
+        if (!help) return;
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          const open = help.classList.contains('is-open');
+          closeAll();
+          if (!open) help.classList.add('is-open');
+        }
+      });
+    }
     setupPortalAlertDismissal();
+    setupHelpTipInteractions();
     clearPortalViewDismissedAlerts();
 
     /** Remonta avisos da página a partir do payload já carregado (após troca de aba). */
@@ -2197,7 +2444,7 @@
               title: 'Observações de qualidade dos dados',
               message: 'Há inconsistências ou alertas na consolidação da carteira. Os indicadores exibidos continuam válidos para a amostra disponível.',
               extraHtml: lines.length ? `<ul>${lines.map(l => `<li>${l}</li>`).join('')}</ul>` : '',
-              icon: '⚠'
+              icon: '?'
             });
           } else {
             hidePortalAlertHost(gAlert);
@@ -2231,17 +2478,22 @@
         showSourceWarningsAlert('#uSourceAlert', 'platform-source-warning', 'Alertas das fontes de uso da plataforma', platformState.payload.sources?.warnings || []);
       }
       if (nav === 'cancellations' && typeof cancellationsState !== 'undefined' && cancellationsState.payload) {
+        restoreStaticPortalAlert('#cProcessExplainer', 'cancellations-process-explainer');
+        const cWarnAll = [
+          ...(cancellationsState.payload.warnings || []),
+          ...(cancellationsState.payload.quality?.warnings || [])
+        ];
+        const cWarnShown = cWarnAll.slice(0, 5);
+        const cWarnExtra = cWarnAll.length - cWarnShown.length;
         showSourceWarningsAlert(
           '#cSourceAlert',
           'cancellations-data-quality-warning',
           'Atenção à cobertura dos dados de cancelamento',
-          [
-            ...(cancellationsState.payload.warnings || []),
-            ...(cancellationsState.payload.quality?.warnings || [])
-          ],
+          cWarnShown,
           {
             message: 'Alguns indicadores dependem de datas, reuniões e atualizações financeiras válidas. Registros sem informação suficiente não são tratados como zero.',
-            note: 'Os KPIs disponíveis continuam sendo exibidos com a cobertura real de cada métrica.'
+            note: (cWarnExtra > 0 ? `+${cWarnExtra} outros. ` : '')
+              + 'Os KPIs disponíveis continuam sendo exibidos com a cobertura real de cada métrica.'
           }
         );
       }
@@ -2430,7 +2682,7 @@
         { indicator: 'Usuários com mecanismos sugeridos', viability: 'Parcial', metric: 'count(distinct user_id) em user_mechanisms — endpoint /api/pharus-mechanisms disponível para outros dashboards', coverage: fixedCoverage(0, 0, 0), base: 'App Pharus' },
         { indicator: 'Total de sugestões', viability: 'Parcial', metric: 'count(*) em user_mechanisms (não carregado nesta sessão da página Mecanismos)', coverage: fixedCoverage(0, 0, 0), base: 'App Pharus' },
         { indicator: 'Tipos distintos sugeridos', viability: 'Parcial', metric: 'distinct mechanism_id (+ catálogo mechanisms.data)', coverage: fixedCoverage(0, 0, 0), base: 'App Pharus' },
-        { indicator: 'Mecanismo / mercado / categoria mais sugeridos', viability: 'Parcial', metric: 'Agregações sobre user_mechanisms ⋉ mechanisms.data', coverage: fixedCoverage(0, 0, 0), base: 'App Pharus' },
+        { indicator: 'Mecanismo / mercado / categoria mais sugeridos', viability: 'Parcial', metric: 'Agregações sobre user_mechanisms ? mechanisms.data', coverage: fixedCoverage(0, 0, 0), base: 'App Pharus' },
         { indicator: 'Sugestões recentes (30 dias)', viability: 'Parcial', metric: 'created_at da sugestão — não é implementação', coverage: fixedCoverage(0, 0, 0), base: 'App Pharus' },
         { indicator: 'Mecanismos implementados', viability: 'Sem dados', metric: 'Sem status de conclusão / implemented_at no App Pharus auditado', coverage: fixedCoverage(0, 0, 0), base: 'App Pharus' },
         { indicator: 'Mecanismos implementados antes do cancelamento', viability: 'Sem dados', metric: 'Fonte localizada parcialmente no App Pharus, mas ainda sem evidência de implementação e data de conclusão', coverage: fixedCoverage(0, 0, 0), base: 'App Pharus' },
@@ -2582,7 +2834,7 @@
       qualityWarnings = warnings;
 
       if (networkFailed || (!payload?.data?.length && !warnings.length)) {
-        status.textContent = '● Falha na conexão';
+        status.textContent = '? Falha na conexão';
         status.style.color = 'var(--color-danger)';
         if (qualityStatusBtn) {
           qualityStatusBtn.dataset.hasAlerts = 'false';
@@ -2598,7 +2850,7 @@
         || (warnings.length ? 'connected_with_alerts' : 'connected');
 
       if (connectionStatus === 'connected_with_alerts' || warnings.length) {
-        status.textContent = '● Supabase conectado com alertas';
+        status.textContent = '? Supabase conectado com alertas';
         status.style.color = 'var(--color-warning)';
         if (qualityStatusBtn) {
           qualityStatusBtn.dataset.hasAlerts = 'true';
@@ -2610,10 +2862,10 @@
           type: 'warning',
           title: `${warnings.length} alerta${warnings.length > 1 ? 's' : ''} de qualidade`,
           message: 'Algumas fontes não puderam ser auditadas. O restante da página continua válido. Detalhes também estão disponíveis no status de conexão.',
-          icon: '⚠'
+          icon: '?'
         });
       } else {
-        status.textContent = '● Supabase conectado';
+        status.textContent = '? Supabase conectado';
         status.style.color = 'var(--color-success)';
         if (qualityStatusBtn) {
           qualityStatusBtn.dataset.hasAlerts = 'false';
@@ -2637,7 +2889,7 @@
       const refresh = document.querySelector('#refresh');
       const status = document.querySelector('#connectionStatus');
       refresh.disabled = true; refresh.textContent = 'Atualizando…';
-      status.textContent = '● Atualizando dados'; status.style.color = 'var(--color-warning)';
+      status.textContent = '? Atualizando dados'; status.style.color = 'var(--color-warning)';
       closeQualityAlerts();
       try {
         const response = await apiFetch(`/api/quality?t=${Date.now()}`, { cache: 'no-store' });
@@ -2904,7 +3156,7 @@
       gActiveOnly.classList.remove('active');
       gActiveOnly.setAttribute('aria-pressed', on ? 'true' : 'false');
       const label = gActiveOnly.querySelector('.chip-label');
-      if (label) label.textContent = on ? '✓ Somente clientes ativos' : 'Somente clientes ativos';
+      if (label) label.textContent = on ? '? Somente clientes ativos' : 'Somente clientes ativos';
     }
 
     function statusBadge(status) {
@@ -3107,7 +3359,7 @@
         else if (src === 'client_created') bucket.createdAtFallbackCount += 1;
       }
 
-      // Janela contínua: mês mais antigo à esquerda → mais recente à direita
+      // Janela contínua: mês mais antigo à esquerda ? mais recente à direita
       const series = [];
       for (let i = limit - 1; i >= 0; i -= 1) {
         const key = shiftMonthKey(nowKey, -i);
@@ -3161,7 +3413,7 @@
         : null;
       const change = latest?.previousMonthChangePercent;
       const changeClass = change == null || change === 0 ? 'flat' : change > 0 ? 'up' : 'down';
-      const changeText = change == null ? '—' : `${change > 0 ? '↑' : change < 0 ? '↓' : '–'} ${Math.abs(change).toLocaleString('pt-BR')}%`;
+      const changeText = change == null ? '—' : `${change > 0 ? '?' : change < 0 ? '?' : '–'} ${Math.abs(change).toLocaleString('pt-BR')}%`;
 
       if (summaryEl) {
         summaryEl.innerHTML = `
@@ -3339,7 +3591,7 @@
       const refresh = document.querySelector('#gRefresh');
       const status = document.querySelector('#gStatus');
       refresh.disabled = true; refresh.textContent = 'Atualizando…';
-      status.textContent = '● Atualizando dados'; status.style.color = 'var(--color-warning)';
+      status.textContent = '? Atualizando dados'; status.style.color = 'var(--color-warning)';
       try {
         const response = await apiFetch(`/api/general-data?t=${Date.now()}`, { cache: 'no-store' });
         const payload = await response.json().catch(() => ({}));
@@ -3359,8 +3611,8 @@
         renderGeneral();
         const hasStatusNotes = Boolean(payload.quality?.statusConsistency?.notes?.length);
         status.textContent = (payload.quality?.warnings?.length || hasStatusNotes)
-          ? '● Supabase conectado com alertas'
-          : '● Supabase conectado';
+          ? '? Supabase conectado com alertas'
+          : '? Supabase conectado';
         status.style.color = (payload.quality?.warnings?.length || hasStatusNotes)
           ? 'var(--color-warning)'
           : 'var(--color-success)';
@@ -3380,7 +3632,7 @@
               title: 'Observações de qualidade dos dados',
               message: 'Há inconsistências ou alertas na consolidação da carteira. Os indicadores exibidos continuam válidos para a amostra disponível.',
               extraHtml: lines.length ? `<ul>${lines.map(l => `<li>${l}</li>`).join('')}</ul>` : '',
-              icon: '⚠'
+              icon: '?'
             });
           } else {
             hidePortalAlertHost(gAlert);
@@ -3390,7 +3642,7 @@
         if (requestId !== generalState.requestId) return;
         if (error?.code === 'AUTH_REQUIRED' || error?.code === 'AUTH_FORBIDDEN' || error?.message === 'AUTH_REQUIRED') return;
         console.error('[API] general-data failed', error);
-        status.textContent = '● Falha na atualização'; status.style.color = 'var(--color-danger)';
+        status.textContent = '? Falha na atualização'; status.style.color = 'var(--color-danger)';
         document.querySelector('#gUpdated').textContent = error.message || friendlyApiError(0, null, true);
         document.querySelector('#gEmpty').style.display = 'block';
         document.querySelector('#gEmpty').textContent = error.message || 'Não foi possível carregar os dados gerais.';
@@ -3548,7 +3800,7 @@
       const refresh = document.querySelector('#pRefresh');
       const status = document.querySelector('#pStatus');
       refresh.disabled = true; refresh.textContent = 'Atualizando…';
-      status.textContent = '● Atualizando dados'; status.style.color = 'var(--color-warning)';
+      status.textContent = '? Atualizando dados'; status.style.color = 'var(--color-warning)';
       try {
         const response = await apiFetch(`/api/patrimonial-plan?t=${Date.now()}`, { cache: 'no-store' });
         const payload = await response.json().catch(() => ({}));
@@ -3558,13 +3810,13 @@
         planState.page = 1;
         fillSelect(pFilters.source, (payload.sources?.databases || []).map(db => db.source), 'Todas');
         renderPlan();
-        status.textContent = payload.sources?.warnings?.length ? '● Fontes conectadas com alertas' : '● Fontes conectadas';
+        status.textContent = payload.sources?.warnings?.length ? '? Fontes conectadas com alertas' : '? Fontes conectadas';
         status.style.color = payload.sources?.warnings?.length ? 'var(--color-warning)' : 'var(--color-success)';
         document.querySelector('#pUpdated').textContent = `Atualizado em ${new Date(payload.generatedAt).toLocaleString('pt-BR')}`;
         showSourceWarningsAlert('#pSourceAlert', 'plan-source-warning', 'Alertas das fontes do plano patrimonial', payload.sources?.warnings || []);
       } catch (error) {
         if (requestId !== planState.requestId) return;
-        status.textContent = '● Falha na atualização'; status.style.color = 'var(--color-danger)';
+        status.textContent = '? Falha na atualização'; status.style.color = 'var(--color-danger)';
         document.querySelector('#pUpdated').textContent = error.message;
         document.querySelector('#pEmpty').style.display = 'block';
         document.querySelector('#pEmpty').textContent = 'Não foi possível carregar o plano patrimonial.';
@@ -3673,7 +3925,7 @@
       const refresh = document.querySelector('#jRefresh');
       const status = document.querySelector('#jStatus');
       refresh.disabled = true; refresh.textContent = 'Atualizando…';
-      status.textContent = '● Atualizando dados'; status.style.color = 'var(--color-warning)';
+      status.textContent = '? Atualizando dados'; status.style.color = 'var(--color-warning)';
       try {
         const response = await apiFetch(`/api/onboarding?t=${Date.now()}`, { cache: 'no-store' });
         const payload = await response.json().catch(() => ({}));
@@ -3685,13 +3937,13 @@
         fillSelect(jFilters.status, [...new Set(clients.map(c => c.status))].sort((a, b) => a.localeCompare(b, 'pt-BR')), 'Todos');
         fillSelect(jFilters.engineer, [...new Set(clients.map(c => c.engineer))].sort((a, b) => a.localeCompare(b, 'pt-BR')), 'Todos');
         renderOnboarding();
-        status.textContent = payload.sources?.warnings?.length ? '● Portal conectado com alertas' : '● Portal conectado';
+        status.textContent = payload.sources?.warnings?.length ? '? Portal conectado com alertas' : '? Portal conectado';
         status.style.color = payload.sources?.warnings?.length ? 'var(--color-warning)' : 'var(--color-success)';
         document.querySelector('#jUpdated').textContent = `Atualizado em ${new Date(payload.generatedAt).toLocaleString('pt-BR')}`;
         showSourceWarningsAlert('#jSourceAlert', 'journey-source-warning', 'Alertas das fontes de jornada', payload.sources?.warnings || []);
       } catch (error) {
         if (requestId !== onboardingState.requestId) return;
-        status.textContent = '● Falha na atualização'; status.style.color = 'var(--color-danger)';
+        status.textContent = '? Falha na atualização'; status.style.color = 'var(--color-danger)';
         document.querySelector('#jUpdated').textContent = error.message;
         document.querySelector('#jEmpty').style.display = 'block';
         document.querySelector('#jEmpty').textContent = 'Não foi possível carregar jornada e onboarding.';
@@ -4279,7 +4531,7 @@
       const refresh = document.querySelector('#mRefresh');
       const status = document.querySelector('#mStatus');
       refresh.disabled = true; refresh.textContent = 'Atualizando…';
-      status.textContent = '● Atualizando dados'; status.style.color = 'var(--color-warning)';
+      status.textContent = '? Atualizando dados'; status.style.color = 'var(--color-warning)';
       try {
         const response = await apiFetch(`/api/meetings?t=${Date.now()}`, { cache: 'no-store' });
         const payload = await response.json();
@@ -4291,14 +4543,14 @@
         fillSelect(mFilters.engineer, [...new Set(clients.map(c => c.engineer))].sort((a, b) => a.localeCompare(b, 'pt-BR')), 'Todos');
         fillSelect(mFilters.freq, (payload.distributions?.meetingFrequency || []).map(r => r.label), 'Todas');
         renderMeetings();
-        status.textContent = payload.quality?.warnings?.length ? '● Supabase conectado com alertas' : '● Supabase conectado';
+        status.textContent = payload.quality?.warnings?.length ? '? Supabase conectado com alertas' : '? Supabase conectado';
         status.style.color = payload.quality?.warnings?.length ? 'var(--color-warning)' : 'var(--color-success)';
         document.querySelector('#mUpdated').textContent = `Atualizado em ${new Date(payload.generatedAt).toLocaleString('pt-BR')}`;
         showSourceWarningsAlert('#mSourceAlert', 'meetings-source-warning', 'Alertas de qualidade das reuniões', payload.quality?.warnings || []);
       } catch (error) {
         if (requestId !== meetingsState.requestId) return;
         if (error?.code === 'AUTH_REQUIRED' || error?.code === 'AUTH_FORBIDDEN' || error?.message === 'AUTH_REQUIRED') return;
-        status.textContent = '● Falha na atualização'; status.style.color = 'var(--color-danger)';
+        status.textContent = '? Falha na atualização'; status.style.color = 'var(--color-danger)';
         document.querySelector('#mUpdated').textContent = error.message;
         document.querySelector('#mEmpty').style.display = 'block';
         document.querySelector('#mEmpty').textContent = 'Não foi possível carregar as reuniões.';
@@ -4382,7 +4634,7 @@
       kActiveOnly.classList.remove('active');
       kActiveOnly.setAttribute('aria-pressed', on ? 'true' : 'false');
       const label = kActiveOnly.querySelector('.chip-label');
-      if (label) label.textContent = on ? '✓ Somente clientes ativos' : 'Somente clientes ativos';
+      if (label) label.textContent = on ? '? Somente clientes ativos' : 'Somente clientes ativos';
     }
 
     function pctBadge(value) {
@@ -4874,7 +5126,7 @@
             title: `Tipos sem utilização (${fmt.format(unused.length)})`,
             message: 'Esses tipos existem no catálogo, mas ainda não foram vinculados a nenhum cliente.',
             extraHtml: `<ul>${unused.map(t => `<li>${escapeHtml(t.name)}</li>`).join('')}</ul>`,
-            icon: '⚠'
+            icon: '?'
           });
         }
       }
@@ -5000,7 +5252,7 @@
       const refresh = document.querySelector('#kRefresh');
       const status = document.querySelector('#kStatus');
       refresh.disabled = true; refresh.textContent = 'Atualizando…';
-      status.textContent = '● Atualizando dados'; status.style.color = 'var(--color-warning)';
+      status.textContent = '? Atualizando dados'; status.style.color = 'var(--color-warning)';
       try {
         const response = await apiFetch(`/api/mechanisms?t=${Date.now()}`, { cache: 'no-store' });
         const payload = await response.json();
@@ -5022,14 +5274,14 @@
         fillSelect(kFilters.pctRange, ['0%', 'De 1% a 25%', 'De 26% a 50%', 'De 51% a 75%', 'De 76% a 99%', '100%', 'Sem recomendações'], 'Todas');
         renderMechanisms();
         const hasWarnings = Boolean(payload.quality?.warnings?.length);
-        status.textContent = hasWarnings ? '● Supabase conectado com alertas' : '● Supabase conectado';
+        status.textContent = hasWarnings ? '? Supabase conectado com alertas' : '? Supabase conectado';
         status.style.color = hasWarnings ? 'var(--color-warning)' : 'var(--color-success)';
         document.querySelector('#kUpdated').textContent = `Atualizado em ${new Date(payload.generatedAt).toLocaleString('pt-BR')}`;
         showSourceWarningsAlert('#kSourceAlert', 'mechanisms-source-warning', 'Alertas de qualidade dos mecanismos', payload.quality?.warnings || []);
       } catch (error) {
         if (requestId !== mechanismsState.requestId) return;
         if (error?.code === 'AUTH_REQUIRED' || error?.code === 'AUTH_FORBIDDEN' || error?.message === 'AUTH_REQUIRED') return;
-        status.textContent = '● Falha na atualização'; status.style.color = 'var(--color-danger)';
+        status.textContent = '? Falha na atualização'; status.style.color = 'var(--color-danger)';
         document.querySelector('#kUpdated').textContent = error.message;
         document.querySelector('#kEmpty').style.display = 'block';
         document.querySelector('#kEmpty').textContent = 'Não foi possível carregar os dados de mecanismos.';
@@ -5308,7 +5560,7 @@
       const refresh = document.querySelector('#uRefresh');
       const status = document.querySelector('#uStatus');
       refresh.disabled = true; refresh.textContent = 'Atualizando...';
-      status.textContent = '● Atualizando dados'; status.style.color = 'var(--color-warning)';
+      status.textContent = '? Atualizando dados'; status.style.color = 'var(--color-warning)';
       try {
         const response = await apiFetch(`/api/platform-usage?t=${Date.now()}`, { cache: 'no-store' });
         const payload = await response.json().catch(() => ({}));
@@ -5319,14 +5571,14 @@
         renderPlatform();
         renderQualityMatrices();
         const hasWarnings = Boolean(payload.sources?.warnings?.length);
-        status.textContent = hasWarnings ? '● QV360 conectado com alertas' : '● QV360 conectado';
+        status.textContent = hasWarnings ? '? QV360 conectado com alertas' : '? QV360 conectado';
         status.style.color = hasWarnings ? 'var(--color-warning)' : 'var(--color-success)';
         document.querySelector('#uUpdated').textContent = `Atualizado em ${new Date(payload.generatedAt).toLocaleString('pt-BR')}`;
         showSourceWarningsAlert('#uSourceAlert', 'platform-source-warning', 'Alertas das fontes de uso da plataforma', payload.sources?.warnings || []);
       } catch (error) {
         if (requestId !== platformState.requestId) return;
         if (error?.code === 'AUTH_REQUIRED' || error?.code === 'AUTH_FORBIDDEN' || error?.message === 'AUTH_REQUIRED') return;
-        status.textContent = '● Falha na atualização'; status.style.color = 'var(--color-danger)';
+        status.textContent = '? Falha na atualização'; status.style.color = 'var(--color-danger)';
         document.querySelector('#uUpdated').textContent = error.message;
         document.querySelector('#uEmpty').style.display = 'block';
         document.querySelector('#uEmpty').textContent = 'Não foi possível carregar uso da plataforma.';
@@ -5541,7 +5793,7 @@
         fActiveOnly.classList.toggle('is-active', on);
         fActiveOnly.setAttribute('aria-pressed', on ? 'true' : 'false');
         const label = fActiveOnly.querySelector('.chip-label');
-        if (label) label.textContent = on ? '✓ Somente clientes ativos' : 'Somente clientes ativos';
+        if (label) label.textContent = on ? '? Somente clientes ativos' : 'Somente clientes ativos';
       }
     }
 
@@ -5778,7 +6030,7 @@
           type: 'info',
           title: 'Histórico financeiro',
           message: 'A base atual armazena apenas o estado financeiro mais recente por cliente.',
-          icon: 'ℹ'
+          icon: '?'
         });
       }
 
@@ -5849,7 +6101,7 @@
       const status = document.querySelector('#fStatus');
       const empty = document.querySelector('#fEmpty');
       refresh.disabled = true; refresh.textContent = 'Atualizando…';
-      status.textContent = '● Atualizando dados'; status.style.color = 'var(--color-warning)';
+      status.textContent = '? Atualizando dados'; status.style.color = 'var(--color-warning)';
       try {
         const response = await apiFetch(`${endpoint}?t=${Date.now()}`, { cache: 'no-store' });
         const responseText = await response.text();
@@ -5893,7 +6145,7 @@
           throw renderError;
         }
         const warnCount = (financialState.payload.warnings || financialState.payload.quality?.warnings || []).length;
-        status.textContent = warnCount ? '● Supabase conectado com alertas' : '● Supabase conectado';
+        status.textContent = warnCount ? '? Supabase conectado com alertas' : '? Supabase conectado';
         status.style.color = warnCount ? 'var(--color-warning)' : 'var(--color-success)';
         document.querySelector('#fUpdated').textContent = financialState.payload.generatedAt
           ? `Atualizado em ${new Date(financialState.payload.generatedAt).toLocaleString('pt-BR')}`
@@ -5912,7 +6164,7 @@
         if (requestId !== financialState.requestId) return;
         if (error?.code === 'AUTH_REQUIRED' || error?.code === 'AUTH_FORBIDDEN' || error?.message === 'AUTH_REQUIRED') return;
         console.error('[Financial Updates API]', { status: error?.status || 0, error: error.message });
-        status.textContent = '● Falha na atualização'; status.style.color = 'var(--color-danger)';
+        status.textContent = '? Falha na atualização'; status.style.color = 'var(--color-danger)';
         document.querySelector('#fUpdated').textContent = error.message || friendlyApiError(0, null, true);
         if (empty) {
           empty.style.display = 'block';
@@ -6320,7 +6572,7 @@
       const status = document.querySelector('#sStatus');
       const empty = document.querySelector('#sEmpty');
       refresh.disabled = true; refresh.textContent = 'Atualizando…';
-      status.textContent = '● Atualizando dados'; status.style.color = 'var(--color-warning)';
+      status.textContent = '? Atualizando dados'; status.style.color = 'var(--color-warning)';
       try {
         const response = await apiFetch(`${endpoint}?t=${Date.now()}`, { cache: 'no-store' });
         const responseText = await response.text();
@@ -6343,7 +6595,7 @@
         fillSupportFilters();
         try { renderSupport(); } catch (renderError) { console.error('[Support] render error', renderError); throw renderError; }
         const warnCount = (supportState.payload.warnings || []).length + (supportState.payload.quality?.warnings || []).length;
-        status.textContent = warnCount ? '● Base conectada com alertas' : '● Base conectada';
+        status.textContent = warnCount ? '? Base conectada com alertas' : '? Base conectada';
         status.style.color = warnCount ? 'var(--color-warning)' : 'var(--color-success)';
         document.querySelector('#sUpdated').textContent = supportState.payload.generatedAt
           ? `Atualizado em ${new Date(supportState.payload.generatedAt).toLocaleString('pt-BR')}`
@@ -6356,7 +6608,7 @@
         if (requestId !== supportState.requestId) return;
         if (error?.code === 'AUTH_REQUIRED' || error?.code === 'AUTH_FORBIDDEN' || error?.message === 'AUTH_REQUIRED') return;
         console.error('[Support API]', { status: error?.status || 0, error: error.message });
-        status.textContent = '● Falha na atualização'; status.style.color = 'var(--color-danger)';
+        status.textContent = '? Falha na atualização'; status.style.color = 'var(--color-danger)';
         document.querySelector('#sUpdated').textContent = error.message || friendlyApiError(0, null, true);
         if (empty) { empty.style.display = 'block'; empty.textContent = 'Não foi possível carregar o atendimento.'; }
       } finally {
@@ -6398,17 +6650,16 @@
     };
     const cFilters = {
       search: document.querySelector('#cSearch'),
-      engineer: document.querySelector('#cEngineer'),
-      segment: document.querySelector('#cSegment'),
-      reason: document.querySelector('#cReason'),
-      category: document.querySelector('#cCategory'),
       from: document.querySelector('#cFrom'),
       to: document.querySelector('#cTo'),
-      stayRange: document.querySelector('#cStayRange'),
-      meetingRange: document.querySelector('#cMeetingRange'),
-      hasReason: document.querySelector('#cHasReason'),
-      hasFinancial: document.querySelector('#cHasFinancial'),
-      hasInteraction: document.querySelector('#cHasInteraction')
+      stage: document.querySelector('#cStage'),
+      category: document.querySelector('#cCategory'),
+      reason: document.querySelector('#cReason'),
+      responsible: document.querySelector('#cResponsible'),
+      estagio: document.querySelector('#cEstagio'),
+      retention: document.querySelector('#cRetention'),
+      critical: document.querySelector('#cCritical'),
+      archived: document.querySelector('#cArchived')
     };
     const C_STAY_RANGES = ['Até 3 meses', 'De 4 a 6 meses', 'De 7 a 12 meses', 'De 13 a 24 meses', 'Mais de 24 meses', 'Dados insuficientes'];
     const C_MEETING_RANGES = ['0 reuniões', '1 a 2', '3 a 5', '6 a 10', 'Mais de 10', 'Dados insuficientes'];
@@ -6494,23 +6745,55 @@
       return [...buckets.entries()].map(([month, count]) => ({ month, label: month, count }));
     }
 
+    function cancellationAnalyticalDate(c) {
+      return c?.cancellationDate || c?.pedidoAt || c?.intencaoAt || null;
+    }
+    function cancelYesNo(v) {
+      return v === true ? 'Sim' : 'Não';
+    }
+    function cancelTimingText(stat) {
+      if (!stat || stat.median == null || !stat.sampleSize) return 'Dados insuficientes';
+      return `${fmt.format(stat.median)} dias · ${fmt.format(stat.sampleSize)} casos válidos`;
+    }
+    function cancelTimingMedianShort(stat) {
+      if (!stat || stat.median == null || !(stat.sampleSize > 0)) return '—';
+      return `${fmt.format(stat.median)} d`;
+    }
+    function cancelTimingSampleTip(stat) {
+      if (!stat || !(stat.sampleSize > 0)) return 'Dados insuficientes para calcular a mediana.';
+      return `Mediana calculada com ${fmt.format(stat.sampleSize)} casos válidos.`;
+    }
+    function cancelTimingStripItem(label, stat) {
+      const value = cancelTimingMedianShort(stat);
+      const tip = cancelTimingSampleTip(stat);
+      return `<button type="button" class="cancel-timing-item has-tip" data-tip="${escapeHtml(tip)}" aria-label="${escapeHtml(`${label}: ${value}. ${tip}`)}">${escapeHtml(label)}: ${escapeHtml(value)}</button>`;
+    }
+    function cancelFunnelRateText(rateObj) {
+      if (!rateObj || rateObj.rate == null || rateObj.label === 'Dados insuficientes') return 'Dados insuficientes';
+      return rateObj.label || pct(rateObj.rate);
+    }
     function filteredCancellationClients() {
       const clients = cancellationsState.payload?.clients || [];
       const q = (cFilters.search?.value || '').trim().toLowerCase();
+      const stage = cFilters.stage?.value || 'all';
       return clients.filter(c => {
-        if (cFilters.engineer?.value !== 'all' && c.engineer !== cFilters.engineer.value) return false;
-        if (cFilters.segment?.value !== 'all' && c.segment !== cFilters.segment.value) return false;
-        if (cFilters.reason?.value !== 'all' && c.reason !== cFilters.reason.value) return false;
+        if (stage === 'intencao' || stage === 'pedido' || stage === 'efetivado') {
+          if (c.exclusiveStageKey !== stage) return false;
+        }
         if (cFilters.category?.value !== 'all' && cancellationReasonCategoryOf(c) !== cFilters.category.value) return false;
-        if (cFilters.stayRange?.value !== 'all' && c.stayRange !== cFilters.stayRange.value) return false;
-        if (cFilters.meetingRange?.value !== 'all' && c.meetingsBeforeBand !== cFilters.meetingRange.value) return false;
-        if (cFilters.hasReason?.value === 'yes' && !c.hasReason) return false;
-        if (cFilters.hasReason?.value === 'no' && c.hasReason) return false;
-        if (cFilters.hasFinancial?.value === 'yes' && c.daysSinceFinancialUpdate == null) return false;
-        if (cFilters.hasFinancial?.value === 'no' && c.daysSinceFinancialUpdate != null) return false;
-        if (cFilters.hasInteraction?.value === 'yes' && c.daysWithoutInteraction == null) return false;
-        if (cFilters.hasInteraction?.value === 'no' && c.daysWithoutInteraction != null) return false;
-        if (!inDateRange(c.cancellationDate, cFilters.from?.value, cFilters.to?.value)) return false;
+        if (cFilters.reason?.value !== 'all') {
+          const reasonVal = c.reasonRaw || c.reason;
+          if (reasonVal !== cFilters.reason.value) return false;
+        }
+        if (cFilters.responsible?.value !== 'all' && (c.responsavel || 'Não informado') !== cFilters.responsible.value) return false;
+        if (cFilters.estagio?.value !== 'all' && (c.estagioCliente || 'Não informado') !== cFilters.estagio.value) return false;
+        if (cFilters.retention?.value === 'yes' && c.passouRetencao !== true) return false;
+        if (cFilters.retention?.value === 'no' && c.passouRetencao === true) return false;
+        if (cFilters.critical?.value === 'yes' && !c.isCritical) return false;
+        if (cFilters.critical?.value === 'no' && c.isCritical) return false;
+        if (cFilters.archived?.value === 'yes' && !c.isArchived) return false;
+        if (cFilters.archived?.value === 'no' && c.isArchived) return false;
+        if (!inDateRange(cancellationAnalyticalDate(c), cFilters.from?.value, cFilters.to?.value)) return false;
         if (q) {
           const hay = `${c.clientName || ''} ${c.clientCode || ''} ${c.clientId || ''}`.toLowerCase();
           if (!hay.includes(q)) return false;
@@ -6576,12 +6859,10 @@
         sel.value = values.includes(current) ? current : 'all';
       };
       const uniq = (getter) => [...new Set(clients.map(getter).filter(v => v && v !== 'Não informado'))].sort((a, b) => a.localeCompare(b, 'pt-BR'));
-      fill(cFilters.engineer, uniq(c => c.engineer), 'Todos');
-      fill(cFilters.segment, C_SEGMENTS.filter(s => clients.some(c => c.segment === s)), 'Todos');
       fill(cFilters.reason, uniq(c => c.hasReason ? (c.reasonRaw || c.reason) : null), 'Todos');
       fill(cFilters.category, C_REASON_CATEGORIES, 'Todas');
-      fill(cFilters.stayRange, C_STAY_RANGES.filter(r => clients.some(c => c.stayRange === r)), 'Todas');
-      fill(cFilters.meetingRange, C_MEETING_RANGES.filter(r => clients.some(c => c.meetingsBeforeBand === r)), 'Todas');
+      fill(cFilters.responsible, uniq(c => c.responsavel), 'Todos');
+      fill(cFilters.estagio, uniq(c => c.estagioCliente), 'Todos');
     }
 
     function renderCancelMonthChart(items) {
@@ -6611,36 +6892,42 @@
 
     function openCancellationDrawer(client) {
       if (!isPortalAuthenticated()) return;
-      document.querySelector('#drawerTitle').textContent = client.clientName || 'Cliente cancelado';
-      document.querySelector('#drawerSub').textContent = `${client.clientCode || 'Sem código'} · ${client.analyticalStatus || 'Cancelado'}`;
+      document.querySelector('#drawerTitle').textContent = client.clientName || 'Cliente no processo de cancelamento';
+      document.querySelector('#drawerSub').textContent = `${client.clientCode || 'Sem código'} · ${client.exclusiveStage || client.analyticalStatus || 'Processo'}`;
       const meetingsHtml = (client.meetingsSummary || []).length
         ? `<div class="drawer-section" style="grid-column:1/-1"><h3>Reuniões anteriores (últimas)</h3><ul style="margin:0;padding-left:18px;font-size:13px">${
             client.meetingsSummary.map(m => `<li>${escapeHtml(dateBR(m.startTime))} — ${escapeHtml(m.title || 'Reunião')} (${escapeHtml(m.source || '')})</li>`).join('')
           }</ul></div>`
-        : `<div class="drawer-section" style="grid-column:1/-1"><h3>Reuniões anteriores</h3><p style="margin:0;color:var(--color-text-muted);font-size:13px">Nenhuma reunião realizada com presença confirmada antes do cancelamento.</p></div>`;
+        : `<div class="drawer-section" style="grid-column:1/-1"><h3>Reuniões anteriores</h3><p style="margin:0;color:var(--color-text-muted);font-size:13px">Nenhuma reunião com presença confirmada registrada antes do cancelamento efetivado.</p></div>`;
       const missing = [];
       if (!client.hasReason) missing.push('Motivo');
-      if (client.hireDate == null) missing.push('Data de contratação');
-      if (client.daysToCancellation == null) missing.push('Tempo até cancelamento');
-      if (client.daysSinceFinancialUpdate == null) missing.push('Atualização financeira anterior');
-      if (client.daysWithoutInteraction == null) missing.push('Última reunião anterior');
+      if (client.hasEfetivado && client.hireDate == null) missing.push('Data de contratação');
+      if (client.hasEfetivado && client.daysToCancellation == null) missing.push('Tempo até cancelamento');
+      if (!client.hasTratativa) missing.push('Tratativa');
+      if (!client.responsavel || client.responsavel === 'Não informado') missing.push('Responsável');
       const items = [
-        ['Status analítico', client.analyticalStatus || 'Cancelado'],
+        ['Etapa mais avançada', client.exclusiveStage || 'Não informado'],
+        ['Status analítico', client.analyticalStatus || (client.hasEfetivado ? 'Cancelado' : 'Em processo (não efetivado)')],
+        ['Intenção registrada', dateBR(client.intencaoAt)],
+        ['Pedido de cancelamento', dateBR(client.pedidoAt)],
+        ['Churn efetivado', dateBR(client.churnEfetivadoAt)],
+        ['Distrato assinado', dateBR(client.distratoAssinadoAt)],
+        ['Data analítica', dateBR(client.cancellationDate)],
+        ['Fonte da data analítica', client.cancellationDateSource || 'Não informado'],
         ['Engenheiro Patrimonial', client.engineer || 'Não informado'],
         ['Segmento', client.segment || 'Não informado'],
-        ['Data de contratação', dateBR(client.hireDate)],
-        ['Fonte da contratação', client.hireDateSource || 'Não informado'],
-        ['Data de cancelamento', dateBR(client.cancellationDate)],
-        ['Fonte da data de cancelamento', client.cancellationDateSource || 'Não informado'],
-        ['Estágio', client.cancellationStage || 'Não informado'],
-        ['Permanência', client.daysToCancellation == null ? 'Não calculável' : `${cancelDaysText(client.daysToCancellation)} (${client.stayRange})`],
+        ['Estágio do cliente', client.estagioCliente || 'Não informado'],
+        ['Responsável', client.responsavel || 'Não informado'],
+        ['Passou por retenção', cancelYesNo(client.passouRetencao === true)],
+        ['Desfecho', client.desfecho || 'Não informado'],
+        ['Retido', cancelYesNo(client.isRetido === true)],
+        ['Crítico', cancelYesNo(client.isCritical === true)],
+        ['Arquivado', cancelYesNo(client.isArchived === true)],
         ['Motivo original', client.reasonRaw || client.reason || 'Não informado'],
         ['Categoria do motivo', cancellationReasonCategoryOf(client)],
-        ['Reuniões antes do cancelamento', client.meetingsBeforeCancellation == null ? 'Não calculável' : fmt.format(client.meetingsBeforeCancellation)],
-        ['Última atualização financeira', dateBR(client.financialUpdateDate)],
-        ['Dias sem atualização financeira', cancelDaysText(client.daysSinceFinancialUpdate)],
-        ['Última reunião (interação v1)', dateBR(client.lastMeetingDate)],
-        ['Dias desde a última reunião', cancelDaysText(client.daysSinceLastMeeting)],
+        ['Tratativa', client.tratativa || 'Não informado'],
+        ['Data de contratação', dateBR(client.hireDate)],
+        ['Permanência até efetivação', client.daysToCancellation == null ? 'Não calculável' : `${cancelDaysText(client.daysToCancellation)} (${client.stayRange || '—'})`],
         ['Campos ausentes', missing.length ? missing.join(', ') : 'Nenhum']
       ];
       document.querySelector('#drawerGrid').innerHTML =
@@ -6654,31 +6941,116 @@
       if (!cancellationsState.payload) return;
       const setHtml = (sel, html) => { const el = document.querySelector(sel); if (el) el.innerHTML = html; };
       const setText = (sel, text) => { const el = document.querySelector(sel); if (el) el.textContent = text; };
+      const payload = cancellationsState.payload;
+      const summary = payload.summary || {};
+      const dist = payload.distributions || {};
       const rows = filteredCancellationClients();
-      const summary = computeCancellationsSummary(rows);
-      const dist = computeCancellationsDistributions(rows);
+      const stage = cFilters.stage?.value || 'all';
+      const stageSubLabels = {
+        all: 'todas as etapas',
+        intencao: 'intenção',
+        pedido: 'pedido',
+        efetivado: 'cancelamento efetivado'
+      };
 
       setHtml('#cKpisPrimary', `
-        <article class="metric kpi-primary"><div class="metric-label">Total de cancelamentos</div><div class="metric-value">${fmt.format(summary.totalCancellations)}</div><div class="metric-note">Clientes com cancelamento identificado na BASE QV.</div></article>
-        <article class="metric kpi-primary"><div class="metric-label">Com motivo informado</div><div class="metric-value">${fmt.format(summary.withReason)}</div><div class="metric-note">${pct(summary.withReasonPercent)} · Clientes com motivo de cancelamento registrado.</div></article>
-        <article class="metric kpi-primary"><div class="metric-label">Tempo típico até o cancelamento</div><div class="metric-value">${cancelDaysText(summary.medianDaysToCancellation)}</div><div class="metric-note">Mediana entre a contratação e o cancelamento.${summary.averageDaysToCancellation != null ? ` Média: ${fmt.format(summary.averageDaysToCancellation)} dias.` : ''}</div></article>`);
+        <article class="metric kpi-secondary"><div class="metric-label">Intenções registradas</div><div class="metric-value">${fmt.format(summary.intentionsRegistered || 0)}</div><div class="metric-note">Sinalizações de possível cancelamento.</div></article>
+        <article class="metric kpi-secondary"><div class="metric-label">Pedidos de cancelamento</div><div class="metric-value">${fmt.format(summary.ordersRegistered || 0)}</div><div class="metric-note">Pedidos formalizados, ainda não necessariamente concluídos.</div></article>
+        <article class="metric kpi-primary"><div class="metric-label">Cancelamentos efetivados</div><div class="metric-value">${fmt.format(summary.effectiveCancellations ?? summary.totalCancellations ?? 0)}</div><div class="metric-note">Clientes com churn efetivado ou distrato assinado.</div></article>`);
 
-      setHtml('#cKpis', `
-        <article class="metric kpi-secondary"><div class="metric-label">Reuniões antes do cancelamento</div><div class="metric-value">${cancelMetricText(summary.medianMeetingsBeforeCancellation)}</div><div class="metric-note">Quantidade típica de reuniões realizadas antes do cancelamento.${summary.averageMeetingsBeforeCancellation != null ? ` Média: ${fmt.format(summary.averageMeetingsBeforeCancellation)}.` : ''}</div></article>
-        <article class="metric kpi-secondary"><div class="metric-label">Dias desde a última atualização financeira</div><div class="metric-value">${cancelDaysText(summary.medianDaysSinceFinancialUpdate)}</div><div class="metric-note">Tempo típico sem atualização financeira antes do cancelamento.</div></article>
-        <article class="metric kpi-secondary"><div class="metric-label">Dias desde a última reunião antes do cancelamento</div><div class="metric-value">${cancelDaysText(summary.medianDaysWithoutInteraction)}</div><div class="metric-note">Interação v1: última reunião com presença confirmada antes do cancelamento.</div></article>`);
+      const timing = summary.timing || {};
+      const timingItems = [
+        cancelTimingStripItem('Intenção → pedido', timing.medianIntentionToOrder),
+        cancelTimingStripItem('Pedido → efetivação', timing.medianOrderToEffective),
+        cancelTimingStripItem('Intenção → efetivação', timing.medianIntentionToEffective),
+        cancelTimingStripItem('Retenção', timing.medianRetentionDays),
+        cancelTimingStripItem('Efetivação → offboarding', timing.medianEffectiveToOffboarding)
+      ].join('<span class="cancel-timing-sep" aria-hidden="true">·</span>');
+      setHtml('#cKpisTiming', `
+        <aside class="cancel-timing-strip" role="status" aria-label="Tempos medianos do processo">
+          <div class="cancel-timing-strip__head">
+            <span class="cancel-timing-strip__icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+            </span>
+            <span class="cancel-timing-strip__title">Tempos medianos do processo</span>
+            <span
+              class="help"
+              tabindex="0"
+              role="button"
+              aria-label="Sobre o cálculo das medianas de tempo"
+              data-tip="As medianas consideram somente pares de datas válidas e excluem intervalos negativos."
+            >?</span>
+          </div>
+          <div class="cancel-timing-strip__metrics">${timingItems}</div>
+        </aside>`);
 
-      setHtml('#cKpisQuality', `
-        <article class="metric"><div class="metric-label">Cancelamentos sem motivo</div><div class="metric-value">${fmt.format(summary.withoutReason)}</div><div class="metric-note">${pct(summary.withoutReasonPercent)} · Clientes cancelados sem motivo preenchido.</div></article>
-        <article class="metric"><div class="metric-label">Cancelamentos com dados insuficientes</div><div class="metric-value">${fmt.format(summary.insufficientDataClients)}</div><div class="metric-note">Clientes sem pelo menos um indicador importante calculável.</div></article>`);
+      const retention = summary.retention || {};
+      setHtml('#cKpisRetention', `
+        <article class="metric kpi-secondary"><div class="metric-label">Passou por retenção</div><div class="metric-value">${fmt.format(retention.passedRetentionCount || 0)}</div><div class="metric-note">${pct(retention.passedRetentionPercent || 0)} do universo · ${escapeHtml(cancelTimingText(retention.medianRetentionDays || timing.medianRetentionDays))} em retenção.</div></article>
+        <article class="metric kpi-secondary"><div class="metric-label">Retidos</div><div class="metric-value">${fmt.format(retention.retainedCount || 0)}</div><div class="metric-note">Clientes com desfecho de retenção.</div></article>
+        <article class="metric kpi-secondary"><div class="metric-label">Cancelados após retenção</div><div class="metric-value">${fmt.format(retention.cancelledAfterRetentionCount || 0)}</div><div class="metric-note">Passaram por retenção e foram efetivados.${retention.withoutOutcomeCount ? ` Sem desfecho: ${fmt.format(retention.withoutOutcomeCount)}.` : ''}</div></article>`);
 
-      setHtml('#cChartReason', hBars(dist.byReasonCategory || dist.byCategory || [], null));
-      renderCancelMonthChart(dist.byMonth || []);
-      setHtml('#cChartStay', hBars(dist.byStayRange || []));
-      setHtml('#cChartMeetings', hBars(dist.byMeetingCount || []));
-      setHtml('#cChartFinancial', hBars(dist.byFinancialRecency || []));
-      setHtml('#cChartEngineer', hBars(dist.byEngineer || [], 15));
-      setHtml('#cChartSegment', hBars(dist.bySegment || []));
+      const operations = summary.operations || {};
+      setHtml('#cKpisOps', `
+        <article class="metric"><div class="metric-label">Críticos</div><div class="metric-value">${fmt.format(operations.criticalCount || 0)}</div><div class="metric-note">Casos marcados como críticos.</div></article>
+        <article class="metric"><div class="metric-label">Sem responsável</div><div class="metric-value">${fmt.format(operations.withoutResponsibleCount || 0)}</div><div class="metric-note">Processos sem responsável atribuído.</div></article>
+        <article class="metric"><div class="metric-label">Sem tratativa</div><div class="metric-value">${fmt.format(operations.withoutTratativaCount || 0)}</div><div class="metric-note">Sem registro de tratativa.</div></article>
+        <article class="metric"><div class="metric-label">Arquivados</div><div class="metric-value">${fmt.format(operations.archivedRecords ?? summary.archivedRecords ?? 0)}</div><div class="metric-note">Registros arquivados fora dos indicadores atuais.</div></article>`);
+
+      const funnel = summary.funnel || {};
+      const rateIO = cancelFunnelRateText(funnel.rateIntentionToOrder);
+      const rateOE = cancelFunnelRateText(funnel.rateOrderToEffective);
+      const rateIE = cancelFunnelRateText(funnel.rateIntentionToEffective);
+      setHtml('#cChartFunnel', `
+        <div class="cancel-funnel" role="img" aria-label="Funil do processo de cancelamento">
+          <div class="cancel-funnel-step">
+            <div class="cancel-funnel-label">Intenções</div>
+            <div class="cancel-funnel-count">${fmt.format(funnel.intentions ?? summary.intentionsRegistered ?? 0)}</div>
+          </div>
+          <div class="cancel-funnel-rate"><b>${escapeHtml(rateIO)}</b>intenções → pedidos</div>
+          <div class="cancel-funnel-step">
+            <div class="cancel-funnel-label">Pedidos</div>
+            <div class="cancel-funnel-count">${fmt.format(funnel.orders ?? summary.ordersRegistered ?? 0)}</div>
+          </div>
+          <div class="cancel-funnel-rate"><b>${escapeHtml(rateOE)}</b>pedidos → efetivados</div>
+          <div class="cancel-funnel-step is-effective">
+            <div class="cancel-funnel-label">Efetivados</div>
+            <div class="cancel-funnel-count">${fmt.format(funnel.effective ?? summary.effectiveCancellations ?? 0)}</div>
+          </div>
+        </div>
+        <p class="cancel-kpi-note" style="margin-top:10px">Intenção → efetivado (direto): <b>${escapeHtml(rateIE)}</b></p>`);
+
+      setHtml('#cChartExclusiveStage', hBars(dist.byExclusiveStage || summary.exclusiveStages || []));
+
+      const reasonByStage = dist.byReasonCategoryByStage || {};
+      const reasonItems = reasonByStage[stage] || reasonByStage.efetivado || dist.byReasonCategory || [];
+      setHtml('#cChartReason', hBars(reasonItems));
+      setText('#cChartReasonSub', `Categoria analítica · etapa: ${stageSubLabels[stage] || stageSubLabels.efetivado}`);
+
+      const estagioDist = dist.byEstagioCliente || {};
+      const estagioItems = stage === 'efetivado' && estagioDist.efetivado
+        ? estagioDist.efetivado
+        : (stage === 'all' && estagioDist.all
+          ? estagioDist.all
+          : cancelDist(rows, r => r.estagioCliente));
+      setHtml('#cChartEstagio', hBars(estagioItems));
+      setText('#cChartEstagioSub', `Conforme filtro de etapa (${stageSubLabels[stage] || stage})`);
+
+      const efetivadoRows = stage === 'efetivado'
+        ? rows
+        : (payload.clients || []).filter(c => c.hasEfetivado || c.exclusiveStageKey === 'efetivado');
+      const monthItems = stage === 'efetivado'
+        ? cancelMonthSeries(efetivadoRows)
+        : (dist.byMonth || cancelMonthSeries(efetivadoRows));
+      const engineerItems = stage === 'efetivado'
+        ? cancelDist(efetivadoRows, r => (r.engineer === 'Não informado' ? null : r.engineer))
+        : (dist.byEngineer || []);
+      const segmentItems = stage === 'efetivado'
+        ? cancelDist(efetivadoRows, r => r.segment, C_SEGMENTS)
+        : (dist.bySegment || []);
+      renderCancelMonthChart(monthItems);
+      setHtml('#cChartEngineer', hBars(engineerItems, 15));
+      setHtml('#cChartSegment', hBars(segmentItems));
 
       const sorted = [...rows].sort((a, b) => {
         const key = cancellationsState.sortKey;
@@ -6702,23 +7074,23 @@
       setHtml('#cRows', pageRows.map(c => `
         <tr data-cid="${escapeHtml(c.clientId)}">
           <td class="truncate" title="${escapeHtml(c.clientName)}">${escapeHtml(c.clientName || 'Não informado')}</td>
-          <td class="truncate">${escapeHtml(c.clientCode || 'Não informado')}</td>
-          <td class="truncate">${escapeHtml(c.engineer || 'Não informado')}</td>
-          <td>${escapeHtml(c.segment || 'Não informado')}</td>
-          <td>${dateBR(c.hireDate)}</td>
+          <td class="truncate">${escapeHtml(c.exclusiveStage || 'Não informado')}</td>
+          <td>${dateBR(c.intencaoAt)}</td>
+          <td>${dateBR(c.pedidoAt)}</td>
+          <td>${dateBR(c.churnEfetivadoAt)}</td>
+          <td>${dateBR(c.distratoAssinadoAt)}</td>
           <td>${dateBR(c.cancellationDate)}</td>
-          <td class="num">${cancelDaysText(c.daysToCancellation)}</td>
           <td class="truncate" title="${escapeHtml(c.reasonRaw || c.reason || '')}">${escapeHtml(c.reasonRaw || c.reason || 'Não informado')}</td>
           <td class="truncate" title="${escapeHtml(cancellationReasonCategoryOf(c))}">${escapeHtml(cancellationReasonCategoryOf(c))}</td>
-          <td class="num">${c.meetingsBeforeCancellation == null ? 'Não calculável' : fmt.format(c.meetingsBeforeCancellation)}</td>
-          <td>${dateBR(c.financialUpdateDate)}</td>
-          <td class="num">${cancelDaysText(c.daysSinceFinancialUpdate)}</td>
-          <td>${dateBR(c.lastMeetingDate)}</td>
-          <td class="num">${cancelDaysText(c.daysSinceLastMeeting)}</td>
-          <td class="truncate" title="${escapeHtml((c.dataWarnings || []).join(' · '))}">${escapeHtml((c.dataWarnings || []).length ? `${c.dataWarnings.length} alerta(s)` : '—')}</td>
+          <td>${cancelYesNo(c.passouRetencao === true)}</td>
+          <td class="truncate" title="${escapeHtml(c.desfecho || '')}">${escapeHtml(c.desfecho || 'Não informado')}</td>
+          <td class="truncate">${escapeHtml(c.responsavel || 'Não informado')}</td>
+          <td class="truncate">${escapeHtml(c.estagioCliente || 'Não informado')}</td>
+          <td>${cancelYesNo(c.isCritical === true)}</td>
+          <td>${cancelYesNo(c.isArchived === true)}</td>
         </tr>`).join(''));
 
-      setText('#cCounter', `${sorted.length} de ${(cancellationsState.payload.clients || []).length} cancelamentos`);
+      setText('#cCounter', `${sorted.length} de ${(payload.clients || []).length} clientes no processo`);
       setText('#cPageInfo', `Página ${cancellationsState.page} de ${pages}`);
       const empty = document.querySelector('#cEmpty');
       if (empty) empty.style.display = sorted.length ? 'none' : 'block';
@@ -6742,7 +7114,7 @@
       const status = document.querySelector('#cStatus');
       const empty = document.querySelector('#cEmpty');
       if (refresh) { refresh.disabled = true; refresh.textContent = 'Atualizando…'; }
-      if (status) { status.textContent = '● Atualizando dados'; status.style.color = 'var(--color-warning)'; }
+      if (status) { status.textContent = '? Atualizando dados'; status.style.color = 'var(--color-warning)'; }
       try {
         const response = await apiFetch(`${endpoint}?t=${Date.now()}`, { cache: 'no-store' });
         const responseText = await response.text();
@@ -6764,22 +7136,27 @@
         };
         fillCancellationsFilters();
         try { renderCancellations(); } catch (renderError) { console.error('[Cancellations] render error', renderError); throw renderError; }
-        const warnCount = (cancellationsState.payload.warnings || []).length;
+        const warnAll = [
+          ...(cancellationsState.payload.warnings || []),
+          ...(cancellationsState.payload.quality?.warnings || [])
+        ];
+        const warnShown = warnAll.slice(0, 5);
+        const warnExtra = warnAll.length - warnShown.length;
+        const warnCount = warnAll.length;
         if (status) {
-          status.textContent = warnCount ? '● Base conectada com alertas' : '● Base conectada';
+          status.textContent = warnCount ? '? Base conectada com alertas' : '? Base conectada';
           status.style.color = warnCount ? 'var(--color-warning)' : 'var(--color-success)';
         }
+        restoreStaticPortalAlert('#cProcessExplainer', 'cancellations-process-explainer');
         showSourceWarningsAlert(
           '#cSourceAlert',
           'cancellations-data-quality-warning',
           'Atenção à cobertura dos dados de cancelamento',
-          [
-            ...(cancellationsState.payload.warnings || []),
-            ...(cancellationsState.payload.quality?.warnings || [])
-          ],
+          warnShown,
           {
             message: 'Alguns indicadores dependem de datas, reuniões e atualizações financeiras válidas. Registros sem informação suficiente não são tratados como zero.',
-            note: 'Os KPIs disponíveis continuam sendo exibidos com a cobertura real de cada métrica.'
+            note: (warnExtra > 0 ? `+${warnExtra} outros. ` : '')
+              + 'Os KPIs disponíveis continuam sendo exibidos com a cobertura real de cada métrica.'
           }
         );
         const updated = document.querySelector('#cUpdated');
@@ -6796,7 +7173,7 @@
         if (requestId !== cancellationsState.requestId) return;
         if (error?.code === 'AUTH_REQUIRED' || error?.code === 'AUTH_FORBIDDEN' || error?.message === 'AUTH_REQUIRED') return;
         console.error('[Cancellations API]', { status: error?.status || 0, error: error.message });
-        if (status) { status.textContent = '● Falha na atualização'; status.style.color = 'var(--color-danger)'; }
+        if (status) { status.textContent = '? Falha na atualização'; status.style.color = 'var(--color-danger)'; }
         const updated = document.querySelector('#cUpdated');
         if (updated) updated.textContent = error.message || friendlyApiError(0, null, true);
         if (empty) {
@@ -6814,7 +7191,9 @@
     Object.values(cFilters).forEach(el => el?.addEventListener('input', () => { cancellationsState.page = 1; renderCancellations(); }));
     document.querySelector('#cClear')?.addEventListener('click', () => {
       if (cFilters.search) cFilters.search.value = '';
-      ['engineer', 'segment', 'reason', 'category', 'stayRange', 'meetingRange', 'hasReason', 'hasFinancial', 'hasInteraction'].forEach(k => {
+      if (cFilters.stage) cFilters.stage.value = 'efetivado';
+      if (cFilters.archived) cFilters.archived.value = 'no';
+      ['category', 'reason', 'responsible', 'estagio', 'retention', 'critical'].forEach(k => {
         if (cFilters[k]) cFilters[k].value = 'all';
       });
       ['from', 'to'].forEach(k => { if (cFilters[k]) cFilters[k].value = ''; });

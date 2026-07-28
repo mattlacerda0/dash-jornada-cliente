@@ -1,0 +1,4 @@
+/**
+ * Patch snippet reference — applied into index.html by the agent.
+ * Cancelamento UI JS (process stages).
+ */

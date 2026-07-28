@@ -1,21 +1,29 @@
 ﻿import { requireCorporateAuth } from "./_shared/auth.mjs";
 import { dataConfigurationError } from "./_shared/env.mjs";
+import {
+  ANALYTICAL_CANCEL_SELECT,
+  buildAnalyticalCancellationMap,
+  buildCancellationMap,
+  resolveAnalyticalStatus,
+  normalizeClientStatus,
+} from "./_shared/analytical-cancellation.mjs";
 
 const CLIENT_SELECT =
   "id,codigo,name,data_inicio_ciclo,data_fim_ciclo,created_at,status,segmentacao,engenheiro_patrimonial,data_churn,ciclo,valor_total_pago,contrato_assinado,davos_contrato_assinado";
-const CANCEL_SELECT =
-  "id,client_id,distrato_assinado_at,data_pedido,intencao_registrada_at,archived_at,updated_at,created_at";
+const CANCEL_SELECT = ANALYTICAL_CANCEL_SELECT;
 const FINANCIAL_SELECT =
   "id,client_id,reserva_liquidez,ultimo_aporte,ultima_renda_mensal,valor_imoveis_quitados,possui_imovel,possui_carro,possui_consorcio,cheque_especial,parcelamento_cartao,credito_pessoal,credito_consignado,updated_at";
 const SIGNATURE_SELECT = "id_cliente,data_assinatura_contrato";
 
 /**
- * Regra final da data consolidada de cancelamento (por cliente):
- * 1) Ignora registros com archived_at (exclusão lógica).
- * 2) Por registro: coalesce(distrato_assinado_at::date, data_pedido::date, intencao_registrada_at::date).
- * 3) Entre registros do mesmo cliente: prioriza etapa (distrato > pedido > intenção);
- *    empate pela data consolidada mais recente; depois updated_at/created_at.
- * 4) Uma linha analítica por client_id.
+ * Regra analítica oficial de cancelamento (por cliente):
+ * 1) Ignora registros arquivados (archived_at preenchido).
+ * 2) Cancelado somente se houver churn_efetivado_at OU distrato_assinado_at.
+ * 3) Data analítica = churn_efetivado_at ?? distrato_assinado_at.
+ * 4) Entre registros do mesmo cliente: prioriza churn_efetivado_at > distrato_assinado_at;
+ *    empate pela data mais recente, depois updated_at/created_at.
+ * 5) Uma linha analítica por client_id. data_pedido/intencao_registrada_at e
+ *    clients.data_churn NÃO alimentam status/data/permanência analíticos.
  */
 const USED_FIELDS = [
   { table: "clients", column: "id", role: "clientId" },
@@ -31,12 +39,13 @@ const USED_FIELDS = [
   { table: "clients", column: "status", role: "rawStatus" },
   { table: "clients", column: "segmentacao", role: "segment" },
   { table: "clients", column: "engenheiro_patrimonial", role: "engineer" },
-  { table: "clients", column: "data_churn", role: "cancellationDateLegacyFallback" },
+  { table: "clients", column: "data_churn", role: "legacyCadastroOnly" },
   { table: "cancellations", column: "client_id", role: "cancellationJoin" },
-  { table: "cancellations", column: "distrato_assinado_at", role: "cancellationDatePriority1" },
-  { table: "cancellations", column: "data_pedido", role: "cancellationDatePriority2" },
-  { table: "cancellations", column: "intencao_registrada_at", role: "cancellationDatePriority3" },
+  { table: "cancellations", column: "churn_efetivado_at", role: "cancellationDatePriority1" },
+  { table: "cancellations", column: "distrato_assinado_at", role: "cancellationDatePriority2" },
   { table: "cancellations", column: "archived_at", role: "cancellationSoftDelete" },
+  { table: "cancellations", column: "data_pedido", role: "operationalOnly" },
+  { table: "cancellations", column: "intencao_registrada_at", role: "operationalOnly" },
   { table: "cancellations", column: "updated_at", role: "cancellationRecency" },
   { table: "cancellations", column: "created_at", role: "cancellationCreatedFallback" },
   { table: "vw_info_cliente", column: "id_cliente", role: "acquisitionJoin" },
@@ -250,12 +259,6 @@ export function calculateClientSegment(financialData, debtData) {
   };
 }
 
-const STAGE_RANK = {
-  "Distrato assinado": 3,
-  "Pedido de cancelamento": 2,
-  "Intenção registrada": 1,
-};
-
 /** Configuração de exibição por indicador contínuo. */
 const MEASURE_CONFIG = {
   liquidityReserve: {
@@ -437,59 +440,6 @@ function liquidityBand(value) {
   return "Acima de 1 milhão";
 }
 
-function foldStatusToken(value) {
-  return String(value || "")
-    .normalize("NFD")
-    .replace(/\p{M}/gu, "")
-    .toLowerCase()
-    .trim()
-    .replace(/\s+/g, " ");
-}
-
-function normalizeClientStatus(rawStatus) {
-  const token = foldStatusToken(rawStatus);
-  if (!token || token === "null" || token === "undefined" || token === "vazio") {
-    return "Não informado";
-  }
-  if (["ativo", "active", "ativa"].includes(token)) return "Ativo";
-  if (
-    [
-      "churn",
-      "cancelado",
-      "cancelada",
-      "canceled",
-      "cancelled",
-      "encerrado",
-      "encerrada",
-      "inativo",
-      "inativa",
-      "inactive",
-    ].includes(token) ||
-    token.includes("cancel") ||
-    token.includes("churn") ||
-    token.includes("encerr")
-  ) {
-    return "Cancelado";
-  }
-  if (
-    ["congelado", "congelada", "freeze", "frozen", "pausado", "pausada"].includes(token) ||
-    token.includes("congel") ||
-    token.includes("pausad")
-  ) {
-    return "Congelado";
-  }
-  return "Não informado";
-}
-
-/**
- * Status analítico centralizado.
- * Se houver data consolidada de cancelamento → Cancelado (prevalece sobre status bruto ativo).
- */
-function resolveAnalyticalStatus(rawStatus, cancellationDate) {
-  if (cancellationDate) return "Cancelado";
-  return normalizeClientStatus(rawStatus);
-}
-
 function labelOrUnknown(value) {
   return blankToNull(value) ?? "Não informado";
 }
@@ -630,17 +580,6 @@ function currentMonthKey(now = new Date()) {
   return monthKey(now);
 }
 
-function cancellationStageFromDates(distrato, pedido, intencao) {
-  if (distrato) return "Distrato assinado";
-  if (pedido) return "Pedido de cancelamento";
-  if (intencao) return "Intenção registrada";
-  return null;
-}
-
-function consolidatedCancelDate(distrato, pedido, intencao) {
-  return distrato || pedido || intencao || null;
-}
-
 async function fetchAll(table, select, options = {}) {
   const pageSize = options.pageSize || 1000;
   let offset = 0;
@@ -697,67 +636,6 @@ async function fetchSignatureMap() {
     note:
       "data_assinatura_contrato confirmada em vw_info_cliente, mas a view estoura timeout em leitura completa; aquisição usa data_inicio_ciclo → created_at.",
   };
-}
-
-function buildCancellationMap(cancellations) {
-  const map = new Map();
-  const activeProcessCounts = new Map();
-  const orphanClientIds = [];
-  const now = startOfDay(new Date());
-
-  for (const row of cancellations) {
-    const clientId = blankToNull(row.client_id);
-    if (!clientId) continue;
-    if (parseDate(row.archived_at)) continue;
-
-    const distrato = parseDate(row.distrato_assinado_at);
-    const pedido = parseDate(row.data_pedido);
-    const intencao = parseDate(row.intencao_registrada_at);
-    const consolidated = consolidatedCancelDate(distrato, pedido, intencao);
-    if (!consolidated) continue;
-
-    const stage = cancellationStageFromDates(distrato, pedido, intencao);
-    const updated = parseDate(row.updated_at) || parseDate(row.created_at) || consolidated;
-    const rank = STAGE_RANK[stage] || 0;
-
-    activeProcessCounts.set(clientId, (activeProcessCounts.get(clientId) || 0) + 1);
-
-    const warnings = [];
-    if (distrato && !pedido) warnings.push("Distrato assinado sem data de pedido");
-    if (intencao && pedido && intencao > pedido) warnings.push("Intenção posterior ao pedido");
-    if (pedido && distrato && pedido > distrato) warnings.push("Pedido posterior ao distrato");
-    if (startOfDay(consolidated) > now) warnings.push("Data de cancelamento futura");
-
-    const candidate = {
-      date: consolidated,
-      stage,
-      rank,
-      updated,
-      warnings,
-      hasDistrato: Boolean(distrato),
-      hasPedido: Boolean(pedido),
-      hasIntencao: Boolean(intencao),
-    };
-
-    const current = map.get(clientId);
-    if (!current) {
-      map.set(clientId, candidate);
-      continue;
-    }
-    const better =
-      candidate.rank > current.rank ||
-      (candidate.rank === current.rank &&
-        (candidate.date > current.date ||
-          (candidate.date.getTime() === current.date.getTime() && candidate.updated > current.updated)));
-    if (better) map.set(clientId, { ...candidate, warnings: [...new Set([...current.warnings, ...candidate.warnings])] });
-    else map.set(clientId, { ...current, warnings: [...new Set([...current.warnings, ...candidate.warnings])] });
-  }
-
-  const multiples = new Set(
-    [...activeProcessCounts.entries()].filter(([, n]) => n > 1).map(([id]) => id),
-  );
-
-  return { map, multiples, orphanClientIds, activeProcessCounts };
 }
 
 function buildFinancialMap(financialRows) {
@@ -876,17 +754,17 @@ function buildAcquisitionsByMonth(rows) {
 }
 
 function buildPayload(clients, cancellations, financialRows, signatureMap, signatureMeta = {}) {
-  const { map: cancelMap, multiples } = buildCancellationMap(cancellations);
+  const { map: cancelMap, multiples } = buildAnalyticalCancellationMap(cancellations);
   const { map: financialMap, duplicates: financialDuplicates } = buildFinancialMap(financialRows);
   const clientIds = new Set(clients.map((c) => String(c.id)));
   const now = new Date();
   const rows = [];
   let rawActiveCount = 0;
   let activeWithCancelDate = 0;
+  let frozenWithCancelDate = 0;
   const stageCounts = {
+    "Churn efetivado": 0,
     "Distrato assinado": 0,
-    "Pedido de cancelamento": 0,
-    "Intenção registrada": 0,
   };
   const acquisitionSources = {
     contract_signature: 0,
@@ -902,12 +780,10 @@ function buildPayload(clients, cancellations, financialRows, signatureMap, signa
     const stayStartDate = contractDate || createdAt;
     const usedCreatedFallback = !contractDate && Boolean(createdAt);
 
-    const cancelInfo = cancelMap.get(client.id) || null;
-    const cancelPrimary = cancelInfo?.date || null;
-    const cancelFallback = parseDate(client.data_churn);
-    const cancellationDate = cancelPrimary || cancelFallback;
+    const cancelInfo = cancelMap.get(String(client.id)) || null;
+    const cancellationDate = cancelInfo?.date || null;
     const cancellationStage = cancelInfo?.stage || null;
-    const hasCancellationProcess = Boolean(cancelPrimary) || Boolean(cancelFallback);
+    const hasCancellationProcess = Boolean(cancellationDate);
 
     const rawStatus = blankToNull(client.status);
     const normalizedRaw = normalizeClientStatus(rawStatus);
@@ -915,7 +791,11 @@ function buildPayload(clients, cancellations, financialRows, signatureMap, signa
     const analyticalStatus = resolveAnalyticalStatus(rawStatus, cancellationDate);
     if (normalizedRaw === "Ativo" && cancellationDate) {
       activeWithCancelDate += 1;
-      dataWarnings.push("Status bruto ativo com data consolidada de cancelamento");
+      dataWarnings.push("Status bruto ativo com data analítica de cancelamento");
+    }
+    if (normalizedRaw === "Congelado" && cancellationDate) {
+      frozenWithCancelDate += 1;
+      dataWarnings.push("Status bruto congelado com data analítica de cancelamento");
     }
     if (cancelInfo?.stage) stageCounts[cancelInfo.stage] = (stageCounts[cancelInfo.stage] || 0) + 1;
 
@@ -935,6 +815,11 @@ function buildPayload(clients, cancellations, financialRows, signatureMap, signa
     }
     if (acquisition.source === "unavailable") dataWarnings.push("Sem data de aquisição");
     if (!rawStatus) dataWarnings.push("Cliente sem status");
+    if (normalizedRaw === "Cancelado" && !cancellationDate) {
+      dataWarnings.push(
+        "Status bruto cancelado sem churn efetivado nem distrato assinado (não conta como cancelado analítico)",
+      );
+    }
     if (!blankToNull(client.segmentacao)) dataWarnings.push("Cliente sem segmento");
     if (!blankToNull(client.engenheiro_patrimonial)) dataWarnings.push("Cliente sem engenheiro responsável");
     if (!financial) dataWarnings.push("Sem diagnóstico financeiro");
@@ -957,7 +842,7 @@ function buildPayload(clients, cancellations, financialRows, signatureMap, signa
       financial?.debt || {},
     );
     if (segmentInfo.segmentWarnings.length) dataWarnings.push(...segmentInfo.segmentWarnings);
-    if (multiples.has(client.id)) dataWarnings.push("Múltiplos processos ativos de cancelamento para o mesmo cliente");
+    if (multiples.has(String(client.id))) dataWarnings.push("Múltiplos processos ativos de cancelamento para o mesmo cliente");
     if (cancelInfo?.warnings?.length) dataWarnings.push(...cancelInfo.warnings);
 
     const stay = resolveStayPeriod({
@@ -1156,11 +1041,12 @@ function buildPayload(clients, cancellations, financialRows, signatureMap, signa
         rawActiveCount,
         activeWithConsolidatedCancelDate: activeWithCancelDate,
         removedFromActiveByCancelDate: activeWithCancelDate,
+        frozenWithConsolidatedCancelDate: frozenWithCancelDate,
         analyticalActive: activeClients,
         analyticalCancelled: cancelledClients,
         stages: stageCounts,
         rule:
-          "coalesce(distrato_assinado_at, data_pedido, intencao_registrada_at); archived_at ignorado; prioriza etapa e data mais recente",
+          "churn_efetivado_at ?? distrato_assinado_at; archived_at ignorado; prioriza churn_efetivado_at > distrato_assinado_at e data mais recente; data_pedido/intencao_registrada_at e clients.data_churn não usados",
       },
       stayAudit: {
         calculatedClients: stayCalculatedClients,
@@ -1252,6 +1138,7 @@ export default async (request) => {
 export {
   buildPayload,
   buildCancellationMap,
+  buildAnalyticalCancellationMap,
   resolveAnalyticalStatus,
   normalizeClientStatus,
   resolveStayPeriod,

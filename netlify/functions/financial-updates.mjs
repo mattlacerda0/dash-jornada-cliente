@@ -1,12 +1,16 @@
 ﻿import { requireCorporateAuth } from "./_shared/auth.mjs";
 import { dataConfigurationError } from "./_shared/env.mjs";
+import {
+  ANALYTICAL_CANCEL_SELECT,
+  buildAnalyticalCancellationMap,
+  resolveAnalyticalStatus,
+} from "./_shared/analytical-cancellation.mjs";
 
 const CLIENT_SELECT =
   "id,codigo,name,status,engenheiro_patrimonial";
 const FINANCIAL_SELECT =
   "id,client_id,reserva_liquidez,ultima_renda_mensal,ultimo_aporte,possui_imovel,possui_carro,possui_consorcio,created_at,updated_at";
-const CANCEL_SELECT =
-  "id,client_id,distrato_assinado_at,data_pedido,intencao_registrada_at,archived_at,updated_at,created_at";
+const CANCEL_SELECT = ANALYTICAL_CANCEL_SELECT;
 
 const USED_FIELDS = [
   { table: "clients", column: "id", role: "clientId" },
@@ -24,10 +28,11 @@ const USED_FIELDS = [
   { table: "client_financial_data", column: "possui_carro", role: "hasCar" },
   { table: "client_financial_data", column: "possui_consorcio", role: "hasConsortium" },
   { table: "cancellations", column: "client_id", role: "cancellationJoin" },
-  { table: "cancellations", column: "distrato_assinado_at", role: "cancellationDatePriority1" },
-  { table: "cancellations", column: "data_pedido", role: "cancellationDatePriority2" },
-  { table: "cancellations", column: "intencao_registrada_at", role: "cancellationDatePriority3" },
+  { table: "cancellations", column: "churn_efetivado_at", role: "cancellationDatePriority1" },
+  { table: "cancellations", column: "distrato_assinado_at", role: "cancellationDatePriority2" },
   { table: "cancellations", column: "archived_at", role: "cancellationSoftDelete" },
+  { table: "cancellations", column: "data_pedido", role: "operationalOnly" },
+  { table: "cancellations", column: "intencao_registrada_at", role: "operationalOnly" },
 ];
 
 const RECENCY_BANDS = [
@@ -210,55 +215,6 @@ function currentMonthKey(now = new Date()) {
   return monthKey(now);
 }
 
-function foldStatusToken(value) {
-  return String(value || "")
-    .normalize("NFD")
-    .replace(/\p{M}/gu, "")
-    .toLowerCase()
-    .trim()
-    .replace(/\s+/g, " ");
-}
-
-function normalizeClientStatus(rawStatus) {
-  const token = foldStatusToken(rawStatus);
-  if (!token || token === "null" || token === "undefined" || token === "vazio") {
-    return "Não informado";
-  }
-  if (["ativo", "active", "ativa"].includes(token)) return "Ativo";
-  if (
-    [
-      "churn",
-      "cancelado",
-      "cancelada",
-      "canceled",
-      "cancelled",
-      "encerrado",
-      "encerrada",
-      "inativo",
-      "inativa",
-      "inactive",
-    ].includes(token) ||
-    token.includes("cancel") ||
-    token.includes("churn") ||
-    token.includes("encerr")
-  ) {
-    return "Cancelado";
-  }
-  if (
-    ["congelado", "congelada", "freeze", "frozen", "pausado", "pausada"].includes(token) ||
-    token.includes("congel") ||
-    token.includes("pausad")
-  ) {
-    return "Congelado";
-  }
-  return "Não informado";
-}
-
-function resolveAnalyticalStatus(rawStatus, cancellationDate) {
-  if (cancellationDate) return "Cancelado";
-  return normalizeClientStatus(rawStatus);
-}
-
 function average(nums) {
   if (!nums.length) return null;
   return Math.round((nums.reduce((a, b) => a + b, 0) / nums.length) * 10) / 10;
@@ -305,37 +261,6 @@ function recencyBand(days, hasFinancial, hasDate) {
   if (days <= 90) return "De 61 a 90 dias";
   if (days <= 180) return "De 91 a 180 dias";
   return "Mais de 180 dias";
-}
-
-function buildCancellationDateMap(cancellations) {
-  const STAGE_RANK = { "Distrato assinado": 3, "Pedido de cancelamento": 2, "Intenção registrada": 1 };
-  const map = new Map();
-  for (const row of cancellations || []) {
-    const clientId = blankToNull(row.client_id);
-    if (!clientId || parseDate(row.archived_at)) continue;
-    const distrato = parseDate(row.distrato_assinado_at);
-    const pedido = parseDate(row.data_pedido);
-    const intencao = parseDate(row.intencao_registrada_at);
-    const date = distrato || pedido || intencao;
-    if (!date) continue;
-    const stage = distrato
-      ? "Distrato assinado"
-      : pedido
-        ? "Pedido de cancelamento"
-        : "Intenção registrada";
-    const updated = parseDate(row.updated_at) || parseDate(row.created_at) || date;
-    const rank = STAGE_RANK[stage] || 0;
-    const current = map.get(clientId);
-    if (
-      !current ||
-      rank > current.rank ||
-      (rank === current.rank &&
-        (date > current.date || (date.getTime() === current.date.getTime() && updated > current.updated)))
-    ) {
-      map.set(clientId, { date, stage, rank, updated });
-    }
-  }
-  return map;
 }
 
 /**
@@ -431,7 +356,7 @@ function buildMonthSeries(rows, now, monthsBack) {
 function buildPayload(clients, financialRows, cancellations) {
   const now = new Date();
   const today = startOfDay(now);
-  const cancelMap = buildCancellationDateMap(cancellations);
+  const { map: cancelMap } = buildAnalyticalCancellationMap(cancellations);
   const { byClient, counts, multiples, rowsWithoutClientId } = buildFinancialMap(financialRows);
   const clientIds = new Set(clients.map((c) => String(c.id)));
 
@@ -461,7 +386,7 @@ function buildPayload(clients, financialRows, cancellations) {
   const rows = [];
   for (const client of clients) {
     const clientId = String(client.id);
-    const cancelInfo = cancelMap.get(clientId) || null;
+    const cancelInfo = cancelMap.get(String(clientId)) || cancelMap.get(clientId) || null;
     const analyticalStatus = resolveAnalyticalStatus(client.status, cancelInfo?.date || null);
     const financial = byClient.get(clientId) || null;
     const dataWarnings = [];

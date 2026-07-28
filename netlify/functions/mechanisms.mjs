@@ -1,11 +1,15 @@
 ﻿import { requireCorporateAuth } from "./_shared/auth.mjs";
 import { dataConfigurationError } from "./_shared/env.mjs";
 import { calculateClientSegment } from "./general-data.mjs";
+import {
+  ANALYTICAL_CANCEL_SELECT,
+  buildAnalyticalCancellationMap,
+  resolveAnalyticalStatus,
+} from "./_shared/analytical-cancellation.mjs";
 
 const CLIENT_SELECT =
   "id,codigo,name,status,engenheiro_patrimonial,data_inicio_ciclo,created_at";
-const CANCEL_SELECT =
-  "id,client_id,distrato_assinado_at,data_pedido,intencao_registrada_at,archived_at,updated_at,created_at";
+const CANCEL_SELECT = ANALYTICAL_CANCEL_SELECT;
 const CM_SELECT =
   "id,client_id,mecanismo_id,status,implemented_at,created_at,no_plano,sequence,valor_aplicado,source";
 const MEC_SELECT = "id,name,categoria,mercado,programa,tipo_renda,motores,status,codigo";
@@ -23,10 +27,11 @@ const USED_FIELDS = [
   { table: "clients", column: "data_inicio_ciclo", role: "entryDate" },
   { table: "clients", column: "created_at", role: "entryFallback" },
   { table: "cancellations", column: "client_id", role: "cancellationJoin" },
-  { table: "cancellations", column: "distrato_assinado_at", role: "cancellationDatePriority1" },
-  { table: "cancellations", column: "data_pedido", role: "cancellationDatePriority2" },
-  { table: "cancellations", column: "intencao_registrada_at", role: "cancellationDatePriority3" },
+  { table: "cancellations", column: "churn_efetivado_at", role: "cancellationDatePriority1" },
+  { table: "cancellations", column: "distrato_assinado_at", role: "cancellationDatePriority2" },
   { table: "cancellations", column: "archived_at", role: "cancellationSoftDelete" },
+  { table: "cancellations", column: "data_pedido", role: "operationalOnly" },
+  { table: "cancellations", column: "intencao_registrada_at", role: "operationalOnly" },
   { table: "client_mecanismos", column: "id", role: "recordId" },
   { table: "client_mecanismos", column: "client_id", role: "mechanismClient" },
   { table: "client_mecanismos", column: "mecanismo_id", role: "mechanismId" },
@@ -98,21 +103,6 @@ function foldToken(value) {
     .replace(/\s+/g, " ");
 }
 
-function normalizeClientStatus(rawStatus) {
-  const token = foldToken(rawStatus);
-  if (!token || token === "null" || token === "undefined" || token === "vazio") return "Não informado";
-  if (["ativo", "active", "ativa"].includes(token)) return "Ativo";
-  if (
-    ["churn", "cancelado", "cancelada", "canceled", "cancelled", "encerrado", "encerrada", "inativo", "inativa", "inactive"].includes(token) ||
-    token.includes("cancel") || token.includes("churn") || token.includes("encerr")
-  ) return "Cancelado";
-  if (
-    ["congelado", "congelada", "freeze", "frozen", "pausado", "pausada"].includes(token) ||
-    token.includes("congel") || token.includes("pausad")
-  ) return "Congelado";
-  return "Não informado";
-}
-
 /** Normaliza status do mecanismo: apto | iniciado | concluido → labels amigáveis. */
 function normalizeMechanismStatus(rawStatus) {
   const token = foldToken(rawStatus);
@@ -181,38 +171,6 @@ function robustStats(values) {
   const extremeImpact =
     median != null && median !== 0 && mean != null && Math.abs(mean - median) / Math.abs(median) >= 0.3;
   return { mean, median, trimmedMean, p5, p95, trimmedExcludedCount, extremeImpact, validCount: sorted.length };
-}
-
-function buildCancellationDateMap(cancellations) {
-  const STAGE_RANK = { "Distrato assinado": 3, "Pedido de cancelamento": 2, "Intenção registrada": 1 };
-  const map = new Map();
-  for (const row of cancellations || []) {
-    const clientId = blankToNull(row.client_id);
-    if (!clientId || parseDate(row.archived_at)) continue;
-    const distrato = parseDate(row.distrato_assinado_at);
-    const pedido = parseDate(row.data_pedido);
-    const intencao = parseDate(row.intencao_registrada_at);
-    const date = distrato || pedido || intencao;
-    if (!date) continue;
-    const stage = distrato ? "Distrato assinado" : pedido ? "Pedido de cancelamento" : "Intenção registrada";
-    const updated = parseDate(row.updated_at) || parseDate(row.created_at) || date;
-    const rank = STAGE_RANK[stage] || 0;
-    const current = map.get(clientId);
-    if (
-      !current ||
-      rank > current.rank ||
-      (rank === current.rank &&
-        (date > current.date || (date.getTime() === current.date.getTime() && updated > current.updated)))
-    ) {
-      map.set(clientId, { date, stage, rank, updated });
-    }
-  }
-  return map;
-}
-
-function resolveAnalyticalStatus(rawStatus, cancellationDate) {
-  if (cancellationDate) return "Cancelado";
-  return normalizeClientStatus(rawStatus);
 }
 
 function distributionFrom(items, keyFn, orderedLabels) {
@@ -387,7 +345,7 @@ function daysSinceLastBand(days, never) {
 }
 
 function buildPayload(clients, cmRows, mechanisms, cancellations = [], financialRows = []) {
-  const cancelMap = buildCancellationDateMap(cancellations);
+  const { map: cancelMap } = buildAnalyticalCancellationMap(cancellations);
   const financialMap = buildFinancialLookup(financialRows);
   const now = new Date();
   const currentMonth = currentMonthKey();
@@ -575,7 +533,7 @@ function buildPayload(clients, cmRows, mechanisms, cancellations = [], financial
       return d && d >= recentCutoff && d <= now;
     }).length;
 
-    const cancelInfo = cancelMap.get(clientId) || null;
+    const cancelInfo = cancelMap.get(String(clientId)) || cancelMap.get(clientId) || null;
     const analyticalStatus = resolveAnalyticalStatus(client?.status, cancelInfo?.date || null);
     const fin = financialMap.get(clientId) || null;
     const segmentInfo = calculateClientSegment(

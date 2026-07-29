@@ -68,6 +68,12 @@ export function getPharusEnv() {
     || process.env.APP_PHARUS_SUPABASE_ANON_KEY
     || ""
   ).trim();
+  const serviceRoleKey = (
+    process.env.PHARUS_SUPABASE_SERVICE_ROLE_KEY
+    || process.env.APP_PHARUS_SUPABASE_SERVICE_ROLE_KEY
+    || process.env.QVTQUFDIVPBMUBOOAWDM_SERVICE_ROLE_KEY
+    || ""
+  ).trim();
   const schema = (
     process.env.PHARUS_SUPABASE_SCHEMA
     || process.env.APP_PHARUS_SUPABASE_SCHEMA
@@ -76,16 +82,18 @@ export function getPharusEnv() {
   return {
     url,
     anonKey,
+    serviceRoleKey,
+    restKey: serviceRoleKey || anonKey,
     schema,
     projectId: projectRefFromUrl(url) || PHARUS_PROJECT_ID,
   };
 }
 
 export function pharusConfigurationError() {
-  const { url, anonKey } = getPharusEnv();
+  const { url, anonKey, serviceRoleKey } = getPharusEnv();
   if (!url) return "Configure PHARUS_SUPABASE_URL.";
-  if (!anonKey) {
-    return "Configure PHARUS_SUPABASE_ANON_KEY no ambiente do backend (não no frontend).";
+  if (!anonKey && !serviceRoleKey) {
+    return "Configure PHARUS_SUPABASE_SERVICE_ROLE_KEY ou PHARUS_SUPABASE_ANON_KEY no ambiente do backend.";
   }
   try {
     if (new URL(url).protocol !== "https:") return "PHARUS_SUPABASE_URL deve usar HTTPS";
@@ -126,8 +134,8 @@ export function getPharusSupabaseClient(options = {}) {
     if (offset != null) endpoint.searchParams.set("offset", String(offset));
 
     const headers = {
-      apikey: env.anonKey,
-      Authorization: `Bearer ${env.anonKey}`,
+      apikey: env.restKey,
+      Authorization: `Bearer ${env.restKey}`,
       Accept: "application/json",
       "Accept-Profile": schema,
       "Content-Profile": schema,

@@ -85,6 +85,37 @@ function isCsat(row) {
   return fold(row?.tipo_de_forms).includes("csat");
 }
 
+function programFromFormType(value) {
+  const text = fold(value);
+  if (text.includes("pharus")) return "Pharus";
+  if (text.includes("davos")) return "Davos";
+  return null;
+}
+
+function payloadProgram(row) {
+  const raw = row?.raw_payload;
+  let payload = raw;
+  if (typeof raw === "string" && raw.trim().startsWith("{")) {
+    try {
+      payload = JSON.parse(raw);
+    } catch {
+      payload = null;
+    }
+  }
+  const hidden = payload?.form_response?.hidden || payload?.hidden || {};
+  const definition = payload?.form_response?.definition || payload?.definition || {};
+  return programFromFormType([
+    row?.tipo_de_forms,
+    row?.typeform_form_id,
+    hidden.tipo,
+    hidden.programa,
+    hidden.program,
+    hidden.origem,
+    hidden.origin,
+    definition.title,
+  ].filter(Boolean).join(" "));
+}
+
 function dedupeByKey(rows, keyFields) {
   const seen = new Set();
   const result = [];
@@ -166,6 +197,7 @@ function buildRows(npsRows, csatRows) {
         csatResponses: 0,
         averageCsat: null,
         latestCsatAt: null,
+        programs: [],
       });
     }
     return byClient.get(key);
@@ -173,6 +205,8 @@ function buildRows(npsRows, csatRows) {
 
   for (const row of npsRows) {
     const client = ensure(blankToNull(row.client_id), row);
+    const program = payloadProgram(row);
+    if (program && !client.programs.includes(program)) client.programs.push(program);
     const score = npsScore(row.score);
     const date = parseDate(row.created_at);
     client.npsResponses += score == null ? 0 : 1;
@@ -187,6 +221,8 @@ function buildRows(npsRows, csatRows) {
     const score = csatScore(row.score);
     if (score == null) continue;
     const client = ensure(blankToNull(row.client_id), row);
+    const program = payloadProgram(row);
+    if (program && !client.programs.includes(program)) client.programs.push(program);
     const key = client.clientId || client.clientEmail || client.clientName;
     if (!csatByClient.has(key)) csatByClient.set(key, []);
     csatByClient.get(key).push(score);
@@ -226,14 +262,24 @@ export default async function handler(request) {
   }
 
   try {
+    const requestUrl = new URL(request.url);
+    const programFilter = requestUrl.searchParams.get("program") || "all";
     const [rawNpsRows, rawCsatRows, npsSends] = await Promise.all([
-      fetchAll("nps_responses", "id,typeform_response_id,client_id,client_name,client_email,tipo_de_forms,score,comment,created_at", "created_at.asc"),
-      fetchAll("csat_responses", "id,typeform_response_id,form_response_id,client_id,client_name,client_email,tipo_de_forms,score,comment,created_at,meeting_date", "created_at.asc"),
+      fetchAll("nps_responses", "id,typeform_response_id,typeform_form_id,client_id,client_name,client_email,tipo_de_forms,score,comment,raw_payload,created_at", "created_at.asc"),
+      fetchAll("csat_responses", "id,typeform_response_id,form_response_id,typeform_form_id,client_id,client_name,client_email,tipo_de_forms,score,comment,raw_payload,created_at,meeting_date", "created_at.asc"),
       fetchAll("nps_sends", "id,client_id,sent_at,created_at", "created_at.asc"),
     ]);
 
-    const npsRows = dedupeByKey(rawNpsRows, ["typeform_response_id", "id"]).filter((row) => npsScore(row.score) != null);
-    const csatRows = dedupeByKey(rawCsatRows.filter(isCsat), ["typeform_response_id", "form_response_id", "id"]).filter((row) => csatScore(row.score) != null);
+    const matchesProgram = (row) => {
+      const program = payloadProgram(row);
+      if (programFilter === "all") return true;
+      if (programFilter === "unknown") return !program;
+      return program === programFilter;
+    };
+    const filteredRawNpsRows = rawNpsRows.filter(matchesProgram);
+    const filteredRawCsatRows = rawCsatRows.filter(matchesProgram);
+    const npsRows = dedupeByKey(filteredRawNpsRows, ["typeform_response_id", "id"]).filter((row) => npsScore(row.score) != null);
+    const csatRows = dedupeByKey(filteredRawCsatRows.filter(isCsat), ["typeform_response_id", "form_response_id", "id"]).filter((row) => csatScore(row.score) != null);
     const npsScores = npsRows.map((row) => npsScore(row.score)).filter((score) => score != null);
     const csatScores = csatRows.map((row) => csatScore(row.score)).filter((score) => score != null);
     const latestNps = [...npsRows].sort((a, b) => parseDate(b.created_at) - parseDate(a.created_at))[0] || null;
@@ -241,7 +287,7 @@ export default async function handler(request) {
     const npsMonthly = buildNpsMonthly(npsRows);
     const totalNpsResponses = npsRows.length;
     const totalCsatResponses = csatRows.length;
-    const totalNpsSends = npsSends.length;
+    const totalNpsSends = programFilter === "all" ? npsSends.length : 0;
 
     const promoters = npsScores.filter((score) => score >= 9).length;
     const neutrals = npsScores.filter((score) => score >= 7 && score <= 8).length;
@@ -271,6 +317,9 @@ export default async function handler(request) {
     return Response.json(
       {
         generatedAt: new Date().toISOString(),
+        filters: {
+          program: programFilter,
+        },
         summary,
         distributions: {
           npsClassification: [

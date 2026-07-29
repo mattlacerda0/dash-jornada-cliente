@@ -1,4 +1,7 @@
-﻿const CLIENT_SELECT = "id,codigo,name,data_inicio_ciclo,created_at,status,engenheiro_patrimonial";
+import { getPharusSupabaseClient } from "./_shared/env.mjs";
+
+const CLIENT_SELECT = "id,codigo,name,data_inicio_ciclo,created_at,status,engenheiro_patrimonial";
+const PHARUS_EVENTS_SELECT = "*";
 
 function configurationError() {
   if (!process.env.DATA_SUPABASE_URL || !process.env.DATA_SUPABASE_SERVICE_ROLE_KEY) {
@@ -52,6 +55,35 @@ function firstValue(row, ...names) {
     if (value != null) return value;
   }
   return null;
+}
+
+function objectValue(row, ...names) {
+  for (const name of names) {
+    const value = row?.[name];
+    if (value && typeof value === "object" && !Array.isArray(value)) return value;
+    if (typeof value === "string" && value.trim().startsWith("{")) {
+      try {
+        return JSON.parse(value);
+      } catch {
+        // ignore malformed event metadata
+      }
+    }
+  }
+  return {};
+}
+
+function eventClientId(row) {
+  const metadata = objectValue(row, "metadata", "properties", "event_properties", "payload", "data");
+  return firstValue(row, "client_id", "cliente_id", "user_id", "userId", "distinct_id", "profile_id", "person_id")
+    || firstValue(metadata, "client_id", "cliente_id", "user_id", "userId", "distinct_id", "profile_id", "person_id");
+}
+
+function eventName(row) {
+  return String(firstValue(row, "event_name", "name", "event") || "").trim();
+}
+
+function eventDate(row) {
+  return parseDate(firstValue(row, "created_at", "timestamp", "event_time", "occurred_at", "inserted_at", "sent_at"));
 }
 
 function minDate(values) {
@@ -177,6 +209,107 @@ function stageMap(stages) {
   return map;
 }
 
+const PHARUS_STAGE_ALIASES = [
+  { label: "Resposta do quiz", tokens: ["quiz", "answer", "answered", "response"] },
+  { label: "Status financeiro", tokens: ["financial", "finance", "status"] },
+  { label: "Onboarding", tokens: ["onboarding"] },
+  { label: "Open Finance", tokens: ["open_finance", "open finance", "openfinance"] },
+];
+
+function pharusStageLabel(name) {
+  const folded = String(name || "").toLowerCase().replace(/[-.]/g, "_");
+  const spaced = folded.replace(/_/g, " ");
+  for (const item of PHARUS_STAGE_ALIASES) {
+    if (item.tokens.some((token) => folded.includes(token) || spaced.includes(token))) return item.label;
+  }
+  return null;
+}
+
+async function fetchPharusMetricEvents(warnings) {
+  try {
+    const client = getPharusSupabaseClient({ schema: "metrics" });
+    const rows = [];
+    const pageSize = 1000;
+    const eventNames = [
+      "onboarding_step_completed",
+      "onboarding_step_started",
+      "onboarding_step_updated",
+      "form_submission_saved",
+      "financial_engines_saved",
+      "open_finance_accounts_synced",
+      "open_finance_investments_synced",
+      "open_finance_connect_token_issued",
+    ].join(",");
+    for (let offset = 0; offset < 200000; offset += pageSize) {
+      const page = await client.rest("events", {
+        select: PHARUS_EVENTS_SELECT,
+        filters: { event_name: `in.(${eventNames})`, order: "id.asc" },
+        limit: pageSize,
+        offset,
+      });
+      if (!page.ok) {
+        const err = new Error(`metrics.events: HTTP ${page.status}`);
+        err.status = page.status;
+        err.raw = (page.raw || "").slice(0, 240);
+        throw err;
+      }
+      rows.push(...page.data);
+      if (page.data.length < pageSize) break;
+    }
+    return rows;
+  } catch (error) {
+    warnings.push({
+      code: "PHARUS_METRICS_AUTH",
+      label: "App Pharus metrics.events sem permissão",
+      severity: "warning",
+      message: error?.status === 401
+        ? "O schema metrics exige chave service role ou política de leitura para o backend."
+        : `Não foi possível consultar metrics.events: ${error instanceof Error ? error.message : String(error)}`,
+    });
+    return [];
+  }
+}
+
+function summarizePharusOnboardingEvents(events) {
+  const byClient = new Map();
+  const completedByClient = new Map();
+  const stepGroups = new Map();
+
+  for (const row of events) {
+    const clientId = eventClientId(row);
+    const name = eventName(row);
+    const date = eventDate(row);
+    if (!clientId || !name || !date) continue;
+    const key = String(clientId);
+    if (!byClient.has(key)) byClient.set(key, []);
+    byClient.get(key).push({ name, date, stageLabel: pharusStageLabel(name) });
+    if (name === "onboarding_step_completed") {
+      const current = completedByClient.get(key);
+      if (!current || date < current.date) completedByClient.set(key, { row, date });
+    }
+  }
+
+  for (const list of byClient.values()) {
+    const ordered = list.sort((a, b) => a.date - b.date);
+    for (let index = 0; index < ordered.length - 1; index += 1) {
+      const current = ordered[index];
+      const next = ordered[index + 1];
+      if (!current.stageLabel) continue;
+      const days = nonNegativeDaysBetween(current.date, next.date);
+      if (days == null) continue;
+      if (!stepGroups.has(current.stageLabel)) stepGroups.set(current.stageLabel, []);
+      stepGroups.get(current.stageLabel).push(days);
+    }
+  }
+
+  const stageDurations = PHARUS_STAGE_ALIASES.map(({ label }) => {
+    const values = stepGroups.get(label) || [];
+    return { label, count: values.length, value: median(values), percent: 0 };
+  }).filter((item) => item.count > 0);
+
+  return { byClient, completedByClient, stageDurations };
+}
+
 function transitionDurations(journeysByClient, stagesById) {
   const durations = [];
   for (const [clientId, journeys] of journeysByClient.entries()) {
@@ -217,6 +350,8 @@ async function buildPayload() {
   for (const [table, result] of Object.entries(sourceResults)) {
     if (!Array.isArray(result)) warnings.push(`${table}: ${result.error}`);
   }
+  const pharusEvents = await fetchPharusMetricEvents(warnings);
+  const pharusOnboarding = summarizePharusOnboardingEvents(pharusEvents);
 
   const meetingsByClient = byClient(Array.isArray(sourceResults.client_meetings) ? sourceResults.client_meetings : []);
   const journeysByClient = byClient(Array.isArray(sourceResults.client_journeys) ? sourceResults.client_journeys : []);
@@ -251,7 +386,9 @@ async function buildPayload() {
     const totalOnboardingDurations = clientTransitions
       .filter((item) => TOTAL_ONBOARDING_START_STAGE_IDS.has(item.stageId))
       .map((item) => item.days);
-    const totalOnboardingDays = median(totalOnboardingDurations);
+    const pharusCompleted = pharusOnboarding.completedByClient.get(clientId);
+    const totalOnboardingDaysPharus = nonNegativeDaysBetween(contractDate, pharusCompleted?.date || null);
+    const totalOnboardingDays = totalOnboardingDaysPharus ?? median(totalOnboardingDurations);
 
     const daysUntil = (date) => nonNegativeDaysBetween(contractDate, date);
 
@@ -269,6 +406,9 @@ async function buildPayload() {
       daysToPlanDelivery: daysUntil(planDelivered),
       daysToFirstImplementation: daysUntil(firstImplementation),
       totalOnboardingDays,
+      totalOnboardingDaysSource: totalOnboardingDaysPharus != null ? "app_pharus_metrics_events" : "base_qv_client_journeys",
+      pharusOnboardingCompletedAt: pharusCompleted?.date ? pharusCompleted.date.toISOString() : null,
+      pharusCompletedOnboarding: Boolean(pharusCompleted),
       completedOnboarding,
       currentStageId: latestStageId,
       currentStageName: latestStageId ? (stagesById.get(latestStageId) || latestStageId) : "Sem base",
@@ -288,6 +428,8 @@ async function buildPayload() {
   const withCompletionBase = completeCount + openCount;
   const hasJourney = Array.isArray(sourceResults.client_journeys) && sourceResults.client_journeys.length > 0;
   const totalOnboardingCount = rows.filter((row) => row.totalOnboardingDays != null).length;
+  const pharusCompletedCount = pharusOnboarding.completedByClient.size;
+  const pharusTotalOnboardingCount = rows.filter((row) => row.totalOnboardingDaysSource === "app_pharus_metrics_events").length;
 
   const stageGroups = new Map();
   for (const item of allTransitionDurations) {
@@ -297,14 +439,16 @@ async function buildPayload() {
   const stageDurations = [...stageGroups.entries()]
     .map(([label, values]) => ({ label, count: values.length, value: median(values), percent: 0 }))
     .sort((a, b) => (b.value || 0) - (a.value || 0));
+  const pharusStageDurations = pharusOnboarding.stageDurations.sort((a, b) => (b.value || 0) - (a.value || 0));
 
   const indicators = [
     ["Dias entre contratação e primeira reunião", withFirstMeeting ? "Sim" : "Sem base", "Mediana da diferença não negativa entre clients.data_inicio_ciclo e a primeira client_meetings.start_time.", median(rows.map((row) => row.daysToFirstMeeting)), "dias", withFirstMeeting],
     ["Dias entre contratação e entrega do plano patrimonial", withPlanDelivery ? "Sim" : "Sem base", "Mediana da diferença não negativa entre clients.data_inicio_ciclo e a primeira client_implementation_meeting_date.meeting_date.", median(rows.map((row) => row.daysToPlanDelivery)), "dias", withPlanDelivery],
     ["Dias entre contratação e primeiro mecanismo implementado", withImplementation ? "Sim" : "Não identificado", "Mediana da diferença não negativa entre clients.data_inicio_ciclo e a primeira client_mecanismos.implemented_at.", median(rows.map((row) => row.daysToFirstImplementation)), "dias", withImplementation],
-    ["Tempo total de onboarding", totalOnboardingCount ? "Sim" : "Sem base", "Mediana da diferença não negativa entre client_journeys.started_at dos estágios 33bb253e... ou 7c43c981... e a próxima data do mesmo client_id.", median(rows.map((row) => row.totalOnboardingDays)), "dias", totalOnboardingCount],
+    ["Tempo total de onboarding", totalOnboardingCount ? "Sim" : "Sem base", "Mediana da diferença não negativa entre clients.data_inicio_ciclo e App Pharus metrics.events.event_name = onboarding_step_completed; fallback BASE QV client_journeys quando sem vínculo.", median(rows.map((row) => row.totalOnboardingDays)), "dias", totalOnboardingCount],
     ["Concluiu onboarding (Sim/Não)", hasJourney ? "Sim" : "Sem base", "Sim quando o estágio atual do client_id é diferente dos estágios 7c43c981..., ae3a6015... e 33bb253e.... Não quando é igual.", completeCount, "clientes", withCompletionBase],
-    ["Tempo médio para cada etapa da jornada", stageDurations.length ? "Sim" : "Sem base", "Mediana da diferença não negativa entre client_journeys.started_at e a próxima mudança de current_stage_id; eixo pelo journey_stages.name.", median(stageDurations.map((item) => item.value)), "dias", allTransitionDurations.length],
+    ["Concluíram Onboarding App Pharus", pharusCompletedCount ? "Sim" : "Sem base", "count(distinct client_id/user_id) em metrics.events com event_name = onboarding_step_completed.", pharusCompletedCount, "clientes", pharusCompletedCount],
+    ["Tempo médio para cada etapa da jornada", (pharusStageDurations.length || stageDurations.length) ? "Sim" : "Sem base", "Mediana entre eventos consecutivos do mesmo cliente em metrics.events, agrupando event_name por resposta do quiz, status financeiro, onboarding e open finance; fallback journey_stages.name.", median((pharusStageDurations.length ? pharusStageDurations : stageDurations).map((item) => item.value)), "dias", pharusStageDurations.length ? pharusStageDurations.reduce((a, i) => a + i.count, 0) : allTransitionDurations.length],
   ].map(([indicator, viability, metric, value, unit, count]) => ({
     indicator,
     viability,
@@ -325,7 +469,9 @@ async function buildPayload() {
       averagePlanDeliveryDays: indicators[1].value,
       averageFirstImplementationDays: indicators[2].value,
       averageTotalOnboardingDays: indicators[3].value,
-      averageStageDays: indicators[5].value,
+      appPharusCompletedOnboarding: pharusCompletedCount,
+      appPharusTotalOnboardingCount: pharusTotalOnboardingCount,
+      averageStageDays: indicators[6].value,
     },
     indicators,
     distributions: {
@@ -335,12 +481,23 @@ async function buildPayload() {
       totalOnboardingRanges: distributionFrom(rows, (row) => dayRange(row.totalOnboardingDays), DAY_RANGE_LABELS),
       completion: distributionFrom(rows.filter((row) => row.completedOnboarding != null), (row) => row.completedOnboarding ? "Sim" : "Não", ["Sim", "Não"]),
       stageDurations,
+      pharusStageDurations,
+      pharusCompletion: distributionFrom([
+        ...Array.from({ length: pharusCompletedCount }, () => ({ completed: true })),
+        ...Array.from({ length: Math.max(0, rows.length - pharusCompletedCount) }, () => ({ completed: false })),
+      ], (row) => row.completed ? "Sim" : "Não", ["Sim", "Não"]),
     },
     clients: rows,
     sources: {
       primary: "BASE QV",
       schema: "public",
       tables: ["clients", "client_journeys", "journey_stages", "client_meetings", "client_implementation_meeting_date", "client_mecanismos"],
+      appPharus: {
+        schema: "metrics",
+        table: "events",
+        eventName: "onboarding_step_completed",
+        rows: pharusEvents.length,
+      },
       warnings,
     },
   };

@@ -22,6 +22,7 @@ if (Bun.env.DATA_SUPABASE_URL) process.env.DATA_SUPABASE_URL = Bun.env.DATA_SUPA
 if (Bun.env.DATA_SUPABASE_SERVICE_ROLE_KEY) process.env.DATA_SUPABASE_SERVICE_ROLE_KEY = Bun.env.DATA_SUPABASE_SERVICE_ROLE_KEY;
 if (Bun.env.PHARUS_SUPABASE_URL) process.env.PHARUS_SUPABASE_URL = Bun.env.PHARUS_SUPABASE_URL;
 if (Bun.env.PHARUS_SUPABASE_ANON_KEY) process.env.PHARUS_SUPABASE_ANON_KEY = Bun.env.PHARUS_SUPABASE_ANON_KEY;
+if (Bun.env.PHARUS_SUPABASE_SERVICE_ROLE_KEY) process.env.PHARUS_SUPABASE_SERVICE_ROLE_KEY = Bun.env.PHARUS_SUPABASE_SERVICE_ROLE_KEY;
 if (Bun.env.PHARUS_SUPABASE_SCHEMA) process.env.PHARUS_SUPABASE_SCHEMA = Bun.env.PHARUS_SUPABASE_SCHEMA;
 if (Bun.env.N8N_CHAT_WEBHOOK_URL) process.env.N8N_CHAT_WEBHOOK_URL = Bun.env.N8N_CHAT_WEBHOOK_URL;
 if (Bun.env.N8N_INTERNAL_API_TOKEN) process.env.N8N_INTERNAL_API_TOKEN = Bun.env.N8N_INTERNAL_API_TOKEN;
@@ -48,6 +49,7 @@ const assistantDataHandler = (await import("./netlify/functions/assistant-data.m
 const qualityHandler = (await import("./netlify/functions/quality.mjs")).default;
 const authConfigHandler = (await import("./netlify/functions/auth-config.mjs")).default;
 const platformUsageHandler = (await import("./netlify/functions/platform-usage.mjs")).default;
+const temporalIndicatorsHandler = (await import("./netlify/functions/temporal-indicators.mjs")).default;
 
 const PORT = Number(Bun.env.PORT || 4173);
 
@@ -228,6 +230,7 @@ const server = Bun.serve({
     if (url.pathname === "/api/financial-updates") return financialUpdatesHandler(request);
     if (url.pathname === "/api/engagement") return engagementHandler(request);
     if (url.pathname === "/api/platform-usage") return platformUsageHandler(request);
+    if (url.pathname === "/api/temporal-indicators") return temporalIndicatorsHandler(request);
     if (url.pathname === "/api/support") return supportHandler(request);
     if (url.pathname === "/api/cancellations") return cancellationsHandler(request);
     if (url.pathname === "/api/satisfaction") return satisfactionHandler(request);

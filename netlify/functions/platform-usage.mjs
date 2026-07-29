@@ -1,13 +1,23 @@
-﻿const SOURCE = {
-  id: "qv360",
-  label: "QV360",
-  schema: process.env.QV360_SUPABASE_SCHEMA || "public",
-  url:
-    process.env.QV360_SUPABASE_URL ||
-    process.env.SUPABASE_QV360_URL ||
-    "https://sfxbzfaxbbdjzuhzzrjc.supabase.co",
-  key: process.env.QV360_SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_QV360_SERVICE_ROLE_KEY,
-};
+import { getPharusEnv, getPharusSupabaseClient } from "./_shared/env.mjs";
+
+const ACCESS_EVENT_TOKENS = [
+  "login_succeeded",
+  "login_success",
+  "app_open",
+  "app_opened",
+  "access_succeeded",
+  "page_view",
+  "screen_view",
+];
+
+const LOGIN_EVENT_TOKENS = ["login_succeeded", "login_success"];
+const PHARUS_EVENTS_SELECT = [
+  "id",
+  "origin",
+  "event_name",
+  "created_at",
+  "metadata",
+].join(",");
 
 function parseDate(value) {
   if (!value) return null;
@@ -43,6 +53,26 @@ function median(values) {
   return nums.length % 2 ? nums[mid] : Math.round(((nums[mid - 1] + nums[mid]) / 2) * 100) / 100;
 }
 
+function quantile(values, q) {
+  const nums = values.filter((v) => Number.isFinite(v)).sort((a, b) => a - b);
+  if (!nums.length) return null;
+  const position = (nums.length - 1) * q;
+  const base = Math.floor(position);
+  const rest = position - base;
+  return nums[base + 1] !== undefined ? nums[base] + rest * (nums[base + 1] - nums[base]) : nums[base];
+}
+
+function withoutOutliers(values) {
+  const nums = values.filter((v) => Number.isFinite(v) && v >= 0).sort((a, b) => a - b);
+  if (nums.length < 4) return nums;
+  const q1 = quantile(nums, 0.25);
+  const q3 = quantile(nums, 0.75);
+  const iqr = q3 - q1;
+  const min = Math.max(0, q1 - 1.5 * iqr);
+  const max = q3 + 1.5 * iqr;
+  return nums.filter((v) => v >= min && v <= max);
+}
+
 function pct(count, total) {
   return total ? Math.round((count / total) * 1000) / 10 : 0;
 }
@@ -55,124 +85,291 @@ function firstValue(row, fields) {
   return null;
 }
 
-async function fetchAll(table, select = "*", warnings = []) {
-  const pageSize = 1000;
-  const rows = [];
-  let offset = 0;
-  while (true) {
-    const url = new URL(`/rest/v1/${table}`, SOURCE.url);
-    url.searchParams.set("select", select);
-    const response = await fetch(url, {
-      headers: {
-        apikey: SOURCE.key,
-        Authorization: `Bearer ${SOURCE.key}`,
-        "Accept-Profile": SOURCE.schema,
-        "Content-Profile": SOURCE.schema,
-        Range: `${offset}-${offset + pageSize - 1}`,
-      },
-    });
-    if (!response.ok) {
-      warnings.push(`${table}: HTTP ${response.status}`);
-      return [];
+function normalizeEventName(value) {
+  return String(value || "")
+    .normalize("NFD")
+    .replace(/\p{M}/gu, "")
+    .toLowerCase()
+    .trim()
+    .replace(/[\s.-]+/g, "_");
+}
+
+function objectValue(row, fields) {
+  for (const field of fields) {
+    const value = row?.[field];
+    if (value && typeof value === "object" && !Array.isArray(value)) return value;
+    if (typeof value === "string" && value.trim().startsWith("{")) {
+      try {
+        return JSON.parse(value);
+      } catch {
+        // ignore malformed JSON properties
+      }
     }
-    const batch = await response.json();
-    rows.push(...batch);
-    if (batch.length < pageSize) break;
-    offset += pageSize;
-    if (offset > 200000) break;
   }
-  return rows;
+  return {};
 }
 
-function userIdFrom(row) {
-  return String(firstValue(row, ["user_id", "id"]) || "");
+function eventClientId(row) {
+  const metadata = objectValue(row, ["metadata", "properties", "event_properties", "payload", "data"]);
+  return String(
+    firstValue(row, ["client_id", "cliente_id", "user_id", "userId", "distinct_id", "profile_id", "person_id"]) ||
+      firstValue(metadata, ["client_id", "cliente_id", "user_id", "userId", "distinct_id", "profile_id", "person_id"]) ||
+      "",
+  );
 }
 
-function buildClientUsage(users, logins, sessions) {
-  const byUser = new Map();
-  for (const user of users) {
-    const id = userIdFrom(user);
-    if (!id) continue;
+function eventDate(row) {
+  return parseDate(firstValue(row, ["created_at", "timestamp", "event_time", "occurred_at", "inserted_at", "sent_at"]));
+}
+
+function dayKey(date) {
+  return date ? date.toISOString().slice(0, 10) : null;
+}
+
+function dayKeyToDate(key) {
+  return key ? new Date(`${key}T00:00:00.000Z`) : null;
+}
+
+function eventName(row) {
+  return normalizeEventName(firstValue(row, ["event_name", "name", "event"]) || "");
+}
+
+function eventSessionId(row) {
+  const props = objectValue(row, ["metadata", "properties", "event_properties", "payload", "data"]);
+  return String(
+    firstValue(row, ["session_id", "sessionId", "sid", "anonymous_id", "device_id"]) ||
+      firstValue(props, ["session_id", "sessionId", "sid", "anonymous_id", "device_id"]) ||
+      "",
+  );
+}
+
+function isAccessEvent(name) {
+  return ACCESS_EVENT_TOKENS.some((token) => name === token || name.includes(token));
+}
+
+function isLoginEvent(name) {
+  return LOGIN_EVENT_TOKENS.includes(name);
+}
+
+async function fetchPharusEvents(warnings) {
+  try {
+    const client = getPharusSupabaseClient({ schema: "metrics" });
+    const rows = [];
+    const pageSize = 1000;
+    for (let offset = 0; offset < 200000; offset += pageSize) {
+      const page = await client.rest("events", {
+        select: PHARUS_EVENTS_SELECT,
+        filters: { event_name: "in.(login_succeeded,login_success)", order: "id.asc" },
+        limit: pageSize,
+        offset,
+      });
+      if (!page.ok) {
+        const err = new Error(`metrics.events: HTTP ${page.status}`);
+        err.status = page.status;
+        err.raw = (page.raw || "").slice(0, 240);
+        throw err;
+      }
+      rows.push(...page.data);
+      if (page.data.length < pageSize) break;
+    }
+    return rows;
+  } catch (error) {
+    warnings.push({
+      code: "PHARUS_METRICS_AUTH",
+      label: "App Pharus metrics.events sem permissão",
+      severity: "warning",
+      message: error?.status === 401
+        ? "O schema metrics exige chave service role ou política de leitura para o backend."
+        : `Não foi possível consultar metrics.events: ${error instanceof Error ? error.message : String(error)}`,
+    });
+    return [];
+  }
+}
+
+async function fetchPharusPersonalInfo(warnings) {
+  try {
+    const client = getPharusSupabaseClient({ schema: "core" });
+    return await client.fetchAll("personal_info", "user_id,name,alternative_email,phone", { pageSize: 1000, maxRows: 200000 });
+  } catch (error) {
+    warnings.push({
+      code: "PHARUS_PERSONAL_INFO",
+      label: "App Pharus core.personal_info indisponível",
+      severity: "warning",
+      message: `Não foi possível consultar core.personal_info: ${error instanceof Error ? error.message : String(error)}`,
+    });
+    return [];
+  }
+}
+
+async function fetchPharusAuthUsers(warnings) {
+  const env = getPharusEnv();
+  if (!env.serviceRoleKey) {
+    warnings.push({
+      code: "PHARUS_AUTH_USERS",
+      label: "App Pharus auth.users indisponível",
+      severity: "warning",
+      message: "PHARUS_SUPABASE_SERVICE_ROLE_KEY é necessária para consultar e-mails do Auth.",
+    });
+    return [];
+  }
+  try {
+    const users = [];
+    const perPage = 1000;
+    for (let page = 1; page <= 200; page += 1) {
+      const endpoint = new URL("/auth/v1/admin/users", env.url);
+      endpoint.searchParams.set("page", String(page));
+      endpoint.searchParams.set("per_page", String(perPage));
+      const response = await fetch(endpoint, {
+        headers: {
+          apikey: env.serviceRoleKey,
+          Authorization: `Bearer ${env.serviceRoleKey}`,
+          Accept: "application/json",
+        },
+      });
+      if (!response.ok) {
+        const err = new Error(`auth.users: HTTP ${response.status}`);
+        err.status = response.status;
+        throw err;
+      }
+      const payload = await response.json().catch(() => ({}));
+      const batch = Array.isArray(payload.users) ? payload.users : [];
+      users.push(...batch);
+      if (batch.length < perPage) break;
+    }
+    return users;
+  } catch (error) {
+    warnings.push({
+      code: "PHARUS_AUTH_USERS",
+      label: "App Pharus auth.users indisponível",
+      severity: "warning",
+      message: `Não foi possível consultar Auth users: ${error instanceof Error ? error.message : String(error)}`,
+    });
+    return [];
+  }
+}
+
+function buildPersonalInfoMap(rows) {
+  const map = new Map();
+  for (const row of rows || []) {
+    const userId = String(row?.user_id || "").trim();
+    if (!userId) continue;
+    map.set(userId, {
+      name: String(row?.name || "").trim(),
+      alternativeEmail: String(row?.alternative_email || "").trim(),
+      phone: String(row?.phone || "").trim(),
+    });
+  }
+  return map;
+}
+
+function buildAuthUserMap(rows) {
+  const map = new Map();
+  for (const row of rows || []) {
+    const userId = String(row?.id || "").trim();
+    if (!userId) continue;
+    const metadata = row.user_metadata && typeof row.user_metadata === "object" ? row.user_metadata : {};
+    map.set(userId, {
+      email: String(row?.email || metadata.email || "").trim(),
+      name: String(metadata.name || metadata.full_name || metadata.user_name || "").trim(),
+    });
+  }
+  return map;
+}
+
+function ensureClient(byUser, id, seed = {}) {
+  if (!id) return null;
+  if (!byUser.has(id)) {
     byUser.set(id, {
-      source: SOURCE.label,
+      source: seed.source || "App Pharus",
       userId: id,
-      userName: [user.first_name, user.last_name].filter(Boolean).join(" ") || user.full_name || user.email || "Não informado",
-      email: user.email || "Não informado",
-      joinedAt: firstValue(user, ["date_joined", "created_at"]) || null,
-      lastLoginFromUser: firstValue(user, ["last_login"]) || null,
+      userName: seed.userName || "Não informado",
+      email: seed.email || "Não informado",
+      joinedAt: seed.joinedAt || null,
+      lastLoginFromUser: seed.lastLoginFromUser || null,
       logins: [],
+      accesses: [],
       sessions: new Set(),
     });
   }
-  for (const login of logins) {
-    const id = userIdFrom(login);
+  return byUser.get(id);
+}
+
+function buildClientUsage(pharusEvents, personalInfoByUser = new Map(), authUsersById = new Map()) {
+  const byUser = new Map();
+  for (const event of pharusEvents) {
+    const id = eventClientId(event);
+    const date = eventDate(event);
+    const name = eventName(event);
     if (!id) continue;
-    if (!byUser.has(id)) {
-      byUser.set(id, {
-        source: SOURCE.label,
-        userId: id,
-        userName: "Não informado",
-        email: "Não informado",
-        joinedAt: null,
-        lastLoginFromUser: null,
-        logins: [],
-        sessions: new Set(),
-      });
-    }
-    const item = byUser.get(id);
-    const timestamp = firstValue(login, ["timestamp", "created_at"]);
-    if (timestamp) item.logins.push({ timestamp, sessionId: firstValue(login, ["session_id"]) });
-    const sessionId = firstValue(login, ["session_id"]);
-    if (sessionId) item.sessions.add(String(sessionId));
-  }
-  for (const session of sessions) {
-    const id = userIdFrom(session);
-    if (!id) continue;
-    if (!byUser.has(id)) continue;
-    const sessionId = firstValue(session, ["id", "sid", "key_hashed"]);
-    if (sessionId) byUser.get(id).sessions.add(String(sessionId));
+    const personalInfo = personalInfoByUser.get(id) || {};
+    const authUser = authUsersById.get(id) || {};
+    const item = ensureClient(byUser, id, {
+      source: "App Pharus",
+      userName: personalInfo.name || authUser.name || authUser.email || id,
+      email: authUser.email || personalInfo.alternativeEmail || "",
+    });
+    if (personalInfo.name && (!item.userName || item.userName === id || item.userName === authUser.email)) item.userName = personalInfo.name;
+    else if (authUser.name && (!item.userName || item.userName === id)) item.userName = authUser.name;
+    else if (authUser.email && (!item.userName || item.userName === id)) item.userName = authUser.email;
+    if (authUser.email) item.email = authUser.email;
+    else if (personalInfo.alternativeEmail && !item.email) item.email = personalInfo.alternativeEmail;
+    if (!date || !isAccessEvent(name)) continue;
+    item.accesses.push({ timestamp: date.toISOString(), eventName: name, sessionId: eventSessionId(event) });
+    if (isLoginEvent(name)) item.logins.push({ timestamp: date.toISOString(), sessionId: eventSessionId(event) });
+    const sessionId = eventSessionId(event);
+    if (sessionId) item.sessions.add(sessionId);
   }
 
   const now = new Date();
   return [...byUser.values()].map((client) => {
+    const accessDates = client.accesses
+      .map((access) => parseDate(access.timestamp))
+      .filter(Boolean)
+      .sort((a, b) => a - b);
     const loginDates = client.logins
       .map((login) => parseDate(login.timestamp))
       .filter(Boolean)
       .sort((a, b) => a - b);
-    const lastLoginDate = loginDates[loginDates.length - 1] || parseDate(client.lastLoginFromUser);
-    const firstLoginDate = loginDates[0] || parseDate(client.joinedAt) || lastLoginDate;
-    const intervals = [];
-    for (let i = 1; i < loginDates.length; i += 1) {
-      const diff = daysBetween(loginDates[i - 1], loginDates[i]);
-      if (diff != null && diff >= 0) intervals.push(diff);
-    }
-    const monthSpan = monthsBetween(firstLoginDate, now);
-    const weekSpan = Math.max(1, Math.ceil((daysBetween(firstLoginDate, now) || 1) / 7));
-    const monthlyBuckets = new Set(loginDates.map((d) => `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}`));
-    const weeklyBuckets = new Set(loginDates.map((d) => {
+    const loginDays = [...new Set(loginDates.map(dayKey).filter(Boolean))].sort();
+    const loginDayDates = loginDays.map(dayKeyToDate).filter(Boolean);
+    const lastAccessDate = accessDates[accessDates.length - 1] || null;
+    const firstAccessDate = accessDates[0] || null;
+    const loginCount = accessDates.length;
+    const successfulLoginCount = loginDates.length;
+    const lastSuccessfulLoginDay = loginDayDates[loginDayDates.length - 1] || null;
+    const previousSuccessfulLoginDay = loginDayDates.length >= 2 ? loginDayDates[loginDayDates.length - 2] : null;
+    const distinctLoginDayInterval = previousSuccessfulLoginDay && lastSuccessfulLoginDay
+      ? daysBetween(previousSuccessfulLoginDay, lastSuccessfulLoginDay)
+      : null;
+    const monthSpan = monthsBetween(firstAccessDate, now);
+    const weekSpan = Math.max(1, Math.ceil((daysBetween(firstAccessDate, now) || 1) / 7));
+    const monthlyBuckets = new Set(accessDates.map((d) => `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}`));
+    const weeklyBuckets = new Set(accessDates.map((d) => {
       const start = Date.UTC(d.getUTCFullYear(), 0, 1);
       return `${d.getUTCFullYear()}-${Math.ceil(((d.getTime() - start) / 86400000 + 1) / 7)}`;
     }));
     return {
-      source: SOURCE.label,
+      source: client.source,
       userId: client.userId,
-      userName: client.userName,
-      email: client.email,
+      userName: client.userName || client.userId,
+      email: client.email || "Sem e-mail",
       joinedAt: client.joinedAt,
-      realizedLogin: Boolean(loginDates.length || client.lastLoginFromUser),
-      totalLogins: loginDates.length,
-      loginsPerMonth: Math.round((loginDates.length / monthSpan) * 100) / 100,
-      daysSinceLastAccess: daysBetween(lastLoginDate, now),
-      averageDaysBetweenAccesses: average(intervals),
-      typicalDaysBetweenAccesses: median(intervals),
+      realizedLogin: Boolean(accessDates.length),
+      totalLogins: loginCount,
+      loginsPerMonth: Math.round((loginCount / monthSpan) * 100) / 100,
+      daysSinceLastAccess: daysBetween(lastSuccessfulLoginDay, now),
+      averageDaysBetweenAccesses: distinctLoginDayInterval,
+      typicalDaysBetweenAccesses: distinctLoginDayInterval,
       averageSessionMinutes: null,
-      totalSessions: client.sessions.size || loginDates.length,
-      weeklyAccessFrequency: Math.round((loginDates.length / weekSpan) * 100) / 100,
-      monthlyAccessFrequency: Math.round((loginDates.length / monthSpan) * 100) / 100,
+      totalSessions: successfulLoginCount,
+      weeklyAccessFrequency: Math.round((accessDates.length / weekSpan) * 100) / 100,
+      monthlyAccessFrequency: Math.round((accessDates.length / monthSpan) * 100) / 100,
       activeWeeks: weeklyBuckets.size,
       activeMonths: monthlyBuckets.size,
-      firstAccessAt: firstLoginDate ? firstLoginDate.toISOString() : null,
-      lastAccessAt: lastLoginDate ? lastLoginDate.toISOString() : null,
+      firstAccessAt: firstAccessDate ? firstAccessDate.toISOString() : null,
+      lastAccessAt: lastAccessDate ? lastAccessDate.toISOString() : null,
+      lastSuccessfulLoginDay: lastSuccessfulLoginDay ? lastSuccessfulLoginDay.toISOString() : null,
+      previousSuccessfulLoginDay: previousSuccessfulLoginDay ? previousSuccessfulLoginDay.toISOString() : null,
     };
   });
 }
@@ -189,25 +386,25 @@ function indicator(indicator, value, total, metric, viability = "Sim") {
 }
 
 export default async function handler() {
-  if (!SOURCE.key) {
-    return Response.json(
-      { error: "Configure QV360_SUPABASE_SERVICE_ROLE_KEY para consultar uso da plataforma." },
-      { status: 503, headers: { "Cache-Control": "no-store" } },
-    );
-  }
   const warnings = [];
-  const [users, logins, sessions] = await Promise.all([
-    fetchAll("core_user", "id,email,first_name,last_name,date_joined,last_login", warnings),
-    fetchAll("login_history", "id,timestamp,user_id,session_id,device_id,ip_address", warnings),
-    fetchAll("core_session", "id,user_id,created_at,key_hashed", warnings),
+  const [pharusEvents, personalInfoRows, authUserRows] = await Promise.all([
+    fetchPharusEvents(warnings),
+    fetchPharusPersonalInfo(warnings),
+    fetchPharusAuthUsers(warnings),
   ]);
-  const clients = buildClientUsage(users, logins, sessions);
+  const personalInfoByUser = buildPersonalInfoMap(personalInfoRows);
+  const authUsersById = buildAuthUserMap(authUserRows);
+  const accessEventCount = pharusEvents.filter((event) => isAccessEvent(eventName(event))).length;
+  const loginEventCount = pharusEvents.filter((event) => isLoginEvent(eventName(event))).length;
+  const clients = buildClientUsage(pharusEvents, personalInfoByUser, authUsersById);
   const total = clients.length;
   const withLogin = clients.filter((c) => c.realizedLogin).length;
   const totalLogins = clients.reduce((sum, c) => sum + c.totalLogins, 0);
   const totalSessions = clients.reduce((sum, c) => sum + c.totalSessions, 0);
+  const daysSinceLastAccessValues = clients.map((c) => c.daysSinceLastAccess).filter((v) => v != null);
+  const daysSinceLastAccessFiltered = withoutOutliers(daysSinceLastAccessValues);
   const intervals = clients.map((c) => c.averageDaysBetweenAccesses).filter((v) => v != null);
-  const sessionDurationCoverage = 0;
+  const intervalsFiltered = withoutOutliers(intervals);
   const summary = {
     totalUsers: total,
     usersWithLogin: withLogin,
@@ -215,13 +412,20 @@ export default async function handler() {
     totalLogins,
     totalSessions,
     averageLoginsPerMonth: average(clients.map((c) => c.loginsPerMonth)),
-    averageDaysSinceLastAccess: average(clients.map((c) => c.daysSinceLastAccess)),
-    typicalDaysSinceLastAccess: median(clients.map((c) => c.daysSinceLastAccess)),
-    averageDaysBetweenAccesses: average(intervals),
-    typicalDaysBetweenAccesses: median(intervals),
+    averageDaysSinceLastAccess: average(daysSinceLastAccessFiltered),
+    typicalDaysSinceLastAccess: median(daysSinceLastAccessFiltered),
+    daysSinceLastAccessSample: daysSinceLastAccessFiltered.length,
+    daysSinceLastAccessOutliersRemoved: daysSinceLastAccessValues.length - daysSinceLastAccessFiltered.length,
+    averageDaysBetweenAccesses: median(intervalsFiltered),
+    typicalDaysBetweenAccesses: median(intervalsFiltered),
+    daysBetweenAccessesSample: intervalsFiltered.length,
+    daysBetweenAccessesOutliersRemoved: intervals.length - intervalsFiltered.length,
     averageSessionMinutes: null,
     averageWeeklyFrequency: average(clients.map((c) => c.weeklyAccessFrequency)),
     averageMonthlyFrequency: average(clients.map((c) => c.monthlyAccessFrequency)),
+    appPharusEvents: pharusEvents.length,
+    appPharusAccessEvents: accessEventCount,
+    appPharusLoginEvents: loginEventCount,
   };
   return Response.json(
     {
@@ -230,36 +434,33 @@ export default async function handler() {
       sources: {
         databases: [
           {
-            source: SOURCE.label,
-            schema: SOURCE.schema,
-            clientTable: "core_user",
-            loginTable: "login_history",
-            sessionTable: "core_session",
-            userCount: users.length,
-            loginCount: logins.length,
-            sessionCount: sessions.length,
-          },
-          {
             source: "App Pharus",
-            schema: "core",
-            clientTable: null,
-            loginTable: null,
-            sessionTable: null,
-            note: "Não foram identificadas tabelas de login/sessão/acesso no App Pharus.",
+            schema: "metrics",
+            eventTable: "events",
+            eventNameField: "event_name",
+            userCount: new Set(pharusEvents.map(eventClientId).filter(Boolean)).size,
+            eventCount: pharusEvents.length,
+            accessEventCount,
+            loginEventCount,
+            personalInfoCount: personalInfoRows.length,
+            authUserCount: authUserRows.length,
+            namedUsers: clients.filter((client) => client.userName && client.userName !== client.userId).length,
+            emailedUsers: clients.filter((client) => client.email && client.email !== "Sem e-mail").length,
+            note: "Fonte única da aba: eventos de acesso/login em metrics.events.",
           },
         ],
         warnings,
       },
       indicators: [
-        indicator("Realizou login? (Sim/Não)", withLogin, total, "QV360.login_history por user_id ou core_user.last_login", "Viável somente no QV360"),
-        indicator("Número total de logins", clients.filter((c) => c.totalLogins > 0).length, total, "Contagem de QV360.login_history por user_id", "Viável somente no QV360"),
-        indicator("Média de logins por mês", clients.filter((c) => c.loginsPerMonth != null).length, total, "Total de logins dividido pelos meses entre primeiro login e hoje", "Viável somente no QV360"),
-        indicator("Dias desde o último acesso", clients.filter((c) => c.daysSinceLastAccess != null).length, total, "Data atual menos último QV360.login_history.timestamp ou core_user.last_login", "Viável somente no QV360"),
-        indicator("Tempo médio entre acessos", clients.filter((c) => c.averageDaysBetweenAccesses != null).length, total, "Média dos intervalos entre logins consecutivos", "Viável somente no QV360"),
-        indicator("Tempo médio de sessão", sessionDurationCoverage, total, "Sem campo confiável de encerramento/logout ou duração de sessão", "Sem dados"),
-        indicator("Quantidade de sessões", clients.filter((c) => c.totalSessions > 0).length, total, "Distinct login_history.session_id ou registros em core_session", "Viável somente no QV360"),
-        indicator("Frequência semanal de acesso", clients.filter((c) => c.weeklyAccessFrequency != null).length, total, "Total de logins dividido pelas semanas desde o primeiro acesso", "Viável somente no QV360"),
-        indicator("Frequência mensal de acesso", clients.filter((c) => c.monthlyAccessFrequency != null).length, total, "Total de logins dividido pelos meses desde o primeiro acesso", "Viável somente no QV360"),
+        indicator("Realizou login? (Sim/Não)", withLogin, total, "Cliente/usuário com pelo menos um evento de acesso/login em App Pharus metrics.events.event_name.", "Sim"),
+        indicator("Número total de logins", clients.filter((c) => c.totalLogins > 0).length, total, "Contagem de eventos de login/acesso por usuário em App Pharus metrics.events.event_name.", "Sim"),
+        indicator("Média de logins por mês", clients.filter((c) => c.loginsPerMonth != null).length, total, "Total de logins/acessos dividido pelos meses entre o primeiro acesso e a data atual.", "Sim"),
+        indicator("Dias desde o último acesso", daysSinceLastAccessFiltered.length, total, "Mediana por usuário de hoje menos último dia distinto com login de sucesso; datas negativas e outliers removidos.", "Sim"),
+        indicator("Tempo médio entre acessos", intervalsFiltered.length, total, "Mediana por usuário entre penúltimo e último dia distinto com login de sucesso; datas negativas e outliers removidos.", "Sim"),
+        indicator("Tempo médio de sessão", 0, total, "Sem Dados.", "Sem dados"),
+        indicator("Quantidade de sessões", clients.filter((c) => c.totalSessions > 0).length, total, "Contagem de login com sucesso em App Pharus metrics.events.event_name = login_succeeded/login_success.", "Sim"),
+        indicator("Frequência semanal de acesso", clients.filter((c) => c.weeklyAccessFrequency != null).length, total, "Total de acessos dividido pelas semanas desde o primeiro acesso.", "Sim"),
+        indicator("Frequência mensal de acesso", clients.filter((c) => c.monthlyAccessFrequency != null).length, total, "Total de acessos dividido pelos meses desde o primeiro acesso.", "Sim"),
       ],
       clients,
     },

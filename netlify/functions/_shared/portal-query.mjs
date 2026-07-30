@@ -313,7 +313,12 @@ export function normalizePlanFilters(raw = {}) {
   if (!raw || typeof raw !== "object") return f;
   const STATUS_MAP = {
     active: "Ativo", ativo: "Ativo", cancelled: "Cancelado", cancelado: "Cancelado",
+    cancelled_no_date: "Cancelado sem data confirmada",
+    cancelled_without_date: "Cancelado sem data confirmada",
     frozen: "Congelado", congelado: "Congelado",
+    unknown: "Não informado", "não informado": "Não informado", "nao informado": "Não informado",
+    non_active: null,
+  };
     active_or_frozen: "active_or_frozen",
     active_and_frozen: "active_or_frozen",
   };
@@ -418,8 +423,13 @@ function applyGeneralFilters(rows, f) {
       if (want === "active" && st !== "Ativo") return false;
       if (want === "frozen" && st !== "Congelado") return false;
       if (want === "cancelled" && st !== "Cancelado") return false;
+      if (
+        (want === "cancelled_no_date" || want === "cancelled_without_date")
+        && st !== "Cancelado sem data confirmada"
+      ) return false;
       if (want === "unknown" && st !== "Não informado") return false;
       if (want === "active_or_frozen" && st !== "Ativo" && st !== "Congelado") return false;
+      if (want === "non_active" && st !== "Congelado" && st !== "Cancelado sem data confirmada") return false;
     }
     if (f.segment && r.segmentLabel !== f.segment) return false;
     if (f.hasFinancialData === true && !r.hasFinancialProfile) return false;

@@ -531,7 +531,7 @@ function buildAcionamentosQualityFromSupport(payload) {
       schema: "research",
       totalRows,
       missingRows,
-      sourceNote: "research.acionamentos (Business Data)",
+      sourceNote: "research.v_acionamentos_tratados (Business Data)",
     };
     const description = FIELD_DESCRIPTIONS[key];
     if (description) item.description = description;

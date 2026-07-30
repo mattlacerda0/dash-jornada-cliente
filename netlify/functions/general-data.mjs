@@ -6,10 +6,11 @@ import {
   buildCancellationMap,
   resolveAnalyticalStatus,
   normalizeClientStatus,
+  analyticalStatusDisplayLabel,
 } from "./_shared/analytical-cancellation.mjs";
 
 const CLIENT_SELECT =
-  "id,codigo,name,data_inicio_ciclo,created_at,status,segmentacao,engenheiro_patrimonial,data_churn";
+  "id,codigo,name,data_inicio_ciclo,data_fim_ciclo,ciclo,programa,created_at,status,segmentacao,engenheiro_patrimonial,data_churn";
 const CANCEL_SELECT = ANALYTICAL_CANCEL_SELECT;
 const FINANCIAL_SELECT =
   "id,client_id,reserva_liquidez,ultimo_aporte,ultima_renda_mensal,valor_imoveis_quitados,possui_imovel,possui_carro,possui_consorcio,cheque_especial,parcelamento_cartao,credito_pessoal,credito_consignado,updated_at";
@@ -90,7 +91,13 @@ const LIQUIDITY_BANDS = [
   "Não informado",
 ];
 
-const STATUS_LABELS = ["Ativo", "Cancelado", "Congelado", "Não informado"];
+const STATUS_LABELS = [
+  "Ativo",
+  "Congelado",
+  "Cancelado confirmado",
+  "Cancelado sem data confirmada",
+  "Não informado",
+];
 
 /** Ordem obrigatória de exibição/prioridade de segmento por capacidade financeira. */
 const SEGMENT_LABELS = ["APEX", "PRIVATE", "PRINCIPAL", "DEBTS", "OVER", "Dados insuficientes"];
@@ -373,7 +380,10 @@ function resolveStayPeriod({ stayStartDate, analyticalStatus, cancellationDate, 
   } else if (analyticalStatus === "Cancelado" && cancellationDate) {
     endDate = cancellationDate;
     stayCalculationStatus = "calculated_cancellation_date";
-  } else if (analyticalStatus === "Cancelado" && !cancellationDate) {
+  } else if (
+    analyticalStatus === "Cancelado sem data confirmada"
+    || (analyticalStatus === "Cancelado" && !cancellationDate)
+  ) {
     return {
       stayDays: null,
       stayMonths: null,
@@ -852,6 +862,16 @@ function buildPayload(clients, cancellations, financialRows, signatureMap, signa
       dataWarnings.push("Cliente encerrado sem data de cancelamento");
     }
 
+    const currentCycleRaw = client.ciclo;
+    const currentCycleNum = currentCycleRaw == null || currentCycleRaw === ""
+      ? null
+      : Number(currentCycleRaw);
+    const currentCycle = Number.isFinite(currentCycleNum) ? currentCycleNum : null;
+    const cycleEndDate = parseDate(client.data_fim_ciclo);
+    const renewalCount =
+      currentCycle != null && currentCycle > 0 ? Math.max(currentCycle - 1, 0) : 0;
+    const renewed = currentCycle != null && currentCycle > 1;
+
     rows.push({
       clientId: String(client.id),
       clientCode: blankToNull(client.codigo),
@@ -872,6 +892,12 @@ function buildPayload(clients, cancellations, financialRows, signatureMap, signa
       status: analyticalStatus,
       analyticalStatus,
       rawStatus,
+      currentCycle,
+      cycleStart: contractDate ? contractDate.toISOString() : null,
+      cycleEnd: cycleEndDate ? cycleEndDate.toISOString() : null,
+      renewalCount,
+      renewed,
+      program: blankToNull(client.programa),
       /** segment = código calculado (null quando dados insuficientes). */
       segment: segmentInfo.segment,
       /** segmentLabel = rótulo de exibição/agrupamento ("Dados insuficientes" quando null). */
@@ -919,7 +945,7 @@ function buildPayload(clients, cancellations, financialRows, signatureMap, signa
     ? Math.round((stayCalculatedClients / rows.length) * 1000) / 10
     : 0;
   const closedWithoutCancellationDate = rows.filter(
-    (r) => r.analyticalStatus === "Cancelado" && !r.cancellationDate,
+    (r) => r.analyticalStatus === "Cancelado sem data confirmada",
   ).length;
   const withFinancial = rows.filter((r) => r.hasFinancialProfile).length;
   const total = rows.length || 1;
@@ -941,6 +967,42 @@ function buildPayload(clients, cancellations, financialRows, signatureMap, signa
   const activeClients = rows.filter((r) => r.analyticalStatus === "Ativo").length;
   const cancelledClients = rows.filter((r) => r.analyticalStatus === "Cancelado").length;
   const frozenClients = rows.filter((r) => r.analyticalStatus === "Congelado").length;
+  const cancelledWithoutConfirmedDate = rows.filter(
+    (r) => r.analyticalStatus === "Cancelado sem data confirmada",
+  ).length;
+  const unknownClients = rows.filter((r) => r.analyticalStatus === "Não informado").length;
+  const knownStatuses = new Set([
+    "Ativo",
+    "Congelado",
+    "Cancelado",
+    "Cancelado sem data confirmada",
+    "Não informado",
+  ]);
+  const otherNonActiveClients = rows.filter(
+    (r) =>
+      !knownStatuses.has(r.analyticalStatus)
+      || (
+        r.analyticalStatus !== "Ativo"
+        && r.analyticalStatus !== "Cancelado"
+        && r.analyticalStatus !== "Congelado"
+        && r.analyticalStatus !== "Cancelado sem data confirmada"
+        && r.analyticalStatus !== "Não informado"
+      ),
+  ).length;
+  const nonActiveClients = frozenClients + cancelledWithoutConfirmedDate + otherNonActiveClients;
+  const nonActiveComposition = {
+    frozenClients,
+    cancelledWithoutConfirmedDate,
+    otherNonActiveClients,
+    total: nonActiveClients,
+  };
+  const statusAuditSum =
+    activeClients
+    + frozenClients
+    + cancelledClients
+    + cancelledWithoutConfirmedDate
+    + unknownClients
+    + otherNonActiveClients;
 
   const liquidityStats = measureBundle("liquidityReserve", liquidityValues);
   const contributionStats = measureBundle("lastContribution", contributionValues);
@@ -965,6 +1027,12 @@ function buildPayload(clients, cancellations, financialRows, signatureMap, signa
     activeClients,
     cancelledClients,
     frozenClients,
+    cancelledWithoutConfirmedDate,
+    unknownClients,
+    otherNonActiveClients,
+    nonActiveClients,
+    nonActiveComposition,
+    statusAuditSum,
     averageStayDays: stayStats.mean,
     typicalStayDays: stayStats.displayValue,
     stayDaysStats: stayStats,
@@ -994,8 +1062,12 @@ function buildPayload(clients, cancellations, financialRows, signatureMap, signa
   };
 
   const distributions = {
-    status: distributionFrom(rows, (r) => r.analyticalStatus, STATUS_LABELS).filter((item) => item.count > 0),
-    segments: distributionFrom(rows, (r) => r.segmentLabel, SEGMENT_LABELS).filter((item) => item.count > 0),
+    status: distributionFrom(
+      rows,
+      (r) => analyticalStatusDisplayLabel(r.analyticalStatus),
+      STATUS_LABELS,
+    ).filter((item) => item.count > 0),
+    segments: distributionFrom(rows, (r) => r.segmentLabel, SEGMENT_LABELS),
     engineers: distributionFrom(rows, (r) => r.engineer),
     stayRanges: distributionFrom(rows, (r) => r.stayRange, STAY_RANGES),
     financialProfile: [

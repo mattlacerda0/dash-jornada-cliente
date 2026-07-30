@@ -25,7 +25,11 @@ import {
   validPositiveDays,
   blankToNull,
   toNumber,
+  resolveAnalyticalProcessSituation,
 } from "./_shared/cancellation-process.mjs";
+
+const STATUS_DIM_SELECT = "id,name,color,display_order,status_type,funnel_type,created_at";
+const STATUS_UNKNOWN_LABEL = "Status não informado";
 
 const CLIENT_SELECT =
   "id,codigo,name,status,data_inicio_ciclo,created_at,engenheiro_patrimonial,segmentacao,motivo_churn";
@@ -68,12 +72,16 @@ const EXCLUSIVE_STAGE_ORDER = [
 
 const USED_FIELDS = [
   { schema: "public", table: "cancellations", column: "client_id", role: "join" },
+  { schema: "public", table: "cancellations", column: "status_id", role: "processStatusFk" },
+  { schema: "public", table: "cancellation_statuses", column: "id", role: "processStatusPk" },
+  { schema: "public", table: "cancellation_statuses", column: "name", role: "processStatusLabel" },
+  { schema: "public", table: "cancellation_statuses", column: "display_order", role: "processStatusOrder" },
   { schema: "public", table: "cancellations", column: "motivo", role: "reason" },
   { schema: "public", table: "cancellations", column: "motivo_categoria", role: "categoryRef" },
   { schema: "public", table: "cancellations", column: "churn_efetivado_at", role: "cancellationDatePriority1" },
   { schema: "public", table: "cancellations", column: "distrato_assinado_at", role: "cancellationDatePriority2" },
-  { schema: "public", table: "cancellations", column: "data_pedido", role: "operationalOnly" },
-  { schema: "public", table: "cancellations", column: "intencao_registrada_at", role: "operationalOnly" },
+  { schema: "public", table: "cancellations", column: "data_pedido", role: "processEntryPrimary" },
+  { schema: "public", table: "cancellations", column: "intencao_registrada_at", role: "processEntryFallback" },
   { schema: "public", table: "cancellations", column: "archived_at", role: "softDelete" },
   { schema: "public", table: "cancellations", column: "passou_retencao", role: "retention" },
   { schema: "public", table: "cancellations", column: "desfecho", role: "retentionOutcome" },
@@ -477,7 +485,58 @@ function enrichMeetingsAndFinancial({
   };
 }
 
-function buildPayload(clients, cancellations, financialRows, calendlyRows, manualRows, attendanceRows) {
+function buildStatusDimensionMap(statusRows) {
+  const byId = new Map();
+  for (const row of statusRows || []) {
+    const id = blankToNull(row.id);
+    if (!id) continue;
+    byId.set(String(id), {
+      id: String(id),
+      name: blankToNull(row.name) || STATUS_UNKNOWN_LABEL,
+      displayOrder: Number.isFinite(Number(row.display_order)) ? Number(row.display_order) : null,
+      statusType: blankToNull(row.status_type),
+      funnelType: blankToNull(row.funnel_type),
+      color: blankToNull(row.color),
+    });
+  }
+  return byId;
+}
+
+function resolveProcessStatus(statusId, statusById) {
+  if (!statusId) {
+    return {
+      processStatusId: null,
+      processStatusName: STATUS_UNKNOWN_LABEL,
+      processStatusOrder: null,
+      processStatusMatched: false,
+    };
+  }
+  const dim = statusById.get(String(statusId));
+  if (!dim) {
+    return {
+      processStatusId: String(statusId),
+      processStatusName: STATUS_UNKNOWN_LABEL,
+      processStatusOrder: null,
+      processStatusMatched: false,
+    };
+  }
+  return {
+    processStatusId: dim.id,
+    processStatusName: dim.name,
+    processStatusOrder: dim.displayOrder,
+    processStatusMatched: true,
+  };
+}
+
+function buildPayload(
+  clients,
+  cancellations,
+  financialRows,
+  calendlyRows,
+  manualRows,
+  attendanceRows,
+  statusRows = [],
+) {
   const now = new Date();
   const process = buildCancellationProcessMap(cancellations, { includeArchived: false });
   const {
@@ -490,6 +549,7 @@ function buildPayload(clients, cancellations, financialRows, calendlyRows, manua
     invalidDateSamples,
   } = process;
 
+  const statusById = buildStatusDimensionMap(statusRows);
   const financialMap = buildFinancialMap(financialRows);
   const attendanceMap = buildAttendanceMap(attendanceRows);
   const meetingsByClient = consolidateMeetings(calendlyRows, manualRows, attendanceMap);
@@ -510,6 +570,10 @@ function buildPayload(clients, cancellations, financialRows, calendlyRows, manua
   let datasOrdemInconsistente = 0;
   let clientsDistratoTextSignedWithoutDate = 0;
   let chronologicalIssueClients = 0;
+  let processStatusNull = 0;
+  let processStatusUnmatched = 0;
+  let processEntryFromPedido = 0;
+  let processEntryFromIntencao = 0;
 
   for (const [clientId, proc] of processMap.entries()) {
     const client = clientById.get(String(clientId));
@@ -563,6 +627,23 @@ function buildPayload(clients, cancellations, financialRows, calendlyRows, manua
     const daysIntencaoToEfetivado = validPositiveDays(proc.intencaoAt, cancellationDate);
     const daysInRetencao = validPositiveDays(proc.retentionStartAt, cancellationDate || now);
     const daysEfetivadoToOffboarding = validPositiveDays(cancellationDate, proc.enteredOffboardingAt);
+
+    const processStatus = resolveProcessStatus(proc.statusId, statusById);
+    if (!proc.statusId) processStatusNull += 1;
+    else if (!processStatus.processStatusMatched) processStatusUnmatched += 1;
+    if (proc.processEntrySource === "data_pedido") processEntryFromPedido += 1;
+    else if (proc.processEntrySource === "intencao_registrada_at") processEntryFromIntencao += 1;
+
+    const processEndForDuration = proc.hasEfetivado ? cancellationDate : now;
+    const daysInProcess = validPositiveDays(proc.processEntryAt, processEndForDuration);
+    const analyticalSituation =
+      proc.analyticalSituation
+      || resolveAnalyticalProcessSituation({
+        hasEfetivado: proc.hasEfetivado,
+        hasPedido: proc.hasPedido,
+        hasIntencao: proc.hasIntencao,
+      });
+    const inProcessCurrently = Boolean(proc.inProcessCurrently);
 
     // Quality counters
     if (proc.hasEfetivado && !proc.hasIntencao) efetivadoSemIntencao += 1;
@@ -643,8 +724,17 @@ function buildPayload(clients, cancellations, financialRows, calendlyRows, manua
       segment: segmentLabel,
       exclusiveStage: proc.exclusiveStage,
       exclusiveStageKey: proc.exclusiveStageKey,
+      processStatusId: processStatus.processStatusId,
+      processStatusName: processStatus.processStatusName,
+      processStatusOrder: processStatus.processStatusOrder,
+      processStatusMatched: processStatus.processStatusMatched,
       intencaoAt: toIso(proc.intencaoAt),
       pedidoAt: toIso(proc.pedidoAt),
+      processEntryAt: toIso(proc.processEntryAt),
+      processEntrySource: proc.processEntrySource || null,
+      daysInProcess,
+      inProcessCurrently,
+      analyticalSituation,
       churnEfetivadoAt: toIso(proc.churnEfetivadoAt),
       distratoAssinadoAt: toIso(proc.distratoAssinadoAt),
       cancellationDate: toIso(cancellationDate),
@@ -704,9 +794,11 @@ function buildPayload(clients, cancellations, financialRows, calendlyRows, manua
 
   const totalDistinctClients = rows.length;
   const efetivados = rows.filter((r) => r.hasEfetivado);
+  const inProcessRows = rows.filter((r) => r.inProcessCurrently);
   const intentionsRegistered = rows.filter((r) => r.hasIntencao).length;
   const ordersRegistered = rows.filter((r) => r.hasPedido).length;
   const effectiveCancellations = efetivados.length;
+  const clientsInCancellationProcess = inProcessRows.length;
 
   const pedidosComIntencao = rows.filter((r) => r.hasPedido && r.hasIntencao).length;
   const efetivadosComPedido = efetivados.filter((r) => r.hasPedido).length;
@@ -738,6 +830,8 @@ function buildPayload(clients, cancellations, financialRows, calendlyRows, manua
     medianIntentionToEffective: medianOf(rows.map((r) => r.daysIntencaoToEfetivado)),
     medianRetentionDays: medianOf(rows.map((r) => r.daysInRetencao)),
     medianEffectiveToOffboarding: medianOf(rows.map((r) => r.daysEfetivadoToOffboarding)),
+    medianDaysInProcess: medianOf(inProcessRows.map((r) => r.daysInProcess)),
+    medianDaysInProcessAll: medianOf(rows.map((r) => r.daysInProcess)),
   };
 
   const passouRetencaoRows = rows.filter((r) => r.passouRetencao === true);
@@ -974,9 +1068,40 @@ function buildPayload(clients, cancellations, financialRows, calendlyRows, manua
     );
   }
 
+  if (processStatusNull) {
+    pushWarning(
+      structuredWarnings,
+      "PROCESS_STATUS_NULL",
+      `${processStatusNull} cliente(s) no processo sem status_id.`,
+      { count: processStatusNull },
+    );
+  }
+  if (processStatusUnmatched) {
+    pushWarning(
+      structuredWarnings,
+      "PROCESS_STATUS_UNMATCHED",
+      `${processStatusUnmatched} cliente(s) com status_id sem correspondência em cancellation_statuses.`,
+      { count: processStatusUnmatched },
+    );
+  }
+
   return {
     generatedAt: now.toISOString(),
-    source: "public.cancellations + public.clients (BASE QV) — process map",
+    source: "public.cancellations + public.cancellation_statuses + public.clients (BASE QV) — process map",
+    processStatusDimension: {
+      table: "public.cancellation_statuses",
+      join: "cancellations.status_id = cancellation_statuses.id",
+      orderField: "display_order",
+      statuses: [...statusById.values()]
+        .sort((a, b) => (a.displayOrder ?? 999) - (b.displayOrder ?? 999) || a.name.localeCompare(b.name, "pt-BR"))
+        .map((s) => ({
+          id: s.id,
+          name: s.name,
+          displayOrder: s.displayOrder,
+          statusType: s.statusType,
+          funnelType: s.funnelType,
+        })),
+    },
     interactionDefinition: {
       version: 1,
       label: "Dias desde a última reunião antes do cancelamento",
@@ -998,6 +1123,10 @@ function buildPayload(clients, cancellations, financialRows, calendlyRows, manua
       intentionsRegistered,
       ordersRegistered,
       effectiveCancellations,
+      clientsInCancellationProcess,
+      processEntryFromPedido,
+      processEntryFromIntencao,
+      processWithoutStatus: inProcessRows.filter((r) => r.processStatusName === STATUS_UNKNOWN_LABEL).length,
       /** Alias chatbot / métricas legado */
       totalCancellations: effectiveCancellations,
       archivedRecords: archivedRows,
@@ -1051,6 +1180,32 @@ function buildPayload(clients, cancellations, financialRows, calendlyRows, manua
     },
     distributions: {
       byExclusiveStage: exclusiveStages,
+      byProcessStatus: (() => {
+        const orderMap = new Map(
+          [...statusById.values()].map((s) => [s.name, s.displayOrder]),
+        );
+        const dist = distributionFrom(inProcessRows, (r) => r.processStatusName || STATUS_UNKNOWN_LABEL);
+        const totalIn = inProcessRows.length || 1;
+        return dist
+          .map((e) => ({
+            ...e,
+            percent: pct(e.count, totalIn),
+            displayOrder: orderMap.has(e.label) ? orderMap.get(e.label) : null,
+          }))
+          .sort((a, b) => {
+            const ao = a.displayOrder;
+            const bo = b.displayOrder;
+            if (ao != null && bo != null && ao !== bo) return ao - bo;
+            if (ao != null && bo == null) return -1;
+            if (ao == null && bo != null) return 1;
+            return b.count - a.count;
+          });
+      })(),
+      byProcessSegment: distributionFrom(inProcessRows, (r) => r.segment, SEGMENT_LABELS),
+      byProcessEngineer: distributionFrom(
+        inProcessRows,
+        (r) => (r.engineer === "Não informado" ? null : r.engineer),
+      ),
       byReason: distributionFrom(efetivados, (r) => (r.hasReason ? r.reason : null)),
       byCategory: byReasonCategoryEfetivado,
       byReasonCategory: byReasonCategoryEfetivado,
@@ -1110,15 +1265,25 @@ export async function computeCancellationsPayload() {
     err.code = "config";
     throw err;
   }
-  const [clients, cancellations, financialRows, calendlyRows, manualRows, attendanceRows] = await Promise.all([
-    fetchAll("clients", CLIENT_SELECT),
-    fetchAll("cancellations", CANCEL_SELECT),
-    fetchAll("client_financial_data", FINANCIAL_SELECT),
-    fetchAll("client_meetings", CALENDLY_SELECT),
-    fetchAll("manual_meetings", MANUAL_SELECT),
-    fetchAll("meeting_attendance", ATTENDANCE_SELECT),
-  ]);
-  return buildPayload(clients, cancellations, financialRows, calendlyRows, manualRows, attendanceRows);
+  const [clients, cancellations, financialRows, calendlyRows, manualRows, attendanceRows, statusRows] =
+    await Promise.all([
+      fetchAll("clients", CLIENT_SELECT),
+      fetchAll("cancellations", CANCEL_SELECT),
+      fetchAll("client_financial_data", FINANCIAL_SELECT),
+      fetchAll("client_meetings", CALENDLY_SELECT),
+      fetchAll("manual_meetings", MANUAL_SELECT),
+      fetchAll("meeting_attendance", ATTENDANCE_SELECT),
+      fetchAll("cancellation_statuses", STATUS_DIM_SELECT, "display_order.asc"),
+    ]);
+  return buildPayload(
+    clients,
+    cancellations,
+    financialRows,
+    calendlyRows,
+    manualRows,
+    attendanceRows,
+    statusRows,
+  );
 }
 
 export default async (request) => {

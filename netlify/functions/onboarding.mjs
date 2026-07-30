@@ -1,4 +1,10 @@
-﻿const CLIENT_SELECT = "id,codigo,name,data_inicio_ciclo,created_at,status,engenheiro_patrimonial";
+﻿import {
+  applyFirstMeetingFallbackToClientRows,
+  loadAirtableFirstMeetingIndex,
+} from "./_shared/first-meeting-fallback.mjs";
+
+const CLIENT_SELECT =
+  "id,codigo,name,data_inicio_ciclo,created_at,status,engenheiro_patrimonial,cpf,cpf_digits,email,phone,phone_digits";
 
 function configurationError() {
   if (!process.env.DATA_SUPABASE_URL || !process.env.DATA_SUPABASE_SERVICE_ROLE_KEY) {
@@ -200,16 +206,31 @@ function transitionDurations(journeysByClient, stagesById) {
 
 async function buildPayload() {
   const warnings = [];
-  const clients = await fetchAll("clients", CLIENT_SELECT);
+  const [clients, airtableIndex, ...sourceEntries] = await Promise.all([
+    fetchAll("clients", CLIENT_SELECT),
+    loadAirtableFirstMeetingIndex().catch((err) => ({
+      available: false,
+      reason: err?.message || "Falha ao carregar índice Airtable.",
+      warnings: [],
+    })),
+    fetchAllSafe("client_meetings"),
+    fetchAllSafe("client_journeys"),
+    fetchAllSafe("client_mecanismos"),
+    fetchAllSafe("client_implementation_meeting_date"),
+    fetchAllSafe("journey_stages"),
+  ]);
   const sourceResults = {
-    client_meetings: await fetchAllSafe("client_meetings"),
-    client_journeys: await fetchAllSafe("client_journeys"),
-    client_mecanismos: await fetchAllSafe("client_mecanismos"),
-    client_implementation_meeting_date: await fetchAllSafe("client_implementation_meeting_date"),
-    journey_stages: await fetchAllSafe("journey_stages"),
+    client_meetings: sourceEntries[0],
+    client_journeys: sourceEntries[1],
+    client_mecanismos: sourceEntries[2],
+    client_implementation_meeting_date: sourceEntries[3],
+    journey_stages: sourceEntries[4],
   };
   for (const [table, result] of Object.entries(sourceResults)) {
     if (!Array.isArray(result)) warnings.push(`${table}: ${result.error}`);
+  }
+  if (airtableIndex?.reason && !airtableIndex.available) {
+    warnings.push(`airtable_fallback: ${airtableIndex.reason}`);
   }
 
   const meetingsByClient = byClient(Array.isArray(sourceResults.client_meetings) ? sourceResults.client_meetings : []);
@@ -273,6 +294,22 @@ async function buildPayload() {
     };
   });
 
+  const beforeFallbackWithMeeting = rows.filter((row) => row.firstMeetingDate).length;
+  const { coverage: firstMeetingFallbackCoverage } = applyFirstMeetingFallbackToClientRows(
+    rows,
+    clients,
+    airtableIndex,
+  );
+  for (const row of rows) {
+    if (row.firstMeetingSource === "airtable" && row.firstMeetingDate) {
+      const contractDate = parseDate(row.contractDate);
+      const meetingDate = parseDate(row.firstMeetingDate);
+      row.daysToFirstMeeting =
+        contractDate && meetingDate ? daysBetween(contractDate, meetingDate) : row.daysToFirstMeeting;
+    }
+  }
+  const afterFallbackWithMeeting = rows.filter((row) => row.firstMeetingDate).length;
+
   const total = rows.length || 1;
   const withFirstMeeting = rows.filter((row) => row.daysToFirstMeeting != null).length;
   const withPlanDelivery = rows.filter((row) => row.daysToPlanDelivery != null).length;
@@ -320,6 +357,18 @@ async function buildPayload() {
       averageFirstImplementationDays: indicators[2].value,
       averageTotalOnboardingDays: indicators[3].value,
       averageStageDays: indicators[5].value,
+      firstMeetingCoverageBeforeFallback: Math.round((beforeFallbackWithMeeting / total) * 1000) / 10,
+      firstMeetingCoverageAfterFallback: Math.round((afterFallbackWithMeeting / total) * 1000) / 10,
+      firstMeetingSources: {
+        base_qv: firstMeetingFallbackCoverage?.primary || beforeFallbackWithMeeting,
+        airtable: firstMeetingFallbackCoverage?.airtable || 0,
+        unavailable: firstMeetingFallbackCoverage?.unavailable || 0,
+      },
+      airtableFallback: {
+        available: Boolean(airtableIndex?.available),
+        reason: airtableIndex?.reason || null,
+        coverage: firstMeetingFallbackCoverage || null,
+      },
     },
     indicators,
     distributions: {

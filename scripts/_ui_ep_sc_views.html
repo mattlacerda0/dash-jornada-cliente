@@ -1,0 +1,234 @@
+      <section class="view" id="view-ep">
+        <div class="container">
+          <header class="page-header">
+            <div>
+              <div class="eyebrow">BASE QV · Performance do EP — App Pharus em seção separada</div>
+              <h1>Performance do EP</h1>
+              <p>Visão descritiva da carteira e das reuniões por Engenheiro Patrimonial.</p>
+            </div>
+            <div class="status-actions">
+              <div class="status"><b id="epStatus" style="color:var(--color-warning)">● Conectando à base</b><span id="epUpdated">Carregando indicadores…</span></div>
+              <button class="btn" id="epRefresh" type="button">Atualizar</button>
+            </div>
+          </header>
+
+          <div id="epMethodAlertHost">
+            <div id="epMethodAlert" data-alert-id="ep-performance-method-warning" hidden role="status"></div>
+          </div>
+
+          <section class="filters financial" aria-label="Filtros de performance dos EPs">
+            <label>Busca por EP<input id="epSearch" placeholder="Nome do Engenheiro Patrimonial" /></label>
+            <label>Status<select id="epStatusFilter">
+              <option value="all">Todos</option>
+              <option value="active">Ativos</option>
+              <option value="active_or_frozen">Ativos e congelados</option>
+              <option value="frozen">Congelados</option>
+              <option value="cancelled">Cancelados confirmados</option>
+              <option value="unknown">Não informados</option>
+            </select></label>
+            <label>Segmento<select id="epSegment"><option value="all">Todos</option></select></label>
+            <label>Contratação — de<input id="epHireFrom" type="date" /></label>
+            <label>até<input id="epHireTo" type="date" /></label>
+            <label>Período de reunião<select id="epPeriod">
+              <option value="all">Todo o histórico</option>
+              <option value="30">Últimos 30 dias</option>
+              <option value="90">Últimos 90 dias</option>
+              <option value="custom">Intervalo personalizado</option>
+            </select></label>
+            <label>Reunião — de<input id="epFrom" type="date" /></label>
+            <label>até<input id="epTo" type="date" /></label>
+            <label>Somente com carteira<select id="epOnlyPortfolio">
+              <option value="yes">Sim</option>
+              <option value="all">Todos</option>
+            </select></label>
+            <label>Somente com reuniões<select id="epHasMeeting">
+              <option value="all">Todos</option>
+              <option value="yes">Sim</option>
+              <option value="no">Não</option>
+            </select></label>
+            <label>Fonte das reuniões<select id="epMeetingSource">
+              <option value="base_qv">BASE QV</option>
+              <option value="pharus">App Pharus</option>
+              <option value="all">Ambas (exibição)</option>
+            </select></label>
+            <button class="btn" id="epClear" type="button">Limpar filtros</button>
+          </section>
+
+          <section class="summary kpis-ep-primary" id="epKpis"></section>
+
+          <div class="section-head"><div><h2>Distribuições por EP</h2><p>Métricas descritivas — sem ranking de desempenho.</p></div></div>
+          <section class="charts ep-charts">
+            <article class="chart-card">
+              <h3>Carteira por EP</h3>
+              <p>
+                <label style="display:inline">Métrica
+                  <select id="epPortfolioMetric">
+                    <option value="total">Clientes</option>
+                    <option value="active">Ativos</option>
+                    <option value="frozen">Congelados</option>
+                    <option value="cancelled">Cancelados confirmados</option>
+                  </select>
+                </label>
+              </p>
+              <div id="epChartPortfolio"></div>
+            </article>
+            <article class="chart-card"><h3>Cobertura de reuniões</h3><p>Clientes com reunião / carteira</p><div id="epChartCoverage"></div></article>
+            <article class="chart-card"><h3>Frequência de reuniões</h3><p>Média por todos · mediana entre atendidos</p><div id="epChartFrequency"></div></article>
+            <article class="chart-card"><h3>Clientes sem reunião</h3><p>Quantidade e percentual da carteira</p><div id="epChartWithout"></div></article>
+          </section>
+
+          <section class="table-panel">
+            <div class="section-head" style="margin:0">
+              <div>
+                <h2>Consolidado por Engenheiro Patrimonial</h2>
+                <p>Percentual cancelado da carteira por EP
+                  <span class="help" tabindex="0" data-tip="O percentual usa o EP atualmente associado ao cliente. A base pode não preservar o responsável histórico no momento do cancelamento.">?</span>
+                </p>
+              </div>
+              <span class="counter" id="epCounter"></span>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th data-epsort="engineer">Engenheiro Patrimonial</th>
+                    <th data-epsort="totalClients" class="num">Carteira</th>
+                    <th data-epsort="activeClients" class="num">Ativos</th>
+                    <th data-epsort="frozenClients" class="num">Congelados</th>
+                    <th data-epsort="cancelledClients" class="num">Cancelados</th>
+                    <th data-epsort="cancelledShareOfPortfolio" class="num">% cancelado</th>
+                    <th data-epsort="clientsWithMeeting" class="num">Com reunião</th>
+                    <th data-epsort="meetingCoverage" class="num">Cobertura</th>
+                    <th data-epsort="totalMeetings" class="num">Reuniões</th>
+                    <th data-epsort="averageMeetingsPerClient" class="num">Média</th>
+                    <th data-epsort="medianMeetingsAmongWithMeetings" class="num">Mediana atendidos</th>
+                    <th data-epsort="medianDaysSinceLastMeeting" class="num">Dias últ. reunião</th>
+                    <th data-epsort="clientsWithoutMeeting" class="num">Sem reunião</th>
+                    <th>Amostra</th>
+                  </tr>
+                </thead>
+                <tbody id="epRows"></tbody>
+              </table>
+            </div>
+            <div class="empty" id="epEmpty">Não há dados suficientes para este recorte.</div>
+            <div class="pagination">
+              <div id="epPageInfo"></div>
+              <div>
+                <button class="btn" id="epPrev" type="button">Anterior</button>
+                <button class="btn" id="epNext" type="button">Próxima</button>
+              </div>
+            </div>
+          </section>
+
+          <section class="pharus-section" aria-label="Reuniões no App Pharus">
+            <div class="section-head"><div><h2>Reuniões no App Pharus</h2><p>Fonte: App Pharus · não misturada com BASE QV.</p></div></div>
+            <div id="epPharusHost"></div>
+          </section>
+
+          <div id="epSourceAlertHost" style="margin-top:16px">
+            <div id="epSourceAlert" data-alert-id="ep-performance-quality-warning" hidden role="status"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="view" id="view-statistical-crosses">
+        <div class="container">
+          <header class="page-header">
+            <div>
+              <div class="eyebrow">BASE QV · Cruzamentos Estatísticos</div>
+              <h1>Cruzamentos Estatísticos</h1>
+              <p>Associações observadas entre a jornada e o cancelamento confirmado — sem inferência causal.</p>
+            </div>
+            <div class="status-actions">
+              <div class="status"><b id="scStatus" style="color:var(--color-warning)">● Conectando à base</b><span id="scUpdated">Carregando análises…</span></div>
+              <button class="btn" id="scRefresh" type="button">Atualizar</button>
+            </div>
+          </header>
+
+          <div id="scMethodAlertHost">
+            <div id="scMethodAlert" data-alert-id="statistical-crosses-methodology" hidden role="status"></div>
+          </div>
+
+          <section class="filters financial" aria-label="Filtros de cruzamentos">
+            <label>Contratação — de<input id="scHireFrom" type="date" /></label>
+            <label>até<input id="scHireTo" type="date" /></label>
+            <label>Status<select id="scStatusFilter">
+              <option value="active_cancelled">Ativos e cancelados</option>
+              <option value="all">Todos</option>
+              <option value="active">Ativos</option>
+              <option value="cancelled">Cancelados confirmados</option>
+            </select></label>
+            <label>Segmento<select id="scSegment"><option value="all">Todos</option></select></label>
+            <label>EP<select id="scEngineer"><option value="all">Todos</option></select></label>
+            <label>Possui reunião<select id="scHasMeeting">
+              <option value="all">Todos</option>
+              <option value="yes">Sim</option>
+              <option value="no">Não</option>
+            </select></label>
+            <label>Diagnóstico financeiro<select id="scHasFinancial">
+              <option value="all">Todos</option>
+              <option value="yes">Sim</option>
+              <option value="no">Não</option>
+            </select></label>
+            <label>Cobertura mínima (%)<input id="scMinCoverage" type="number" min="0" max="100" value="30" /></label>
+            <label>Amostra mínima<input id="scMinSample" type="number" min="1" value="30" /></label>
+            <button class="btn" id="scClear" type="button">Limpar filtros</button>
+          </section>
+
+          <section class="summary kpis-sc-primary" id="scKpis"></section>
+
+          <div class="section-head"><div><h2>Diferenças entre clientes ativos e cancelados</h2><p>Medianas e associação — associação ≠ causalidade.</p></div></div>
+          <section class="table-panel">
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Variável</th>
+                    <th class="num">Mediana não cancelados</th>
+                    <th class="num">Mediana cancelados</th>
+                    <th class="num">Diferença</th>
+                    <th>Associação</th>
+                    <th class="num">Cobertura</th>
+                    <th class="num">Amostra</th>
+                    <th>Observação</th>
+                  </tr>
+                </thead>
+                <tbody id="scDiffRows"></tbody>
+              </table>
+            </div>
+            <div class="empty" id="scDiffEmpty">Não há dados suficientes para este recorte.</div>
+          </section>
+
+          <div class="section-head"><div><h2>Poder discriminativo individual</h2><p>AUC univariada ajustada — não é precisão preditiva.</p></div></div>
+          <section class="table-panel">
+            <div class="table-wrap"><table><thead><tr><th>Variável</th><th class="num">AUC ajustada</th><th>Direção</th><th class="num">Amostra</th><th>Observação</th></tr></thead><tbody id="scAucRows"></tbody></table></div>
+            <div class="empty" id="scAucEmpty" hidden>Não há variáveis elegíveis para AUC neste recorte.</div>
+          </section>
+
+          <div class="section-head"><div><h2>Variáveis mais associadas ao cancelamento</h2><p>Ordenadas por magnitude · medidas não misturadas sem contexto.</p></div></div>
+          <section class="charts sc-charts">
+            <article class="chart-card"><h3>Numéricas</h3><p>Ponto-bisserial / diferença de medianas</p><div id="scChartNumeric"></div></article>
+            <article class="chart-card"><h3>Categóricas</h3><p>V de Cramér</p><div id="scChartCategorical"></div></article>
+          </section>
+
+          <div class="section-head"><div><h2>Cancelamento por segmento</h2><p>Segmento já calculado pelo portal.</p></div></div>
+          <div id="scSegmentHost"></div>
+
+          <div class="section-head"><div><h2>Reuniões e cancelamento</h2><p>Mesma definição de reunião válida do dashboard Reuniões.</p></div></div>
+          <p class="note-muted">Clientes próximos do cancelamento podem reduzir a frequência de reuniões; a direção da relação não pode ser concluída por esta análise.</p>
+          <div id="scMeetingHost"></div>
+
+          <div class="section-head"><div><h2>Atualização financeira e cancelamento</h2><p>Regras do dashboard Atualização Financeira.</p></div></div>
+          <div id="scFinancialHost"></div>
+
+          <div class="section-head"><div><h2>Tempo de permanência e sobrevivência</h2><p>Kaplan–Meier · evento = cancelamento confirmado.</p></div></div>
+          <div id="scSurvivalHost"></div>
+
+          <div class="section-head"><div><h2>Variáveis não analisadas</h2><p>Motivos de exclusão explícitos.</p></div></div>
+          <div id="scExcludedHost"></div>
+
+          <div id="scSourceAlertHost" style="margin-top:16px">
+            <div id="scSourceAlert" data-alert-id="statistical-crosses-quality-warning" hidden role="status"></div>
+          </div>
+        </div>
+      </section>

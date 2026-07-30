@@ -1,0 +1,314 @@
+{
+  "statusTables": {
+    "data_public_cancellations_statuses": {
+      "ok": false,
+      "status": 404,
+      "total": null,
+      "cols": [],
+      "sample": [],
+      "error": "{\"code\":\"PGRST205\",\"details\":null,\"hint\":\"Perhaps you meant the table 'public.cancellation_statuses'\",\"message\":\"Could not find the table 'public.cancellations_statuses' in the schema cache\"}"
+    },
+    "data_public_cancellation_statuses": {
+      "ok": true,
+      "status": 200,
+      "total": 17,
+      "cols": [
+        "id",
+        "name",
+        "color",
+        "display_order",
+        "status_type",
+        "created_at",
+        "funnel_type"
+      ],
+      "sample": [
+        {
+          "id": "a1c0e100-0000-0000-0000-000000000002",
+          "name": "Em retenção",
+          "color": "#a855f7",
+          "display_order": 11,
+          "status_type": "aberto",
+          "created_at": "2026-07-06T14:56:50.958557+00:00",
+          "funnel_type": "cancelamento"
+        },
+        {
+          "id": "a1c0e100-0000-0000-0000-000000000005",
+          "name": "Encerrado",
+          "color": "#22c55e",
+          "display_order": 16,
+          "status_type": "finalizado",
+          "created_at": "2026-07-06T14:56:50.958557+00:00",
+          "funnel_type": "cancelamento"
+        }
+      ],
+      "error": null
+    },
+    "data_public_cancel_statuses": {
+      "ok": false,
+      "status": 404,
+      "total": null,
+      "cols": [],
+      "sample": [],
+      "error": "{\"code\":\"PGRST205\",\"details\":null,\"hint\":\"Perhaps you meant the table 'public.cancellation_statuses'\",\"message\":\"Could not find the table 'public.cancel_statuses' in the schema cache\"}"
+    },
+    "data_public_status_cancellations": {
+      "ok": false,
+      "status": 404,
+      "total": null,
+      "cols": [],
+      "sample": [],
+      "error": "{\"code\":\"PGRST205\",\"details\":null,\"hint\":\"Perhaps you meant the table 'public.cancellations'\",\"message\":\"Could not find the table 'public.status_cancellations' in the schema cache\"}"
+    },
+    "data_public_statuses": {
+      "ok": false,
+      "status": 404,
+      "total": null,
+      "cols": [],
+      "sample": [],
+      "error": "{\"code\":\"PGRST205\",\"details\":null,\"hint\":\"Perhaps you meant the table 'public.client_statuses'\",\"message\":\"Could not find the table 'public.statuses' in the schema cache\"}"
+    },
+    "data_public_cancellation_status": {
+      "ok": false,
+      "status": 404,
+      "total": null,
+      "cols": [],
+      "sample": [],
+      "error": "{\"code\":\"PGRST205\",\"details\":null,\"hint\":\"Perhaps you meant the table 'public.cancellation_statuses'\",\"message\":\"Could not find the table 'public.cancellation_status' in the schema cache\"}"
+    }
+  },
+  "airtable": {
+    "data_bkp_airtable_bkp_clientes_id": {
+      "ok": false,
+      "status": 406,
+      "total": null,
+      "cols": [],
+      "sample": [],
+      "error": "{\"code\":\"PGRST106\",\"details\":null,\"hint\":\"Only the following schemas are exposed: graphql_public, public\",\"message\":\"Invalid schema: bkp_airtable\"}"
+    },
+    "data_bkp_airtable_bkp_reunioes": {
+      "ok": false,
+      "status": 406,
+      "total": null,
+      "cols": [],
+      "sample": [],
+      "error": "{\"code\":\"PGRST106\",\"details\":null,\"hint\":\"Only the following schemas are exposed: graphql_public, public\",\"message\":\"Invalid schema: bkp_airtable\"}"
+    },
+    "data_bkp_airtable_clientes_id": {
+      "ok": false,
+      "status": 406,
+      "total": null,
+      "cols": [],
+      "sample": [],
+      "error": "{\"code\":\"PGRST106\",\"details\":null,\"hint\":\"Only the following schemas are exposed: graphql_public, public\",\"message\":\"Invalid schema: bkp_airtable\"}"
+    },
+    "data_bkp_airtable_reunioes": {
+      "ok": false,
+      "status": 406,
+      "total": null,
+      "cols": [],
+      "sample": [],
+      "error": "{\"code\":\"PGRST106\",\"details\":null,\"hint\":\"Only the following schemas are exposed: graphql_public, public\",\"message\":\"Invalid schema: bkp_airtable\"}"
+    },
+    "data_public_bkp_clientes_id": {
+      "ok": false,
+      "status": 404,
+      "total": null,
+      "cols": [],
+      "sample": [],
+      "error": "{\"code\":\"PGRST205\",\"details\":null,\"hint\":\"Perhaps you meant the table 'public.clients'\",\"message\":\"Could not find the table 'public.bkp_clientes_id' in the schema cache\"}"
+    },
+    "data_public_bkp_reunioes": {
+      "ok": false,
+      "status": 404,
+      "total": null,
+      "cols": [],
+      "sample": [],
+      "error": "{\"code\":\"PGRST205\",\"details\":null,\"hint\":\"Perhaps you meant the table 'public.profiles'\",\"message\":\"Could not find the table 'public.bkp_reunioes' in the schema cache\"}"
+    },
+    "data_public_clientes_id": {
+      "ok": false,
+      "status": 404,
+      "total": null,
+      "cols": [],
+      "sample": [],
+      "error": "{\"code\":\"PGRST205\",\"details\":null,\"hint\":\"Perhaps you meant the table 'public.clients'\",\"message\":\"Could not find the table 'public.clientes_id' in the schema cache\"}"
+    },
+    "data_public_reunioes": {
+      "ok": false,
+      "status": 404,
+      "total": null,
+      "cols": [],
+      "sample": [],
+      "error": "{\"code\":\"PGRST205\",\"details\":null,\"hint\":\"Perhaps you meant the table 'public.user_roles'\",\"message\":\"Could not find the table 'public.reunioes' in the schema cache\"}"
+    },
+    "data_airtable_bkp_clientes_id": {
+      "ok": false,
+      "status": 406,
+      "total": null,
+      "cols": [],
+      "sample": [],
+      "error": "{\"code\":\"PGRST106\",\"details\":null,\"hint\":\"Only the following schemas are exposed: graphql_public, public\",\"message\":\"Invalid schema: airtable\"}"
+    },
+    "data_airtable_bkp_reunioes": {
+      "ok": false,
+      "status": 406,
+      "total": null,
+      "cols": [],
+      "sample": [],
+      "error": "{\"code\":\"PGRST106\",\"details\":null,\"hint\":\"Only the following schemas are exposed: graphql_public, public\",\"message\":\"Invalid schema: airtable\"}"
+    },
+    "data_airtable_clientes_id": {
+      "ok": false,
+      "status": 406,
+      "total": null,
+      "cols": [],
+      "sample": [],
+      "error": "{\"code\":\"PGRST106\",\"details\":null,\"hint\":\"Only the following schemas are exposed: graphql_public, public\",\"message\":\"Invalid schema: airtable\"}"
+    },
+    "data_airtable_reunioes": {
+      "ok": false,
+      "status": 406,
+      "total": null,
+      "cols": [],
+      "sample": [],
+      "error": "{\"code\":\"PGRST106\",\"details\":null,\"hint\":\"Only the following schemas are exposed: graphql_public, public\",\"message\":\"Invalid schema: airtable\"}"
+    },
+    "data_backup_bkp_clientes_id": {
+      "ok": false,
+      "status": 406,
+      "total": null,
+      "cols": [],
+      "sample": [],
+      "error": "{\"code\":\"PGRST106\",\"details\":null,\"hint\":\"Only the following schemas are exposed: graphql_public, public\",\"message\":\"Invalid schema: backup\"}"
+    },
+    "data_backup_bkp_reunioes": {
+      "ok": false,
+      "status": 406,
+      "total": null,
+      "cols": [],
+      "sample": [],
+      "error": "{\"code\":\"PGRST106\",\"details\":null,\"hint\":\"Only the following schemas are exposed: graphql_public, public\",\"message\":\"Invalid schema: backup\"}"
+    },
+    "data_backup_clientes_id": {
+      "ok": false,
+      "status": 406,
+      "total": null,
+      "cols": [],
+      "sample": [],
+      "error": "{\"code\":\"PGRST106\",\"details\":null,\"hint\":\"Only the following schemas are exposed: graphql_public, public\",\"message\":\"Invalid schema: backup\"}"
+    },
+    "data_backup_reunioes": {
+      "ok": false,
+      "status": 406,
+      "total": null,
+      "cols": [],
+      "sample": [],
+      "error": "{\"code\":\"PGRST106\",\"details\":null,\"hint\":\"Only the following schemas are exposed: graphql_public, public\",\"message\":\"Invalid schema: backup\"}"
+    },
+    "auth_anon_bkp_airtable_bkp_clientes_id": {
+      "ok": false,
+      "status": 406,
+      "total": null,
+      "cols": [],
+      "sample": [],
+      "error": "{\"code\":\"PGRST106\",\"details\":null,\"hint\":null,\"message\":\"The schema must be one of the following: public, bl_test, dw_bitrix, contracts_app\"}"
+    },
+    "auth_anon_bkp_airtable_bkp_reunioes": {
+      "ok": false,
+      "status": 406,
+      "total": null,
+      "cols": [],
+      "sample": [],
+      "error": "{\"code\":\"PGRST106\",\"details\":null,\"hint\":null,\"message\":\"The schema must be one of the following: public, bl_test, dw_bitrix, contracts_app\"}"
+    },
+    "auth_anon_public_bkp_clientes_id": {
+      "ok": false,
+      "status": 404,
+      "total": null,
+      "cols": [],
+      "sample": [],
+      "error": "{\"code\":\"PGRST205\",\"details\":null,\"hint\":\"Perhaps you meant the table 'public.kpi_config'\",\"message\":\"Could not find the table 'public.bkp_clientes_id' in the schema cache\"}"
+    },
+    "auth_anon_public_bkp_reunioes": {
+      "ok": false,
+      "status": 404,
+      "total": null,
+      "cols": [],
+      "sample": [],
+      "error": "{\"code\":\"PGRST205\",\"details\":null,\"hint\":null,\"message\":\"Could not find the table 'public.bkp_reunioes' in the schema cache\"}"
+    },
+    "auth_anon_dw_bitrix_bkp_clientes_id": {
+      "ok": false,
+      "status": 404,
+      "total": null,
+      "cols": [],
+      "sample": [],
+      "error": "{\"code\":\"PGRST205\",\"details\":null,\"hint\":\"Perhaps you meant the table 'dw_bitrix.wpp_cliente_grupo_jid'\",\"message\":\"Could not find the table 'dw_bitrix.bkp_clientes_id' in the schema cache\"}"
+    },
+    "auth_anon_dw_bitrix_bkp_reunioes": {
+      "ok": false,
+      "status": 404,
+      "total": null,
+      "cols": [],
+      "sample": [],
+      "error": "{\"code\":\"PGRST205\",\"details\":null,\"hint\":\"Perhaps you meant the table 'dw_bitrix.fact_renovacoes'\",\"message\":\"Could not find the table 'dw_bitrix.bkp_reunioes' in the schema cache\"}"
+    },
+    "auth_anon_bl_test_bkp_clientes_id": {
+      "ok": false,
+      "status": 404,
+      "total": null,
+      "cols": [],
+      "sample": [],
+      "error": "{\"code\":\"PGRST205\",\"details\":null,\"hint\":null,\"message\":\"Could not find the table 'bl_test.bkp_clientes_id' in the schema cache\"}"
+    },
+    "auth_anon_bl_test_bkp_reunioes": {
+      "ok": false,
+      "status": 404,
+      "total": null,
+      "cols": [],
+      "sample": [],
+      "error": "{\"code\":\"PGRST205\",\"details\":null,\"hint\":\"Perhaps you meant the table 'bl_test.profiles'\",\"message\":\"Could not find the table 'bl_test.bkp_reunioes' in the schema cache\"}"
+    },
+    "auth_anon_contracts_app_bkp_clientes_id": {
+      "ok": false,
+      "status": 404,
+      "total": null,
+      "cols": [],
+      "sample": [],
+      "error": "{\"code\":\"PGRST205\",\"details\":null,\"hint\":null,\"message\":\"Could not find the table 'contracts_app.bkp_clientes_id' in the schema cache\"}"
+    },
+    "auth_anon_contracts_app_bkp_reunioes": {
+      "ok": false,
+      "status": 404,
+      "total": null,
+      "cols": [],
+      "sample": [],
+      "error": "{\"code\":\"PGRST205\",\"details\":null,\"hint\":null,\"message\":\"Could not find the table 'contracts_app.bkp_reunioes' in the schema cache\"}"
+    },
+    "auth_service_missing_key": true,
+    "data_public_clientes_airtable": {
+      "ok": false,
+      "status": 404,
+      "total": null,
+      "cols": [],
+      "sample": [],
+      "error": "{\"code\":\"PGRST205\",\"details\":null,\"hint\":\"Perhaps you meant the table 'public.client_emails'\",\"message\":\"Could not find the table 'public.clientes_airtable' in the schema cache\"}"
+    }
+  },
+  "cancelStatusIds": null,
+  "cancelSample": {
+    "ok": false,
+    "status": 400,
+    "total": null,
+    "cols": [],
+    "sample": [],
+    "error": "{\"code\":\"42703\",\"details\":null,\"hint\":\"Perhaps you meant to reference the column \\\"cancellations.status_id\\\".\",\"message\":\"column cancellations.status does not exist\"}"
+  },
+  "statusIdFreq": {
+    "a1c0e100-0000-0000-0000-000000000004": 169,
+    "a1c0e100-0000-0000-0000-000000000002": 5,
+    "a1c0e100-0000-0000-0000-000000000005": 171,
+    "a1c0e100-0000-0000-0000-000000000001": 22,
+    "a1c0e100-0000-0000-0000-000000000003": 24
+  }
+}

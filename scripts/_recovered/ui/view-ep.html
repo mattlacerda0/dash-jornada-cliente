@@ -1,0 +1,128 @@
+      </section>
+
+      <section class="view" id="view-ep">
+        <div class="container">
+          <header class="page-header">
+            <div>
+              <div class="eyebrow">BASE QV · Performance do Engenheiro Patrimonial</div>
+              <h1>Performance do Engenheiro Patrimonial</h1>
+              <p>Análise da carteira, relacionamento e resultados dos Engenheiros Patrimoniais.</p>
+            </div>
+            <div class="status-actions">
+              <div class="status"><b id="epStatus" style="color:var(--color-warning)">● Conectando à base</b><span id="epUpdated">Fase 1 · clientes, cancelamento e reuniões</span></div>
+              <button class="btn" id="epRefresh" type="button">Atualizar</button>
+            </div>
+          </header>
+
+          <section class="filters financial" aria-label="Filtros de performance dos EPs">
+            <label>Busca por EP<input id="epSearch" placeholder="Nome do Engenheiro Patrimonial" /></label>
+            <label>Engenheiro Patrimonial<select id="epEngineer"><option value="all">Todos</option></select></label>
+            <label>Status do cliente<select id="epStatusFilter">
+              <option value="all">Todos</option>
+              <option value="active">Ativos</option>
+              <option value="active_or_frozen">Ativos e congelados</option>
+              <option value="frozen">Congelados</option>
+              <option value="cancelled">Cancelados</option>
+              <option value="unknown">Não informados</option>
+            </select></label>
+            <label>Segmento<select id="epSegment"><option value="all">Todos</option></select></label>
+            <label>Período<select id="epPeriod">
+              <option value="all">Todo o histórico</option>
+              <option value="30">Últimos 30 dias</option>
+              <option value="90">Últimos 90 dias</option>
+              <option value="this_month">Este mês</option>
+              <option value="last_month">Mês passado</option>
+              <option value="this_year">Este ano</option>
+              <option value="last_year">Ano passado</option>
+              <option value="custom">Intervalo personalizado</option>
+            </select></label>
+            <label>De<input id="epFrom" type="date" /></label>
+            <label>Até<input id="epTo" type="date" /></label>
+            <label>Faixa de carteira<select id="epPortfolio">
+              <option value="all">Todas</option>
+              <option value="1-10">1 a 10</option>
+              <option value="11-30">11 a 30</option>
+              <option value="31-60">31 a 60</option>
+              <option value="61+">61 ou mais</option>
+            </select></label>
+            <label>Possui cancelamento<select id="epHasCancel">
+              <option value="all">Todos</option>
+              <option value="yes">Sim</option>
+              <option value="no">Não</option>
+            </select></label>
+            <label>Possui reunião<select id="epHasMeeting">
+              <option value="all">Todos</option>
+              <option value="yes">Sim</option>
+              <option value="no">Não</option>
+            </select></label>
+            <label>Possui NPS<select id="epHasNps" disabled title="Fase 2 — fonte confirmada, card ainda não liberado">
+              <option value="all">Todos</option>
+            </select></label>
+            <label>Possui renovação<select id="epHasRenewal" disabled title="Fonte de renovação ainda não confirmada">
+              <option value="all">Todos</option>
+            </select></label>
+            <button class="btn" id="epClear" type="button">Limpar filtros</button>
+          </section>
+
+          <p class="note-muted" id="epPeriodNote">Período aplicado por evento · Indicadores atribuídos ao EP atualmente registrado no cliente.</p>
+
+          <div id="epSampleAlertHost">
+            <div id="epSampleAlert" data-alert-id="ep-performance-sample-warning" hidden role="status"></div>
+          </div>
+          <div id="epMethodAlertHost">
+            <div id="epMethodAlert" data-alert-id="ep-performance-method-warning" hidden role="status"></div>
+          </div>
+
+          <section class="summary kpis-ep-primary" id="epKpis"></section>
+
+          <div class="section-head"><div><h2>Comparativo por EP</h2><p>Sem ranking único · ordene por qualquer indicador · amostra sempre visível.</p></div></div>
+          <section class="charts ep-charts">
+            <article class="chart-card"><h3>Clientes por EP</h3><p>Carteira atual filtrada</p><div id="epChartPortfolio"></div></article>
+            <article class="chart-card"><h3>Taxa de cancelamento por EP</h3><p>Cancelados ÷ carteira · amostra visível</p><div id="epChartCancel"></div></article>
+            <article class="chart-card"><h3>Reuniões por cliente (mediana)</h3><p>Mediana e média por EP</p><div id="epChartMeetings"></div></article>
+            <article class="chart-card"><h3>Clientes ativos por EP</h3><p>Status analítico Ativo</p><div id="epChartActive"></div></article>
+            <article class="chart-card ep-span-all"><h3>Clientes por segmento (carteira filtrada)</h3><p>Mesma segmentação do Dados Gerais</p><div id="epChartSegment"></div></article>
+          </section>
+
+          <section class="table-panel">
+            <div class="section-head" style="margin:0">
+              <div><h2>Performance por Engenheiro Patrimonial</h2><p>Clique em uma linha para abrir o detalhe do EP.</p></div>
+              <span class="counter" id="epCounter"></span>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th data-epsort="engineer">EP</th>
+                    <th data-epsort="totalClients" class="num">Clientes</th>
+                    <th data-epsort="activeClients" class="num">Ativos</th>
+                    <th data-epsort="frozenClients" class="num">Congelados</th>
+                    <th data-epsort="cancelledClients" class="num">Cancelados</th>
+                    <th data-epsort="cancellationRate" class="num">Taxa cancel.</th>
+                    <th data-epsort="nps" class="num">NPS</th>
+                    <th data-epsort="npsResponses" class="num">Resp. NPS</th>
+                    <th data-epsort="medianMeetingsPerClient" class="num">Reuniões/cliente</th>
+                    <th data-epsort="totalMeetings" class="num">Total reuniões</th>
+                    <th data-epsort="medianResponseTimeHours" class="num">Tempo resposta</th>
+                    <th data-epsort="renewals" class="num">Renovações</th>
+                    <th data-epsort="renewalEligible" class="num">Elegíveis</th>
+                    <th data-epsort="renewalRate" class="num">Taxa renov.</th>
+                    <th data-epsort="alerts">Alertas</th>
+                  </tr>
+                </thead>
+                <tbody id="epRows"></tbody>
+              </table>
+            </div>
+            <div class="empty" id="epEmpty">Nenhum EP encontrado para os filtros selecionados.</div>
+            <div class="pagination">
+              <div id="epPageInfo"></div>
+              <div>
+                <button class="btn" id="epPrev" type="button">Anterior</button>
+                <button class="btn" id="epNext" type="button">Próxima</button>
+              </div>
+            </div>
+          </section>
+        </div>
+      </section>
+
+      <section class="view" id="view-satisfaction">

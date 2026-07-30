@@ -1,7 +1,12 @@
 ﻿import { requireCorporateAuth } from "./_shared/auth.mjs";
 import { dataConfigurationError } from "./_shared/env.mjs";
+import {
+  applyFirstMeetingFallbackToClientRows,
+  loadAirtableFirstMeetingIndex,
+} from "./_shared/first-meeting-fallback.mjs";
 
-const CLIENT_SELECT = "id,codigo,name,engenheiro_patrimonial,data_inicio_ciclo,created_at";
+const CLIENT_SELECT =
+  "id,codigo,name,engenheiro_patrimonial,data_inicio_ciclo,created_at,cpf,cpf_digits,email,phone,phone_digits";
 const CALENDLY_SELECT =
   "id,client_id,calendly_event_uri,event_name,start_time,end_time,host_email,manually_linked";
 const MANUAL_SELECT =
@@ -398,7 +403,7 @@ function isPastMeeting(meeting, now) {
   return Boolean(start && start <= now);
 }
 
-function buildPayload(clients, calendlyRows, manualRows, attendanceRows, implRows) {
+function buildPayload(clients, calendlyRows, manualRows, attendanceRows, implRows, airtableIndex = null) {
   const qualityWarnings = [
     "crm_meetings excluído da consolidação (somente lead_id, sem vínculo confiável com clients.id).",
     "Status observados em meeting_attendance.status: compareceu, nao_compareceu, pendente, remarcado. Nenhuma categoria de cancelamento encontrada; cancelamentos não entram na taxa de comparecimento.",
@@ -637,6 +642,34 @@ function buildPayload(clients, calendlyRows, manualRows, attendanceRows, implRow
     );
   }
 
+  let fallbackMeta = null;
+  if (airtableIndex) {
+    const { resolutions, warnings: fallbackWarnings, coverage } = applyFirstMeetingFallbackToClientRows(
+      clientRows,
+      clients,
+      airtableIndex,
+    );
+    for (const row of clientRows) {
+      if (row.firstMeetingSource !== "airtable" || !row.firstMeetingDate) continue;
+      const entryDate = parseDate(row.entryDate);
+      const meetingDate = parseDate(row.firstMeetingDate);
+      if (entryDate && meetingDate) {
+        const days = daysBetween(entryDate, meetingDate);
+        if (days >= 0) row.daysFromEntryToFirstMeeting = days;
+      }
+    }
+    if (fallbackWarnings?.length) qualityWarnings.push(...fallbackWarnings);
+    fallbackMeta = {
+      available: airtableIndex.available === true,
+      reason: airtableIndex.reason || null,
+      schema: airtableIndex.meta?.schema || null,
+      coverage,
+      resolutionsCount: resolutions.length,
+      statusValues: airtableIndex.statusValues || [],
+      meta: airtableIndex.meta || null,
+    };
+  }
+
   /** Reuniões usadas em KPIs/gráficos: exclui anteriores à entrada e inválidas. */
   const analyticMeetings = [];
   for (const client of clientRows) {
@@ -654,8 +687,8 @@ function buildPayload(clients, calendlyRows, manualRows, attendanceRows, implRow
     ? Math.round((analyticMeetings.length / monthsBetween(datedMeetings[0], datedMeetings[datedMeetings.length - 1])) * 10) / 10
     : null;
 
-  const withFirst = clientRows.filter((c) => c.firstMeetingCompleted === true).length;
-  const withoutFirst = clientRows.filter((c) => c.firstMeetingCompleted === false).length;
+  let withFirst = clientRows.filter((c) => c.firstMeetingCompleted === true).length;
+  let withoutFirst = clientRows.filter((c) => c.firstMeetingCompleted === false).length;
   const portfolio = clientRows.length || 1;
   const relatedMeetings = meetings.length || 1;
   const preEntryPercent = Math.round((preEntryMeetingsCount / relatedMeetings) * 1000) / 10;
@@ -736,6 +769,14 @@ function buildPayload(clients, calendlyRows, manualRows, attendanceRows, implRow
     firstMeetingCompletionRate: Math.round((withFirst / portfolio) * 1000) / 10,
     preEntryMeetingsExcluded: preEntryMeetingsCount,
     clientsWithPreEntryMeetings: clientsWithPreEntry.size,
+    firstMeetingSources: fallbackMeta
+      ? {
+          base_qv: fallbackMeta.coverage?.primary || 0,
+          airtable: fallbackMeta.coverage?.airtable || 0,
+          unavailable: fallbackMeta.coverage?.unavailable || 0,
+        }
+      : null,
+    airtableFallback: fallbackMeta,
   };
 
   const distributions = {
@@ -798,14 +839,24 @@ export async function computeMeetingsPayload() {
     err.code = "config";
     throw err;
   }
-  const [clients, calendlyRows, manualRows, attendanceRows, implRows] = await Promise.all([
+  const [clients, calendlyRows, manualRows, attendanceRows, implRows, airtableIndex] = await Promise.all([
     fetchAll("clients", CLIENT_SELECT),
     fetchAll("client_meetings", CALENDLY_SELECT),
     fetchAll("manual_meetings", MANUAL_SELECT),
     fetchAll("meeting_attendance", ATTENDANCE_SELECT),
     fetchAll("client_implementation_meeting_date", IMPL_SELECT, "client_id.asc"),
+    loadAirtableFirstMeetingIndex().catch((err) => ({
+      available: false,
+      reason: err?.message || "Falha ao carregar índice Airtable.",
+      clientsByKey: null,
+      meetingsByBackupId: null,
+      statusValues: [],
+      warnings: [],
+      meta: null,
+    })),
   ]);
-  return buildPayload(clients, calendlyRows, manualRows, attendanceRows, implRows);
+
+  return buildPayload(clients, calendlyRows, manualRows, attendanceRows, implRows, airtableIndex);
 }
 
 export default async (request) => {

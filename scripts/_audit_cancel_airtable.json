@@ -1,0 +1,106 @@
+{
+  "statuses": {
+    "ok": false,
+    "status": 404,
+    "total": null,
+    "cols": [],
+    "sample": [],
+    "error": "{\"code\":\"PGRST205\",\"details\":null,\"hint\":\"Perhaps you meant the table 'public.cancellation_statuses'\",\"message\":\"Could not find the table 'public.cancellations_statuses' in the schema cache\"}"
+  },
+  "cancel_with_status": {
+    "ok": true,
+    "status": 200,
+    "total": 391,
+    "cols": [
+      "id",
+      "status_id",
+      "client_id"
+    ],
+    "sample": [
+      {
+        "id": "821f938a-e3ff-45dc-8447-494e809a9818",
+        "status_id": "a1c0e100-0000-0000-0000-000000000004",
+        "client_id": "20d8112b-75e6-4362-8584-76f593b5fc8c"
+      },
+      {
+        "id": "21375ec8-e80a-4626-a221-2f84f4cb25aa",
+        "status_id": "a1c0e100-0000-0000-0000-000000000002",
+        "client_id": "645a5fba-6abc-42f0-90a3-f27a10453f63"
+      },
+      {
+        "id": "097b608d-7cf1-402b-9e40-28c76055a48d",
+        "status_id": "a1c0e100-0000-0000-0000-000000000004",
+        "client_id": "46a5bf41-60fe-47ff-9b53-48976978d879"
+      }
+    ],
+    "error": null
+  },
+  "in_process": {
+    "ok": true,
+    "status": 200,
+    "total": 126,
+    "cols": [
+      "client_id"
+    ],
+    "sample": [
+      {
+        "client_id": "20d8112b-75e6-4362-8584-76f593b5fc8c"
+      }
+    ],
+    "error": null
+  },
+  "clientes_bkp_airtable": {
+    "schema": "bkp_airtable",
+    "ok": false,
+    "status": 406,
+    "total": null,
+    "cols": [],
+    "sample": [],
+    "error": "{\"code\":\"PGRST106\",\"details\":null,\"hint\":null,\"message\":\"The schema must be one of the following: public, bl_test, dw_bitrix, contracts_app\"}"
+  },
+  "reunioes_bkp_airtable": {
+    "schema": "bkp_airtable",
+    "ok": false,
+    "status": 406,
+    "total": null,
+    "cols": [],
+    "sample": [],
+    "error": "{\"code\":\"PGRST106\",\"details\":null,\"hint\":null,\"message\":\"The schema must be one of the following: public, bl_test, dw_bitrix, contracts_app\"}"
+  },
+  "clientes_public": {
+    "schema": "public",
+    "ok": false,
+    "status": 404,
+    "total": null,
+    "cols": [],
+    "sample": [],
+    "error": "{\"code\":\"PGRST205\",\"details\":null,\"hint\":\"Perhaps you meant the table 'public.kpi_config'\",\"message\":\"Could not find the table 'public.bkp_clientes_id' in the schema cache\"}"
+  },
+  "reunioes_public": {
+    "schema": "public",
+    "ok": false,
+    "status": 404,
+    "total": null,
+    "cols": [],
+    "sample": [],
+    "error": "{\"code\":\"PGRST205\",\"details\":null,\"hint\":null,\"message\":\"Could not find the table 'public.bkp_reunioes' in the schema cache\"}"
+  },
+  "clientes_research": {
+    "schema": "research",
+    "ok": false,
+    "status": 406,
+    "total": null,
+    "cols": [],
+    "sample": [],
+    "error": "{\"code\":\"PGRST106\",\"details\":null,\"hint\":null,\"message\":\"The schema must be one of the following: public, bl_test, dw_bitrix, contracts_app\"}"
+  },
+  "reunioes_research": {
+    "schema": "research",
+    "ok": false,
+    "status": 406,
+    "total": null,
+    "cols": [],
+    "sample": [],
+    "error": "{\"code\":\"PGRST106\",\"details\":null,\"hint\":null,\"message\":\"The schema must be one of the following: public, bl_test, dw_bitrix, contracts_app\"}"
+  }
+}

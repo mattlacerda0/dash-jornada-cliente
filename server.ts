@@ -34,6 +34,9 @@ const mechanismsHandler = (await import("./netlify/functions/mechanisms.mjs")).d
 const pharusMechanismsHandler = (await import("./netlify/functions/pharus-mechanisms.mjs")).default;
 const financialUpdatesHandler = (await import("./netlify/functions/financial-updates.mjs")).default;
 const supportHandler = (await import("./netlify/functions/support.mjs")).default;
+const epPerformanceHandler = (await import("./netlify/functions/ep-performance.mjs")).default;
+const pharusEpMeetingsHandler = (await import("./netlify/functions/pharus-ep-meetings.mjs")).default;
+const statisticalCrossesHandler = (await import("./netlify/functions/statistical-crosses.mjs")).default;
 const assistantHandler = (await import("./netlify/functions/assistant.mjs")).default;
 const assistantDataHandler = (await import("./netlify/functions/assistant-data.mjs")).default;
 const qualityHandler = (await import("./netlify/functions/quality.mjs")).default;
@@ -217,6 +220,9 @@ const server = Bun.serve({
     if (url.pathname === "/api/financial-updates") return financialUpdatesHandler(request);
     if (url.pathname === "/api/platform-usage") return platformUsageHandler(request);
     if (url.pathname === "/api/support") return supportHandler(request);
+    if (url.pathname === "/api/ep-performance") return epPerformanceHandler(request);
+    if (url.pathname === "/api/pharus-ep-meetings") return pharusEpMeetingsHandler(request);
+    if (url.pathname === "/api/statistical-crosses") return statisticalCrossesHandler(request);
     if (url.pathname === "/api/assistant") return assistantHandler(request);
     if (url.pathname === "/api/assistant-data") return assistantDataHandler(request);
     if (url.pathname.startsWith("/js/")) {

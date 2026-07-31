@@ -116,6 +116,21 @@ function payloadProgram(row) {
   ].filter(Boolean).join(" "));
 }
 
+function buildClientProgramMap(rows) {
+  const map = new Map();
+  for (const row of rows || []) {
+    const clientId = String(row?.id || row?.client_id || "").trim();
+    const program = programFromFormType(row?.programa || row?.program);
+    if (clientId && program) map.set(clientId, program);
+  }
+  return map;
+}
+
+function resolvedProgram(row, clientPrograms) {
+  const clientId = String(row?.client_id || "").trim();
+  return (clientId && clientPrograms.get(clientId)) || payloadProgram(row);
+}
+
 function dedupeByKey(rows, keyFields) {
   const seen = new Set();
   const result = [];
@@ -182,7 +197,7 @@ function buildNpsMonthly(rows) {
     }));
 }
 
-function buildRows(npsRows, csatRows) {
+function buildRows(npsRows, csatRows, clientPrograms = new Map()) {
   const byClient = new Map();
   const ensure = (clientId, seed = {}) => {
     const key = clientId || `sem-cliente-${byClient.size + 1}`;
@@ -205,7 +220,7 @@ function buildRows(npsRows, csatRows) {
 
   for (const row of npsRows) {
     const client = ensure(blankToNull(row.client_id), row);
-    const program = payloadProgram(row);
+    const program = resolvedProgram(row, clientPrograms);
     if (program && !client.programs.includes(program)) client.programs.push(program);
     const score = npsScore(row.score);
     const date = parseDate(row.created_at);
@@ -221,7 +236,7 @@ function buildRows(npsRows, csatRows) {
     const score = csatScore(row.score);
     if (score == null) continue;
     const client = ensure(blankToNull(row.client_id), row);
-    const program = payloadProgram(row);
+    const program = resolvedProgram(row, clientPrograms);
     if (program && !client.programs.includes(program)) client.programs.push(program);
     const key = client.clientId || client.clientEmail || client.clientName;
     if (!csatByClient.has(key)) csatByClient.set(key, []);
@@ -264,14 +279,16 @@ export default async function handler(request) {
   try {
     const requestUrl = new URL(request.url);
     const programFilter = requestUrl.searchParams.get("program") || "all";
-    const [rawNpsRows, rawCsatRows, npsSends] = await Promise.all([
+    const [rawNpsRows, rawCsatRows, npsSends, clientRows] = await Promise.all([
       fetchAll("nps_responses", "id,typeform_response_id,typeform_form_id,client_id,client_name,client_email,tipo_de_forms,score,comment,raw_payload,created_at", "created_at.asc"),
       fetchAll("csat_responses", "id,typeform_response_id,form_response_id,typeform_form_id,client_id,client_name,client_email,tipo_de_forms,score,comment,raw_payload,created_at,meeting_date", "created_at.asc"),
       fetchAll("nps_sends", "id,client_id,sent_at,created_at", "created_at.asc"),
+      fetchAll("clients", "id,programa", "id.asc"),
     ]);
+    const clientPrograms = buildClientProgramMap(clientRows);
 
     const matchesProgram = (row) => {
-      const program = payloadProgram(row);
+      const program = resolvedProgram(row, clientPrograms);
       if (programFilter === "all") return true;
       if (programFilter === "unknown") return !program;
       return program === programFilter;
@@ -294,7 +311,7 @@ export default async function handler(request) {
     const detractors = npsScores.filter((score) => score <= 6).length;
     const satisfiedCsat = csatScores.filter((score) => score === 5).length;
 
-    const clients = buildRows(npsRows, csatRows);
+    const clients = buildRows(npsRows, csatRows, clientPrograms);
 
     const summary = {
       nps: calcNps(npsScores),

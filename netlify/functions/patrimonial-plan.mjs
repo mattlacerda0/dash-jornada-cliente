@@ -27,6 +27,9 @@
   },
 ];
 
+import { requireCorporateAuth } from "./_shared/auth.mjs";
+import { dataConfigurationError, getDataEnv } from "./_shared/env.mjs";
+
 const PLAN_TABLES = [
   "client_patrimonial_plans",
   "patrimonial_plans",
@@ -155,6 +158,64 @@ function uniqueByClientId(clients) {
   return unique;
 }
 
+function fold(value) {
+  return String(value || "")
+    .normalize("NFD")
+    .replace(/\p{M}/gu, "")
+    .toLowerCase()
+    .trim();
+}
+
+function isCentralIntelligenceMeeting(row) {
+  return fold(firstValue(row, ["event_name", "title", "name", "meeting_type"]))
+    .includes("central de inteligencia");
+}
+
+function buildCentralPlanRows(clients, meetings) {
+  const clientsById = new Map();
+  for (const client of clients) {
+    const id = String(firstValue(client, ["id", "client_id", "uuid"]) || "");
+    if (id) clientsById.set(id, client);
+  }
+
+  const meetingsByClient = new Map();
+  for (const meeting of meetings.filter(isCentralIntelligenceMeeting)) {
+    const clientId = String(pickClientId(meeting) || "");
+    if (!clientId) continue;
+    if (!meetingsByClient.has(clientId)) meetingsByClient.set(clientId, []);
+    meetingsByClient.get(clientId).push(meeting);
+  }
+
+  return [...meetingsByClient.entries()].map(([clientId, clientMeetings]) => {
+    const client = clientsById.get(clientId) || {};
+    const contractDate = parseDate(firstValue(client, ["data_inicio_ciclo", "contract_date", "created_at"]));
+    const meetingDates = clientMeetings
+      .map((meeting) => parseDate(firstValue(meeting, ["start_time", "meeting_date", "scheduled_at", "created_at"])))
+      .filter(Boolean)
+      .sort((a, b) => a - b);
+    const firstCentralMeeting = meetingDates[0] || null;
+    const centralMeetingsCount = clientMeetings.length;
+    const revisionsCount = Math.max(0, centralMeetingsCount - 1);
+
+    return {
+      source: "BASE QV",
+      clientId,
+      clientCode: firstValue(client, ["codigo", "code", "qv_id", "external_id"]) || "Não informado",
+      clientName: firstValue(client, ["name", "nome", "full_name"]) || "Não informado",
+      contractDate: contractDate ? contractDate.toISOString() : null,
+      planDelivered: true,
+      planApproved: true,
+      deliveredAt: firstCentralMeeting ? firstCentralMeeting.toISOString() : null,
+      approvedAt: firstCentralMeeting ? firstCentralMeeting.toISOString() : null,
+      daysToApproval: daysBetween(contractDate, firstCentralMeeting),
+      revisedLater: centralMeetingsCount > 1,
+      revisionsCount,
+      planRecords: centralMeetingsCount,
+      centralMeetingsCount,
+    };
+  });
+}
+
 function buildClientRows(source, clients, plans, revisions) {
   const planByClient = new Map();
   for (const plan of plans) {
@@ -243,47 +304,67 @@ async function sourcePayload(source) {
   };
 }
 
-export default async function handler() {
+export default async function handler(request) {
+  const denied = await requireCorporateAuth(request);
+  if (denied) return denied;
+
+  const configError = dataConfigurationError();
+  if (configError) {
+    return Response.json({ error: configError, code: "config" }, { status: 503, headers: { "Cache-Control": "no-store" } });
+  }
+
   try {
-    const results = await Promise.all(SOURCES.map(sourcePayload));
-    const rows = results.flatMap((result) => result.rows);
-    const total = rows.length;
-    const deliveredCount = rows.filter((row) => row.planDelivered).length;
-    const approvedCount = rows.filter((row) => row.planApproved).length;
-    const approvalDaysCount = rows.filter((row) => row.daysToApproval != null).length;
+    const { url, serviceRoleKey } = getDataEnv();
+    const source = { id: "base_qv", label: "BASE QV", schema: "public", url, key: serviceRoleKey };
+    const [clients, meetings] = await Promise.all([
+      fetchAll(source, "clients"),
+      fetchAll(source, "client_meetings"),
+    ]);
+    const uniqueClients = uniqueByClientId(clients);
+    const rows = buildCentralPlanRows(uniqueClients, meetings);
+    const total = uniqueClients.length;
+    const centralMeetings = rows.reduce((sum, row) => sum + row.centralMeetingsCount, 0);
+    const deliveredClients = rows.length;
+    const approvalDaysCount = rows.filter((row) => row.daysToApproval != null && row.daysToApproval >= 0).length;
     const revisedCount = rows.filter((row) => row.revisedLater).length;
-    const revisionsTotal = rows.reduce((sum, row) => sum + (row.revisionsCount || 0), 0);
+    const revisionsTotal = rows.reduce((sum, row) => sum + row.revisionsCount, 0);
+    const validApprovalDays = rows.map((row) => row.daysToApproval).filter((days) => days != null && days >= 0);
+
     return Response.json(
       {
         generatedAt: new Date().toISOString(),
         summary: {
           totalClients: total,
-          qv360Clients: results.find((result) => result.source === "QV360")?.clientCount || 0,
-          appPharusClients: results.find((result) => result.source === "App Pharus")?.clientCount || 0,
-          planDelivered: deliveredCount,
-          planApproved: approvedCount,
-          averageDaysToApproval: average(rows.map((row) => row.daysToApproval)),
+          qv360Clients: 0,
+          appPharusClients: 0,
+          baseQvClients: total,
+          planDelivered: centralMeetings,
+          deliveredClients,
+          planApproved: deliveredClients,
+          averageDaysToApproval: average(validApprovalDays),
+          daysToApprovalCount: approvalDaysCount,
+          daysToApprovalCoveragePercent: pct(approvalDaysCount, total),
           revisedLater: revisedCount,
           revisionsTotal,
         },
         indicators: [
-          indicator("Plano entregue", deliveredCount, total, "Cliente com data/status de entrega em tabela de plano patrimonial."),
-          indicator("Plano aprovado", approvedCount, total, "Cliente com data/status de aprovação em tabela de plano patrimonial."),
-          indicator("Dias até aprovação", approvalDaysCount, total, "Diferença entre data de contratação e primeira data de aprovação."),
-          indicator("Plano revisado posteriormente", revisedCount, total, "Cliente com revisão explícita ou contagem de versões/revisões."),
-          indicator("Quantidade de revisões", revisionsTotal, total, "Soma de revisões por cliente nas tabelas de revisão/plano."),
+          indicator("Plano entregue", centralMeetings, meetings.length, "Contagem de reuniões em public.client_meetings cujo event_name contém Central de Inteligência."),
+          indicator("Plano aprovado", deliveredClients, total, "Proxy: clientes distintos com reunião Central de Inteligência; não representa aprovação formal."),
+          indicator("Dias até aprovação", approvalDaysCount, total, "Proxy: diferença entre contratação e primeira reunião Central de Inteligência; diferenças negativas excluídas."),
+          indicator("Plano revisado posteriormente", revisedCount, total, "Clientes com mais de uma reunião Central de Inteligência."),
+          indicator("Quantidade de revisões", revisionsTotal, total, "Soma por cliente de quantidade de reuniões Central de Inteligência menos um."),
         ],
         sources: {
-          databases: results.map((result) => ({
-            source: result.source,
-            configured: result.configured,
-            schema: SOURCES.find((source) => source.label === result.source)?.schema,
-            clientCount: result.clientCount,
-            clientTable: result.clientTable,
-            planTable: result.planTable,
-            revisionTable: result.revisionTable,
-          })),
-          warnings: results.flatMap((result) => result.warnings),
+          databases: [{
+            source: "BASE QV",
+            configured: true,
+            schema: "public",
+            clientCount: total,
+            clientTable: "clients",
+            planTable: "client_meetings",
+            revisionTable: "client_meetings",
+          }],
+          warnings: [],
         },
         clients: rows,
       },

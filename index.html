@@ -1255,12 +1255,12 @@
         <div class="container">
           <header class="page-header">
             <div>
-              <div class="eyebrow">QV360 + App Pharus</div>
+              <div class="eyebrow">BASE QV · public.client_meetings</div>
               <h1>Plano Patrimonial</h1>
-              <p>Indicadores consolidados somando os registros dos dois bancos de dados, sem priorizar uma fonte sobre a outra.</p>
+              <p>Indicadores calculados a partir das reuniões com Central de Inteligência registradas na BASE QV.</p>
             </div>
             <div class="status-actions">
-              <div class="status"><b id="pStatus" style="color:var(--color-warning)">● Aguardando consulta</b><span id="pUpdated">Fontes: QV360 e App Pharus</span></div>
+              <div class="status"><b id="pStatus" style="color:var(--color-warning)">● Aguardando consulta</b><span id="pUpdated">Fonte: BASE QV · public.client_meetings</span></div>
               <button class="btn" id="pRefresh" type="button">Atualizar</button>
             </div>
           </header>
@@ -1277,11 +1277,11 @@
           <div class="portal-alert portal-alert--warning" id="pSourceAlert" data-alert-id="plan-source-warning" hidden role="status"></div>
 
           <div class="section-head">
-            <div><h2>Indicadores do plano</h2><p>Resultados complementares: QV360 + App Pharus.</p></div>
+            <div><h2>Indicadores do plano</h2><p>Proxies calculados por reuniões com Central de Inteligência na BASE QV.</p></div>
           </div>
           <section class="charts">
-            <article class="chart-card"><h3>Clientes por fonte</h3><p>Quantidade registrada em cada banco</p><div id="pSourceChart"></div></article>
-            <article class="chart-card"><h3>Status do plano</h3><p>Entrega, aprovação e revisão</p><div id="pStatusChart"></div></article>
+            <article class="chart-card"><h3>Clientes na base</h3><p>Quantidade de clientes registrados na BASE QV</p><div id="pSourceChart"></div></article>
+            <article class="chart-card"><h3>Status do plano</h3><p>Clientes com entrega e revisão posterior</p><div id="pStatusChart"></div></article>
           </section>
 
           <section class="table-panel">
@@ -2049,7 +2049,7 @@
             <div>
               <div class="eyebrow">App Pharus · Uso da Plataforma</div>
               <h1>Uso da Plataforma</h1>
-              <p>Acompanhamento de logins, sessões e frequência de acesso dos usuários.</p>
+              <p>Acompanhamento de logins e frequência de acesso dos usuários externos.</p>
             </div>
             <div class="status-actions">
               <div class="status"><b id="uStatus" style="color:var(--color-warning)">● Aguardando consulta</b><span id="uUpdated">Fonte: App Pharus metrics.events</span></div>
@@ -2078,7 +2078,7 @@
             </div>
             <div class="table-wrap">
               <table>
-                <thead><tr><th data-usort="userName">Usuário</th><th data-usort="email">E-mail</th><th data-usort="realizedLogin">Realizou login</th><th data-usort="totalLogins" class="num">Total de logins</th><th data-usort="loginsPerMonth" class="num">Logins/mês</th><th data-usort="daysSinceLastAccess" class="num">Dias desde último acesso</th><th data-usort="averageDaysBetweenAccesses" class="num">Tempo médio entre acessos</th><th data-usort="totalSessions" class="num">Sessões</th><th data-usort="weeklyAccessFrequency" class="num">Freq. semanal</th><th data-usort="monthlyAccessFrequency" class="num">Freq. mensal</th><th data-usort="lastAccessAt">Último acesso</th></tr></thead>
+                <thead><tr><th data-usort="userName">Usuário</th><th data-usort="email">E-mail</th><th data-usort="realizedLogin">Realizou login</th><th data-usort="totalLogins" class="num">Total de logins</th><th data-usort="loginsPerMonth" class="num">Logins/mês</th><th data-usort="daysSinceLastAccess" class="num">Dias desde último acesso</th><th data-usort="averageDaysBetweenAccesses" class="num">Tempo médio entre acessos</th><th data-usort="weeklyAccessFrequency" class="num">Freq. semanal</th><th data-usort="monthlyAccessFrequency" class="num">Freq. mensal</th><th data-usort="lastAccessAt">Último acesso</th></tr></thead>
                 <tbody id="uRows"></tbody>
               </table>
             </div>
@@ -5264,12 +5264,12 @@ ${dataRows}
         { indicator: 'Tempo médio para cada etapa da jornada', viability: 'Sim', metric: 'Mediana entre eventos consecutivos do mesmo cliente em metrics.events, agrupando event_name por resposta do quiz, status financeiro, onboarding e open finance; fallback journey_stages.name', coverage: fixedCoverage(journeySummary.stageDurationCount, journeySummary.totalClients, journeySummary.stageDurationCoveragePercent), base: 'App Pharus + BASE QV' },
       ]);
       renderViabilityMatrix(document.querySelector('#qPlanMatrix'), [
-        { indicator: 'Plano entregue (Sim/Não)', viability: 'Sim', metric: 'Cliente com plano entregue em QV360 + App Pharus, somando fontes complementares', coverage: fixedCoverage(planSummary.planDelivered, planSummary.totalClients, planSummary.totalClients ? (planSummary.planDelivered || 0) / planSummary.totalClients * 100 : 0), base: 'QV360 + App Pharus' },
-        { indicator: 'Plano aprovado (Sim/Não)', viability: 'Sim', metric: 'Cliente com plano aprovado em QV360 + App Pharus, somando fontes complementares', coverage: fixedCoverage(planSummary.planApproved, planSummary.totalClients, planSummary.totalClients ? (planSummary.planApproved || 0) / planSummary.totalClients * 100 : 0), base: 'QV360 + App Pharus' },
-        { indicator: 'Dias até aprovação', viability: 'Sim', metric: 'Data de aprovação - data de contratação/início de ciclo; diferenças negativas excluídas', coverage: fixedCoverage(planSummary.daysToApprovalCount, planSummary.totalClients, planSummary.daysToApprovalCoveragePercent), base: 'QV360 + App Pharus' },
-        { indicator: 'Plano revisado posteriormente?', viability: 'Sim', metric: 'Cliente com revisão posterior registrada nas fontes do plano', coverage: fixedCoverage(planSummary.revisedLater, planSummary.totalClients, planSummary.totalClients ? (planSummary.revisedLater || 0) / planSummary.totalClients * 100 : 0), base: 'QV360 + App Pharus' },
-        { indicator: 'Quantidade de revisões', viability: 'Sim', metric: 'Soma de revisões registradas por cliente nas fontes do plano', coverage: fixedCoverage(planSummary.revisionsTotal, planSummary.totalClients, planSummary.totalClients ? (planSummary.revisionsTotal || 0) / planSummary.totalClients * 100 : 0), base: 'QV360 + App Pharus' },
-        { indicator: 'Clientes registrados por fonte', viability: 'Sim', metric: 'Contagem de clientes QV360 e App Pharus por fonte', coverage: fixedCoverage(planSummary.totalClients, planSummary.totalClients, planSummary.totalClients ? 100 : 0), base: 'QV360 + App Pharus' },
+        { indicator: 'Plano entregue (Sim/Não)', viability: 'Parcial', metric: 'Proxy: contagem de reuniões cujo client_meetings.event_name contém Central de Inteligência', coverage: fixedCoverage(planSummary.planDelivered, planSummary.totalClients, planSummary.totalClients ? (planSummary.deliveredClients || 0) / planSummary.totalClients * 100 : 0), base: 'BASE QV' },
+        { indicator: 'Plano aprovado (Sim/Não)', viability: 'Parcial', metric: 'Proxy: clientes distintos com reunião Central de Inteligência; não representa aprovação formal', coverage: fixedCoverage(planSummary.planApproved, planSummary.totalClients, planSummary.totalClients ? (planSummary.planApproved || 0) / planSummary.totalClients * 100 : 0), base: 'BASE QV' },
+        { indicator: 'Dias até aprovação', viability: 'Parcial', metric: 'Proxy: primeira reunião Central de Inteligência - data de contratação; diferenças negativas excluídas', coverage: fixedCoverage(planSummary.daysToApprovalCount, planSummary.totalClients, planSummary.daysToApprovalCoveragePercent), base: 'BASE QV' },
+        { indicator: 'Plano revisado posteriormente?', viability: 'Parcial', metric: 'Cliente com mais de uma reunião Central de Inteligência', coverage: fixedCoverage(planSummary.revisedLater, planSummary.totalClients, planSummary.totalClients ? (planSummary.revisedLater || 0) / planSummary.totalClients * 100 : 0), base: 'BASE QV' },
+        { indicator: 'Quantidade de revisões', viability: 'Parcial', metric: 'Soma por cliente de reuniões Central de Inteligência menos um', coverage: fixedCoverage(planSummary.revisionsTotal, planSummary.totalClients, planSummary.totalClients ? (planSummary.revisionsTotal || 0) / planSummary.totalClients * 100 : 0), base: 'BASE QV' },
+        { indicator: 'Clientes registrados por fonte', viability: 'Sim', metric: 'Contagem distinta de clients.id na BASE QV', coverage: fixedCoverage(planSummary.totalClients, planSummary.totalClients, planSummary.totalClients ? 100 : 0), base: 'BASE QV' },
       ]);
       renderViabilityMatrix(document.querySelector('#qMeetingsMatrix'), [
         { indicator: 'Quantidade total de reuniões', viability: 'Sim', metric: 'client_meetings + manual_meetings por cliente', coverage: fixedCoverage(0, 0, 0), base: 'BASE QV' },
@@ -5329,7 +5329,6 @@ ${dataRows}
         { indicator: 'Dias desde o último acesso', viability: 'Sim', metric: 'Mediana por usuário de hoje menos último dia distinto com login de sucesso; datas negativas e outliers removidos' },
         { indicator: 'Tempo médio entre acessos', viability: 'Sim', metric: 'Mediana por usuário entre penúltimo e último dia distinto com login de sucesso; datas negativas e outliers removidos' },
         { indicator: 'Tempo médio de sessão', viability: 'Sem dados', metric: 'Sem Dados' },
-        { indicator: 'Quantidade de sessões', viability: 'Sim', metric: 'Contagem de login com sucesso em App Pharus metrics.events.event_name = login_succeeded/login_success' },
         { indicator: 'Frequência semanal de acesso', viability: 'Sim', metric: 'Total de acessos dividido pelas semanas desde o primeiro acesso' },
         { indicator: 'Frequência mensal de acesso', viability: 'Sim', metric: 'Total de acessos dividido pelos meses desde o primeiro acesso' },
       ], 'App Pharus / metrics.events'));
@@ -6469,17 +6468,15 @@ ${dataRows}
       const summary = payload.summary || {};
       const data = filteredPlanClients();
       document.querySelector('#pKpis').innerHTML = `
-        <article class="metric highlight"><div class="metric-label">Clientes QV360</div><div class="metric-value">${fmt.format(summary.qv360Clients || 0)}</div><div class="metric-note">Projeto qvtqufdivpbmubooawdm</div></article>
-        <article class="metric highlight"><div class="metric-label">Clientes App Pharus</div><div class="metric-value">${fmt.format(summary.appPharusClients || 0)}</div><div class="metric-note">Projeto sfxbzfaxbbdjzuhzzrjc</div></article>
-        <article class="metric"><div class="metric-label">Plano entregue</div><div class="metric-value">${fmt.format(summary.planDelivered || 0)}</div><div class="metric-note">${pct((summary.planDelivered || 0) / (summary.totalClients || 1) * 100)} da base somada</div></article>
-        <article class="metric"><div class="metric-label">Plano aprovado</div><div class="metric-value">${fmt.format(summary.planApproved || 0)}</div><div class="metric-note">${pct((summary.planApproved || 0) / (summary.totalClients || 1) * 100)} da base somada</div></article>
-        <article class="metric"><div class="metric-label">Dias até aprovação</div><div class="metric-value">${dayValue(summary.averageDaysToApproval)}</div><div class="metric-note">Média entre contratação e aprovação</div></article>
-        <article class="metric"><div class="metric-label">Planos revisados</div><div class="metric-value">${fmt.format(summary.revisedLater || 0)}</div><div class="metric-note">${fmt.format(summary.revisionsTotal || 0)} revisões totais</div></article>`;
+        <article class="metric highlight"><div class="metric-label">Clientes BASE QV</div><div class="metric-value">${fmt.format(summary.baseQvClients || 0)}</div><div class="metric-note">Distinct clients.id</div></article>
+        <article class="metric"><div class="metric-label">Plano entregue</div><div class="metric-value">${fmt.format(summary.planDelivered || 0)}</div><div class="metric-note">Reuniões Central de Inteligência</div></article>
+        <article class="metric"><div class="metric-label">Plano aprovado</div><div class="metric-value">${fmt.format(summary.planApproved || 0)}</div><div class="metric-note">Clientes distintos · proxy, não aprovação formal</div></article>
+        <article class="metric"><div class="metric-label">Dias até aprovação</div><div class="metric-value">${dayValue(summary.averageDaysToApproval)}</div><div class="metric-note">Proxy: contratação → primeira reunião Central</div></article>
+        <article class="metric"><div class="metric-label">Planos revisados</div><div class="metric-value">${fmt.format(summary.revisionsTotal || 0)}</div><div class="metric-note">${fmt.format(summary.revisedLater || 0)} clientes com mais de uma reunião</div></article>`;
 
       document.querySelector('#pSourceChart').innerHTML = hBars((payload.sources?.databases || []).map(db => ({ label: db.source, count: db.clientCount || 0, percent: (summary.totalClients ? (db.clientCount || 0) / summary.totalClients * 100 : 0) })));
       document.querySelector('#pStatusChart').innerHTML = hBars([
-        { label: 'Plano entregue', count: summary.planDelivered || 0, percent: summary.totalClients ? (summary.planDelivered || 0) / summary.totalClients * 100 : 0 },
-        { label: 'Plano aprovado', count: summary.planApproved || 0, percent: summary.totalClients ? (summary.planApproved || 0) / summary.totalClients * 100 : 0 },
+        { label: 'Plano entregue', count: summary.deliveredClients || 0, percent: summary.totalClients ? (summary.deliveredClients || 0) / summary.totalClients * 100 : 0 },
         { label: 'Revisado posteriormente', count: summary.revisedLater || 0, percent: summary.totalClients ? (summary.revisedLater || 0) / summary.totalClients * 100 : 0 },
       ]);
 
@@ -9039,7 +9036,6 @@ ${dataRows}
         <article class="metric"><div class="metric-label">Média de logins por mês</div><div class="metric-value">${summary.averageLoginsPerMonth == null ? '-' : fmt.format(summary.averageLoginsPerMonth)}</div><div class="metric-note">Por usuário desde o primeiro acesso</div></article>
         <article class="metric"><div class="metric-label">Dias desde o último acesso</div><div class="metric-value">${summary.typicalDaysSinceLastAccess == null ? '-' : fmt.format(Math.round(summary.typicalDaysSinceLastAccess)) + ' d'}</div><div class="metric-note">Mediana · login com sucesso</div></article>
         <article class="metric"><div class="metric-label">Tempo médio entre acessos</div><div class="metric-value">${summary.averageDaysBetweenAccesses == null ? '-' : fmt.format(Math.round(summary.averageDaysBetweenAccesses)) + ' d'}</div><div class="metric-note">Mediana · dias distintos</div></article>
-        <article class="metric"><div class="metric-label">Quantidade de sessões</div><div class="metric-value">${fmt.format(summary.totalSessions || 0)}</div><div class="metric-note">Login com sucesso</div></article>
         <article class="metric"><div class="metric-label">Tempo médio de sessão</div><div class="metric-value">Sem Dados</div><div class="metric-note">Sem base confiável</div></article>`;
       const loginDist = [{ label: 'Sim', count: usersWithLogin, percent: total ? usersWithLogin / total * 100 : 0 }, { label: 'Não', count: Math.max(0, total - usersWithLogin), percent: total ? (total - usersWithLogin) / total * 100 : 0 }];
       const lastDist = ['0-7 dias', '8-30 dias', '31-90 dias', 'Mais de 90 dias', 'Sem acesso'].map(label => {
@@ -9059,7 +9055,7 @@ ${dataRows}
       if (platformState.page > pages) platformState.page = pages;
       const start = (platformState.page - 1) * platformState.pageSize;
       const pageRows = rows.slice(start, start + platformState.pageSize);
-      document.querySelector('#uRows').innerHTML = pageRows.map(c => `<tr><td class="truncate" title="${escapeHtml(c.userName)}">${escapeHtml(c.userName)}</td><td class="truncate" title="${escapeHtml(c.email)}">${escapeHtml(c.email)}</td><td>${boolLabel(c.realizedLogin)}</td><td class="num">${fmt.format(c.totalLogins || 0)}</td><td class="num">${c.loginsPerMonth == null ? '-' : fmt.format(c.loginsPerMonth)}</td><td class="num">${c.daysSinceLastAccess == null ? 'Nunca' : fmt.format(c.daysSinceLastAccess) + ' d'}</td><td class="num">${c.averageDaysBetweenAccesses == null ? '-' : fmt.format(Math.round(c.averageDaysBetweenAccesses)) + ' d'}</td><td class="num">${fmt.format(c.totalSessions || 0)}</td><td class="num">${c.weeklyAccessFrequency == null ? '-' : fmt.format(c.weeklyAccessFrequency)}</td><td class="num">${c.monthlyAccessFrequency == null ? '-' : fmt.format(c.monthlyAccessFrequency)}</td><td>${dateBR(c.lastAccessAt)}</td></tr>`).join('');
+      document.querySelector('#uRows').innerHTML = pageRows.map(c => `<tr><td class="truncate" title="${escapeHtml(c.userName)}">${escapeHtml(c.userName)}</td><td class="truncate" title="${escapeHtml(c.email)}">${escapeHtml(c.email)}</td><td>${boolLabel(c.realizedLogin)}</td><td class="num">${fmt.format(c.totalLogins || 0)}</td><td class="num">${c.loginsPerMonth == null ? '-' : fmt.format(c.loginsPerMonth)}</td><td class="num">${c.daysSinceLastAccess == null ? 'Nunca' : fmt.format(c.daysSinceLastAccess) + ' d'}</td><td class="num">${c.averageDaysBetweenAccesses == null ? '-' : fmt.format(Math.round(c.averageDaysBetweenAccesses)) + ' d'}</td><td class="num">${c.weeklyAccessFrequency == null ? '-' : fmt.format(c.weeklyAccessFrequency)}</td><td class="num">${c.monthlyAccessFrequency == null ? '-' : fmt.format(c.monthlyAccessFrequency)}</td><td>${dateBR(c.lastAccessAt)}</td></tr>`).join('');
       document.querySelector('#uEmpty').style.display = rows.length ? 'none' : 'block';
       document.querySelector('#uCounter').textContent = `${rows.length} de ${(payload.clients || []).length} usuários`;
       document.querySelector('#uPageInfo').textContent = `Página ${platformState.page} de ${pages}`;
@@ -12488,7 +12484,6 @@ ${dataRows}
           { key: 'loginsPerMonth', label: 'Logins/mês', value: (r) => r.loginsPerMonth == null ? '-' : fmt.format(r.loginsPerMonth) },
           { key: 'daysSinceLastAccess', label: 'Dias desde último acesso', value: (r) => r.daysSinceLastAccess == null ? 'Nunca' : `${fmt.format(r.daysSinceLastAccess)} d` },
           { key: 'averageDaysBetweenAccesses', label: 'Tempo médio entre acessos', value: (r) => r.averageDaysBetweenAccesses == null ? '-' : `${fmt.format(Math.round(r.averageDaysBetweenAccesses))} d` },
-          { key: 'totalSessions', label: 'Sessões', value: (r) => fmt.format(r.totalSessions || 0) },
           { key: 'weeklyAccessFrequency', label: 'Freq. semanal', value: (r) => r.weeklyAccessFrequency == null ? '-' : fmt.format(r.weeklyAccessFrequency) },
           { key: 'monthlyAccessFrequency', label: 'Freq. mensal', value: (r) => r.monthlyAccessFrequency == null ? '-' : fmt.format(r.monthlyAccessFrequency) },
           { key: 'lastAccessAt', label: 'Último acesso', value: (r) => dateBR(r.lastAccessAt) }

@@ -276,6 +276,10 @@ function buildAuthUserMap(rows) {
   return map;
 }
 
+function isCorporateEmail(value) {
+  return String(value || "").trim().toLowerCase().endsWith("@quartavia.com.br");
+}
+
 function ensureClient(byUser, id, seed = {}) {
   if (!id) return null;
   if (!byUser.has(id)) {
@@ -288,7 +292,6 @@ function ensureClient(byUser, id, seed = {}) {
       lastLoginFromUser: seed.lastLoginFromUser || null,
       logins: [],
       accesses: [],
-      sessions: new Set(),
     });
   }
   return byUser.get(id);
@@ -316,8 +319,6 @@ function buildClientUsage(pharusEvents, personalInfoByUser = new Map(), authUser
     if (!date || !isAccessEvent(name)) continue;
     item.accesses.push({ timestamp: date.toISOString(), eventName: name, sessionId: eventSessionId(event) });
     if (isLoginEvent(name)) item.logins.push({ timestamp: date.toISOString(), sessionId: eventSessionId(event) });
-    const sessionId = eventSessionId(event);
-    if (sessionId) item.sessions.add(sessionId);
   }
 
   const now = new Date();
@@ -361,7 +362,6 @@ function buildClientUsage(pharusEvents, personalInfoByUser = new Map(), authUser
       averageDaysBetweenAccesses: distinctLoginDayInterval,
       typicalDaysBetweenAccesses: distinctLoginDayInterval,
       averageSessionMinutes: null,
-      totalSessions: successfulLoginCount,
       weeklyAccessFrequency: Math.round((accessDates.length / weekSpan) * 100) / 100,
       monthlyAccessFrequency: Math.round((accessDates.length / monthSpan) * 100) / 100,
       activeWeeks: weeklyBuckets.size,
@@ -394,13 +394,19 @@ export default async function handler() {
   ]);
   const personalInfoByUser = buildPersonalInfoMap(personalInfoRows);
   const authUsersById = buildAuthUserMap(authUserRows);
-  const accessEventCount = pharusEvents.filter((event) => isAccessEvent(eventName(event))).length;
-  const loginEventCount = pharusEvents.filter((event) => isLoginEvent(eventName(event))).length;
-  const clients = buildClientUsage(pharusEvents, personalInfoByUser, authUsersById);
+  const corporateUserIds = new Set(
+    [...authUsersById.entries()]
+      .filter(([, user]) => isCorporateEmail(user.email))
+      .map(([userId]) => userId),
+  );
+  const eligibleEvents = pharusEvents.filter((event) => !corporateUserIds.has(eventClientId(event)));
+  const accessEventCount = eligibleEvents.filter((event) => isAccessEvent(eventName(event))).length;
+  const loginEventCount = eligibleEvents.filter((event) => isLoginEvent(eventName(event))).length;
+  const clients = buildClientUsage(eligibleEvents, personalInfoByUser, authUsersById)
+    .filter((client) => !isCorporateEmail(client.email));
   const total = clients.length;
   const withLogin = clients.filter((c) => c.realizedLogin).length;
   const totalLogins = clients.reduce((sum, c) => sum + c.totalLogins, 0);
-  const totalSessions = clients.reduce((sum, c) => sum + c.totalSessions, 0);
   const daysSinceLastAccessValues = clients.map((c) => c.daysSinceLastAccess).filter((v) => v != null);
   const daysSinceLastAccessFiltered = withoutOutliers(daysSinceLastAccessValues);
   const intervals = clients.map((c) => c.averageDaysBetweenAccesses).filter((v) => v != null);
@@ -410,7 +416,6 @@ export default async function handler() {
     usersWithLogin: withLogin,
     loginCoverage: pct(withLogin, total),
     totalLogins,
-    totalSessions,
     averageLoginsPerMonth: average(clients.map((c) => c.loginsPerMonth)),
     averageDaysSinceLastAccess: average(daysSinceLastAccessFiltered),
     typicalDaysSinceLastAccess: median(daysSinceLastAccessFiltered),
@@ -423,9 +428,10 @@ export default async function handler() {
     averageSessionMinutes: null,
     averageWeeklyFrequency: average(clients.map((c) => c.weeklyAccessFrequency)),
     averageMonthlyFrequency: average(clients.map((c) => c.monthlyAccessFrequency)),
-    appPharusEvents: pharusEvents.length,
+    appPharusEvents: eligibleEvents.length,
     appPharusAccessEvents: accessEventCount,
     appPharusLoginEvents: loginEventCount,
+    excludedCorporateUsers: corporateUserIds.size,
   };
   return Response.json(
     {
@@ -438,15 +444,16 @@ export default async function handler() {
             schema: "metrics",
             eventTable: "events",
             eventNameField: "event_name",
-            userCount: new Set(pharusEvents.map(eventClientId).filter(Boolean)).size,
-            eventCount: pharusEvents.length,
+            userCount: total,
+            eventCount: eligibleEvents.length,
             accessEventCount,
             loginEventCount,
             personalInfoCount: personalInfoRows.length,
             authUserCount: authUserRows.length,
             namedUsers: clients.filter((client) => client.userName && client.userName !== client.userId).length,
             emailedUsers: clients.filter((client) => client.email && client.email !== "Sem e-mail").length,
-            note: "Fonte única da aba: eventos de acesso/login em metrics.events.",
+            excludedCorporateUsers: corporateUserIds.size,
+            note: "Fonte única da aba: eventos de acesso/login em metrics.events, excluindo e-mails @quartavia.com.br.",
           },
         ],
         warnings,
@@ -458,7 +465,6 @@ export default async function handler() {
         indicator("Dias desde o último acesso", daysSinceLastAccessFiltered.length, total, "Mediana por usuário de hoje menos último dia distinto com login de sucesso; datas negativas e outliers removidos.", "Sim"),
         indicator("Tempo médio entre acessos", intervalsFiltered.length, total, "Mediana por usuário entre penúltimo e último dia distinto com login de sucesso; datas negativas e outliers removidos.", "Sim"),
         indicator("Tempo médio de sessão", 0, total, "Sem Dados.", "Sem dados"),
-        indicator("Quantidade de sessões", clients.filter((c) => c.totalSessions > 0).length, total, "Contagem de login com sucesso em App Pharus metrics.events.event_name = login_succeeded/login_success.", "Sim"),
         indicator("Frequência semanal de acesso", clients.filter((c) => c.weeklyAccessFrequency != null).length, total, "Total de acessos dividido pelas semanas desde o primeiro acesso.", "Sim"),
         indicator("Frequência mensal de acesso", clients.filter((c) => c.monthlyAccessFrequency != null).length, total, "Total de acessos dividido pelos meses desde o primeiro acesso.", "Sim"),
       ],

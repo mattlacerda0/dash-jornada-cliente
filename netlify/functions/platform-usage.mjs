@@ -1,4 +1,5 @@
 import { getPharusEnv, getPharusSupabaseClient } from "./_shared/env.mjs";
+import { requireCorporateAuth } from "./_shared/auth.mjs";
 
 const ACCESS_EVENT_TOKENS = [
   "login_succeeded",
@@ -385,7 +386,10 @@ function indicator(indicator, value, total, metric, viability = "Sim") {
   };
 }
 
-export default async function handler() {
+export default async function handler(request) {
+  const denied = await requireCorporateAuth(request);
+  if (denied) return denied;
+
   const warnings = [];
   const [pharusEvents, personalInfoRows, authUserRows] = await Promise.all([
     fetchPharusEvents(warnings),

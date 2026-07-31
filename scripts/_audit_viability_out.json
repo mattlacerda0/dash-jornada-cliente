@@ -1,0 +1,1682 @@
+{
+  "qv": {
+    "clients": {
+      "ok": true,
+      "status": 206,
+      "total": 3271,
+      "cols": [
+        "id",
+        "name",
+        "email",
+        "phone",
+        "engenheiro_patrimonial",
+        "backoffice",
+        "programa",
+        "status",
+        "created_by",
+        "created_at",
+        "updated_at",
+        "data_inicio_ciclo",
+        "data_fim_ciclo",
+        "ciclo",
+        "valor_total_pago",
+        "data_ascensao",
+        "codigo",
+        "cpf",
+        "imported_at",
+        "data_aniversario",
+        "profissao",
+        "temperatura",
+        "objetivo_principal",
+        "anotacoes",
+        "drive_link",
+        "data_congelamento",
+        "data_descongelamento",
+        "linked_user_id",
+        "created_from_client_user",
+        "client_user_badge_new",
+        "is_seal",
+        "hobbies",
+        "nome_conjuge",
+        "cidade",
+        "estado",
+        "contrato_assinado",
+        "data_churn",
+        "motivo_churn",
+        "qv_id",
+        "is_retido",
+        "pre_cadastro_comercial",
+        "engenheiros_anteriores",
+        "app_pharus_access",
+        "davos_recepcao_status",
+        "davos_recepcao_approved_at",
+        "davos_recepcao_rejected_at",
+        "davos_recepcao_rejected_reason",
+        "davos_contrato_assinado",
+        "davos_contrato_assinado_at",
+        "davos_contrato_dispensado",
+        "segmentacao",
+        "telefone_conjuge",
+        "phone_digits",
+        "telefone_conjuge_digits",
+        "cpf_digits"
+      ],
+      "sample": {
+        "id": "34724fcf-8151-4cfc-94ad-eb5e85f56cc6",
+        "name": "Cristian Amaral Pereira",
+        "email": "mdcristianpereira@gmail.com",
+        "phone": "51999652955",
+        "engenheiro_patrimonial": "Rodrigo Lunardi",
+        "backoffice": "",
+        "programa": "PHARUS",
+        "status": "ativo",
+        "created_by": null,
+        "created_at": "2026-02-27T04:50:29.757531+00:00",
+        "updated_at": "2026-05-26T18:40:56.587256+00:00",
+        "data_inicio_ciclo": "2025-09-05",
+        "data_fim_ciclo": "2026-09-05",
+        "ciclo": 1,
+        "valor_total_pago": 0,
+        "data_ascensao": null,
+        "codigo": "QV00798",
+        "cpf": "98837516053",
+        "imported_at": null,
+        "data_aniversario": null,
+        "profissao": "",
+        "temperatura": "",
+        "objetivo_principal": "",
+        "anotacoes": "",
+        "drive_link": "https://drive.google.com/drive/folders/1mXWFovELaWcz0jVE9ERxDzRzjIlPjqXu",
+        "data_congelamento": null,
+        "data_descongelamento": null,
+        "linked_user_id": null,
+        "created_from_client_user": false,
+        "client_user_badge_new": false,
+        "is_seal": false,
+        "hobbies": null,
+        "nome_conjuge": null,
+        "cidade": null,
+        "estado": null,
+        "contrato_assinado": false,
+        "data_churn": null,
+        "motivo_churn": null,
+        "qv_id": "4f295851-c97a-44ce-ad3f-bbe028c060fe",
+        "is_retido": false,
+        "pre_cadastro_comercial": false,
+        "engenheiros_anteriores": [],
+        "app_pharus_access": false,
+        "davos_recepcao_status": "pendente",
+        "davos_recepcao_approved_at": null,
+        "davos_recepcao_rejected_at": null,
+        "davos_recepcao_rejected_reason": null,
+        "davos_contrato_assinado": false,
+        "davos_contrato_assinado_at": null,
+        "davos_contrato_dispensado": false,
+        "segmentacao": null,
+        "telefone_conjuge": null,
+        "phone_digits": "51999652955",
+        "telefone_conjuge_digits": "",
+        "cpf_digits": "98837516053"
+      },
+      "error": null
+    },
+    "ep_fields": {
+      "all_ep_like": [
+        "engenheiro_patrimonial",
+        "engenheiros_anteriores"
+      ],
+      "name": [
+        "engenheiro_patrimonial"
+      ],
+      "id": [],
+      "email": []
+    },
+    "clients_coverage": {
+      "total": 3271,
+      "engenheiro_patrimonial": {
+        "ok": true,
+        "total": 3252,
+        "error": null
+      },
+      "engenheiro_patrimonial_id": {
+        "ok": false,
+        "total": null,
+        "error": "{\"code\":\"42703\",\"details\":null,\"hint\":\"Perhaps you meant to reference the column \\\"clients.engenheiro_patrimonial\\\".\",\"message\":\"column clients.engenheiro_patrimonial_id does not exist\"}"
+      },
+      "engenheiro_patrimonial_email": {
+        "ok": false,
+        "total": null,
+        "error": "{\"code\":\"42703\",\"details\":null,\"hint\":null,\"message\":\"column clients.engenheiro_patrimonial_email does not exist\"}"
+      }
+    },
+    "client_ep_history": {
+      "ok": false,
+      "status": 404,
+      "total": null,
+      "cols": [
+        "code",
+        "details",
+        "hint",
+        "message"
+      ],
+      "sample": {
+        "code": "PGRST205",
+        "details": null,
+        "hint": "Perhaps you meant the table 'public.client_mecanismos'",
+        "message": "Could not find the table 'public.client_ep_history' in the schema cache"
+      },
+      "error": "{\"code\":\"PGRST205\",\"details\":null,\"hint\":\"Perhaps you meant the table 'public.client_mecanismos'\",\"message\":\"Could not find the table 'public.client_ep_history' in the schema cache\"}"
+    },
+    "ep_assignments": {
+      "ok": false,
+      "status": 404,
+      "total": null,
+      "cols": [
+        "code",
+        "details",
+        "hint",
+        "message"
+      ],
+      "sample": {
+        "code": "PGRST205",
+        "details": null,
+        "hint": "Perhaps you meant the table 'public.backoffice_client_assignments'",
+        "message": "Could not find the table 'public.ep_assignments' in the schema cache"
+      },
+      "error": "{\"code\":\"PGRST205\",\"details\":null,\"hint\":\"Perhaps you meant the table 'public.backoffice_client_assignments'\",\"message\":\"Could not find the table 'public.ep_assignments' in the schema cache\"}"
+    },
+    "client_advisor_history": {
+      "ok": false,
+      "status": 404,
+      "total": null,
+      "cols": [
+        "code",
+        "details",
+        "hint",
+        "message"
+      ],
+      "sample": {
+        "code": "PGRST205",
+        "details": null,
+        "hint": "Perhaps you meant the table 'public.cancellation_history'",
+        "message": "Could not find the table 'public.client_advisor_history' in the schema cache"
+      },
+      "error": "{\"code\":\"PGRST205\",\"details\":null,\"hint\":\"Perhaps you meant the table 'public.cancellation_history'\",\"message\":\"Could not find the table 'public.client_advisor_history' in the schema cache\"}"
+    },
+    "historico_ep": {
+      "ok": false,
+      "status": 404,
+      "total": null,
+      "cols": [
+        "code",
+        "details",
+        "hint",
+        "message"
+      ],
+      "sample": {
+        "code": "PGRST205",
+        "details": null,
+        "hint": "Perhaps you meant the table 'public.kv_store'",
+        "message": "Could not find the table 'public.historico_ep' in the schema cache"
+      },
+      "error": "{\"code\":\"PGRST205\",\"details\":null,\"hint\":\"Perhaps you meant the table 'public.kv_store'\",\"message\":\"Could not find the table 'public.historico_ep' in the schema cache\"}"
+    },
+    "client_responsavel_history": {
+      "ok": false,
+      "status": 404,
+      "total": null,
+      "cols": [
+        "code",
+        "details",
+        "hint",
+        "message"
+      ],
+      "sample": {
+        "code": "PGRST205",
+        "details": null,
+        "hint": "Perhaps you meant the table 'public.csat_responses'",
+        "message": "Could not find the table 'public.client_responsavel_history' in the schema cache"
+      },
+      "error": "{\"code\":\"PGRST205\",\"details\":null,\"hint\":\"Perhaps you meant the table 'public.csat_responses'\",\"message\":\"Could not find the table 'public.client_responsavel_history' in the schema cache\"}"
+    },
+    "nps_responses": {
+      "ok": true,
+      "status": 206,
+      "total": 291,
+      "cols": [
+        "id",
+        "typeform_response_id",
+        "typeform_form_id",
+        "client_id",
+        "client_name",
+        "client_email",
+        "tipo_de_forms",
+        "score",
+        "comment",
+        "raw_payload",
+        "submitted_at",
+        "created_at",
+        "updated_at",
+        "motivadores"
+      ],
+      "sample": {
+        "id": "8ac75e18-373e-4321-a2cb-8d73bdc0245b",
+        "typeform_response_id": "k7kx1fugiye86dfk7kx148j93u15xt9y",
+        "typeform_form_id": "rzzF4ukM",
+        "client_id": "57fd07f9-1477-4139-97c9-dd2523ca1a99",
+        "client_name": "Patrícia Soares da Silva",
+        "client_email": "patisoares83@hotmail.com",
+        "tipo_de_forms": "NPS",
+        "score": 8,
+        "comment": "Motivo da nota: Gostei da proposta e estou no início vendo um excelente potencial de ajuda em meu crescimento financeiro\nO que melhorar: Por enquanto, não sugiro algo a mais pois ainda preciso me dedicar mais às aulas e marcar mais reuniões com minha tutora. Mas a falta de tempo é minha.\nMomento atual: Estou travado em alguma parte e preciso de ajuda\nCaminho liberdade: Em progresso, mas com dúvidas\nContinuar 5 anos: Ver minha evolução em entender os investimentos e o aumento real da minha rentabilidade financeira\nNota estrategista: 10\nComentário extra: Gostaria de ter mais aulas básicas sobre investimentos, taxas e todo o mercado financeiro pois sou muito iniciante no assunto",
+        "raw_payload": null,
+        "submitted_at": "2026-06-26T22:27:39+00:00",
+        "created_at": "2026-06-27T20:47:17.367061+00:00",
+        "updated_at": "2026-06-27T20:47:17.367061+00:00",
+        "motivadores": null
+      },
+      "error": null
+    },
+    "nps_responses_score_cols": [
+      "score"
+    ],
+    "nps_responses_date_cols": [
+      "submitted_at",
+      "created_at",
+      "updated_at"
+    ],
+    "nps_responses_client_cols": [
+      "client_id",
+      "client_name",
+      "client_email"
+    ],
+    "nps_responses_ep_cols": [],
+    "nps_responses_filled_score": {
+      "ok": true,
+      "total": 291,
+      "error": null
+    },
+    "nps": {
+      "ok": false,
+      "status": 404,
+      "total": null,
+      "cols": [
+        "code",
+        "details",
+        "hint",
+        "message"
+      ],
+      "sample": {
+        "code": "PGRST205",
+        "details": null,
+        "hint": "Perhaps you meant the table 'public.nps_sends'",
+        "message": "Could not find the table 'public.nps' in the schema cache"
+      },
+      "error": "{\"code\":\"PGRST205\",\"details\":null,\"hint\":\"Perhaps you meant the table 'public.nps_sends'\",\"message\":\"Could not find the table 'public.nps' in the schema cache\"}"
+    },
+    "survey_responses": {
+      "ok": false,
+      "status": 404,
+      "total": null,
+      "cols": [
+        "code",
+        "details",
+        "hint",
+        "message"
+      ],
+      "sample": {
+        "code": "PGRST205",
+        "details": null,
+        "hint": "Perhaps you meant the table 'public.form_responses'",
+        "message": "Could not find the table 'public.survey_responses' in the schema cache"
+      },
+      "error": "{\"code\":\"PGRST205\",\"details\":null,\"hint\":\"Perhaps you meant the table 'public.form_responses'\",\"message\":\"Could not find the table 'public.survey_responses' in the schema cache\"}"
+    },
+    "pesquisas_nps": {
+      "ok": false,
+      "status": 404,
+      "total": null,
+      "cols": [
+        "code",
+        "details",
+        "hint",
+        "message"
+      ],
+      "sample": {
+        "code": "PGRST205",
+        "details": null,
+        "hint": null,
+        "message": "Could not find the table 'public.pesquisas_nps' in the schema cache"
+      },
+      "error": "{\"code\":\"PGRST205\",\"details\":null,\"hint\":null,\"message\":\"Could not find the table 'public.pesquisas_nps' in the schema cache\"}"
+    },
+    "client_nps": {
+      "ok": false,
+      "status": 404,
+      "total": null,
+      "cols": [
+        "code",
+        "details",
+        "hint",
+        "message"
+      ],
+      "sample": {
+        "code": "PGRST205",
+        "details": null,
+        "hint": "Perhaps you meant the table 'public.clients'",
+        "message": "Could not find the table 'public.client_nps' in the schema cache"
+      },
+      "error": "{\"code\":\"PGRST205\",\"details\":null,\"hint\":\"Perhaps you meant the table 'public.clients'\",\"message\":\"Could not find the table 'public.client_nps' in the schema cache\"}"
+    },
+    "contracts": {
+      "ok": false,
+      "status": 404,
+      "total": null,
+      "cols": [
+        "code",
+        "details",
+        "hint",
+        "message"
+      ],
+      "sample": {
+        "code": "PGRST205",
+        "details": null,
+        "hint": "Perhaps you meant the table 'public.clients'",
+        "message": "Could not find the table 'public.contracts' in the schema cache"
+      },
+      "error": "{\"code\":\"PGRST205\",\"details\":null,\"hint\":\"Perhaps you meant the table 'public.clients'\",\"message\":\"Could not find the table 'public.contracts' in the schema cache\"}"
+    },
+    "client_contracts": {
+      "ok": false,
+      "status": 404,
+      "total": null,
+      "cols": [
+        "code",
+        "details",
+        "hint",
+        "message"
+      ],
+      "sample": {
+        "code": "PGRST205",
+        "details": null,
+        "hint": "Perhaps you meant the table 'public.client_journeys'",
+        "message": "Could not find the table 'public.client_contracts' in the schema cache"
+      },
+      "error": "{\"code\":\"PGRST205\",\"details\":null,\"hint\":\"Perhaps you meant the table 'public.client_journeys'\",\"message\":\"Could not find the table 'public.client_contracts' in the schema cache\"}"
+    },
+    "contratos": {
+      "ok": false,
+      "status": 404,
+      "total": null,
+      "cols": [
+        "code",
+        "details",
+        "hint",
+        "message"
+      ],
+      "sample": {
+        "code": "PGRST205",
+        "details": null,
+        "hint": "Perhaps you meant the table 'public.cargos'",
+        "message": "Could not find the table 'public.contratos' in the schema cache"
+      },
+      "error": "{\"code\":\"PGRST205\",\"details\":null,\"hint\":\"Perhaps you meant the table 'public.cargos'\",\"message\":\"Could not find the table 'public.contratos' in the schema cache\"}"
+    },
+    "renewals": {
+      "ok": false,
+      "status": 404,
+      "total": null,
+      "cols": [
+        "code",
+        "details",
+        "hint",
+        "message"
+      ],
+      "sample": {
+        "code": "PGRST205",
+        "details": null,
+        "hint": "Perhaps you meant the table 'public.client_emails'",
+        "message": "Could not find the table 'public.renewals' in the schema cache"
+      },
+      "error": "{\"code\":\"PGRST205\",\"details\":null,\"hint\":\"Perhaps you meant the table 'public.client_emails'\",\"message\":\"Could not find the table 'public.renewals' in the schema cache\"}"
+    },
+    "renovacoes": {
+      "ok": false,
+      "status": 404,
+      "total": null,
+      "cols": [
+        "code",
+        "details",
+        "hint",
+        "message"
+      ],
+      "sample": {
+        "code": "PGRST205",
+        "details": null,
+        "hint": "Perhaps you meant the table 'public.bonificacao_validacoes'",
+        "message": "Could not find the table 'public.renovacoes' in the schema cache"
+      },
+      "error": "{\"code\":\"PGRST205\",\"details\":null,\"hint\":\"Perhaps you meant the table 'public.bonificacao_validacoes'\",\"message\":\"Could not find the table 'public.renovacoes' in the schema cache\"}"
+    },
+    "subscription_cycles": {
+      "ok": false,
+      "status": 404,
+      "total": null,
+      "cols": [
+        "code",
+        "details",
+        "hint",
+        "message"
+      ],
+      "sample": {
+        "code": "PGRST205",
+        "details": null,
+        "hint": "Perhaps you meant the table 'public.csat_cycles'",
+        "message": "Could not find the table 'public.subscription_cycles' in the schema cache"
+      },
+      "error": "{\"code\":\"PGRST205\",\"details\":null,\"hint\":\"Perhaps you meant the table 'public.csat_cycles'\",\"message\":\"Could not find the table 'public.subscription_cycles' in the schema cache\"}"
+    },
+    "plan_renewals": {
+      "ok": false,
+      "status": 404,
+      "total": null,
+      "cols": [
+        "code",
+        "details",
+        "hint",
+        "message"
+      ],
+      "sample": {
+        "code": "PGRST205",
+        "details": null,
+        "hint": "Perhaps you meant the table 'public.payment_links_generated'",
+        "message": "Could not find the table 'public.plan_renewals' in the schema cache"
+      },
+      "error": "{\"code\":\"PGRST205\",\"details\":null,\"hint\":\"Perhaps you meant the table 'public.payment_links_generated'\",\"message\":\"Could not find the table 'public.plan_renewals' in the schema cache\"}"
+    },
+    "payments": {
+      "ok": false,
+      "status": 404,
+      "total": null,
+      "cols": [
+        "code",
+        "details",
+        "hint",
+        "message"
+      ],
+      "sample": {
+        "code": "PGRST205",
+        "details": null,
+        "hint": "Perhaps you meant the table 'public.payment_links'",
+        "message": "Could not find the table 'public.payments' in the schema cache"
+      },
+      "error": "{\"code\":\"PGRST205\",\"details\":null,\"hint\":\"Perhaps you meant the table 'public.payment_links'\",\"message\":\"Could not find the table 'public.payments' in the schema cache\"}"
+    },
+    "client_payments": {
+      "ok": false,
+      "status": 404,
+      "total": null,
+      "cols": [
+        "code",
+        "details",
+        "hint",
+        "message"
+      ],
+      "sample": {
+        "code": "PGRST205",
+        "details": null,
+        "hint": "Perhaps you meant the table 'public.client_pendencias'",
+        "message": "Could not find the table 'public.client_payments' in the schema cache"
+      },
+      "error": "{\"code\":\"PGRST205\",\"details\":null,\"hint\":\"Perhaps you meant the table 'public.client_pendencias'\",\"message\":\"Could not find the table 'public.client_payments' in the schema cache\"}"
+    },
+    "support_tickets": {
+      "ok": false,
+      "status": 404,
+      "total": null,
+      "cols": [
+        "code",
+        "details",
+        "hint",
+        "message"
+      ],
+      "sample": {
+        "code": "PGRST205",
+        "details": null,
+        "hint": "Perhaps you meant the table 'public.implementation_clients'",
+        "message": "Could not find the table 'public.support_tickets' in the schema cache"
+      },
+      "error": "{\"code\":\"PGRST205\",\"details\":null,\"hint\":\"Perhaps you meant the table 'public.implementation_clients'\",\"message\":\"Could not find the table 'public.support_tickets' in the schema cache\"}"
+    },
+    "tickets": {
+      "ok": false,
+      "status": 404,
+      "total": null,
+      "cols": [
+        "code",
+        "details",
+        "hint",
+        "message"
+      ],
+      "sample": {
+        "code": "PGRST205",
+        "details": null,
+        "hint": "Perhaps you meant the table 'public.initiative_clients'",
+        "message": "Could not find the table 'public.tickets' in the schema cache"
+      },
+      "error": "{\"code\":\"PGRST205\",\"details\":null,\"hint\":\"Perhaps you meant the table 'public.initiative_clients'\",\"message\":\"Could not find the table 'public.tickets' in the schema cache\"}"
+    },
+    "messages": {
+      "ok": false,
+      "status": 404,
+      "total": null,
+      "cols": [
+        "code",
+        "details",
+        "hint",
+        "message"
+      ],
+      "sample": {
+        "code": "PGRST205",
+        "details": null,
+        "hint": "Perhaps you meant the table 'public.crm_stages'",
+        "message": "Could not find the table 'public.messages' in the schema cache"
+      },
+      "error": "{\"code\":\"PGRST205\",\"details\":null,\"hint\":\"Perhaps you meant the table 'public.crm_stages'\",\"message\":\"Could not find the table 'public.messages' in the schema cache\"}"
+    },
+    "message_threads": {
+      "ok": false,
+      "status": 404,
+      "total": null,
+      "cols": [
+        "code",
+        "details",
+        "hint",
+        "message"
+      ],
+      "sample": {
+        "code": "PGRST205",
+        "details": null,
+        "hint": "Perhaps you meant the table 'public.csat_sends'",
+        "message": "Could not find the table 'public.message_threads' in the schema cache"
+      },
+      "error": "{\"code\":\"PGRST205\",\"details\":null,\"hint\":\"Perhaps you meant the table 'public.csat_sends'\",\"message\":\"Could not find the table 'public.message_threads' in the schema cache\"}"
+    },
+    "atendimentos": {
+      "ok": false,
+      "status": 404,
+      "total": null,
+      "cols": [
+        "code",
+        "details",
+        "hint",
+        "message"
+      ],
+      "sample": {
+        "code": "PGRST205",
+        "details": null,
+        "hint": "Perhaps you meant the table 'public.calendar_events'",
+        "message": "Could not find the table 'public.atendimentos' in the schema cache"
+      },
+      "error": "{\"code\":\"PGRST205\",\"details\":null,\"hint\":\"Perhaps you meant the table 'public.calendar_events'\",\"message\":\"Could not find the table 'public.atendimentos' in the schema cache\"}"
+    },
+    "interacoes": {
+      "ok": false,
+      "status": 404,
+      "total": null,
+      "cols": [
+        "code",
+        "details",
+        "hint",
+        "message"
+      ],
+      "sample": {
+        "code": "PGRST205",
+        "details": null,
+        "hint": "Perhaps you meant the table 'public.indicados'",
+        "message": "Could not find the table 'public.interacoes' in the schema cache"
+      },
+      "error": "{\"code\":\"PGRST205\",\"details\":null,\"hint\":\"Perhaps you meant the table 'public.indicados'\",\"message\":\"Could not find the table 'public.interacoes' in the schema cache\"}"
+    },
+    "slack_messages": {
+      "ok": false,
+      "status": 404,
+      "total": null,
+      "cols": [
+        "code",
+        "details",
+        "hint",
+        "message"
+      ],
+      "sample": {
+        "code": "PGRST205",
+        "details": null,
+        "hint": "Perhaps you meant the table 'public.crm_stages'",
+        "message": "Could not find the table 'public.slack_messages' in the schema cache"
+      },
+      "error": "{\"code\":\"PGRST205\",\"details\":null,\"hint\":\"Perhaps you meant the table 'public.crm_stages'\",\"message\":\"Could not find the table 'public.slack_messages' in the schema cache\"}"
+    },
+    "communications": {
+      "ok": false,
+      "status": 404,
+      "total": null,
+      "cols": [
+        "code",
+        "details",
+        "hint",
+        "message"
+      ],
+      "sample": {
+        "code": "PGRST205",
+        "details": null,
+        "hint": "Perhaps you meant the table 'public.notifications'",
+        "message": "Could not find the table 'public.communications' in the schema cache"
+      },
+      "error": "{\"code\":\"PGRST205\",\"details\":null,\"hint\":\"Perhaps you meant the table 'public.notifications'\",\"message\":\"Could not find the table 'public.communications' in the schema cache\"}"
+    },
+    "v_acionamentos_tratados": {
+      "ok": false,
+      "status": 404,
+      "total": null,
+      "cols": [
+        "code",
+        "details",
+        "hint",
+        "message"
+      ],
+      "sample": {
+        "code": "PGRST205",
+        "details": null,
+        "hint": "Perhaps you meant the table 'public.client_statuses'",
+        "message": "Could not find the table 'public.v_acionamentos_tratados' in the schema cache"
+      },
+      "error": "{\"code\":\"PGRST205\",\"details\":null,\"hint\":\"Perhaps you meant the table 'public.client_statuses'\",\"message\":\"Could not find the table 'public.v_acionamentos_tratados' in the schema cache\"}"
+    },
+    "v_acionamentos_qualidade_email": {
+      "ok": false,
+      "status": 404,
+      "total": null,
+      "cols": [
+        "code",
+        "details",
+        "hint",
+        "message"
+      ],
+      "sample": {
+        "code": "PGRST205",
+        "details": null,
+        "hint": "Perhaps you meant the table 'public.vw_clients_com_data_entrada'",
+        "message": "Could not find the table 'public.v_acionamentos_qualidade_email' in the schema cache"
+      },
+      "error": "{\"code\":\"PGRST205\",\"details\":null,\"hint\":\"Perhaps you meant the table 'public.vw_clients_com_data_entrada'\",\"message\":\"Could not find the table 'public.v_acionamentos_qualidade_email' in the schema cache\"}"
+    },
+    "client_mecanismos": {
+      "ok": true,
+      "status": 206,
+      "total": 516,
+      "cols": [
+        "id",
+        "client_id",
+        "mecanismo_id",
+        "implemented_at",
+        "source",
+        "window_id",
+        "notes",
+        "created_by",
+        "created_at",
+        "sequence",
+        "status",
+        "no_plano",
+        "valor_aplicado",
+        "custom_fields",
+        "motivo_nao_implementado"
+      ],
+      "sample": {
+        "id": "f5a0391d-607b-4da6-9349-48f2e65f1835",
+        "client_id": "1c9f3a06-cdfe-4357-a3ff-b9f1badb86b4",
+        "mecanismo_id": "27fc426f-63a1-44f8-a271-ad11a9e25b0e",
+        "implemented_at": "2026-03-21T12:31:01.532+00:00",
+        "source": "manual",
+        "window_id": null,
+        "notes": "",
+        "created_by": "d111da8e-c90d-4f41-a84a-a8f0d479080f",
+        "created_at": "2026-03-21T12:30:06.51275+00:00",
+        "sequence": 1,
+        "status": "concluido",
+        "no_plano": true,
+        "valor_aplicado": 1,
+        "custom_fields": {},
+        "motivo_nao_implementado": null
+      },
+      "error": null
+    },
+    "mecanismos_cols": {
+      "status": [
+        "status"
+      ],
+      "dates": [
+        "implemented_at",
+        "created_by",
+        "created_at"
+      ],
+      "ep": [
+        "created_by"
+      ],
+      "client": [
+        "client_id"
+      ]
+    },
+    "mecanismos_impl": {
+      "ok": true,
+      "total": 516,
+      "error": null
+    },
+    "mecanismos_total": {
+      "ok": true,
+      "total": 516,
+      "error": null
+    },
+    "mecanismos_status_sample200": {
+      "concluido": 54,
+      "apto": 133,
+      "iniciado": 13
+    },
+    "mecanismos_impl_in_sample": 200,
+    "meetings": {
+      "ok": false,
+      "status": 404,
+      "total": null,
+      "cols": [
+        "code",
+        "details",
+        "hint",
+        "message"
+      ],
+      "sample": {
+        "code": "PGRST205",
+        "details": null,
+        "hint": "Perhaps you meant the table 'public.crm_meetings'",
+        "message": "Could not find the table 'public.meetings' in the schema cache"
+      },
+      "error": "{\"code\":\"PGRST205\",\"details\":null,\"hint\":\"Perhaps you meant the table 'public.crm_meetings'\",\"message\":\"Could not find the table 'public.meetings' in the schema cache\"}"
+    },
+    "client_meetings": {
+      "ok": true,
+      "status": 206,
+      "total": 6285,
+      "cols": [
+        "id",
+        "client_id",
+        "calendly_event_uri",
+        "event_name",
+        "start_time",
+        "end_time",
+        "host_email",
+        "invitee_name",
+        "invitee_email",
+        "location_url",
+        "created_at",
+        "manually_linked"
+      ],
+      "sample": {
+        "id": "c6cbc97a-ba8c-4be5-9173-7c5a833645ab",
+        "client_id": "3860cdfa-aa8b-4904-90ca-37e67d03dbd5",
+        "calendly_event_uri": "manual:a62f4f51-623c-4609-8d03-f288fcf907be",
+        "event_name": "Checkpoint 2 | QV",
+        "start_time": "2026-07-01T19:00:00+00:00",
+        "end_time": "2026-07-01T20:00:00+00:00",
+        "host_email": "rodrigoamorim@quartavia.com.br",
+        "invitee_name": "Alcides Cavasini Neto",
+        "invitee_email": "netocavasini@gmail.com",
+        "location_url": "",
+        "created_at": "2026-05-26T19:54:02.024172+00:00",
+        "manually_linked": true
+      },
+      "error": null
+    },
+    "manual_meetings": {
+      "ok": true,
+      "status": 206,
+      "total": 1050,
+      "cols": [
+        "id",
+        "title",
+        "description",
+        "start_time",
+        "end_time",
+        "location",
+        "notes",
+        "created_by",
+        "created_at",
+        "updated_at",
+        "client_id",
+        "client_name",
+        "google_event_id",
+        "recurrence_group_id"
+      ],
+      "sample": {
+        "id": "38ea1cd3-8e21-4879-801a-d50bc063f95e",
+        "title": "Diagnóstico Pharus - Flavia Takeda",
+        "description": "30 de mar. de 2026\nDiagnóstico Pharus - Flavia Takeda\nConvidados  Cleuber Aparecido\nAnexos Diagnóstico Pharus - Flavia Takeda \nRegistros da reunião Gravação \n\nResumo\nO diagnóstico bônus focou na compreensão dos objetivos financeiros e desafios de fluxo de caixa da cliente, com ênfase na otimização de dívidas e no planejamento de ativos imobiliários, como o apartamento na planta.\n\nApresentação e Metas Financeiras\nA cliente expressou o desejo de criar uma renda passiva, devido à dificuldade em economizar e à lentidão em investimentos básicos. O programa Faros se propôs a ser um diagnóstico bônus para entender melhor os desafios e objetivos da cliente.\n\nAnálise da Situação Financeira\nA renda combinada do casal é de aproximadamente R$ 27.000, mas o fluxo de caixa está comprometido com parcelas de consórcio, financiamento de carro, e dívidas de cartão de crédito. O principal desafio é a otimização do fluxo de pagamento, já que o saldo mensal é próximo de zero.\n\nEstratégias de Otimização e Ativos\nO programa Faros abordará o fluxo de caixa com a estrutura OBZ e a 'trinca de cartões', enquanto o engenheiro patrimonial analisará o apartamento na planta para decidir se é melhor vender (valor de R$ 1 milhão) ou alugar. O programa também se concentrará em estratégias de ganho de capital para clientes de perfil conservador.\n\nDetalhes\nIntrodução e Motivação para o Programa Faros: A reunião começou com Cleuber Aparecido e Flavia Takeda apresentando-se brevemente, onde Flavia expressou seu desejo de criar uma renda passiva para o futuro, devido à dificuldade de guardar dinheiro e não querer depender do governo. Ela observou que, embora investimentos básicos como Renda Fixa e Tesouro Nacional sejam acessíveis, o processo para obter resultados significativos é lento. Cleuber Aparecido, que é formado em administração com MBA em gestão de projetos e faz parte do time de coordenadores do programa Faros, explicou que a reunião era um diagnóstico bônus para entender melhor os objetivos e desafios de Flavia.\nEstrutura da Reunião de Diagnóstico: Cleuber Aparecido explicou que o diagnóstico bônus tinha o objetivo de conhecer melhor o perfil de Flavia, entender seus objetivos, identificar desafios de curto prazo e alinhar expectativas para a imersão no método do Quarto Caminho. Posteriormente, um engenheiro patrimonial elaborará todo o planejamento, pegando na mão do cliente, e apresentarão os próximos passos ao final da reunião.\nAnálise da Renda e Situação Financeira: Flavia Takeda confirmou que sua renda média é de R$ 20.500, com 14 salários anuais (sendo o 14º dependente do atingimento de metas), e a renda combinada do casal totaliza cerca de R$ 27.000 mensais. Eles possuem um consórcio de R$ 500.000 (reduzido de R$ 1 milhão) em curso há cinco anos e estão pagando um apartamento na planta, que deve ficar pronto em março do ano seguinte. O apartamento foi adquirido por R$ 651.000, e o valor atual de mercado é de R$ 1 milhão ou mais, o que Flavia Takeda vê como uma excelente oportunidade de venda.\nEstratégias para o Apartamento na Planta e Fluxo de Caixa: O apartamento exigiu uma entrada de R$ 30.000 e prestações mensais de pouco mais de R$ 2.000, além de parcelas anuais de quase R$ 20.000. Flavia Takeda mencionou que, em vez de quitar o apartamento (o que sobraria um saldo de cerca de R$ 400.000 para financiar), eles poderiam alugá-lo para cobrir as prestações, uma estratégia que o programa Faros apoia. Cleuber Aparecido reforçou que o aluguel pode ser uma renda invisível que paga o financiamento ou consórcio, e que a decisão de alugar ou vender o imóvel será analisada pelo engenheiro patrimonial dentro do planejamento do Faros.\nDesafios de Fluxo de Caixa e Dívidas: Flavia Takeda identificou a necessidade de melhorar seu fluxo de pagamento, pois os limites de seus cartões de crédito estão comprometidos com parcelas de despesas passadas, como gastos veterinários. Ela também mencionou que eles acabaram de financiar um carro, e a soma das prestações (carro, consórcio, apartamento) totaliza cerca de R$ 8.000 por mês. As despesas fixas da família não são muito altas, mas a soma de mercado para duas casas (incluindo a casa da filha) mais o aluguel dela e os cartões deixam a renda apertada, resultando em um saldo mensal de aproximadamente zero.\nDetalhes do Endividamento e Abordagem do Faros: Flavia Takeda relatou que paga de R$ 1.000 a R$ 5.000 em parcelas de quatro cartões de crédito, consumindo quase metade de seu salário. Cleuber Aparecido indicou que o programa Faros abordará o fluxo de caixa (motor um do patrimônio) com estratégias como estrutura OBZ e \"trinca de cartões\". Eles analisarão o financiamento do carro para otimizar a operação se estiver fora dos padrões de mercado. O programa também trabalhará com os outros dois motores: reserva de valor e capacidade de pagamento.\nAnálise da Reserva de Valor e Perfil de Risco: Flavia Takeda informou que tinha R$ 10.000 de reserva de emergência, dos quais R$ 5.000 foram usados para pagar a entrada no programa e o restante em dólar (cerca de 900 dólares). Ela também possui uma quantia menor, em torno de R$ 2.000, em Tesouro Nacional e CDBs. Flavia Takeda confirmou ter um perfil completamente conservador, enfatizando que não se aventura em investimentos sem conhecimento e é difícil de confiar. Cleuber Aparecido tranquilizou Flavia, afirmando que o programa Faros também é conservador e foca em mercados milenares, como o mercado real (imóveis na planta), usinas solares e leilões de imóveis.\nEstratégias do Programa Faros e Próximos Passos: Cleuber Aparecido ressaltou que o programa Faros usará estratégias de consórcio, como lance fixo e parcelas reduzidas, para aumentar a capacidade de pagamento e otimizar o fluxo de caixa. Nos primeiros anos da renda passiva, o foco será em estratégias de ganho de capital para construir ativos e trazer mais liquidez para o caixa. Cleuber Aparecido explicou a jornada do cliente, sendo o próximo passo receber o engenheiro patrimonial no WhatsApp, que dará início à reunião de Rota Patrimonial.\nJornada do Cliente e Requisitos: Após a Rota Patrimonial, Flavia Takeda deverá preencher seus dados na plataforma de gestão financeira QV 360 (renda, patrimônio, despesas), o que será facilitado, pois ela já possui as informações em uma planilha. O passo seguinte será a reunião de Ativação das Engrenagens, onde começarão a colocar em prática as atividades. O projeto inclui reuniões mensais de *checkpoint* para acompanhamento próximo do plano, exigindo apenas 10% do esforço de Flavia Takeda para comparecer às reuniões e atualizar o sistema. Flavia Takeda solicitou a inclusão de seu marido no grupo do WhatsApp, o que Cleuber Aparecido prontamente aceitou, e as reuniões serão gravadas. Cleuber Aparecido concluiu afirmando que iniciaria o processo para adicionar o engenheiro patrimonial e dar seguimento à jornada.\n\nPróximas etapas sugeridas\nCleuber Aparecido irá cobrar a correção da data de nascimento (19 de maio) no contrato para que Flavia Takeda possa assinar.\nCleuber Aparecido irá adicionar o engenheiro patrimonial ao grupo para dar seguimento e fazer a reunião de rota patrimonial com Flavia Takeda.\nFlavia Takeda irá mandar o número do seu marido para Cleuber Aparecido por WhatsApp ou no grupo para que ele possa ser adicionado.\nCleuber Aparecido irá adicionar o marido de Flavia Takeda no grupo do programa.\n\nRevise as anotações do Gemini para checar se estão corretas. Confira dicas e saiba como o Gemini faz anotações\nEnvie feedback sobre o uso do Gemini para criar notas breve pesquisa.",
+        "start_time": "2026-03-30T18:30:00+00:00",
+        "end_time": "2026-03-30T19:00:00+00:00",
+        "location": "https://drive.google.com/file/d/1YlhPF9pVo16efMXjcSzToFkWMFGN0N0x/view?usp=drive_web",
+        "notes": "30 de mar. de 2026\nDiagnóstico Pharus - Flavia Takeda\nConvidados  Cleuber Aparecido\nAnexos Diagnóstico Pharus - Flavia Takeda \nRegistros da reunião Gravação \n\nResumo\nO diagnóstico bônus focou na compreensão dos objetivos financeiros e desafios de fluxo de caixa da cliente, com ênfase na otimização de dívidas e no planejamento de ativos imobiliários, como o apartamento na planta.\n\nApresentação e Metas Financeiras\nA cliente expressou o desejo de criar uma renda passiva, devido à dificuldade em economizar e à lentidão em investimentos básicos. O programa Faros se propôs a ser um diagnóstico bônus para entender melhor os desafios e objetivos da cliente.\n\nAnálise da Situação Financeira\nA renda combinada do casal é de aproximadamente R$ 27.000, mas o fluxo de caixa está comprometido com parcelas de consórcio, financiamento de carro, e dívidas de cartão de crédito. O principal desafio é a otimização do fluxo de pagamento, já que o saldo mensal é próximo de zero.\n\nEstratégias de Otimização e Ativos\nO programa Faros abordará o fluxo de caixa com a estrutura OBZ e a 'trinca de cartões', enquanto o engenheiro patrimonial analisará o apartamento na planta para decidir se é melhor vender (valor de R$ 1 milhão) ou alugar. O programa também se concentrará em estratégias de ganho de capital para clientes de perfil conservador.\n\nDetalhes\nIntrodução e Motivação para o Programa Faros: A reunião começou com Cleuber Aparecido e Flavia Takeda apresentando-se brevemente, onde Flavia expressou seu desejo de criar uma renda passiva para o futuro, devido à dificuldade de guardar dinheiro e não querer depender do governo. Ela observou que, embora investimentos básicos como Renda Fixa e Tesouro Nacional sejam acessíveis, o processo para obter resultados significativos é lento. Cleuber Aparecido, que é formado em administração com MBA em gestão de projetos e faz parte do time de coordenadores do programa Faros, explicou que a reunião era um diagnóstico bônus para entender melhor os objetivos e desafios de Flavia.\nEstrutura da Reunião de Diagnóstico: Cleuber Aparecido explicou que o diagnóstico bônus tinha o objetivo de conhecer melhor o perfil de Flavia, entender seus objetivos, identificar desafios de curto prazo e alinhar expectativas para a imersão no método do Quarto Caminho. Posteriormente, um engenheiro patrimonial elaborará todo o planejamento, pegando na mão do cliente, e apresentarão os próximos passos ao final da reunião.\nAnálise da Renda e Situação Financeira: Flavia Takeda confirmou que sua renda média é de R$ 20.500, com 14 salários anuais (sendo o 14º dependente do atingimento de metas), e a renda combinada do casal totaliza cerca de R$ 27.000 mensais. Eles possuem um consórcio de R$ 500.000 (reduzido de R$ 1 milhão) em curso há cinco anos e estão pagando um apartamento na planta, que deve ficar pronto em março do ano seguinte. O apartamento foi adquirido por R$ 651.000, e o valor atual de mercado é de R$ 1 milhão ou mais, o que Flavia Takeda vê como uma excelente oportunidade de venda.\nEstratégias para o Apartamento na Planta e Fluxo de Caixa: O apartamento exigiu uma entrada de R$ 30.000 e prestações mensais de pouco mais de R$ 2.000, além de parcelas anuais de quase R$ 20.000. Flavia Takeda mencionou que, em vez de quitar o apartamento (o que sobraria um saldo de cerca de R$ 400.000 para financiar), eles poderiam alugá-lo para cobrir as prestações, uma estratégia que o programa Faros apoia. Cleuber Aparecido reforçou que o aluguel pode ser uma renda invisível que paga o financiamento ou consórcio, e que a decisão de alugar ou vender o imóvel será analisada pelo engenheiro patrimonial dentro do planejamento do Faros.\nDesafios de Fluxo de Caixa e Dívidas: Flavia Takeda identificou a necessidade de melhorar seu fluxo de pagamento, pois os limites de seus cartões de crédito estão comprometidos com parcelas de despesas passadas, como gastos veterinários. Ela também mencionou que eles acabaram de financiar um carro, e a soma das prestações (carro, consórcio, apartamento) totaliza cerca de R$ 8.000 por mês. As despesas fixas da família não são muito altas, mas a soma de mercado para duas casas (incluindo a casa da filha) mais o aluguel dela e os cartões deixam a renda apertada, resultando em um saldo mensal de aproximadamente zero.\nDetalhes do Endividamento e Abordagem do Faros: Flavia Takeda relatou que paga de R$ 1.000 a R$ 5.000 em parcelas de quatro cartões de crédito, consumindo quase metade de seu salário. Cleuber Aparecido indicou que o programa Faros abordará o fluxo de caixa (motor um do patrimônio) com estratégias como estrutura OBZ e \"trinca de cartões\". Eles analisarão o financiamento do carro para otimizar a operação se estiver fora dos padrões de mercado. O programa também trabalhará com os outros dois motores: reserva de valor e capacidade de pagamento.\nAnálise da Reserva de Valor e Perfil de Risco: Flavia Takeda informou que tinha R$ 10.000 de reserva de emergência, dos quais R$ 5.000 foram usados para pagar a entrada no programa e o restante em dólar (cerca de 900 dólares). Ela também possui uma quantia menor, em torno de R$ 2.000, em Tesouro Nacional e CDBs. Flavia Takeda confirmou ter um perfil completamente conservador, enfatizando que não se aventura em investimentos sem conhecimento e é difícil de confiar. Cleuber Aparecido tranquilizou Flavia, afirmando que o programa Faros também é conservador e foca em mercados milenares, como o mercado real (imóveis na planta), usinas solares e leilões de imóveis.\nEstratégias do Programa Faros e Próximos Passos: Cleuber Aparecido ressaltou que o programa Faros usará estratégias de consórcio, como lance fixo e parcelas reduzidas, para aumentar a capacidade de pagamento e otimizar o fluxo de caixa. Nos primeiros anos da renda passiva, o foco será em estratégias de ganho de capital para construir ativos e trazer mais liquidez para o caixa. Cleuber Aparecido explicou a jornada do cliente, sendo o próximo passo receber o engenheiro patrimonial no WhatsApp, que dará início à reunião de Rota Patrimonial.\nJornada do Cliente e Requisitos: Após a Rota Patrimonial, Flavia Takeda deverá preencher seus dados na plataforma de gestão financeira QV 360 (renda, patrimônio, despesas), o que será facilitado, pois ela já possui as informações em uma planilha. O passo seguinte será a reunião de Ativação das Engrenagens, onde começarão a colocar em prática as atividades. O projeto inclui reuniões mensais de *checkpoint* para acompanhamento próximo do plano, exigindo apenas 10% do esforço de Flavia Takeda para comparecer às reuniões e atualizar o sistema. Flavia Takeda solicitou a inclusão de seu marido no grupo do WhatsApp, o que Cleuber Aparecido prontamente aceitou, e as reuniões serão gravadas. Cleuber Aparecido concluiu afirmando que iniciaria o processo para adicionar o engenheiro patrimonial e dar seguimento à jornada.\n\nPróximas etapas sugeridas\nCleuber Aparecido irá cobrar a correção da data de nascimento (19 de maio) no contrato para que Flavia Takeda possa assinar.\nCleuber Aparecido irá adicionar o engenheiro patrimonial ao grupo para dar seguimento e fazer a reunião de rota patrimonial com Flavia Takeda.\nFlavia Takeda irá mandar o número do seu marido para Cleuber Aparecido por WhatsApp ou no grupo para que ele possa ser adicionado.\nCleuber Aparecido irá adicionar o marido de Flavia Takeda no grupo do programa.\n\nRevise as anotações do Gemini para checar se estão corretas. Confira dicas e saiba como o Gemini faz anotações\nEnvie feedback sobre o uso do Gemini para criar notas breve pesquisa.",
+        "created_by": "459618e6-cb21-44b5-b626-6b1c31499f98",
+        "created_at": "2026-04-06T20:33:39.673897+00:00",
+        "updated_at": "2026-04-06T20:33:39.673897+00:00",
+        "client_id": null,
+        "client_name": null,
+        "google_event_id": null,
+        "recurrence_group_id": null
+      },
+      "error": null
+    },
+    "meeting_attendance": {
+      "ok": true,
+      "status": 206,
+      "total": 4087,
+      "cols": [
+        "id",
+        "calendly_event_uri",
+        "user_id",
+        "status",
+        "notes",
+        "created_at",
+        "updated_at",
+        "resumo",
+        "link_gravacao",
+        "proximas_acoes",
+        "remarcado"
+      ],
+      "sample": {
+        "id": "e5c795fa-7010-496e-85af-491b1ba805ad",
+        "calendly_event_uri": "https://api.calendly.com/scheduled_events/521bc13a-966a-4c1a-8836-1354b4a6047b",
+        "user_id": "df32d624-db6d-488a-8da4-e15206a89049",
+        "status": "compareceu",
+        "notes": "",
+        "created_at": "2026-05-12T17:57:07.240805+00:00",
+        "updated_at": "2026-05-12T17:56:26.125+00:00",
+        "resumo": "Olá Otton e Gizele,\n\nConforme alinhamos na nossa reunião de hoje, vamos retomar nossa jornada de construção patrimonial e já deixamos nossa próxima reunião agendada para próxima terça 19/05 as 14:15 horário de SP.\n\nE para nossa próxima call só ficaram pendentes os seguintes pontos:\n* Atualizar as informações de investimentos e patrimônio no QV360;\n* Nos enviar os relatório orçamentários da organize, referente aos últimos 2 a 3 meses;\n\nQualquer dúvida estou à disposição, podem sempre contar comigo 😁.",
+        "link_gravacao": "https://docs.google.com/document/d/1ms4BFkBeYG6r9JLy6TCvh6f3vPQoOoxaTZ2RxzooM-E/edit?usp=meet_tnfm_calendar",
+        "proximas_acoes": "",
+        "remarcado": false
+      },
+      "error": null
+    },
+    "cancellations": {
+      "ok": true,
+      "status": 206,
+      "total": 391,
+      "cols": [
+        "id",
+        "client_id",
+        "client_name",
+        "programa",
+        "motivo",
+        "tratativa",
+        "responsavel_id",
+        "responsavel_name",
+        "observacoes",
+        "status_id",
+        "created_by",
+        "created_at",
+        "updated_at",
+        "distrato",
+        "data_pedido",
+        "passou_retencao",
+        "archived_at",
+        "valor_pago",
+        "valor_a_reembolsar",
+        "distrato_assinado_at",
+        "estagio_cliente",
+        "motivo_categoria",
+        "origem_form_slug",
+        "assigned_to",
+        "entered_retencao_at",
+        "entered_offboarding_at",
+        "sla_deadline",
+        "intencao_registrada_at",
+        "retencao_iniciada_at",
+        "nao_retencao_at",
+        "churn_efetivado_at",
+        "is_critical",
+        "desfecho",
+        "stage_entered_at"
+      ],
+      "sample": {
+        "id": "821f938a-e3ff-45dc-8447-494e809a9818",
+        "client_id": "20d8112b-75e6-4362-8584-76f593b5fc8c",
+        "client_name": "Ivaldo Pereira Rocha",
+        "programa": "PHARUS",
+        "motivo": "Solicitante: Consultor\nNome do Consultor: Pedro Barbosa\nCanal de entrada: Whatsapp (outros)\nData e hora do pedido de cancelamento: 17/07/2026\nMudança de contexto (saúde, família, profissão)\nUrgência: Imediata",
+        "tratativa": "",
+        "responsavel_id": "459618e6-cb21-44b5-b626-6b1c31499f98",
+        "responsavel_name": "Cleuber Aparecido",
+        "observacoes": "Criado automaticamente do formulário de intenção de cancelamento.\nPreenchido por: Samuel Araújo",
+        "status_id": "a1c0e100-0000-0000-0000-000000000004",
+        "created_by": null,
+        "created_at": "2026-07-17T15:10:00.007763+00:00",
+        "updated_at": "2026-07-23T20:59:05.904942+00:00",
+        "distrato": "Não assinado",
+        "data_pedido": "2026-07-17",
+        "passou_retencao": false,
+        "archived_at": null,
+        "valor_pago": null,
+        "valor_a_reembolsar": null,
+        "distrato_assinado_at": null,
+        "estagio_cliente": "ativo_recente",
+        "motivo_categoria": null,
+        "origem_form_slug": null,
+        "assigned_to": "3206ed5e-4a87-4c12-8a6a-2d2f6929a848",
+        "entered_retencao_at": null,
+        "entered_offboarding_at": "2026-07-17T15:10:00.007763+00:00",
+        "sla_deadline": null,
+        "intencao_registrada_at": "2026-07-17T15:10:00.007763+00:00",
+        "retencao_iniciada_at": null,
+        "nao_retencao_at": null,
+        "churn_efetivado_at": null,
+        "is_critical": false,
+        "desfecho": null,
+        "stage_entered_at": "2026-07-23T20:58:58.692834+00:00"
+      },
+      "error": null
+    },
+    "churn_filled": {
+      "ok": true,
+      "total": 3,
+      "error": null
+    },
+    "distrato_filled": {
+      "ok": true,
+      "total": 63,
+      "error": null
+    },
+    "pedido_filled": {
+      "ok": true,
+      "total": 391,
+      "error": null
+    },
+    "intencao_filled": {
+      "ok": true,
+      "total": 391,
+      "error": null
+    },
+    "financial_coverage_sample500": {
+      "renda_mensal": {
+        "sample": 1,
+        "filled": 0,
+        "pct": 0
+      },
+      "patrimonio_liquido": {
+        "sample": 1,
+        "filled": 0,
+        "pct": 0
+      },
+      "reserva_emergencia": {
+        "sample": 1,
+        "filled": 0,
+        "pct": 0
+      },
+      "aporte_mensal": {
+        "sample": 1,
+        "filled": 0,
+        "pct": 0
+      },
+      "segmento": {
+        "sample": 1,
+        "filled": 0,
+        "pct": 0
+      },
+      "segmentacao": {
+        "sample": 1,
+        "filled": 0,
+        "pct": 0
+      },
+      "data_de_fechamento": {
+        "sample": 1,
+        "filled": 0,
+        "pct": 0
+      },
+      "data_inicio_ciclo": {
+        "sample": 1,
+        "filled": 0,
+        "pct": 0
+      },
+      "engenheiro_patrimonial": {
+        "sample": 1,
+        "filled": 0,
+        "pct": 0
+      },
+      "engenheiro_patrimonial_id": {
+        "sample": 1,
+        "filled": 0,
+        "pct": 0
+      }
+    },
+    "clients_all_cols": [
+      "id",
+      "name",
+      "email",
+      "phone",
+      "engenheiro_patrimonial",
+      "backoffice",
+      "programa",
+      "status",
+      "created_by",
+      "created_at",
+      "updated_at",
+      "data_inicio_ciclo",
+      "data_fim_ciclo",
+      "ciclo",
+      "valor_total_pago",
+      "data_ascensao",
+      "codigo",
+      "cpf",
+      "imported_at",
+      "data_aniversario",
+      "profissao",
+      "temperatura",
+      "objetivo_principal",
+      "anotacoes",
+      "drive_link",
+      "data_congelamento",
+      "data_descongelamento",
+      "linked_user_id",
+      "created_from_client_user",
+      "client_user_badge_new",
+      "is_seal",
+      "hobbies",
+      "nome_conjuge",
+      "cidade",
+      "estado",
+      "contrato_assinado",
+      "data_churn",
+      "motivo_churn",
+      "qv_id",
+      "is_retido",
+      "pre_cadastro_comercial",
+      "engenheiros_anteriores",
+      "app_pharus_access",
+      "davos_recepcao_status",
+      "davos_recepcao_approved_at",
+      "davos_recepcao_rejected_at",
+      "davos_recepcao_rejected_reason",
+      "davos_contrato_assinado",
+      "davos_contrato_assinado_at",
+      "davos_contrato_dispensado",
+      "segmentacao",
+      "telefone_conjuge",
+      "phone_digits",
+      "telefone_conjuge_digits",
+      "cpf_digits"
+    ],
+    "nps_sample_keys": [
+      "id",
+      "typeform_response_id",
+      "typeform_form_id",
+      "client_id",
+      "client_name",
+      "client_email",
+      "tipo_de_forms",
+      "score",
+      "comment",
+      "raw_payload",
+      "submitted_at",
+      "created_at",
+      "updated_at",
+      "motivadores"
+    ],
+    "nps_sample": [
+      {
+        "id": "8ac75e18-373e-4321-a2cb-8d73bdc0245b",
+        "typeform_response_id": "k7kx1fugiye86dfk7kx148j93u15xt9y",
+        "typeform_form_id": "rzzF4ukM",
+        "client_id": "57fd07f9-1477-4139-97c9-dd2523ca1a99",
+        "client_name": "Patrícia Soares da Silva",
+        "client_email": "patisoares83@hotmail.com",
+        "tipo_de_forms": "NPS",
+        "score": 8,
+        "comment": "Motivo da nota: Gostei da proposta e estou no início vendo um excelente potencial de ajuda em meu crescimento financeiro\nO que melhorar: Por enquanto, não sugiro algo a mais pois ainda preciso me dedicar mais às aulas e marcar mais reuniões com minha tutora. Mas a falta de tempo é minha.\nMomento atual: Estou travado em alguma parte e preciso de ajuda\nCaminho liberdade: Em progresso, mas com dúvidas\nContinuar 5 anos: Ver minha evolução em entender os investimentos e o aumento real da minha rentabilidade financeira\nNota estrategista: 10\nComentário extra: Gostaria de ter mais aulas básicas sobre investimentos, taxas e todo o mercado financeiro pois sou muito iniciante no assunto",
+        "raw_payload": null,
+        "submitted_at": "2026-06-26T22:27:39+00:00",
+        "created_at": "2026-06-27T20:47:17.367061+00:00",
+        "updated_at": "2026-06-27T20:47:17.367061+00:00",
+        "motivadores": null
+      },
+      {
+        "id": "c53f1317-3dfb-4a30-893b-730941987c24",
+        "typeform_response_id": "ki2prnp4j5axj5hki27iz2d7gleykqj0",
+        "typeform_form_id": "rzzF4ukM",
+        "client_id": "7e69403b-1cd9-4e85-8242-49088dd35092",
+        "client_name": "Fernando Henrique Schneider",
+        "client_email": "eng.schneider@outlook.com",
+        "tipo_de_forms": "NPS",
+        "score": 8,
+        "comment": "Motivo da nota: FALTA UM ACOMPANHAMENTO MAIS DE PERTO\nO que melhorar: AUMENTAR O TEMPO DE REUNIÃO E A TOLERÂNCIA DE ENTRADA NA REUNIÃO\nMomento atual: Tenho clareza e estou executando com consistência\nCaminho liberdade: Totalmente no caminho\nContinuar 5 anos: RESULTADO.\nNota estrategista: 8\nComentário extra: NÃO",
+        "raw_payload": null,
+        "submitted_at": "2026-06-26T12:56:47+00:00",
+        "created_at": "2026-06-27T20:47:17.367061+00:00",
+        "updated_at": "2026-06-27T20:47:17.367061+00:00",
+        "motivadores": null
+      },
+      {
+        "id": "e2504eac-ba90-4533-92bf-76fbc2940134",
+        "typeform_response_id": "9b734i8i0x2vu2rj9b730kip5z57gk7x",
+        "typeform_form_id": "rzzF4ukM",
+        "client_id": "01749103-30b7-4ac5-8acb-1fae1ae7d957",
+        "client_name": "Leonardo Franchini Vinhola",
+        "client_email": "leonardo.vinhola@gmail.com",
+        "tipo_de_forms": "NPS",
+        "score": 10,
+        "comment": "Motivo da nota: A estrutura do programa é muito sólida, consolida conceitos diferentes de uma forma clara e concisa, permitindo ao participante entender melhor o que fazer. Além disso, o acompanhamento de perto do Engenheiro Patrimonial tanto traz luz às principais dúvidas, quanto \"obriga\" o participante à seguir o combinado, evitando distrações e colaborando para o atingimento das metas.\nRazão 9-10: Engenheiro Patrimonial, acompanhamento constante. Estrutura sólida do programa (fundamentos em que o programa se apoia).\nMomento atual: Tenho clareza e estou executando com consistência\nCaminho liberdade: Totalmente no caminho\nContinuar 5 anos: Na prática, continuar o bom trabalho, conforme o tempo andar e meus objetivos macro forem sendo atingidos, pretendo ser elegível a fazer parte do Davos se houver convite.\nNota estrategista: 10\nComentário extra: Sem mais comentários.",
+        "raw_payload": null,
+        "submitted_at": "2026-06-26T12:25:45+00:00",
+        "created_at": "2026-06-27T20:47:17.367061+00:00",
+        "updated_at": "2026-06-27T20:47:17.367061+00:00",
+        "motivadores": null
+      }
+    ],
+    "nps_score_range": {
+      "min": 0,
+      "max": 10,
+      "n": 50,
+      "col": "score"
+    }
+  },
+  "pharus": {
+    "env_schema": "public",
+    "accounts": {
+      "schema": "core",
+      "ok": true,
+      "status": 206,
+      "total": 553,
+      "cols": [
+        "id",
+        "user_id",
+        "external_id",
+        "item_id",
+        "type",
+        "subtype",
+        "account_number",
+        "name",
+        "balance",
+        "created_at",
+        "updated_at"
+      ],
+      "sample": {
+        "id": "33e19377-beab-4d64-94e1-3f55f2a2459c",
+        "user_id": "9fab02c6-0cce-4e29-bdfb-29126ef46e0b",
+        "external_id": "a27f8ade-0b7c-4d7f-ae20-c99b2bbac773",
+        "item_id": "d7066a5a-b001-4e9f-9376-63516d8f6406",
+        "type": "BANK",
+        "subtype": "SAVINGS_ACCOUNT",
+        "account_number": "768121377-6",
+        "name": "CAIXA",
+        "balance": 29.26,
+        "created_at": "2026-06-02T15:12:10.244+00:00",
+        "updated_at": "2026-07-22T16:01:48.262+00:00"
+      },
+      "error": null
+    },
+    "scheduled_meetings": {
+      "schema": "core",
+      "ok": true,
+      "status": 206,
+      "total": 703,
+      "cols": [
+        "user_id",
+        "meeting_id",
+        "start_time",
+        "end_time",
+        "join_url",
+        "status",
+        "status_history",
+        "created_at",
+        "updated_at",
+        "id",
+        "advisor_internal_id",
+        "calendly_scheduled_event_uri",
+        "calendly_invitee_uri",
+        "idempotency_key",
+        "provider"
+      ],
+      "sample": {
+        "user_id": "6966a4af-114c-42af-947e-dcbb268e5e48",
+        "meeting_id": "9b23fae9-0ae1-4673-b480-81ec2dfcae59",
+        "start_time": "2026-07-14T14:00:00",
+        "end_time": "2026-07-14T15:00:00",
+        "join_url": "https://drive.google.com/file/d/1eh_bXRIquETzvYNShXUFvTDc75C_PsVa/view",
+        "status": "completed",
+        "status_history": [
+          {
+            "at": "2026-07-28T19:40:35.281Z",
+            "status": "completed"
+          }
+        ],
+        "created_at": "2026-07-28T19:40:17.102",
+        "updated_at": "2026-07-28T19:40:35.281",
+        "id": "3e0f8573-6ac7-4884-8eff-65bed93b8806",
+        "advisor_internal_id": "8e258caf-bbba-4c0f-94c8-0ccc5dd1c8b7",
+        "calendly_scheduled_event_uri": null,
+        "calendly_invitee_uri": null,
+        "idempotency_key": null,
+        "provider": "manual"
+      },
+      "error": null
+    },
+    "meetings": {
+      "schema": "core",
+      "ok": true,
+      "status": 206,
+      "total": 3,
+      "cols": [
+        "id",
+        "order",
+        "meeting_title",
+        "meeting_slug",
+        "about",
+        "duration_minutes",
+        "is_active",
+        "metadata"
+      ],
+      "sample": {
+        "id": "aa59dd42-56fe-4fd8-9a65-19fa44f99e33",
+        "order": 1,
+        "meeting_title": "Rota Patrimonial",
+        "meeting_slug": "wealth-route",
+        "about": "Sistema 1 · Ciência do Dinheiro, mapeamento patrimonial e neurofinanceiro inicial",
+        "duration_minutes": null,
+        "is_active": true,
+        "metadata": null
+      },
+      "error": null
+    },
+    "advisor_meeting_binding": {
+      "schema": "core",
+      "ok": true,
+      "status": 206,
+      "total": 85,
+      "cols": [
+        "id",
+        "advisor_internal_id",
+        "meeting_id",
+        "calendly_event_type_uri",
+        "last_matched_at"
+      ],
+      "sample": {
+        "id": "240d6739-56b6-40d4-8856-c8b777db2a08",
+        "advisor_internal_id": "e53e70b7-94a2-4c18-a1ec-7afa2354d23b",
+        "meeting_id": "aa59dd42-56fe-4fd8-9a65-19fa44f99e33",
+        "calendly_event_type_uri": "https://api.calendly.com/event_types/8d2b82f3-4cc1-4370-a862-296ac104275a",
+        "last_matched_at": "2026-05-28T00:28:57.394+00:00"
+      },
+      "error": null
+    },
+    "advisor_calendly_event_type_snapshot": {
+      "schema": "core",
+      "ok": true,
+      "status": 206,
+      "total": 392,
+      "cols": [
+        "id",
+        "advisor_internal_id",
+        "calendly_uri",
+        "name",
+        "duration_minutes",
+        "status",
+        "payload",
+        "synced_at"
+      ],
+      "sample": {
+        "id": "a9f3495b-c3ec-4748-a841-51defb93a441",
+        "advisor_internal_id": "1ba76813-f984-4c61-80a1-991c6915dd26",
+        "calendly_uri": "https://api.calendly.com/event_types/72afdc7b-2194-485a-ae2c-1821c2505755",
+        "name": "Implementação | QV",
+        "duration_minutes": 60,
+        "status": "active",
+        "payload": {
+          "uri": "https://api.calendly.com/event_types/72afdc7b-2194-485a-ae2c-1821c2505755",
+          "kind": "solo",
+          "name": "Implementação | QV",
+          "slug": "implementacao-pharus",
+          "type": "StandardEventType",
+          "color": "#ffa600",
+          "active": true,
+          "locale": "pt",
+          "secret": false,
+          "is_paid": false,
+          "profile": {
+            "name": "Tiago Junior",
+            "type": "User",
+            "owner": "https://api.calendly.com/users/e111243a-bf6c-4d0b-9b00-766aa14abcd4"
+          },
+          "duration": 60,
+          "position": 7,
+          "locations": [
+            {
+              "kind": "google_conference"
+            }
+          ],
+          "created_at": "2025-10-16T19:46:59.438159Z",
+          "deleted_at": null,
+          "updated_at": "2026-04-07T18:12:06.985298Z",
+          "pooling_type": null,
+          "admin_managed": true,
+          "internal_note": null,
+          "booking_method": "instant",
+          "scheduling_url": "https://calendly.com/tiagojunior-quartavia/implementacao-pharus",
+          "custom_questions": [],
+          "description_html": null,
+          "duration_options": [],
+          "description_plain": null
+        },
+        "synced_at": "2026-07-29T19:00:14.543+00:00"
+      },
+      "error": null
+    },
+    "meeting_outputs": {
+      "schema": "core",
+      "ok": true,
+      "status": 206,
+      "total": 505,
+      "cols": [
+        "id",
+        "user_id",
+        "meeting_id",
+        "output",
+        "notes",
+        "created_at",
+        "updated_at",
+        "scheduled_meeting_id",
+        "resume"
+      ],
+      "sample": {
+        "id": "8ca92967-3dae-4c9e-8e76-88294bf12441",
+        "user_id": "528e2584-1ad5-4c65-b564-da3bb14e0e51",
+        "meeting_id": "aa59dd42-56fe-4fd8-9a65-19fa44f99e33",
+        "output": {
+          "url": "https://pharus-jornada.com.br/mapa-estrategico/80ed703d216c11e5a49690749414130cde5114fb90d907320f043d72cf779266",
+          "icon": "layout-grid",
+          "title": "Seu Mapa Estratégico",
+          "eyebrow": "ESTRATÉGIA",
+          "description": "Diretrizes da sua estratégia patrimonial"
+        },
+        "notes": null,
+        "created_at": "2026-06-01T13:58:26.877+00:00",
+        "updated_at": "2026-06-01T13:58:26.877+00:00",
+        "scheduled_meeting_id": null,
+        "resume": null
+      },
+      "error": null
+    },
+    "meeting_quality_dimension": {
+      "schema": "core",
+      "ok": true,
+      "status": 206,
+      "total": 8,
+      "cols": [
+        "id",
+        "slug",
+        "label_pt",
+        "emoji",
+        "sort_order",
+        "is_active",
+        "created_at",
+        "updated_at"
+      ],
+      "sample": {
+        "id": "4fda5526-c147-4310-a765-d90f850c0d34",
+        "slug": "patrimonial-engineer-demeanor",
+        "label_pt": "Postura do EP",
+        "emoji": "💼",
+        "sort_order": 1,
+        "is_active": true,
+        "created_at": "2026-05-27T20:35:20.68+00:00",
+        "updated_at": "2026-05-27T20:35:20.68+00:00"
+      },
+      "error": null
+    },
+    "scheduled_meeting_evaluation": {
+      "schema": "core",
+      "ok": true,
+      "status": 206,
+      "total": 30,
+      "cols": [
+        "id",
+        "scheduled_meeting_id",
+        "user_id",
+        "stars",
+        "selected_quality_slugs",
+        "created_at",
+        "updated_at"
+      ],
+      "sample": {
+        "id": "24c35cb8-44ac-47c8-83d5-43e854ec9a74",
+        "scheduled_meeting_id": "0e07a894-ec06-445c-93de-74e697573f02",
+        "user_id": "a9739c68-47a7-41d8-8d85-4dbf1ff20538",
+        "stars": 5,
+        "selected_quality_slugs": [
+          "technical-depth",
+          "patrimonial-engineer-demeanor",
+          "empathy"
+        ],
+        "created_at": "2026-06-02T21:47:19.017+00:00",
+        "updated_at": "2026-06-02T21:47:19.017+00:00"
+      },
+      "error": null
+    },
+    "user_mechanisms": {
+      "schema": "core",
+      "ok": true,
+      "status": 206,
+      "total": 354,
+      "cols": [
+        "id",
+        "user_id",
+        "mechanism_id",
+        "status",
+        "notes",
+        "created_at"
+      ],
+      "sample": {
+        "id": "1fa33fad-a0ee-48db-aa94-b07bb1ecb8cc",
+        "user_id": "8abf29d5-16a1-4af9-8f9e-32bf71a8025a",
+        "mechanism_id": "arroba-cycle",
+        "status": "suggested",
+        "notes": null,
+        "created_at": "2026-06-22T20:10:33.748+00:00"
+      },
+      "error": null
+    },
+    "mechanisms": {
+      "schema": "core",
+      "ok": true,
+      "status": 206,
+      "total": 11,
+      "cols": [
+        "id",
+        "data",
+        "created_at",
+        "updated_at"
+      ],
+      "sample": {
+        "id": "self-construction",
+        "data": {
+          "name": "Autoconstrução",
+          "risk": "Baixo-Moderado",
+          "engine": "M1 Aporte",
+          "market": "Crédito",
+          "horizon": "12 a 36 meses",
+          "adminFee": "19% a 25% a.a.",
+          "category": "Ganho de Capital",
+          "strategy": "Arbitragem do custo da pressa. O mercado oferece desconto médio de 20% a 30% no lance por necessidade de liquidez. Foca exclusivamente em sorteio + lance fixo embutido para vender a carta contemplada com lucro, sem utilizar lance livre para não descapitalizar o cliente.",
+          "description": "Compra de múltiplas cartas de consórcio dentro do mesmo grupo, buscando contemplação via lance fixo.",
+          "capitalization": "TIR/Yield",
+          "estimatedReturn": "1,4% a 1,6% a.m.",
+          "strategicWindows": "Venda com ágio, análise de viabilidade ou uso do crédito",
+          "secondaryCategory": "Recebíveis"
+        },
+        "created_at": "2026-06-12T17:13:21.145+00:00",
+        "updated_at": "2026-06-12T17:13:21.145+00:00"
+      },
+      "error": null
+    },
+    "user_engines": {
+      "schema": "core",
+      "ok": true,
+      "status": 206,
+      "total": 261,
+      "cols": [
+        "user_id",
+        "income",
+        "reserve",
+        "contribution"
+      ],
+      "sample": {
+        "user_id": "8abe1c3f-f6c0-4ad0-bc97-d89959268015",
+        "income": 40000,
+        "reserve": 20000,
+        "contribution": 4000
+      },
+      "error": null
+    },
+    "csat_poll": {
+      "schema": "core",
+      "ok": true,
+      "status": 200,
+      "total": 0,
+      "cols": [],
+      "sample": null,
+      "error": null
+    },
+    "user_contracts": {
+      "schema": "core",
+      "ok": true,
+      "status": 200,
+      "total": 0,
+      "cols": [],
+      "sample": null,
+      "error": null
+    },
+    "user_payments": {
+      "schema": "core",
+      "ok": true,
+      "status": 206,
+      "total": 260,
+      "cols": [
+        "id",
+        "user_id",
+        "paid_at",
+        "cycle_start",
+        "cycle_end"
+      ],
+      "sample": {
+        "id": "a0b3a2cf-7f3e-4f74-9a5e-7e3deaee9344",
+        "user_id": "09641407-fbf8-4da9-a0af-d4ec823a84c4",
+        "paid_at": "2026-05-27T20:35:19.357+00:00",
+        "cycle_start": null,
+        "cycle_end": null
+      },
+      "error": null
+    },
+    "user_metadata": {
+      "schema": "core",
+      "ok": true,
+      "status": 200,
+      "total": 0,
+      "cols": [],
+      "sample": null,
+      "error": null
+    },
+    "user_progress": {
+      "schema": "core",
+      "ok": true,
+      "status": 206,
+      "total": 2080,
+      "cols": [
+        "id",
+        "user_id",
+        "step",
+        "completed_at",
+        "created_at"
+      ],
+      "sample": {
+        "id": "5e066659-6f69-4f3c-9275-6705e5486c03",
+        "user_id": "98aac4f8-6a7c-4143-9a5c-5f45aab55848",
+        "step": "meet_advisor",
+        "completed_at": "2026-05-29T19:05:19.502+00:00",
+        "created_at": "2026-05-29T19:00:12.414+00:00"
+      },
+      "error": null
+    },
+    "advisors": {
+      "schema": "public",
+      "ok": false,
+      "status": 404,
+      "total": null,
+      "cols": [
+        "code",
+        "details",
+        "hint",
+        "message"
+      ],
+      "sample": {
+        "code": "PGRST205",
+        "details": null,
+        "hint": null,
+        "message": "Could not find the table 'public.advisors' in the schema cache"
+      },
+      "error": "{\"code\":\"PGRST205\",\"details\":null,\"hint\":null,\"message\":\"Could not find the table 'public.advisors' in the schema cache\"}"
+    },
+    "user_mechanisms_select_error": "{\"code\":\"42703\",\"details\":null,\"hint\":null,\"message\":\"column user_mechanisms.implemented_at does not exist\"}",
+    "user_mechanisms_status_dist_sample200": {
+      "suggested": 200
+    },
+    "user_mechanisms_impl_dates": {
+      "implemented_at": 0,
+      "completed_at": 0,
+      "approved_at": 0,
+      "advisor_id": 0,
+      "advisor_internal_id": 0,
+      "n": 200,
+      "cols_present": [
+        "id",
+        "user_id",
+        "mechanism_id",
+        "status",
+        "notes",
+        "created_at"
+      ]
+    },
+    "csat_sample": [],
+    "csat_cols": [],
+    "csat_score_cols": [],
+    "accounts_link_cols": [
+      "user_id",
+      "external_id",
+      "name"
+    ],
+    "scheduled_meetings_cols": [
+      "user_id",
+      "meeting_id",
+      "start_time",
+      "end_time",
+      "join_url",
+      "status",
+      "status_history",
+      "created_at",
+      "updated_at",
+      "id",
+      "advisor_internal_id",
+      "calendly_scheduled_event_uri",
+      "calendly_invitee_uri",
+      "idempotency_key",
+      "provider"
+    ],
+    "user_contracts_cols": [],
+    "user_contracts_sample": [],
+    "user_contracts_renewal_cols": []
+  },
+  "notes": []
+}

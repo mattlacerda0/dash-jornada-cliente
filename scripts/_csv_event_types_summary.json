@@ -1,0 +1,130 @@
+{
+  "rows": 11842,
+  "distinctTypes": 50,
+  "canceled": 2505,
+  "noshowYes": 0,
+  "noshowNo": 11842,
+  "distinctEventUuids": 11657,
+  "topTypes": [
+    [
+      "Checkpoint | QV",
+      4140
+    ],
+    [
+      "Kickoff | QV",
+      1176
+    ],
+    [
+      "Rota Patrimonial | QV",
+      1060
+    ],
+    [
+      "Especial | QV",
+      953
+    ],
+    [
+      "Ativação das Engrenagens | QV",
+      649
+    ],
+    [
+      "Patrimonium® | Checkpoint",
+      591
+    ],
+    [
+      "Tração Patrimonial | QV",
+      534
+    ],
+    [
+      "Central de Inteligência | QV",
+      464
+    ],
+    [
+      "PHARUS® | Checkpoint",
+      455
+    ],
+    [
+      "PHARUS® | Implementação",
+      220
+    ],
+    [
+      "Implementação | QV",
+      212
+    ],
+    [
+      "PHARUS® | Mapeamento",
+      148
+    ],
+    [
+      "Patrimonium® | Implementação",
+      94
+    ],
+    [
+      "Mecanismos | QV",
+      94
+    ],
+    [
+      "Mapeamento | QV",
+      94
+    ],
+    [
+      "Patrimonium® | Mapeamento",
+      92
+    ],
+    [
+      "VIP PLANNING 1 | QV",
+      84
+    ],
+    [
+      "PHARUS® | Alinhamento",
+      79
+    ],
+    [
+      "DAVOS - Acompanhamento | QV",
+      75
+    ],
+    [
+      "Patrimonium® | Alinhamento",
+      64
+    ],
+    [
+      "Implementação DAVOS | QV",
+      64
+    ],
+    [
+      "VIP PLANNING | QV",
+      57
+    ],
+    [
+      "",
+      49
+    ],
+    [
+      "Davos | Checkpoint",
+      49
+    ],
+    [
+      "Kick Off | Quartavia",
+      47
+    ],
+    [
+      "Acompanhamento | QV",
+      33
+    ],
+    [
+      "Checkpoint | QV 1:1",
+      30
+    ],
+    [
+      "KickOff | QV",
+      27
+    ],
+    [
+      "Reunião de 30 minutos",
+      24
+    ],
+    [
+      "PHARUS® | Revisão",
+      21
+    ]
+  ]
+}

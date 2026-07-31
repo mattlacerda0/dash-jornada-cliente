@@ -9,7 +9,7 @@ import {
 } from "./_shared/analytical-cancellation.mjs";
 
 const CLIENT_SELECT =
-  "id,codigo,name,data_inicio_ciclo,data_fim_ciclo,created_at,status,segmentacao,engenheiro_patrimonial,data_churn,ciclo,valor_total_pago,contrato_assinado,davos_contrato_assinado";
+  "id,codigo,name,data_inicio_ciclo,data_fim_ciclo,created_at,status,segmentacao,engenheiro_patrimonial,data_churn,ciclo,valor_total_pago,contrato_assinado,davos_contrato_assinado,programa";
 const CANCEL_SELECT = ANALYTICAL_CANCEL_SELECT;
 const FINANCIAL_SELECT =
   "id,client_id,reserva_liquidez,ultimo_aporte,ultima_renda_mensal,valor_imoveis_quitados,possui_imovel,possui_carro,possui_consorcio,cheque_especial,parcelamento_cartao,credito_pessoal,credito_consignado,updated_at";

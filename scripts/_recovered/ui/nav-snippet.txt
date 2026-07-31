@@ -1,0 +1,3 @@
+        <button type="button" data-nav="cancellations"><span class="nav-icon">✕</span>Cancelamento</button>
+        <button type="button" data-nav="ep"><span class="nav-icon">◈</span>Performance dos EPs</button>
+        <button type="button" data-nav="satisfaction"><span class="nav-icon">★</span>Pesquisa de Satisfação</button>

@@ -16,6 +16,7 @@ import { categorizeCancellationReason } from "./cancellation-reason-category.mjs
 export const CANCELLATION_PROCESS_SELECT = [
   "id",
   "client_id",
+  "status_id",
   "motivo",
   "motivo_categoria",
   "churn_efetivado_at",
@@ -41,6 +42,19 @@ export const CANCELLATION_PROCESS_SELECT = [
   "entered_offboarding_at",
   "stage_entered_at",
 ].join(",");
+
+/** Entrada no processo: pedido; se ausente, intenção. Não é data de cancelamento efetivo. */
+export function resolveProcessEntryDate(pedidoDate, intencaoDate) {
+  if (pedidoDate) return { date: pedidoDate, source: "data_pedido" };
+  if (intencaoDate) return { date: intencaoDate, source: "intencao_registrada_at" };
+  return { date: null, source: null };
+}
+
+export function resolveAnalyticalProcessSituation({ hasEfetivado, hasPedido, hasIntencao }) {
+  if (hasEfetivado) return "Cancelamento efetivado";
+  if (hasPedido || hasIntencao) return "Intenção/pedido em andamento";
+  return "Sem etapa identificada";
+}
 
 export const STAGE = {
   EFETIVADO: "Cancelamento efetivado",
@@ -244,13 +258,26 @@ export function buildCancellationProcessMap(cancellations, { includeArchived = f
       chronologicalIssues.push("efetivado_antes_intencao");
     }
 
+    const processEntry = resolveProcessEntryDate(pedidoDate, intencaoDate);
+    const inProcessCurrently = (hasPedido || hasIntencao) && !hasEfetivado;
+    const analyticalSituation = resolveAnalyticalProcessSituation({
+      hasEfetivado,
+      hasPedido,
+      hasIntencao,
+    });
+
     const candidate = {
       clientId: clientKey,
       cancellationRowId: blankToNull(row.id),
       archivedAt: archivedAt || null,
       isArchived: Boolean(archivedAt),
+      statusId: blankToNull(row.status_id),
       intencaoAt: intencaoDate,
       pedidoAt: pedidoDate,
+      processEntryAt: processEntry.date,
+      processEntrySource: processEntry.source,
+      inProcessCurrently,
+      analyticalSituation,
       churnEfetivadoAt: churnDate,
       distratoAssinadoAt: distratoDate,
       analyticalCancellationAt: analytical.cancellationDate || null,
@@ -309,70 +336,53 @@ export function buildCancellationProcessMap(cancellations, { includeArchived = f
           || (candidate.updated.getTime() === current.updated.getTime()
             && String(candidate.cancellationRowId || "") > String(current.cancellationRowId || ""))));
 
-    if (better) {
-      map.set(clientKey, {
-        ...candidate,
-        // preserve cumulative flags across records when merging
-        hasIntencao: candidate.hasIntencao || current.hasIntencao,
-        hasPedido: candidate.hasPedido || current.hasPedido,
-        hasEfetivado: candidate.hasEfetivado || current.hasEfetivado,
-        intencaoAt: candidate.intencaoAt || current.intencaoAt,
-        pedidoAt: candidate.pedidoAt || current.pedidoAt,
-        churnEfetivadoAt: candidate.churnEfetivadoAt || current.churnEfetivadoAt,
-        distratoAssinadoAt: candidate.distratoAssinadoAt || current.distratoAssinadoAt,
+    const mergeProcessFields = (primary, secondary) => {
+      const hasIntencao = primary.hasIntencao || secondary.hasIntencao;
+      const hasPedido = primary.hasPedido || secondary.hasPedido;
+      const hasEfetivado = primary.hasEfetivado || secondary.hasEfetivado;
+      const intencaoAt = primary.intencaoAt || secondary.intencaoAt;
+      const pedidoAt = primary.pedidoAt || secondary.pedidoAt;
+      const processEntry = resolveProcessEntryDate(pedidoAt, intencaoAt);
+      const excl = resolveExclusiveStage({ hasEfetivado, hasPedido, hasIntencao });
+      return {
+        ...primary,
+        hasIntencao,
+        hasPedido,
+        hasEfetivado,
+        intencaoAt,
+        pedidoAt,
+        processEntryAt: processEntry.date,
+        processEntrySource: processEntry.source,
+        inProcessCurrently: (hasPedido || hasIntencao) && !hasEfetivado,
+        analyticalSituation: resolveAnalyticalProcessSituation({
+          hasEfetivado,
+          hasPedido,
+          hasIntencao,
+        }),
+        churnEfetivadoAt: primary.churnEfetivadoAt || secondary.churnEfetivadoAt,
+        distratoAssinadoAt: primary.distratoAssinadoAt || secondary.distratoAssinadoAt,
         analyticalCancellationAt:
-          candidate.analyticalCancellationAt || current.analyticalCancellationAt,
+          primary.analyticalCancellationAt || secondary.analyticalCancellationAt,
+        statusId: primary.statusId || secondary.statusId,
         passouRetencao:
-          candidate.passouRetencao === true || current.passouRetencao === true
+          primary.passouRetencao === true || secondary.passouRetencao === true
             ? true
-            : candidate.passouRetencao ?? current.passouRetencao,
-        isCritical: candidate.isCritical || current.isCritical,
+            : primary.passouRetencao ?? secondary.passouRetencao,
+        isCritical: primary.isCritical || secondary.isCritical,
+        exclusiveStageKey: excl.key,
+        exclusiveStage: excl.label,
+        stageRank: stageRank(excl.key),
         chronologicalIssues: [...new Set([
-          ...(current.chronologicalIssues || []),
-          ...(candidate.chronologicalIssues || []),
-        ])],
-      });
-      // Recalculate exclusive stage after merge of flags
-      const merged = map.get(clientKey);
-      const excl = resolveExclusiveStage({
-        hasEfetivado: merged.hasEfetivado,
-        hasPedido: merged.hasPedido,
-        hasIntencao: merged.hasIntencao,
-      });
-      merged.exclusiveStageKey = excl.key;
-      merged.exclusiveStage = excl.label;
-      merged.stageRank = stageRank(excl.key);
-    } else {
-      const merged = {
-        ...current,
-        hasIntencao: current.hasIntencao || candidate.hasIntencao,
-        hasPedido: current.hasPedido || candidate.hasPedido,
-        hasEfetivado: current.hasEfetivado || candidate.hasEfetivado,
-        intencaoAt: current.intencaoAt || candidate.intencaoAt,
-        pedidoAt: current.pedidoAt || candidate.pedidoAt,
-        churnEfetivadoAt: current.churnEfetivadoAt || candidate.churnEfetivadoAt,
-        distratoAssinadoAt: current.distratoAssinadoAt || candidate.distratoAssinadoAt,
-        analyticalCancellationAt:
-          current.analyticalCancellationAt || candidate.analyticalCancellationAt,
-        passouRetencao:
-          current.passouRetencao === true || candidate.passouRetencao === true
-            ? true
-            : current.passouRetencao ?? candidate.passouRetencao,
-        isCritical: current.isCritical || candidate.isCritical,
-        chronologicalIssues: [...new Set([
-          ...(current.chronologicalIssues || []),
-          ...(candidate.chronologicalIssues || []),
+          ...(primary.chronologicalIssues || []),
+          ...(secondary.chronologicalIssues || []),
         ])],
       };
-      const excl = resolveExclusiveStage({
-        hasEfetivado: merged.hasEfetivado,
-        hasPedido: merged.hasPedido,
-        hasIntencao: merged.hasIntencao,
-      });
-      merged.exclusiveStageKey = excl.key;
-      merged.exclusiveStage = excl.label;
-      merged.stageRank = stageRank(excl.key);
-      map.set(clientKey, merged);
+    };
+
+    if (better) {
+      map.set(clientKey, mergeProcessFields(candidate, current));
+    } else {
+      map.set(clientKey, mergeProcessFields(current, candidate));
     }
   }
 

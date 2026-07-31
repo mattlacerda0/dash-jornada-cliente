@@ -77,8 +77,8 @@ export function getPharusEnv() {
   const schema = (
     process.env.PHARUS_SUPABASE_SCHEMA
     || process.env.APP_PHARUS_SUPABASE_SCHEMA
-    || "public"
-  ).trim() || "public";
+    || "core"
+  ).trim() || "core";
   return {
     url,
     anonKey,

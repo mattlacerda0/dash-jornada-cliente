@@ -1,0 +1,177 @@
+{
+  "clients": 3271,
+  "summary": {
+    "totalMeetings": 6686,
+    "futureMeetings": 710,
+    "cancelledMeetings": 0,
+    "eligibleMeetings": 5976,
+    "noShowsEligible": 735,
+    "attendedMeetings": 5241,
+    "noShowRate": 12.3,
+    "attendanceRate": 87.7,
+    "attendanceInsufficientData": false,
+    "clientsWithMeeting": 1402,
+    "totalNoShows": 735
+  },
+  "metadata": {
+    "eventTypeSource": "client_meetings.event_name / manual_meetings.title",
+    "noShowSource": "public.meeting_attendance.status",
+    "csvNoShowCoverage": 0,
+    "attendanceRateFormula": "1 - (noShows / (totalMeetings - futureMeetings - cancelledMeetings))"
+  },
+  "typesByFamilyTop": [
+    {
+      "label": "Checkpoint",
+      "count": 3183,
+      "canceled": 0,
+      "noShows": 382,
+      "future": 538,
+      "percent": 47.6,
+      "cancelRate": 0
+    },
+    {
+      "label": "Ativação das Engrenagens",
+      "count": 705,
+      "canceled": 0,
+      "noShows": 91,
+      "future": 26,
+      "percent": 10.5,
+      "cancelRate": 0
+    },
+    {
+      "label": "Central de Inteligência",
+      "count": 642,
+      "canceled": 0,
+      "noShows": 59,
+      "future": 53,
+      "percent": 9.6,
+      "cancelRate": 0
+    },
+    {
+      "label": "Especial",
+      "count": 596,
+      "canceled": 0,
+      "noShows": 57,
+      "future": 43,
+      "percent": 8.9,
+      "cancelRate": 0
+    },
+    {
+      "label": "Rota Patrimonial",
+      "count": 485,
+      "canceled": 0,
+      "noShows": 60,
+      "future": 4,
+      "percent": 7.3,
+      "cancelRate": 0
+    },
+    {
+      "label": "Outros tipos",
+      "count": 346,
+      "canceled": 0,
+      "noShows": 7,
+      "future": 16,
+      "percent": 5.2,
+      "cancelRate": 0
+    },
+    {
+      "label": "Tração Patrimonial",
+      "count": 233,
+      "canceled": 0,
+      "noShows": 25,
+      "future": 0,
+      "percent": 3.5,
+      "cancelRate": 0
+    },
+    {
+      "label": "Kickoff",
+      "count": 154,
+      "canceled": 0,
+      "noShows": 28,
+      "future": 3,
+      "percent": 2.3,
+      "cancelRate": 0
+    },
+    {
+      "label": "Acompanhamento",
+      "count": 91,
+      "canceled": 0,
+      "noShows": 4,
+      "future": 4,
+      "percent": 1.4,
+      "cancelRate": 0
+    },
+    {
+      "label": "Implementação",
+      "count": 91,
+      "canceled": 0,
+      "noShows": 5,
+      "future": 4,
+      "percent": 1.4,
+      "cancelRate": 0
+    }
+  ],
+  "typesByRawCount": 2355,
+  "statusCounts": {
+    "Ativo": 1718,
+    "Cancelado sem data confirmada": 1199,
+    "Cancelado": 53,
+    "Congelado": 301
+  },
+  "naoInformado": 0,
+  "sampleActive": [
+    {
+      "clientId": "0006917d-682b-4c05-917b-f3763a264a3d",
+      "name": "Anderson dos Santos Silva",
+      "analyticalStatus": "Ativo",
+      "rawStatus": "ativo"
+    },
+    {
+      "clientId": "004883b2-e3bd-4d1d-bc35-74a6c07d47f1",
+      "name": "Marcio Henrique Silva de Oliveira",
+      "analyticalStatus": "Ativo",
+      "rawStatus": "ativo"
+    },
+    {
+      "clientId": "00739be6-26c0-43a3-8cac-045d7eb1bd73",
+      "name": "Antonio Manoel de Souza",
+      "analyticalStatus": "Ativo",
+      "rawStatus": "ativo"
+    }
+  ],
+  "noShowFrequency": [
+    {
+      "key": "zero",
+      "label": "0 no-shows",
+      "minimum": 0,
+      "maximum": 0,
+      "clients": 2809,
+      "percentage": 85.9
+    },
+    {
+      "key": "one_to_two",
+      "label": "1–2 no-shows",
+      "minimum": 1,
+      "maximum": 2,
+      "clients": 392,
+      "percentage": 12
+    },
+    {
+      "key": "three_to_four",
+      "label": "3–4 no-shows",
+      "minimum": 3,
+      "maximum": 4,
+      "clients": 62,
+      "percentage": 1.9
+    },
+    {
+      "key": "five_or_more",
+      "label": "5 ou mais no-shows",
+      "minimum": 5,
+      "maximum": null,
+      "clients": 8,
+      "percentage": 0.2
+    }
+  ],
+  "bandSum": 3271
+}

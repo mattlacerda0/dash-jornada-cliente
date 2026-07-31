@@ -955,6 +955,65 @@ def support_payload():
     return json.loads(result.stdout)
 
 
+def ep_performance_payload():
+    """Performance do EP — BASE QV (+ seção App Pharus isolada)."""
+    env = os.environ.copy()
+    env["PORTAL_INTERNAL_DATA_RUN"] = "1"
+    result = subprocess.run(
+        ["node", str(ROOT / "run_ep_performance_api.mjs")],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        env=env,
+        timeout=300,
+    )
+    if result.returncode != 0:
+        detail = (result.stderr or result.stdout or "falha ao gerar ep-performance").strip()
+        raise RuntimeError(detail[:240])
+    return json.loads(result.stdout)
+
+
+def pharus_ep_meetings_payload():
+    """Reuniões App Pharus por EP (falha isolada)."""
+    env = os.environ.copy()
+    env["PORTAL_INTERNAL_DATA_RUN"] = "1"
+    result = subprocess.run(
+        ["node", str(ROOT / "run_pharus_ep_meetings_api.mjs")],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        env=env,
+        timeout=180,
+    )
+    if result.returncode != 0:
+        detail = (result.stderr or result.stdout or "falha ao gerar pharus-ep-meetings").strip()
+        raise RuntimeError(detail[:240])
+    return json.loads(result.stdout)
+
+
+def statistical_crosses_payload(query_string=""):
+    """Cruzamentos Estatísticos — BASE QV."""
+    env = os.environ.copy()
+    env["PORTAL_INTERNAL_DATA_RUN"] = "1"
+    if query_string:
+        env["PORTAL_REQUEST_QUERY"] = query_string.lstrip("?")
+    result = subprocess.run(
+        ["node", str(ROOT / "run_statistical_crosses_api.mjs")],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        env=env,
+        timeout=300,
+    )
+    if result.returncode != 0:
+        detail = (result.stderr or result.stdout or "falha ao gerar statistical-crosses").strip()
+        raise RuntimeError(detail[:240])
+    return json.loads(result.stdout)
+
+
 def cancellations_payload():
     """Reaproveita a consolidação do Netlify Function via Node (fonte única)."""
     env = os.environ.copy()
@@ -1107,6 +1166,9 @@ class Handler(SimpleHTTPRequestHandler):
             "/api/financial-updates": ("financial-updates", financial_updates_payload, "Não foi possível consolidar a atualização financeira"),
             "/api/platform-usage": ("platform-usage", platform_usage_payload, "Não foi possível consolidar o uso da plataforma"),
             "/api/support": ("support", support_payload, "Não foi possível consolidar o atendimento"),
+            "/api/ep-performance": ("ep-performance", ep_performance_payload, "Não foi possível consolidar a performance dos EPs"),
+            "/api/pharus-ep-meetings": ("pharus-ep-meetings", pharus_ep_meetings_payload, "Não foi possível consolidar as reuniões do App Pharus"),
+            "/api/statistical-crosses": ("statistical-crosses", statistical_crosses_payload, "Não foi possível consolidar os cruzamentos estatísticos"),
             "/api/cancellations": ("cancellations", cancellations_payload, "Não foi possível consolidar os cancelamentos"),
         }
         if path in protected:
@@ -1118,7 +1180,11 @@ class Handler(SimpleHTTPRequestHandler):
             label, producer, err_msg = protected[path]
             started = datetime.now(timezone.utc)
             try:
-                send_json(self, 200, producer())
+                if path == "/api/statistical-crosses":
+                    qs = urlparse(self.path).query or ""
+                    send_json(self, 200, producer(qs))
+                else:
+                    send_json(self, 200, producer())
                 elapsed_ms = int((datetime.now(timezone.utc) - started).total_seconds() * 1000)
                 print(f"[{label}] endpoint={path} status=200 ms={elapsed_ms}")
             except Exception as exc:

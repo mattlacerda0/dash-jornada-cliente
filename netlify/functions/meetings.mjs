@@ -1,7 +1,22 @@
 ﻿import { requireCorporateAuth } from "./_shared/auth.mjs";
 import { dataConfigurationError } from "./_shared/env.mjs";
+import {
+  applyFirstMeetingFallbackToClientRows,
+  loadAirtableFirstMeetingIndex,
+} from "./_shared/first-meeting-fallback.mjs";
+import {
+  ANALYTICAL_CANCEL_SELECT,
+  ANALYTICAL_CANCEL_FIELDS,
+  buildAnalyticalCancellationMap,
+  resolveAnalyticalStatusFromMaps,
+} from "./_shared/analytical-cancellation.mjs";
+import {
+  normalizeMeetingEventType,
+} from "./_shared/meeting-event-type.mjs";
+import { loadMeetingTypesFromCsv } from "./_shared/meeting-types-csv.mjs";
 
-const CLIENT_SELECT = "id,codigo,name,engenheiro_patrimonial,data_inicio_ciclo,created_at";
+const CLIENT_SELECT =
+  "id,codigo,name,status,engenheiro_patrimonial,data_inicio_ciclo,created_at,cpf,cpf_digits,email,phone,phone_digits";
 const CALENDLY_SELECT =
   "id,client_id,calendly_event_uri,event_name,start_time,end_time,host_email,manually_linked";
 const MANUAL_SELECT =
@@ -9,14 +24,17 @@ const MANUAL_SELECT =
 const ATTENDANCE_SELECT =
   "calendly_event_uri,status,remarcado,link_gravacao,created_at,updated_at";
 const IMPL_SELECT = "client_id,meeting_date,source";
+const CANCEL_SELECT = ANALYTICAL_CANCEL_SELECT;
 
 const USED_FIELDS = [
   { table: "clients", column: "id", role: "clientId" },
   { table: "clients", column: "codigo", role: "clientCode" },
   { table: "clients", column: "name", role: "clientName" },
+  { table: "clients", column: "status", role: "clientStatus" },
   { table: "clients", column: "engenheiro_patrimonial", role: "engineer" },
   { table: "clients", column: "data_inicio_ciclo", role: "entryDateCycleStart" },
   { table: "clients", column: "created_at", role: "entryDateFallback" },
+  ...ANALYTICAL_CANCEL_FIELDS,
   { table: "client_meetings", column: "id", role: "meetingId" },
   { table: "client_meetings", column: "client_id", role: "meetingClient" },
   { table: "client_meetings", column: "calendly_event_uri", role: "externalUri" },
@@ -58,6 +76,12 @@ const INTERVAL_BANDS = [
   "61 a 90 dias",
   "Mais de 90 dias",
   "Sem intervalo calculável",
+];
+const NO_SHOW_FREQUENCY_BANDS = [
+  { key: "zero", label: "0 no-shows", minimum: 0, maximum: 0 },
+  { key: "one_to_two", label: "1–2 no-shows", minimum: 1, maximum: 2 },
+  { key: "three_to_four", label: "3–4 no-shows", minimum: 3, maximum: 4 },
+  { key: "five_or_more", label: "5 ou mais no-shows", minimum: 5, maximum: null },
 ];
 
 function configurationError() {
@@ -398,14 +422,38 @@ function isPastMeeting(meeting, now) {
   return Boolean(start && start <= now);
 }
 
-function buildPayload(clients, calendlyRows, manualRows, attendanceRows, implRows) {
+/** Faixas de frequência de no-show por cliente (universo = rows). */
+export function buildNoShowFrequency(clientRows) {
+  const universe = Array.isArray(clientRows) ? clientRows.length : 0;
+  const counts = Object.fromEntries(NO_SHOW_FREQUENCY_BANDS.map((b) => [b.key, 0]));
+  for (const client of clientRows || []) {
+    const n = Number(client.absences) || 0;
+    let key = "five_or_more";
+    if (n <= 0) key = "zero";
+    else if (n <= 2) key = "one_to_two";
+    else if (n <= 4) key = "three_to_four";
+    counts[key] += 1;
+  }
+  return NO_SHOW_FREQUENCY_BANDS.map((band) => {
+    const clients = counts[band.key] || 0;
+    return {
+      ...band,
+      clients,
+      percentage: universe > 0 ? Math.round((clients / universe) * 1000) / 10 : 0,
+    };
+  });
+}
+
+function buildPayload(clients, calendlyRows, manualRows, attendanceRows, implRows, cancellations = [], airtableIndex = null) {
   const qualityWarnings = [
     "crm_meetings excluído da consolidação (somente lead_id, sem vínculo confiável com clients.id).",
     "Status observados em meeting_attendance.status: compareceu, nao_compareceu, pendente, remarcado. Nenhuma categoria de cancelamento encontrada; cancelamentos não entram na taxa de comparecimento.",
+    "Os dados estruturados de remarcações possuem cobertura parcial.",
   ];
   const { map: attendanceMap } = buildAttendanceMap(attendanceRows);
   const { meetings, duplicateSkips } = consolidateMeetings(calendlyRows, manualRows, attendanceMap);
   if (duplicateSkips) qualityWarnings.push(`${duplicateSkips} reuniões potencialmente duplicadas foram deduplicadas.`);
+  const { map: cancelMap } = buildAnalyticalCancellationMap(cancellations);
 
   const meetingUris = new Set(meetings.map((m) => m.externalUri).filter(Boolean));
   let orphanAttendance = 0;
@@ -443,6 +491,28 @@ function buildPayload(clients, calendlyRows, manualRows, attendanceRows, implRow
     const clientId = String(client.id);
     const entry = resolveClientEntry(client);
     const entryDate = entry.date;
+    const cancelInfo = cancelMap.get(clientId) || null;
+    const analyticalStatus = resolveAnalyticalStatusFromMaps(client?.status, cancelInfo);
+    if (
+      (process.env.PORTAL_INTERNAL_DATA_RUN === "1" || process.env.NODE_ENV !== "production")
+      && analyticalStatus === "Não informado"
+      && (byClient.get(clientId) || []).length > 0
+    ) {
+      if (!globalThis.__meetingsStatusDebugCount) globalThis.__meetingsStatusDebugCount = 0;
+      if (globalThis.__meetingsStatusDebugCount < 15) {
+        globalThis.__meetingsStatusDebugCount += 1;
+        console.debug("[meetings:status]", {
+          clientId,
+          found: true,
+          rawStatus: client?.status ?? null,
+          analyticalStatus,
+          cancelInfo: cancelInfo
+            ? { churn: cancelInfo.churnEfetivadoAt || null, distrato: cancelInfo.distratoAssinadoAt || null }
+            : null,
+          reason: !client?.status ? "status bruto vazio" : "normalização resultou em Não informado",
+        });
+      }
+    }
     const rawMeetings = (byClient.get(clientId) || [])
       .slice()
       .sort((a, b) => (parseDate(a.startTime)?.getTime() || 0) - (parseDate(b.startTime)?.getTime() || 0));
@@ -595,10 +665,14 @@ function buildPayload(clients, calendlyRows, manualRows, attendanceRows, implRow
       clientCode: blankToNull(client.codigo),
       clientName: blankToNull(client.name) || "Não informado",
       engineer: labelOrUnknown(client.engenheiro_patrimonial),
+      rawStatus: blankToNull(client.status),
+      analyticalStatus,
+      clientStatus: analyticalStatus,
       entryDate: entryDate ? entryDate.toISOString() : null,
       entryDateSource: entry.source,
       totalMeetings: annotatedMeetings.filter((m) => m.meetingDateStatus !== "before_client_entry" && m.meetingDateStatus !== "invalid").length,
       journeyMeetingsCount: journeyMeetings.length,
+      hasValidMeeting: journeyMeetings.length > 0,
       preEntryMeetingsCount: annotatedMeetings.filter((m) => m.meetingDateStatus === "before_client_entry").length,
       meetingsPerMonth,
       lastMeetingDate,
@@ -617,17 +691,24 @@ function buildPayload(clients, calendlyRows, manualRows, attendanceRows, implRow
       daysSinceBand: daysSinceBand(daysSinceLastMeeting),
       intervalBand: intervalBand(averageIntervalDays),
       dataWarnings: [...new Set(dataWarnings)],
-      meetings: annotatedMeetings.map((m) => ({
-        meetingId: m.meetingId,
-        source: m.source,
-        title: m.title,
-        startTime: m.startTime,
-        endTime: m.endTime,
-        attendanceStatus: m.attendanceStatus,
-        rescheduled: m.rescheduled,
-        recordingUrl: m.recordingUrl,
-        meetingDateStatus: m.meetingDateStatus,
-      })),
+      meetings: annotatedMeetings.map((m) => {
+        const typeInfo = normalizeMeetingEventType(m.title);
+        return {
+          meetingId: m.meetingId,
+          source: m.source,
+          title: m.title,
+          rawEventType: typeInfo.rawEventType,
+          meetingFamily: typeInfo.meetingFamily,
+          productContext: typeInfo.productContext,
+          normalizedLabel: typeInfo.normalizedLabel,
+          startTime: m.startTime,
+          endTime: m.endTime,
+          attendanceStatus: m.attendanceStatus,
+          rescheduled: m.rescheduled,
+          recordingUrl: m.recordingUrl,
+          meetingDateStatus: m.meetingDateStatus,
+        };
+      }),
     });
   }
 
@@ -635,6 +716,34 @@ function buildPayload(clients, calendlyRows, manualRows, attendanceRows, implRow
     qualityWarnings.push(
       `${preEntryMeetingsCount} reuniões anteriores à entrada do cliente (${clientsWithPreEntry.size} clientes). Excluídas de primeira reunião, intervalo e dias desde a última.`,
     );
+  }
+
+  let fallbackMeta = null;
+  if (airtableIndex) {
+    const { resolutions, warnings: fallbackWarnings, coverage } = applyFirstMeetingFallbackToClientRows(
+      clientRows,
+      clients,
+      airtableIndex,
+    );
+    for (const row of clientRows) {
+      if (row.firstMeetingSource !== "airtable" || !row.firstMeetingDate) continue;
+      const entryDate = parseDate(row.entryDate);
+      const meetingDate = parseDate(row.firstMeetingDate);
+      if (entryDate && meetingDate) {
+        const days = daysBetween(entryDate, meetingDate);
+        if (days >= 0) row.daysFromEntryToFirstMeeting = days;
+      }
+    }
+    if (fallbackWarnings?.length) qualityWarnings.push(...fallbackWarnings);
+    fallbackMeta = {
+      available: airtableIndex.available === true,
+      reason: airtableIndex.reason || null,
+      schema: airtableIndex.meta?.schema || null,
+      coverage,
+      resolutionsCount: resolutions.length,
+      statusValues: airtableIndex.statusValues || [],
+      meta: airtableIndex.meta || null,
+    };
   }
 
   /** Reuniões usadas em KPIs/gráficos: exclui anteriores à entrada e inválidas. */
@@ -654,8 +763,8 @@ function buildPayload(clients, calendlyRows, manualRows, attendanceRows, implRow
     ? Math.round((analyticMeetings.length / monthsBetween(datedMeetings[0], datedMeetings[datedMeetings.length - 1])) * 10) / 10
     : null;
 
-  const withFirst = clientRows.filter((c) => c.firstMeetingCompleted === true).length;
-  const withoutFirst = clientRows.filter((c) => c.firstMeetingCompleted === false).length;
+  let withFirst = clientRows.filter((c) => c.firstMeetingCompleted === true).length;
+  let withoutFirst = clientRows.filter((c) => c.firstMeetingCompleted === false).length;
   const portfolio = clientRows.length || 1;
   const relatedMeetings = meetings.length || 1;
   const preEntryPercent = Math.round((preEntryMeetingsCount / relatedMeetings) * 1000) / 10;
@@ -706,20 +815,62 @@ function buildPayload(clients, calendlyRows, manualRows, attendanceRows, implRow
     return m.attendanceStatus === "compareceu" || m.attendanceStatus === "nao_compareceu";
   });
   const attendedClassifiable = classifiablePast.filter((m) => m.attendanceStatus === "compareceu").length;
-  const attendanceRate =
-    classifiablePast.length > 0
-      ? Math.round((attendedClassifiable / classifiablePast.length) * 1000) / 10
-      : null;
+
+  // Taxa de comparecimento (regra de negócio):
+  // elegíveis = total − futuras − canceladas
+  // noShowRate = noShows / elegíveis
+  // attendanceRate = 1 − noShowRate
+  const futureMeetings = analyticMeetings.filter((m) => {
+    const start = parseDate(m.startTime);
+    return Boolean(start && start > now);
+  }).length;
+  const cancelledMeetingsCount = analyticMeetings.filter((m) => m.attendanceStatus === "cancelada").length;
+  const eligibleMeetings = Math.max(0, analyticMeetings.length - futureMeetings - cancelledMeetingsCount);
+  const noShowsEligible = analyticMeetings.filter((m) => {
+    const start = parseDate(m.startTime);
+    if (!start || start > now) return false;
+    if (m.attendanceStatus === "cancelada") return false;
+    return m.attendanceStatus === "nao_compareceu";
+  }).length;
+  const attendedConfirmed = analyticMeetings.filter((m) => {
+    const start = parseDate(m.startTime);
+    if (!start || start > now) return false;
+    if (m.attendanceStatus === "cancelada") return false;
+    return m.attendanceStatus === "compareceu";
+  }).length;
+  // Comparecimentos (regra de negócio) = elegíveis − no-shows
+  const attendedMeetings = eligibleMeetings > 0
+    ? Math.max(0, eligibleMeetings - noShowsEligible)
+    : 0;
+  const noShowRate = eligibleMeetings > 0
+    ? Math.round((noShowsEligible / eligibleMeetings) * 1000) / 10
+    : null;
+  const attendanceRate = eligibleMeetings > 0
+    ? Math.round((1 - noShowsEligible / eligibleMeetings) * 1000) / 10
+    : null;
+  const attendanceRateConfirmed = classifiablePast.length > 0
+    ? Math.round((attendedClassifiable / classifiablePast.length) * 1000) / 10
+    : null;
+
+  const meetingTypesFromCsv = loadMeetingTypesFromCsv();
 
   const daysSinceValues = clientRows.map((c) => c.daysSinceLastMeeting).filter((v) => v != null && v >= 0);
   const intervalValues = clientRows
-    .map((c) => c.typicalIntervalDays ?? c.averageIntervalDays)
+    .map((c) => c.averageIntervalDays)
     .filter((v) => v != null && v >= 0);
   const daysSinceStats = robustStats(daysSinceValues);
   const intervalStats = robustStats(intervalValues);
+  const clientsWithMeeting = clientRows.filter((c) => c.hasValidMeeting === true).length;
+  const noShowFrequency = buildNoShowFrequency(clientRows);
 
   const summary = {
     totalMeetings: analyticMeetings.length,
+    futureMeetings,
+    cancelledMeetings: cancelledMeetingsCount,
+    eligibleMeetings,
+    attendedMeetings,
+    comparecimentos: attendedMeetings,
+    attendedConfirmed,
     averageMeetingsPerMonth,
     averageDaysSinceLastMeeting: daysSinceStats.mean,
     typicalDaysSinceLastMeeting: daysSinceStats.median,
@@ -729,13 +880,27 @@ function buildPayload(clients, calendlyRows, manualRows, attendanceRows, implRow
     intervalDaysStats: intervalStats,
     totalAbsences: clientRows.reduce((a, c) => a + c.absences, 0),
     totalNoShows: clientRows.reduce((a, c) => a + c.absences, 0),
+    noShowsEligible,
+    noShowRate,
     totalReschedules: clientRows.reduce((a, c) => a + c.reschedules, 0),
     attendanceRate,
+    attendanceRateConfirmed,
+    attendanceInsufficientData: eligibleMeetings <= 0,
+    clientsWithMeeting,
     clientsWithFirstMeeting: withFirst,
     clientsWithoutFirstMeeting: withoutFirst,
     firstMeetingCompletionRate: Math.round((withFirst / portfolio) * 1000) / 10,
+    meetingCoverageRate: Math.round((clientsWithMeeting / portfolio) * 1000) / 10,
     preEntryMeetingsExcluded: preEntryMeetingsCount,
     clientsWithPreEntryMeetings: clientsWithPreEntry.size,
+    firstMeetingSources: fallbackMeta
+      ? {
+          base_qv: fallbackMeta.coverage?.primary || 0,
+          airtable: fallbackMeta.coverage?.airtable || 0,
+          unavailable: fallbackMeta.coverage?.unavailable || 0,
+        }
+      : null,
+    airtableFallback: fallbackMeta,
   };
 
   const distributions = {
@@ -753,6 +918,7 @@ function buildPayload(clients, calendlyRows, manualRows, attendanceRows, implRow
     meetingFrequency: distributionFrom(clientRows, (c) => c.frequencyBand, FREQ_BANDS),
     daysSinceLastMeeting: distributionFrom(clientRows, (c) => c.daysSinceBand, DAYS_SINCE_BANDS),
     intervalRanges: distributionFrom(clientRows, (c) => c.intervalBand, INTERVAL_BANDS),
+    noShowFrequency,
     meetingsByEngineer: (() => {
       const counts = new Map();
       for (const client of clientRows) {
@@ -774,7 +940,26 @@ function buildPayload(clients, calendlyRows, manualRows, attendanceRows, implRow
     generatedAt: new Date().toISOString(),
     summary,
     distributions,
+    noShowFrequency,
+    meetingTypesFromCsv,
     clients: clientRows,
+    metadata: {
+      source: "BASE QV",
+      rescheduleCoverage: "partial",
+      rescheduleCoverageNote:
+        "Cobertura parcial: este valor considera apenas remarcações registradas de forma estruturada e pode não representar o total real.",
+      noShowFrequencyUniverse: clientRows.length,
+      intervalPrimaryMetric: "averageIntervalDays",
+      intervalPrimaryDefinition: "Média aritmética dos intervalos positivos entre reuniões válidas consecutivas (compareceu).",
+      noShowSource: "public.meeting_attendance.status",
+      csvNoShowCoverage: meetingTypesFromCsv?.metadata?.csvNoShowCoverage ?? 0,
+      csvReference: "filtered-event-data-from-20250731-to-20260730.csv (somente gráfico de tipos; não é fonte de no-show nem de KPIs)",
+      meetingTypesChartSource: "csv",
+      meetingTypesChartNote:
+        "O gráfico Reuniões por tipo usa exclusivamente o CSV de tipos; os demais indicadores usam BASE QV.",
+      attendanceRateFormula: "1 - (noShows / (totalMeetings - futureMeetings - cancelledMeetings))",
+      eventTypeSourceOperational: "client_meetings.event_name / manual_meetings.title",
+    },
     quality: {
       usedFields: USED_FIELDS,
       warnings: qualityWarnings,
@@ -784,7 +969,7 @@ function buildPayload(clients, calendlyRows, manualRows, attendanceRows, implRow
         clientsImpacted: clientsWithPreEntry.size,
         excludedFromFirstMeetingCandidates: preEntryExcludedFromFirst,
         impact:
-          "Excluídas de primeira reunião, intervalo típico, dias desde a última, médias/medianas e faixas de distribuição.",
+          "Excluídas de primeira reunião, intervalo médio, dias desde a última, médias/medianas e faixas de distribuição.",
       },
     },
   };
@@ -798,14 +983,25 @@ export async function computeMeetingsPayload() {
     err.code = "config";
     throw err;
   }
-  const [clients, calendlyRows, manualRows, attendanceRows, implRows] = await Promise.all([
+  const [clients, calendlyRows, manualRows, attendanceRows, implRows, cancellations, airtableIndex] = await Promise.all([
     fetchAll("clients", CLIENT_SELECT),
     fetchAll("client_meetings", CALENDLY_SELECT),
     fetchAll("manual_meetings", MANUAL_SELECT),
     fetchAll("meeting_attendance", ATTENDANCE_SELECT),
     fetchAll("client_implementation_meeting_date", IMPL_SELECT, "client_id.asc"),
+    fetchAll("cancellations", CANCEL_SELECT),
+    loadAirtableFirstMeetingIndex().catch((err) => ({
+      available: false,
+      reason: err?.message || "Falha ao carregar índice Airtable.",
+      clientsByKey: null,
+      meetingsByBackupId: null,
+      statusValues: [],
+      warnings: [],
+      meta: null,
+    })),
   ]);
-  return buildPayload(clients, calendlyRows, manualRows, attendanceRows, implRows);
+
+  return buildPayload(clients, calendlyRows, manualRows, attendanceRows, implRows, cancellations, airtableIndex);
 }
 
 export default async (request) => {

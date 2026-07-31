@@ -30,7 +30,7 @@ const FINANCIAL_SEGMENT_SOURCES = [
 ];
 const MEETING_ATTENDANCE_STATUS = { schema: SUPABASE, table: "meeting_attendance", column: "status" };
 const MECHANISM_STATUS = { schema: SUPABASE, table: "client_mecanismos", column: "status" };
-const ACIONAMENTOS_ID = { schema: "research", table: "acionamentos", column: "id" };
+const ACIONAMENTOS_ID = { schema: "research", table: "v_acionamentos_tratados", column: "id" };
 
 function segCount(payload, label) {
   const found = (payload?.distributions?.segments || []).find((s) => s.label === label);
@@ -189,25 +189,67 @@ export const METRICS = {
   identified_support_clients: {
     source: "support",
     label: "Clientes identificados",
-    sources: [
-      { schema: "research", table: "acionamentos", column: "client_found" },
-      { schema: "research", table: "acionamentos", column: "client_id" },
-    ],
+    sources: [{ schema: "research", table: "v_acionamentos_tratados", column: "baseqv_client_id" }],
     value: (p) => p.summary.identifiedClients,
+  },
+  tickets_with_identified_client: {
+    source: "support",
+    label: "Acionamentos com cliente identificado",
+    sources: [{ schema: "research", table: "v_acionamentos_tratados", column: "baseqv_client_id" }],
+    value: (p) => p.summary.ticketsWithClient,
+  },
+  support_identification_coverage: {
+    source: "support",
+    label: "Cobertura de identificação (%)",
+    sources: [{ schema: "research", table: "v_acionamentos_tratados", column: "baseqv_client_id" }],
+    value: (p) => p.summary.identificationCoverage,
   },
   unidentified_support_clients: {
     source: "support",
-    label: "Clientes não identificados",
-    sources: [
-      { schema: "research", table: "acionamentos", column: "client_found" },
-      { schema: "research", table: "acionamentos", column: "client_id" },
-    ],
-    value: (p) => p.summary.unidentifiedClients,
+    label: "Acionamentos sem cliente identificado",
+    sources: [{ schema: "research", table: "v_acionamentos_tratados", column: "baseqv_client_id" }],
+    value: (p) => p.summary.ticketsWithoutClient,
+  },
+  support_identified_from_description: {
+    source: "support",
+    label: "Identificados pela descrição",
+    sources: [{ schema: "research", table: "v_acionamentos_qualidade_email", column: "clientes_identificados_pela_descricao" }],
+    value: (p) => p.summary.identifiedFromDescription,
+  },
+  support_corporate_email_tickets: {
+    source: "support",
+    label: "E-mail corporativo no campo",
+    sources: [{ schema: "research", table: "v_acionamentos_tratados", column: "email_campo_corporativo" }],
+    value: (p) => p.summary.corporateEmailTickets,
+  },
+  support_multiple_clients_tickets: {
+    source: "support",
+    label: "Acionamentos com múltiplos clientes",
+    sources: [{ schema: "research", table: "v_acionamentos_qualidade_email", column: "com_multiplos_clientes_encontrados" }],
+    value: (p) => p.summary.ticketsWithMultipleClients,
+  },
+  support_unmatched_emails: {
+    source: "support",
+    label: "E-mails sem correspondência",
+    sources: [{ schema: "research", table: "v_acionamentos_qualidade_email", column: "email_cliente_sem_match_baseqv" }],
+    value: (p) => p.summary.unmatchedEmailTickets,
+  },
+  support_needs_reprocessing: {
+    source: "support",
+    label: "Precisam de reprocessamento",
+    sources: [{ schema: "research", table: "v_acionamentos_tratados", column: "precisa_reprocessar" }],
+    value: (p) => p.summary.needsReprocessing,
+  },
+  top_support_clients: {
+    source: "support",
+    label: "Clientes com mais acionamentos",
+    sources: [{ schema: "research", table: "v_acionamentos_tratados", column: "baseqv_client_id" }],
+    value: (p) => (p.clientsWithMostTickets || []).slice(0, 5).map((c) => `${c.clientName} (${c.clientCode || "s/ cód."}): ${c.ticketCount}`).join("; ") || null,
   },
   top_support_area: {
     source: "support",
     label: "Área com mais acionamentos",
-    sources: [{ schema: "research", table: "acionamentos", column: "area_setor" }],
+    sources: [{ schema: "research", table: "v_acionamentos_tratados", column: "area_setor" }],
     value: (p) => p.summary.topArea,
   },
 };

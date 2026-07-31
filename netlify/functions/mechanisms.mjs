@@ -773,38 +773,100 @@ function buildPayload(clients, cmRows, mechanisms, cancellations = [], financial
     }))
     .sort((a, b) => b.clientsLinked - a.clientsLinked || a.name.localeCompare(b.name, "pt-BR"));
 
-  // Análise por EP
+  // Análise por EP — denominador = carteira total do EP (com e sem mecanismo)
+  const portfolioEp = new Map();
+  for (const client of clients) {
+    const eng = blankToNull(client.engenheiro_patrimonial) || "Não informado";
+    const cancelInfo = cancelMap.get(String(client.id)) || null;
+    const st = resolveAnalyticalStatus(client?.status, cancelInfo?.date || null);
+    const cur = portfolioEp.get(eng) || {
+      engineer: eng,
+      totalClients: 0,
+      byStatus: {},
+    };
+    cur.totalClients += 1;
+    cur.byStatus[st] = (cur.byStatus[st] || 0) + 1;
+    portfolioEp.set(eng, cur);
+  }
+
   const epMap = new Map();
+  for (const [eng, port] of portfolioEp.entries()) {
+    epMap.set(eng, {
+      engineer: eng,
+      totalClients: port.totalClients,
+      byStatus: { ...port.byStatus },
+      clientsWithImplemented: 0,
+      implementations: 0,
+      implementedTypeIds: new Set(),
+      links: 0,
+      firstDays: [],
+    });
+  }
   for (const c of clientRows) {
     const key = c.engineer || "Não informado";
-    const cur = epMap.get(key) || {
-      engineer: key,
-      clients: 0,
-      links: 0,
-      implemented: 0,
-      firstDays: [],
-    };
-    cur.clients += 1;
-    cur.links += c.available;
-    cur.implemented += c.implemented;
+    let cur = epMap.get(key);
+    if (!cur) {
+      cur = {
+        engineer: key,
+        totalClients: 0,
+        byStatus: {},
+        clientsWithImplemented: 0,
+        implementations: 0,
+        implementedTypeIds: new Set(),
+        links: 0,
+        firstDays: [],
+      };
+      epMap.set(key, cur);
+    }
+    cur.links += c.available || 0;
+    if ((c.implemented || 0) > 0) {
+      cur.clientsWithImplemented += 1;
+      cur.implementations += c.implemented;
+      for (const m of c.mechanisms || []) {
+        if (m.status === "Implementado" && m.mechanismId) {
+          cur.implementedTypeIds.add(String(m.mechanismId));
+        }
+      }
+    }
     if (c.daysToFirstImplementation != null && c.daysToFirstImplementation >= 0) {
       cur.firstDays.push(c.daysToFirstImplementation);
     }
-    epMap.set(key, cur);
   }
+
   const byEngineer = [...epMap.values()]
-    .map((row) => ({
-      engineer: row.engineer,
-      clients: row.clients,
-      links: row.links,
-      implemented: row.implemented,
-      implementationPercent: row.links
-        ? Math.round((row.implemented / row.links) * 1000) / 10
-        : null,
-      typicalDaysToFirstImplementation: robustStats(row.firstDays).median,
-      sampleSmall: row.clients < 5,
-    }))
-    .sort((a, b) => b.links - a.links || a.engineer.localeCompare(b.engineer, "pt-BR"));
+    .map((row) => {
+      const clientsWithoutImplemented = Math.max(0, row.totalClients - row.clientsWithImplemented);
+      const portfolioPercent = row.totalClients
+        ? Math.round((row.clientsWithImplemented / row.totalClients) * 1000) / 10
+        : null;
+      const typesImplemented = row.implementedTypeIds.size;
+      return {
+        engineer: row.engineer,
+        totalClients: row.totalClients,
+        clients: row.totalClients,
+        clientsWithImplemented: row.clientsWithImplemented,
+        clientsWithoutImplemented,
+        portfolioImplementationPercent: portfolioPercent,
+        implementationPercent: portfolioPercent,
+        implementations: row.implementations,
+        implemented: row.implementations,
+        distinctImplementedTypes: typesImplemented,
+        typesImplemented,
+        links: row.links,
+        linkImplementationPercent: row.links
+          ? Math.round((row.implementations / row.links) * 1000) / 10
+          : null,
+        typicalDaysToFirstImplementation: robustStats(row.firstDays).median,
+        sampleSmall: row.totalClients < 5,
+        byStatus: row.byStatus,
+        note: "O vínculo utiliza o EP atualmente associado ao cliente.",
+      };
+    })
+    .sort((a, b) =>
+      (b.portfolioImplementationPercent ?? -1) - (a.portfolioImplementationPercent ?? -1)
+      || b.clientsWithImplemented - a.clientsWithImplemented
+      || a.engineer.localeCompare(b.engineer, "pt-BR")
+    );
 
   // Análise por segmento
   const segMap = new Map(SEGMENT_ORDER.map((s) => [s, {
@@ -923,8 +985,13 @@ function buildPayload(clients, cmRows, mechanisms, cancellations = [], financial
       topRecommended,
       typeStats,
       byEngineer,
+      byAdvisor: byEngineer,
       bySegment,
       engineers: distributionFrom(clientRows, (c) => c.engineer),
+    },
+    metadata: {
+      source: "BASE QV",
+      epRelationNote: "O vínculo utiliza o EP atualmente associado ao cliente.",
     },
     catalog: {
       mechanisms: mechanisms.map((m) => ({
@@ -942,7 +1009,7 @@ function buildPayload(clients, cmRows, mechanisms, cancellations = [], financial
     clients: clientRows.sort((a, b) => a.clientName.localeCompare(b.clientName, "pt-BR")),
     quality: {
       usedFields: USED_FIELDS,
-      warnings: qualityWarnings,
+      warnings: [...new Set(qualityWarnings.map((w) => String(w).trim()).filter(Boolean))],
       notes: qualityNotes,
       dedupeRule: "client_id+mecanismo_id; preferência created_at desc → implemented_at desc → id (sem updated_at na tabela)",
       meta: {

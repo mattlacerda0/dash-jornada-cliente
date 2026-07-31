@@ -1,0 +1,337 @@
+﻿{
+  "nps": {
+    "n": 291,
+    "min": 0,
+    "max": 10,
+    "distinct_clients": 289
+  },
+  "tipo": {
+    "NPS": 289,
+    "NPSAgradecemos muito pela sua colabora├º├úo!": 1,
+    "NPS/": 1
+  },
+  "join": {
+    "withEp": 98,
+    "withoutEp": 193,
+    "noClient": 0,
+    "eps_with_responses": 21,
+    "below_5_responses": 13,
+    "responses_per_ep_top": [
+      [
+        "Gustavo Papeschi Mariano",
+        16
+      ],
+      [
+        "Willian Oliveira Schimidt",
+        12
+      ],
+      [
+        "Rodrigo Amorim",
+        7
+      ],
+      [
+        "Gabriel Oliveira",
+        7
+      ],
+      [
+        "Cleuber Anicesio",
+        7
+      ],
+      [
+        "N├¡colas Alves",
+        7
+      ],
+      [
+        "Thiago Henrique Trova",
+        7
+      ],
+      [
+        "Hendrick Dorner",
+        5
+      ],
+      [
+        "Carlos Serafim",
+        4
+      ],
+      [
+        "Jo├úo Aliceda",
+        4
+      ],
+      [
+        "Tales Salinas Rozo",
+        3
+      ],
+      [
+        "Abner Braga",
+        2
+      ]
+    ]
+  },
+  "anteriores": {
+    "filled": 54,
+    "sample": [
+      {
+        "id": "a5710e72-00f6-4292-8b6a-173ae3447c96",
+        "current": "Nelson Marques",
+        "anteriores": [
+          {
+            "name": "Ariel Phelipe Zocoli",
+            "changed_at": "2026-07-08T19:34:52.465285+00:00"
+          }
+        ],
+        "type": "object"
+      },
+      {
+        "id": "7ef40de7-6eae-4428-9fe4-eea2d976766a",
+        "current": "Carlos Serafim",
+        "anteriores": [
+          {
+            "name": "Leonardo Palaver Pereira",
+            "changed_at": "2026-04-05T02:58:41.585782+00:00"
+          }
+        ],
+        "type": "object"
+      },
+      {
+        "id": "484d576b-bccd-4204-bd0b-c42c630f0aec",
+        "current": "Julio Cienkonog",
+        "anteriores": [
+          {
+            "name": "Samuel Ara├║jo",
+            "changed_at": "2026-03-11T18:15:35.770625+00:00"
+          }
+        ],
+        "type": "object"
+      },
+      {
+        "id": "72346411-d59c-4eea-9e03-633b8bb416be",
+        "current": "Abner Braga",
+        "anteriores": [
+          {
+            "name": "Elenice Solovy",
+            "changed_at": "2026-07-29T12:52:27.508272+00:00"
+          }
+        ],
+        "type": "object"
+      },
+      {
+        "id": "d830892c-4099-4391-bd12-57357b6c22e3",
+        "current": "Hendrick Dorner",
+        "anteriores": [
+          {
+            "name": "Leonardo Palaver Pereira",
+            "changed_at": "2026-04-05T03:06:49.712987+00:00"
+          }
+        ],
+        "type": "object"
+      }
+    ]
+  },
+  "cm_impl": 516,
+  "cm_concluido": 230,
+  "cm_status": {
+    "concluido": 230,
+    "apto": 248,
+    "iniciado": 38
+  },
+  "cm_cols": [
+    "id",
+    "client_id",
+    "mecanismo_id",
+    "implemented_at",
+    "source",
+    "window_id",
+    "notes",
+    "created_by",
+    "created_at",
+    "sequence",
+    "status",
+    "no_plano",
+    "valor_aplicado",
+    "custom_fields",
+    "motivo_nao_implementado"
+  ],
+  "mech_ep": {
+    "note": "Atribui├º├úo via EP atual do cliente (client_mecanismos sem coluna EP)",
+    "distinct_impl_clients": 136,
+    "with_current_ep": 44,
+    "by_ep_top": [
+      [
+        "Gustavo Papeschi Mariano",
+        26
+      ],
+      [
+        "Eduardo Peroni",
+        7
+      ],
+      [
+        "Julio Cienkonog",
+        4
+      ],
+      [
+        "Rodrigo Amorim",
+        3
+      ],
+      [
+        "Cleuber Anicesio",
+        1
+      ],
+      [
+        "Gabriel Oliveira",
+        1
+      ],
+      [
+        "Lucas Barrientos",
+        1
+      ],
+      [
+        "N├¡colas Alves",
+        1
+      ]
+    ]
+  },
+  "cancel": {
+    "rows": 1,
+    "confirmed_clients": 0,
+    "pedido_only": 0,
+    "intencao_only": 0
+  },
+  "meet_cm": {
+    "ok": true,
+    "total": 6285,
+    "cols": [
+      "id",
+      "client_id",
+      "calendly_event_uri",
+      "event_name",
+      "start_time",
+      "end_time",
+      "host_email",
+      "invitee_name",
+      "invitee_email",
+      "location_url",
+      "created_at",
+      "manually_linked"
+    ],
+    "sample": {
+      "id": "c6cbc97a-ba8c-4be5-9173-7c5a833645ab",
+      "client_id": "3860cdfa-aa8b-4904-90ca-37e67d03dbd5",
+      "calendly_event_uri": "manual:a62f4f51-623c-4609-8d03-f288fcf907be",
+      "event_name": "Checkpoint 2 | QV",
+      "start_time": "2026-07-01T19:00:00+00:00",
+      "end_time": "2026-07-01T20:00:00+00:00",
+      "host_email": "rodrigoamorim@quartavia.com.br",
+      "invitee_name": "Alcides Cavasini Neto",
+      "invitee_email": "netocavasini@gmail.com",
+      "location_url": "",
+      "created_at": "2026-05-26T19:54:02.024172+00:00",
+      "manually_linked": true
+    },
+    "error": null
+  },
+  "meet_man": {
+    "ok": true,
+    "total": 1050,
+    "cols": [
+      "id",
+      "title",
+      "description",
+      "start_time",
+      "end_time",
+      "location",
+      "notes",
+      "created_by",
+      "created_at",
+      "updated_at",
+      "client_id",
+      "client_name",
+      "google_event_id",
+      "recurrence_group_id"
+    ],
+    "sample": {
+      "id": "38ea1cd3-8e21-4879-801a-d50bc063f95e",
+      "title": "Diagn├│stico Pharus - Flavia Takeda",
+      "description": "30 de mar. de 2026\nDiagn├│stico Pharus - Flavia Takeda\nConvidados  Cleuber Aparecido\nAnexos Diagn├│stico Pharus - Flavia Takeda \nRegistros da reuni├úo Grava├º├úo \n\nResumo\nO diagn├│stico b├┤nus focou na compreens├úo dos objetivos financeiros e desafios de fluxo de caixa da cliente, com ├¬nfase na otimiza├º├úo de d├¡vidas e no planejamento de ativos imobili├írios, como o apartamento na planta.\n\nApresenta├º├úo e Metas Financeiras\nA cliente expressou o desejo de criar uma renda passiva, devido ├á dificuldade em economizar e ├á lentid├úo em investimentos b├ísicos. O programa Faros se prop├┤s a ser um diagn├│stico b├┤nus para entender melhor os desafios e objetivos da cliente.\n\nAn├ílise da Situa├º├úo Financeira\nA renda combinada do casal ├® de aproximadamente R$ 27.000, mas o fluxo de caixa est├í comprometido com parcelas de cons├│rcio, financiamento de carro, e d├¡vidas de cart├úo de cr├®dito. O principal desafio ├® a otimiza├º├úo do fluxo de pagamento, j├í que o saldo mensal ├® pr├│ximo de zero.\n\nEstrat├®gias de Otimiza├º├úo e Ativos\nO programa Faros abordar├í o fluxo de caixa com a estrutura OBZ e a 'trinca de cart├Áes', enquanto o engenheiro patrimonial analisar├í o apartamento na planta para decidir se ├® melhor vender (valor de R$ 1 milh├úo) ou alugar. O programa tamb├®m se concentrar├í em estrat├®gias de ganho de capital para clientes de perfil conservador.\n\nDetalhes\nIntrodu├º├úo e Motiva├º├úo para o Programa Faros: A reuni├úo come├ºou com Cleuber Aparecido e Flavia Takeda apresentando-se brevemente, onde Flavia expressou seu desejo de criar uma renda passiva para o futuro, devido ├á dificuldade de guardar dinheiro e n├úo querer depender do governo. Ela observou que, embora investimentos b├ísicos como Renda Fixa e Tesouro Nacional sejam acess├¡veis, o processo para obter resultados significativos ├® lento. Cleuber Aparecido, que ├® formado em administra├º├úo com MBA em gest├úo de projetos e faz parte do time de coordenadores do programa Faros, explicou que a reuni├úo era um diagn├│stico b├┤nus para entender melhor os objetivos e desafios de Flavia.\nEstrutura da Reuni├úo de Diagn├│stico: Cleuber Aparecido explicou que o diagn├│stico b├┤nus tinha o objetivo de conhecer melhor o perfil de Flavia, entender seus objetivos, identificar desafios de curto prazo e alinhar expectativas para a imers├úo no m├®todo do Quarto Caminho. Posteriormente, um engenheiro patrimonial elaborar├í todo o planejamento, pegando na m├úo do cliente, e apresentar├úo os pr├│ximos passos ao final da reuni├úo.\nAn├ílise da Renda e Situa├º├úo Financeira: Flavia Takeda confirmou que sua renda m├®dia ├® de R$ 20.500, com 14 sal├írios anuais (sendo o 14┬║ dependente do atingimento de metas), e a renda combinada do casal totaliza cerca de R$ 27.000 mensais. Eles possuem um cons├│rcio de R$ 500.000 (reduzido de R$ 1 milh├úo) em curso h├í cinco anos e est├úo pagando um apartamento na planta, que deve ficar pronto em mar├ºo do ano seguinte. O apartamento foi adquirido por R$ 651.000, e o valor atual de mercado ├® de R$ 1 milh├úo ou mais, o que Flavia Takeda v├¬ como uma excelente oportunidade de venda.\nEstrat├®gias para o Apartamento na Planta e Fluxo de Caixa: O apartamento exigiu uma entrada de R$ 30.000 e presta├º├Áes mensais de pouco mais de R$ 2.000, al├®m de parcelas anuais de quase R$ 20.000. Flavia Takeda mencionou que, em vez de quitar o apartamento (o que sobraria um saldo de cerca de R$ 400.000 para financiar), eles poderiam alug├í-lo para cobrir as presta├º├Áes, uma estrat├®gia que o programa Faros apoia. Cleuber Aparecido refor├ºou que o aluguel pode ser uma renda invis├¡vel que paga o financiamento ou cons├│rcio, e que a decis├úo de alugar ou vender o im├│vel ser├í analisada pelo engenheiro patrimonial dentro do planejamento do Faros.\nDesafios de Fluxo de Caixa e D├¡vidas: Flavia Takeda identificou a necessidade de melhorar seu fluxo de pagamento, pois os limites de seus cart├Áes de cr├®dito est├úo comprometidos com parcelas de despesas passadas, como gastos veterin├írios. Ela tamb├®m mencionou que eles acabaram de financiar um carro, e a soma das presta├º├Áes (carro, cons├│rcio, apartamento) totaliza cerca de R$ 8.000 por m├¬s. As despesas fixas da fam├¡lia n├úo s├úo muito altas, mas a soma de mercado para duas casas (incluindo a casa da filha) mais o aluguel dela e os cart├Áes deixam a renda apertada, resultando em um saldo mensal de aproximadamente zero.\nDetalhes do Endividamento e Abordagem do Faros: Flavia Takeda relatou que paga de R$ 1.000 a R$ 5.000 em parcelas de quatro cart├Áes de cr├®dito, consumindo quase metade de seu sal├írio. Cleuber Aparecido indicou que o programa Faros abordar├í o fluxo de caixa (motor um do patrim├┤nio) com estrat├®gias como estrutura OBZ e \"trinca de cart├Áes\". Eles analisar├úo o financiamento do carro para otimizar a opera├º├úo se estiver fora dos padr├Áes de mercado. O programa tamb├®m trabalhar├í com os outros dois motores: reserva de valor e capacidade de pagamento.\nAn├ílise da Reserva de Valor e Perfil de Risco: Flavia Takeda informou que tinha R$ 10.000 de reserva de emerg├¬ncia, dos quais R$ 5.000 foram usados para pagar a entrada no programa e o restante em d├│lar (cerca de 900 d├│lares). Ela tamb├®m possui uma quantia menor, em torno de R$ 2.000, em Tesouro Nacional e CDBs. Flavia Takeda confirmou ter um perfil completamente conservador, enfatizando que n├úo se aventura em investimentos sem conhecimento e ├® dif├¡cil de confiar. Cleuber Aparecido tranquilizou Flavia, afirmando que o programa Faros tamb├®m ├® conservador e foca em mercados milenares, como o mercado real (im├│veis na planta), usinas solares e leil├Áes de im├│veis.\nEstrat├®gias do Programa Faros e Pr├│ximos Passos: Cleuber Aparecido ressaltou que o programa Faros usar├í estrat├®gias de cons├│rcio, como lance fixo e parcelas reduzidas, para aumentar a capacidade de pagamento e otimizar o fluxo de caixa. Nos primeiros anos da renda passiva, o foco ser├í em estrat├®gias de ganho de capital para construir ativos e trazer mais liquidez para o caixa. Cleuber Aparecido explicou a jornada do cliente, sendo o pr├│ximo passo receber o engenheiro patrimonial no WhatsApp, que dar├í in├¡cio ├á reuni├úo de Rota Patrimonial.\nJornada do Cliente e Requisitos: Ap├│s a Rota Patrimonial, Flavia Takeda dever├í preencher seus dados na plataforma de gest├úo financeira QV 360 (renda, patrim├┤nio, despesas), o que ser├í facilitado, pois ela j├í possui as informa├º├Áes em uma planilha. O passo seguinte ser├í a reuni├úo de Ativa├º├úo das Engrenagens, onde come├ºar├úo a colocar em pr├ítica as atividades. O projeto inclui reuni├Áes mensais de *checkpoint* para acompanhamento pr├│ximo do plano, exigindo apenas 10% do esfor├ºo de Flavia Takeda para comparecer ├ás reuni├Áes e atualizar o sistema. Flavia Takeda solicitou a inclus├úo de seu marido no grupo do WhatsApp, o que Cleuber Aparecido prontamente aceitou, e as reuni├Áes ser├úo gravadas. Cleuber Aparecido concluiu afirmando que iniciaria o processo para adicionar o engenheiro patrimonial e dar seguimento ├á jornada.\n\nPr├│ximas etapas sugeridas\nCleuber Aparecido ir├í cobrar a corre├º├úo da data de nascimento (19 de maio) no contrato para que Flavia Takeda possa assinar.\nCleuber Aparecido ir├í adicionar o engenheiro patrimonial ao grupo para dar seguimento e fazer a reuni├úo de rota patrimonial com Flavia Takeda.\nFlavia Takeda ir├í mandar o n├║mero do seu marido para Cleuber Aparecido por WhatsApp ou no grupo para que ele possa ser adicionado.\nCleuber Aparecido ir├í adicionar o marido de Flavia Takeda no grupo do programa.\n\nRevise as anota├º├Áes do Gemini para checar se est├úo corretas. Confira dicas e saiba como o Gemini faz anota├º├Áes\nEnvie feedback sobre o uso do Gemini para criar notas breve pesquisa.",
+      "start_time": "2026-03-30T18:30:00+00:00",
+      "end_time": "2026-03-30T19:00:00+00:00",
+      "location": "https://drive.google.com/file/d/1YlhPF9pVo16efMXjcSzToFkWMFGN0N0x/view?usp=drive_web",
+      "notes": "30 de mar. de 2026\nDiagn├│stico Pharus - Flavia Takeda\nConvidados  Cleuber Aparecido\nAnexos Diagn├│stico Pharus - Flavia Takeda \nRegistros da reuni├úo Grava├º├úo \n\nResumo\nO diagn├│stico b├┤nus focou na compreens├úo dos objetivos financeiros e desafios de fluxo de caixa da cliente, com ├¬nfase na otimiza├º├úo de d├¡vidas e no planejamento de ativos imobili├írios, como o apartamento na planta.\n\nApresenta├º├úo e Metas Financeiras\nA cliente expressou o desejo de criar uma renda passiva, devido ├á dificuldade em economizar e ├á lentid├úo em investimentos b├ísicos. O programa Faros se prop├┤s a ser um diagn├│stico b├┤nus para entender melhor os desafios e objetivos da cliente.\n\nAn├ílise da Situa├º├úo Financeira\nA renda combinada do casal ├® de aproximadamente R$ 27.000, mas o fluxo de caixa est├í comprometido com parcelas de cons├│rcio, financiamento de carro, e d├¡vidas de cart├úo de cr├®dito. O principal desafio ├® a otimiza├º├úo do fluxo de pagamento, j├í que o saldo mensal ├® pr├│ximo de zero.\n\nEstrat├®gias de Otimiza├º├úo e Ativos\nO programa Faros abordar├í o fluxo de caixa com a estrutura OBZ e a 'trinca de cart├Áes', enquanto o engenheiro patrimonial analisar├í o apartamento na planta para decidir se ├® melhor vender (valor de R$ 1 milh├úo) ou alugar. O programa tamb├®m se concentrar├í em estrat├®gias de ganho de capital para clientes de perfil conservador.\n\nDetalhes\nIntrodu├º├úo e Motiva├º├úo para o Programa Faros: A reuni├úo come├ºou com Cleuber Aparecido e Flavia Takeda apresentando-se brevemente, onde Flavia expressou seu desejo de criar uma renda passiva para o futuro, devido ├á dificuldade de guardar dinheiro e n├úo querer depender do governo. Ela observou que, embora investimentos b├ísicos como Renda Fixa e Tesouro Nacional sejam acess├¡veis, o processo para obter resultados significativos ├® lento. Cleuber Aparecido, que ├® formado em administra├º├úo com MBA em gest├úo de projetos e faz parte do time de coordenadores do programa Faros, explicou que a reuni├úo era um diagn├│stico b├┤nus para entender melhor os objetivos e desafios de Flavia.\nEstrutura da Reuni├úo de Diagn├│stico: Cleuber Aparecido explicou que o diagn├│stico b├┤nus tinha o objetivo de conhecer melhor o perfil de Flavia, entender seus objetivos, identificar desafios de curto prazo e alinhar expectativas para a imers├úo no m├®todo do Quarto Caminho. Posteriormente, um engenheiro patrimonial elaborar├í todo o planejamento, pegando na m├úo do cliente, e apresentar├úo os pr├│ximos passos ao final da reuni├úo.\nAn├ílise da Renda e Situa├º├úo Financeira: Flavia Takeda confirmou que sua renda m├®dia ├® de R$ 20.500, com 14 sal├írios anuais (sendo o 14┬║ dependente do atingimento de metas), e a renda combinada do casal totaliza cerca de R$ 27.000 mensais. Eles possuem um cons├│rcio de R$ 500.000 (reduzido de R$ 1 milh├úo) em curso h├í cinco anos e est├úo pagando um apartamento na planta, que deve ficar pronto em mar├ºo do ano seguinte. O apartamento foi adquirido por R$ 651.000, e o valor atual de mercado ├® de R$ 1 milh├úo ou mais, o que Flavia Takeda v├¬ como uma excelente oportunidade de venda.\nEstrat├®gias para o Apartamento na Planta e Fluxo de Caixa: O apartamento exigiu uma entrada de R$ 30.000 e presta├º├Áes mensais de pouco mais de R$ 2.000, al├®m de parcelas anuais de quase R$ 20.000. Flavia Takeda mencionou que, em vez de quitar o apartamento (o que sobraria um saldo de cerca de R$ 400.000 para financiar), eles poderiam alug├í-lo para cobrir as presta├º├Áes, uma estrat├®gia que o programa Faros apoia. Cleuber Aparecido refor├ºou que o aluguel pode ser uma renda invis├¡vel que paga o financiamento ou cons├│rcio, e que a decis├úo de alugar ou vender o im├│vel ser├í analisada pelo engenheiro patrimonial dentro do planejamento do Faros.\nDesafios de Fluxo de Caixa e D├¡vidas: Flavia Takeda identificou a necessidade de melhorar seu fluxo de pagamento, pois os limites de seus cart├Áes de cr├®dito est├úo comprometidos com parcelas de despesas passadas, como gastos veterin├írios. Ela tamb├®m mencionou que eles acabaram de financiar um carro, e a soma das presta├º├Áes (carro, cons├│rcio, apartamento) totaliza cerca de R$ 8.000 por m├¬s. As despesas fixas da fam├¡lia n├úo s├úo muito altas, mas a soma de mercado para duas casas (incluindo a casa da filha) mais o aluguel dela e os cart├Áes deixam a renda apertada, resultando em um saldo mensal de aproximadamente zero.\nDetalhes do Endividamento e Abordagem do Faros: Flavia Takeda relatou que paga de R$ 1.000 a R$ 5.000 em parcelas de quatro cart├Áes de cr├®dito, consumindo quase metade de seu sal├írio. Cleuber Aparecido indicou que o programa Faros abordar├í o fluxo de caixa (motor um do patrim├┤nio) com estrat├®gias como estrutura OBZ e \"trinca de cart├Áes\". Eles analisar├úo o financiamento do carro para otimizar a opera├º├úo se estiver fora dos padr├Áes de mercado. O programa tamb├®m trabalhar├í com os outros dois motores: reserva de valor e capacidade de pagamento.\nAn├ílise da Reserva de Valor e Perfil de Risco: Flavia Takeda informou que tinha R$ 10.000 de reserva de emerg├¬ncia, dos quais R$ 5.000 foram usados para pagar a entrada no programa e o restante em d├│lar (cerca de 900 d├│lares). Ela tamb├®m possui uma quantia menor, em torno de R$ 2.000, em Tesouro Nacional e CDBs. Flavia Takeda confirmou ter um perfil completamente conservador, enfatizando que n├úo se aventura em investimentos sem conhecimento e ├® dif├¡cil de confiar. Cleuber Aparecido tranquilizou Flavia, afirmando que o programa Faros tamb├®m ├® conservador e foca em mercados milenares, como o mercado real (im├│veis na planta), usinas solares e leil├Áes de im├│veis.\nEstrat├®gias do Programa Faros e Pr├│ximos Passos: Cleuber Aparecido ressaltou que o programa Faros usar├í estrat├®gias de cons├│rcio, como lance fixo e parcelas reduzidas, para aumentar a capacidade de pagamento e otimizar o fluxo de caixa. Nos primeiros anos da renda passiva, o foco ser├í em estrat├®gias de ganho de capital para construir ativos e trazer mais liquidez para o caixa. Cleuber Aparecido explicou a jornada do cliente, sendo o pr├│ximo passo receber o engenheiro patrimonial no WhatsApp, que dar├í in├¡cio ├á reuni├úo de Rota Patrimonial.\nJornada do Cliente e Requisitos: Ap├│s a Rota Patrimonial, Flavia Takeda dever├í preencher seus dados na plataforma de gest├úo financeira QV 360 (renda, patrim├┤nio, despesas), o que ser├í facilitado, pois ela j├í possui as informa├º├Áes em uma planilha. O passo seguinte ser├í a reuni├úo de Ativa├º├úo das Engrenagens, onde come├ºar├úo a colocar em pr├ítica as atividades. O projeto inclui reuni├Áes mensais de *checkpoint* para acompanhamento pr├│ximo do plano, exigindo apenas 10% do esfor├ºo de Flavia Takeda para comparecer ├ás reuni├Áes e atualizar o sistema. Flavia Takeda solicitou a inclus├úo de seu marido no grupo do WhatsApp, o que Cleuber Aparecido prontamente aceitou, e as reuni├Áes ser├úo gravadas. Cleuber Aparecido concluiu afirmando que iniciaria o processo para adicionar o engenheiro patrimonial e dar seguimento ├á jornada.\n\nPr├│ximas etapas sugeridas\nCleuber Aparecido ir├í cobrar a corre├º├úo da data de nascimento (19 de maio) no contrato para que Flavia Takeda possa assinar.\nCleuber Aparecido ir├í adicionar o engenheiro patrimonial ao grupo para dar seguimento e fazer a reuni├úo de rota patrimonial com Flavia Takeda.\nFlavia Takeda ir├í mandar o n├║mero do seu marido para Cleuber Aparecido por WhatsApp ou no grupo para que ele possa ser adicionado.\nCleuber Aparecido ir├í adicionar o marido de Flavia Takeda no grupo do programa.\n\nRevise as anota├º├Áes do Gemini para checar se est├úo corretas. Confira dicas e saiba como o Gemini faz anota├º├Áes\nEnvie feedback sobre o uso do Gemini para criar notas breve pesquisa.",
+      "created_by": "459618e6-cb21-44b5-b626-6b1c31499f98",
+      "created_at": "2026-04-06T20:33:39.673897+00:00",
+      "updated_at": "2026-04-06T20:33:39.673897+00:00",
+      "client_id": null,
+      "client_name": null,
+      "google_event_id": null,
+      "recurrence_group_id": null
+    },
+    "error": null
+  },
+  "financial": {
+    "renda_mensal": {
+      "n": 0,
+      "of": 1,
+      "pct": 0
+    },
+    "patrimonio_liquido": {
+      "n": 0,
+      "of": 1,
+      "pct": 0
+    },
+    "reserva_emergencia": {
+      "n": 0,
+      "of": 1,
+      "pct": 0
+    },
+    "aporte_mensal": {
+      "n": 0,
+      "of": 1,
+      "pct": 0
+    },
+    "segmentacao": {
+      "n": 0,
+      "of": 1,
+      "pct": 0
+    },
+    "data_inicio_ciclo": {
+      "n": 0,
+      "of": 1,
+      "pct": 0
+    },
+    "engenheiro_patrimonial": {
+      "n": 0,
+      "of": 1,
+      "pct": 0
+    }
+  },
+  "pharus_um": {
+    "total": null,
+    "sample_n": 1,
+    "byStatus": {
+      "(null)": 1
+    },
+    "cols": [
+      "code",
+      "details",
+      "hint",
+      "message"
+    ]
+  },
+  "pharus_sm": {
+    "total": null,
+    "status": {
+      "(null)": 1
+    },
+    "withAdvisor": 0,
+    "n": 1
+  },
+  "pharus_csat": {
+    "total": null,
+    "ok": false,
+    "cols": [
+      "code",
+      "details",
+      "hint",
+      "message"
+    ]
+  }
+}

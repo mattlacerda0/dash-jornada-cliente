@@ -275,14 +275,45 @@ export function buildAnalyticalCancellationMap(cancellations) {
 }
 
 /**
- * Status analítico: cancelamento analítico (churn/distrato) prevalece.
- * Status bruto "Cancelado" sem churn_efetivado_at/distrato_assinado_at
- * NÃO conta como Cancelado analítico (vira Não informado).
+ * Status analítico: cancelamento confirmado (churn/distrato) prevalece.
+ * Status bruto Cancelado/Churn sem data confirmada → "Cancelado sem data confirmada"
+ * (NÃO vira "Não informado").
  */
+export const ANALYTICAL_STATUS = {
+  ACTIVE: "Ativo",
+  FROZEN: "Congelado",
+  CANCELLED_CONFIRMED: "Cancelado",
+  CANCELLED_NO_DATE: "Cancelado sem data confirmada",
+  UNKNOWN: "Não informado",
+};
+
+/** Rótulo de exibição (gráficos/cards). */
+export function analyticalStatusDisplayLabel(status) {
+  if (status === ANALYTICAL_STATUS.CANCELLED_CONFIRMED || status === "Cancelado confirmado") {
+    return "Cancelado confirmado";
+  }
+  return status || ANALYTICAL_STATUS.UNKNOWN;
+}
+
+export function isConfirmedCancelledStatus(status) {
+  return status === ANALYTICAL_STATUS.CANCELLED_CONFIRMED || status === "Cancelado confirmado";
+}
+
+export function isCancelledWithoutConfirmedDateStatus(status) {
+  return status === ANALYTICAL_STATUS.CANCELLED_NO_DATE;
+}
+
+export function isNonActivePortfolioStatus(status) {
+  return (
+    status === ANALYTICAL_STATUS.FROZEN
+    || status === ANALYTICAL_STATUS.CANCELLED_NO_DATE
+  );
+}
+
 export function resolveAnalyticalStatus(rawStatus, cancellationDate) {
-  if (cancellationDate) return "Cancelado";
+  if (cancellationDate) return ANALYTICAL_STATUS.CANCELLED_CONFIRMED;
   const normalized = normalizeClientStatus(rawStatus);
-  if (normalized === "Cancelado") return "Não informado";
+  if (normalized === "Cancelado") return ANALYTICAL_STATUS.CANCELLED_NO_DATE;
   return normalized;
 }
 

@@ -313,7 +313,12 @@ export function normalizePlanFilters(raw = {}) {
   if (!raw || typeof raw !== "object") return f;
   const STATUS_MAP = {
     active: "Ativo", ativo: "Ativo", cancelled: "Cancelado", cancelado: "Cancelado",
+    cancelled_no_date: "Cancelado sem data confirmada",
+    cancelled_without_date: "Cancelado sem data confirmada",
     frozen: "Congelado", congelado: "Congelado",
+    unknown: "Não informado", "não informado": "Não informado", "nao informado": "Não informado",
+    non_active: null,
+  };
     active_or_frozen: "active_or_frozen",
     active_and_frozen: "active_or_frozen",
   };
@@ -418,8 +423,13 @@ function applyGeneralFilters(rows, f) {
       if (want === "active" && st !== "Ativo") return false;
       if (want === "frozen" && st !== "Congelado") return false;
       if (want === "cancelled" && st !== "Cancelado") return false;
+      if (
+        (want === "cancelled_no_date" || want === "cancelled_without_date")
+        && st !== "Cancelado sem data confirmada"
+      ) return false;
       if (want === "unknown" && st !== "Não informado") return false;
       if (want === "active_or_frozen" && st !== "Ativo" && st !== "Congelado") return false;
+      if (want === "non_active" && st !== "Congelado" && st !== "Cancelado sem data confirmada") return false;
     }
     if (f.segment && r.segmentLabel !== f.segment) return false;
     if (f.hasFinancialData === true && !r.hasFinancialProfile) return false;
@@ -636,25 +646,53 @@ function calculateMeetingSummaryPort(rows, mp, now) {
     }
   }
   const daysSinceStats = robustStatsPort(rows.map((c) => c.daysSinceLastMeeting).filter((v) => v != null));
-  const intervalStats = robustStatsPort(rows.map((c) => c.typicalIntervalDays ?? c.averageIntervalDays).filter((v) => v != null && v >= 0));
+  const intervalStats = robustStatsPort(rows.map((c) => c.averageIntervalDays).filter((v) => v != null && v >= 0));
   const totalNoShows = rows.reduce((a, c) => a + (c.absences || 0), 0);
   const totalReschedules = rows.reduce((a, c) => a + (c.reschedules || 0), 0);
-  const classifiable = meetings.filter((m) => {
+  // Taxa alinhada ao dashboard: elegíveis = total − futuras − canceladas
+  let futureMeetings = 0;
+  let cancelledMeetings = 0;
+  let noShowsEligible = 0;
+  for (const m of meetings) {
     const s = m.startTime ? new Date(m.startTime) : null;
-    if (!s || s > now) return false;
-    return m.attendanceStatus === "compareceu" || m.attendanceStatus === "nao_compareceu";
-  });
-  const attended = classifiable.filter((m) => m.attendanceStatus === "compareceu").length;
-  const attendanceRate = classifiable.length ? Math.round((attended / classifiable.length) * 1000) / 10 : null;
+    const isFuture = Boolean(s && !Number.isNaN(s.getTime()) && s > now);
+    const isCancelled = m.attendanceStatus === "cancelada";
+    if (isFuture) futureMeetings += 1;
+    if (isCancelled) cancelledMeetings += 1;
+    if (!isFuture && !isCancelled && m.attendanceStatus === "nao_compareceu") noShowsEligible += 1;
+  }
+  const eligibleMeetings = Math.max(0, meetings.length - futureMeetings - cancelledMeetings);
+  const noShowRate = eligibleMeetings > 0
+    ? Math.round((noShowsEligible / eligibleMeetings) * 1000) / 10
+    : null;
+  const attendanceRate = eligibleMeetings > 0
+    ? Math.round((1 - noShowsEligible / eligibleMeetings) * 1000) / 10
+    : null;
+  const attendedMeetings = eligibleMeetings > 0 ? Math.max(0, eligibleMeetings - noShowsEligible) : 0;
+  const withFirst = rows.filter((c) => c.firstMeetingCompleted === true).length;
+  const clientsWithMeeting = rows.filter((c) => {
+    if (c.hasValidMeeting === true) return true;
+    if (c.journeyMeetingsCount > 0) return true;
+    return (c.meetings || []).some((m) => m.meetingDateStatus === "valid");
+  }).length;
   return {
     totalMeetings,
     averageMeetingsPerMonth,
     totalNoShows,
     totalReschedules,
+    futureMeetings,
+    cancelledMeetings,
+    eligibleMeetings,
+    noShowsEligible,
+    attendedMeetings,
+    noShowRate,
     attendanceRate,
-    clientsWithFirstMeeting: rows.filter((c) => c.firstMeetingCompleted === true).length,
+    attendanceInsufficientData: eligibleMeetings <= 0,
+    clientsWithMeeting,
+    clientsWithFirstMeeting: withFirst,
     clientsWithoutFirstMeeting: rows.filter((c) => c.firstMeetingCompleted === false).length,
     typicalDaysSinceLastMeeting: daysSinceStats.median,
+    averageIntervalDays: intervalStats.mean,
     typicalIntervalDays: intervalStats.median,
     periodMonthDivisor: periodActive ? mp.divisor : null,
     filteredClients: rows.length,
@@ -686,13 +724,20 @@ const MEETINGS_METRICS = {
   total_meetings: { label: "Total de reuniões", field: "totalMeetings", definition: "registered", sources: MEETING_SOURCES },
   no_show_meetings: { label: "Reuniões com no-show", field: "totalNoShows", definition: "no_show", sources: ATTENDANCE_SOURCE },
   rescheduled_meetings: { label: "Reuniões remarcadas", field: "totalReschedules", definition: "rescheduled", sources: ATTENDANCE_SOURCE },
-  attendance_rate: { label: "Taxa de comparecimento (%)", field: "attendanceRate", type: "rate", definition: "completed_rate", sources: ATTENDANCE_SOURCE },
+  attendance_rate: { label: "Taxa de comparecimento (%)", field: "attendanceRate", type: "rate", definition: "1 - noShows/(total-future-cancelled)", sources: ATTENDANCE_SOURCE },
+  no_show_rate: { label: "Taxa de no-show (%)", field: "noShowRate", type: "rate", definition: "noShows/(total-future-cancelled)", sources: ATTENDANCE_SOURCE },
+  cancelled_meetings: { label: "Reuniões canceladas", field: "cancelledMeetings", definition: "cancelled", sources: ATTENDANCE_SOURCE },
+  eligible_meetings: { label: "Reuniões elegíveis", field: "eligibleMeetings", definition: "total-future-cancelled", sources: MEETING_SOURCES },
+  future_meetings: { label: "Reuniões futuras", field: "futureMeetings", definition: "future", sources: MEETING_SOURCES },
+  attended_meetings: { label: "Comparecimentos", field: "attendedMeetings", definition: "eligible-noshow", sources: ATTENDANCE_SOURCE },
   average_meetings_per_month: { label: "Média de reuniões por mês", field: "averageMeetingsPerMonth", type: "rate", definition: "registered_per_month", sources: MEETING_SOURCES },
   clients_with_first_meeting: { label: "Clientes com primeira reunião", field: "clientsWithFirstMeeting", definition: "clients", sources: MEETING_SOURCES },
+  clients_with_meeting: { label: "Clientes com reunião", field: "clientsWithMeeting", definition: "clients", sources: MEETING_SOURCES },
   clients_without_first_meeting: { label: "Clientes sem primeira reunião", field: "clientsWithoutFirstMeeting", definition: "clients", sources: MEETING_SOURCES },
   days_since_last_meeting: { label: "Dias desde a última reunião (típico)", field: "typicalDaysSinceLastMeeting", type: "median", definition: "median_days", sources: MEETING_SOURCES },
-  typical_interval: { label: "Intervalo típico entre reuniões (dias)", field: "typicalIntervalDays", type: "median", definition: "median_days", sources: MEETING_SOURCES },
-  typical_meeting_interval: { label: "Intervalo típico entre reuniões (dias)", field: "typicalIntervalDays", type: "median", definition: "median_days", sources: MEETING_SOURCES },
+  typical_interval: { label: "Intervalo médio entre reuniões (dias)", field: "averageIntervalDays", type: "average", definition: "average_days", sources: MEETING_SOURCES },
+  typical_meeting_interval: { label: "Intervalo médio entre reuniões (dias)", field: "averageIntervalDays", type: "average", definition: "average_days", sources: MEETING_SOURCES },
+  average_interval_between_meetings: { label: "Intervalo médio entre reuniões (dias)", field: "averageIntervalDays", type: "average", definition: "average_days", sources: MEETING_SOURCES },
 };
 
 const MEETINGS_ALLOWED_FILTERS = ["engineer", "period", "dateFrom", "dateTo", "attendanceStatus", "hasNoShow", "hasReschedule", "firstMeeting", "frequency", "search", "clientId", "clientCode", "clientName"];
@@ -843,13 +888,20 @@ const METRIC_PATTERNS = [
   [/concluiram onboarding|concluiu onboarding|onboarding conclu|completar.?am onboarding/, "journey", "completed_onboarding_clients"],
   // meetings — específicas
   [/taxa de comparecimento|comparecimento|presenca/, "meetings", "attendance_rate"],
+  [/taxa de no.?show|percentual de no.?show/, "meetings", "no_show_rate"],
+  [/reunioes canceladas|reuniões canceladas|quantas reunioes foram canceladas/, "meetings", "cancelled_meetings"],
+  [/tipos de reuniao|tipos de reunião|mais frequentes.*reuniao|reunioes por tipo|reuniões por tipo/, "meetings", "top_meeting_types"],
   [/no.?show|nao compareceu|nao compareceram|faltaram|faltas|ausenc/, "meetings", "no_show_meetings"],
   [/remarcad|reagendad/, "meetings", "rescheduled_meetings"],
   [/nao (fizeram|fez|realizaram|realizou) a? ?primeira reuniao|sem primeira reuniao|sem a primeira reuniao|clientes sem primeira/, "meetings", "clients_without_first_meeting"],
   [/primeira reuniao|primeiras reunioes|first meeting/, "meetings", "clients_with_first_meeting"],
+  [/clientes com reuniao|possuem alguma reuniao|pelo menos uma reuniao|quantos clientes (?:tem|têm) reuniao/, "meetings", "clients_with_meeting"],
   [/reunioes por mes|media de reunioes|reunioes\/mes/, "meetings", "average_meetings_per_month"],
-  [/intervalo (?:tipico|medio|entre)|intervalo entre reunioes/, "meetings", "typical_interval"],
+  [/intervalo (?:tipico|medio|entre)|intervalo entre reunioes/, "meetings", "average_interval_between_meetings"],
   [/dias desde a ultima reuniao|desde a ultima reuniao/, "meetings", "days_since_last_meeting"],
+  [/nao tiveram no-show|0 no-shows|sem no-show|sem falta/, "meetings", "clients_with_zero_noshows"],
+  [/entre 1 e 2 no-shows|1.?2 no-shows|1 a 2 no-shows/, "meetings", "clients_with_1_2_noshows"],
+  [/5 ou mais no-shows|5\+ no-shows|cinco ou mais faltas/, "meetings", "clients_with_5_plus_noshows"],
   [/reuni|meeting/, "meetings", "total_meetings"],
   // general — valores típicos (mediana) antes de segmentos
   [/renda (?:mensal|tipica|media|typical)|qual a renda|renda dos clientes|renda dos/, "general", "median_monthly_income"],

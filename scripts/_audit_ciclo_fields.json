@@ -1,0 +1,177 @@
+{
+  "viewCols": [
+    "client_id",
+    "cliente",
+    "email",
+    "programa",
+    "status",
+    "data_inicio_ciclo",
+    "data_criacao_cliente",
+    "data_entrada_cliente",
+    "data_churn_cliente",
+    "data_churn_reembolso",
+    "data_pedido_reembolso",
+    "data_churn_consolidada",
+    "fl_churn",
+    "fl_reembolso",
+    "dias_ate_reembolso",
+    "fl_reembolso_ate_7_dias",
+    "qtd_reembolsos"
+  ],
+  "viewSample": [
+    {
+      "client_id": "0006917d-682b-4c05-917b-f3763a264a3d",
+      "cliente": "Anderson dos Santos Silva",
+      "email": "anderson@andersonsilva.adv.br",
+      "programa": "PHARUS",
+      "status": "ativo",
+      "data_inicio_ciclo": "2025-07-06",
+      "data_criacao_cliente": "2026-02-27",
+      "data_entrada_cliente": "2025-07-06",
+      "data_churn_cliente": null,
+      "data_churn_reembolso": null,
+      "data_pedido_reembolso": null,
+      "data_churn_consolidada": null,
+      "fl_churn": 0,
+      "fl_reembolso": 0,
+      "dias_ate_reembolso": null,
+      "fl_reembolso_ate_7_dias": 0,
+      "qtd_reembolsos": 0
+    },
+    {
+      "client_id": "000e7037-d04e-436f-a8ba-baa31fe7a808",
+      "cliente": "Kleison Resende Santana",
+      "email": "kleison.santana@hotmail.com",
+      "programa": "PHARUS",
+      "status": "churn",
+      "data_inicio_ciclo": "2025-01-29",
+      "data_criacao_cliente": "2026-02-27",
+      "data_entrada_cliente": "2025-01-29",
+      "data_churn_cliente": "2026-05-01",
+      "data_churn_reembolso": null,
+      "data_pedido_reembolso": null,
+      "data_churn_consolidada": "2026-05-01",
+      "fl_churn": 1,
+      "fl_reembolso": 0,
+      "dias_ate_reembolso": null,
+      "fl_reembolso_ate_7_dias": 0,
+      "qtd_reembolsos": 0
+    }
+  ],
+  "probes": {
+    "vw_clients_ciclo_churn": {
+      "ok": true,
+      "status": 206,
+      "range": "0-0/3270",
+      "cols": [
+        "client_id",
+        "cliente",
+        "email",
+        "programa",
+        "status",
+        "data_inicio_ciclo",
+        "data_criacao_cliente",
+        "data_entrada_cliente",
+        "data_churn_cliente",
+        "data_churn_reembolso",
+        "data_pedido_reembolso",
+        "data_churn_consolidada",
+        "fl_churn",
+        "fl_reembolso",
+        "dias_ate_reembolso",
+        "fl_reembolso_ate_7_dias",
+        "qtd_reembolsos"
+      ],
+      "err": null
+    },
+    "vw_clientes_ciclo": {
+      "ok": false,
+      "status": 404,
+      "range": null,
+      "cols": null,
+      "err": "{\"code\":\"PGRST205\",\"details\":null,\"hint\":\"Perhaps you meant the table 'public.vw_clients_ciclo_churn'\",\"message\":\"Could not find the table 'public.vw_clientes_ciclo' in the schema cache\"}"
+    },
+    "vw_ciclos_clientes": {
+      "ok": false,
+      "status": 404,
+      "range": null,
+      "cols": null,
+      "err": "{\"code\":\"PGRST205\",\"details\":null,\"hint\":\"Perhaps you meant the table 'public.vw_info_cliente'\",\"message\":\"Could not find the table 'public.vw_ciclos_clientes' in the schema cache\"}"
+    },
+    "vw_client_cycles": {
+      "ok": false,
+      "status": 404,
+      "range": null,
+      "cols": null,
+      "err": "{\"code\":\"PGRST205\",\"details\":null,\"hint\":\"Perhaps you meant the table 'public.vw_clients_ciclo_churn'\",\"message\":\"Could not find the table 'public.vw_client_cycles' in the schema cache\"}"
+    },
+    "vw_renovacoes": {
+      "ok": false,
+      "status": 404,
+      "range": null,
+      "cols": null,
+      "err": "{\"code\":\"PGRST205\",\"details\":null,\"hint\":\"Perhaps you meant the table 'public.vw_funil_cancelamentos'\",\"message\":\"Could not find the table 'public.vw_renovacoes' in the schema cache\"}"
+    },
+    "vw_clients_renovacao": {
+      "ok": false,
+      "status": 404,
+      "range": null,
+      "cols": null,
+      "err": "{\"code\":\"PGRST205\",\"details\":null,\"hint\":\"Perhaps you meant the table 'public.vw_clients_ciclo_churn'\",\"message\":\"Could not find the table 'public.vw_clients_renovacao' in the schema cache\"}"
+    },
+    "vw_info_cliente": {
+      "ok": false,
+      "status": 500,
+      "range": null,
+      "cols": null,
+      "err": "{\"code\":\"57014\",\"details\":null,\"hint\":null,\"message\":\"canceling statement due to statement timeout\"}"
+    },
+    "client_statuses": {
+      "ok": true,
+      "status": 206,
+      "range": "0-0/3",
+      "cols": [
+        "id",
+        "name",
+        "created_at"
+      ],
+      "err": null
+    },
+    "csat_cycles": {
+      "ok": true,
+      "status": 200,
+      "range": "*/0",
+      "cols": null,
+      "err": null
+    },
+    "nps_cycles": {
+      "ok": true,
+      "status": 206,
+      "range": "0-0/2",
+      "cols": [
+        "id",
+        "name",
+        "programa",
+        "starts_at",
+        "ends_at",
+        "notes",
+        "created_by",
+        "created_at",
+        "updated_at"
+      ],
+      "err": null
+    }
+  },
+  "clientsCols": [
+    "programa",
+    "data_inicio_ciclo",
+    "data_fim_ciclo",
+    "ciclo",
+    "contrato_assinado",
+    "davos_contrato_assinado",
+    "davos_contrato_assinado_at",
+    "davos_contrato_dispensado"
+  ],
+  "clientsAllColsHint": 55,
+  "openapiHasPaths": null
+}

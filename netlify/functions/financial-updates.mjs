@@ -245,17 +245,75 @@ function isFieldFilled(value, kind) {
   return value != null;
 }
 
+/**
+ * Atualização financeira válida: updated_at > created_at (timestamps reais).
+ * Criação inicial (updated_at === created_at) NÃO conta como atualização.
+ */
+function isFinancialRecordUpdated(row) {
+  const updated = parseDate(row?.updated_at);
+  const created = parseDate(row?.created_at);
+  if (!updated || !created) return false;
+  return updated.getTime() > created.getTime();
+}
+
 function resolveFinancialUpdateDate(row) {
   const updated = parseDate(row.updated_at);
   const created = parseDate(row.created_at);
-  if (updated) return { date: updated, source: "updated_at" };
-  if (created) return { date: created, source: "created_at" };
-  return { date: null, source: "unavailable" };
+  if (updated && created && updated.getTime() > created.getTime()) {
+    return { date: updated, source: "updated_at_after_created", isUpdated: true };
+  }
+  return { date: null, source: "no_post_creation_update", isUpdated: false };
 }
 
-function recencyBand(days, hasFinancial, hasDate) {
+function auditFinancialTimestamps(financialRows) {
+  let total = 0;
+  let equal = 0;
+  let updatedAfter = 0;
+  let updatedBefore = 0;
+  let missingCreated = 0;
+  let missingUpdated = 0;
+  let invalid = 0;
+  const positiveDiffs = [];
+
+  for (const row of financialRows || []) {
+    total += 1;
+    const updated = parseDate(row.updated_at);
+    const created = parseDate(row.created_at);
+    if (!created) missingCreated += 1;
+    if (!updated) missingUpdated += 1;
+    if (!created || !updated) {
+      invalid += 1;
+      continue;
+    }
+    const diff = updated.getTime() - created.getTime();
+    if (diff === 0) equal += 1;
+    else if (diff > 0) {
+      updatedAfter += 1;
+      positiveDiffs.push(diff);
+    } else updatedBefore += 1;
+  }
+
+  const sorted = positiveDiffs.sort((a, b) => a - b);
+  const medianDiffMs = sorted.length
+    ? percentile(sorted.map((ms) => ms / 86400000), 50)
+    : null;
+
+  return {
+    totalRecords: total,
+    updatedEqualsCreated: equal,
+    updatedAfterCreated: updatedAfter,
+    updatedBeforeCreated: updatedBefore,
+    missingCreatedAt: missingCreated,
+    missingUpdatedAt: missingUpdated,
+    invalidOrIncompleteTimestamps: invalid,
+    medianDaysCreatedToUpdate: medianDiffMs == null ? null : Math.round(medianDiffMs * 10) / 10,
+    rule: "isUpdated = updated_at > created_at",
+  };
+}
+
+function recencyBand(days, hasFinancial, hasValidUpdate) {
   if (!hasFinancial) return "Sem dados financeiros";
-  if (!hasDate || days == null) return "Sem data de atualização";
+  if (!hasValidUpdate || days == null) return "Sem data de atualização";
   if (days <= 30) return "Atualizado nos últimos 30 dias";
   if (days <= 60) return "De 31 a 60 dias";
   if (days <= 90) return "De 61 a 90 dias";
@@ -265,7 +323,7 @@ function recencyBand(days, hasFinancial, hasDate) {
 
 /**
  * Um registro analítico por client_id.
- * Preferência: updated_at mais recente → created_at → id.
+ * Preferência: updated_at válido (após created_at) mais recente → id.
  */
 function buildFinancialMap(financialRows) {
   const byClient = new Map();
@@ -283,14 +341,18 @@ function buildFinancialMap(financialRows) {
 
     const updated = parseDate(row.updated_at);
     const created = parseDate(row.created_at);
-    const recency = (updated || created || new Date(0)).getTime();
+    const isUpdated = Boolean(updated && created && updated.getTime() > created.getTime());
+    // Preferir registros com atualização real; empate por updated_at / id
+    const recency = isUpdated
+      ? updated.getTime()
+      : (created?.getTime() || 0) * 0.001;
     const current = byClient.get(clientId);
     if (
       !current ||
       recency > current._recency ||
       (recency === current._recency && String(row.id || "") > String(current.id || ""))
     ) {
-      byClient.set(clientId, { ...row, _recency: recency });
+      byClient.set(clientId, { ...row, _recency: recency, _isUpdated: isUpdated });
     }
   }
 
@@ -338,7 +400,7 @@ function buildMonthSeries(rows, now, monthsBack) {
     buckets.set(key, new Set());
   }
   for (const row of rows) {
-    if (!row.hasFinancialData || !row.financialUpdateDate) continue;
+    if (!row.hasPostCreationUpdate || !row.financialUpdateDate) continue;
     const d = parseDate(row.financialUpdateDate);
     if (!d) continue;
     if (d > now) continue;
@@ -358,6 +420,7 @@ function buildPayload(clients, financialRows, cancellations) {
   const today = startOfDay(now);
   const { map: cancelMap } = buildAnalyticalCancellationMap(cancellations);
   const { byClient, counts, multiples, rowsWithoutClientId } = buildFinancialMap(financialRows);
+  const timestampAudit = auditFinancialTimestamps(financialRows);
   const clientIds = new Set(clients.map((c) => String(c.id)));
 
   const qualityWarnings = [];
@@ -366,12 +429,27 @@ function buildPayload(clients, financialRows, cancellations) {
   }
   if (multiples.length > 0) {
     qualityWarnings.push(
-      `${multiples.length} cliente(s) com mais de um registro em client_financial_data; usado o mais recente por updated_at/created_at.`,
+      `${multiples.length} cliente(s) com mais de um registro em client_financial_data; usado o mais recente com atualização válida quando houver.`,
     );
   }
   qualityWarnings.push(
-    "Histórico de atualizações não disponível: a base mantém apenas o estado financeiro mais recente por cliente. activity_logs cobre apenas parte das edições e não é usado nos KPIs.",
+    "Histórico de atualizações não disponível: a base mantém apenas o estado financeiro mais recente por cliente. Contagem de atualizações = clientes com updated_at > created_at.",
   );
+  if (timestampAudit.updatedEqualsCreated > 0) {
+    qualityWarnings.push(
+      `${timestampAudit.updatedEqualsCreated} registro(s) com updated_at igual a created_at (criação inicial; não contam como atualização).`,
+    );
+  }
+  if (timestampAudit.updatedBeforeCreated > 0) {
+    qualityWarnings.push(
+      `${timestampAudit.updatedBeforeCreated} registro(s) com updated_at anterior a created_at (excluídos da regra de atualização).`,
+    );
+  }
+  if (timestampAudit.missingCreatedAt > 0 || timestampAudit.missingUpdatedAt > 0) {
+    qualityWarnings.push(
+      `Timestamps ausentes: created_at vazio em ${timestampAudit.missingCreatedAt}; updated_at vazio em ${timestampAudit.missingUpdatedAt}.`,
+    );
+  }
 
   let orphanFinancial = 0;
   for (const clientId of byClient.keys()) {
@@ -394,7 +472,8 @@ function buildPayload(clients, financialRows, cancellations) {
     let financialCreatedAt = null;
     let financialUpdatedAt = null;
     let financialUpdateDate = null;
-    let financialUpdateSource = "unavailable";
+    let financialUpdateSource = "no_post_creation_update";
+    let hasPostCreationUpdate = false;
     let daysSinceFinancialUpdate = null;
     let updatedLast30Days = false;
     let outdatedOver90Days = false;
@@ -413,7 +492,11 @@ function buildPayload(clients, financialRows, cancellations) {
       const resolved = resolveFinancialUpdateDate(financial);
       financialUpdateDate = resolved.date;
       financialUpdateSource = resolved.source;
+      hasPostCreationUpdate = resolved.isUpdated === true;
 
+      if (financialUpdatedAt && financialCreatedAt && financialUpdatedAt.getTime() === financialCreatedAt.getTime()) {
+        dataWarnings.push("updated_at igual a created_at (somente criação)");
+      }
       if (financialUpdatedAt && financialCreatedAt && financialUpdatedAt < financialCreatedAt) {
         dataWarnings.push("updated_at anterior a created_at");
       }
@@ -422,6 +505,9 @@ function buildPayload(clients, financialRows, cancellations) {
       }
       if (financialCreatedAt && financialCreatedAt > now) {
         dataWarnings.push("created_at futuro");
+      }
+      if (!hasPostCreationUpdate) {
+        dataWarnings.push("Sem atualização posterior à criação do registro financeiro");
       }
 
       liquidityReserve = toNumber(financial.reserva_liquidez);
@@ -448,7 +534,7 @@ function buildPayload(clients, financialRows, cancellations) {
         dataWarnings.push(`Mais de um registro financeiro (${counts.get(clientId)}); usado o mais recente`);
       }
 
-      if (financialUpdateDate && financialUpdateDate <= now) {
+      if (hasPostCreationUpdate && financialUpdateDate && financialUpdateDate <= now) {
         daysSinceFinancialUpdate = daysBetween(financialUpdateDate, today);
         if (daysSinceFinancialUpdate != null && daysSinceFinancialUpdate >= 0) {
           updatedLast30Days = daysSinceFinancialUpdate <= 30;
@@ -470,6 +556,7 @@ function buildPayload(clients, financialRows, cancellations) {
       analyticalStatus,
       engineer: blankToNull(client.engenheiro_patrimonial) || "Não informado",
       hasFinancialData,
+      hasPostCreationUpdate,
       financialRecordId: financial ? blankToNull(financial.id) : null,
       financialCreatedAt: financialCreatedAt ? financialCreatedAt.toISOString() : null,
       financialUpdatedAt: financialUpdatedAt ? financialUpdatedAt.toISOString() : null,
@@ -486,7 +573,7 @@ function buildPayload(clients, financialRows, cancellations) {
       hasConsortium,
       filledFinancialFields,
       totalFinancialFields: TOTAL_FINANCIAL_FIELDS,
-      recencyBand: recencyBand(daysSinceFinancialUpdate, hasFinancialData, Boolean(financialUpdateDate)),
+      recencyBand: recencyBand(daysSinceFinancialUpdate, hasFinancialData, hasPostCreationUpdate),
       dataWarnings,
     });
   }
@@ -494,6 +581,7 @@ function buildPayload(clients, financialRows, cancellations) {
   const totalClients = rows.length;
   const withFinancial = rows.filter((r) => r.hasFinancialData);
   const clientsWithFinancialData = withFinancial.length;
+  const clientsWithPostCreationUpdate = rows.filter((r) => r.hasPostCreationUpdate).length;
   const updatedLast30Days = withFinancial.filter((r) => r.updatedLast30Days).length;
   const outdatedOver90Days = withFinancial.filter((r) => r.outdatedOver90Days).length;
   const daysValues = withFinancial
@@ -502,6 +590,12 @@ function buildPayload(clients, financialRows, cancellations) {
   const sortedDays = [...daysValues].sort((a, b) => a - b);
   const medianDaysSinceUpdate = sortedDays.length ? round1(percentile(sortedDays, 50)) : null;
   const averageDaysSinceUpdate = average(sortedDays);
+
+  if (clientsWithFinancialData > clientsWithPostCreationUpdate) {
+    qualityWarnings.push(
+      `${clientsWithFinancialData - clientsWithPostCreationUpdate} cliente(s) com registro financeiro sem atualização posterior à criação.`,
+    );
+  }
 
   const updateRecency = RECENCY_BANDS.map((label) => {
     const count = rows.filter((r) => r.recencyBand === label).length;
@@ -549,6 +643,7 @@ function buildPayload(clients, financialRows, cancellations) {
     );
 
   const hasUpdateHistory = false;
+  void hasUpdateHistory;
 
   return {
     generatedAt: now.toISOString(),
@@ -564,16 +659,22 @@ function buildPayload(clients, financialRows, cancellations) {
       outdatedOver90Days,
       outdatedOver90DaysPercent: pct(outdatedOver90Days, clientsWithFinancialData),
       updatedLast30DaysPercent: pct(updatedLast30Days, clientsWithFinancialData),
-      hasUpdateHistory,
-      totalFinancialUpdates: null,
+      hasUpdateHistory: false,
+      clientsWithPostCreationUpdate,
+      totalFinancialUpdates: clientsWithPostCreationUpdate,
       averageUpdatesPerClient: null,
       clientsUpdatedMoreThanOnce: null,
       latestFinancialUpdateInBase: (() => {
-        const dates = withFinancial.map((r) => r.financialUpdateDate).filter(Boolean).sort();
+        const dates = withFinancial
+          .filter((r) => r.hasPostCreationUpdate)
+          .map((r) => r.financialUpdateDate)
+          .filter(Boolean)
+          .sort();
         return dates.length ? dates[dates.length - 1] : null;
       })(),
       note:
-        "A base atual armazena apenas o estado financeiro mais recente por cliente. Não há contagem confiável de eventos de atualização.",
+        "Atualização = updated_at > created_at. A criação inicial não conta. Sem histórico de eventos: o indicador reflete clientes com registro alterado após a criação.",
+      updateRule: "updated_at > created_at",
     },
     distributions: {
       updateRecency,
@@ -596,13 +697,14 @@ function buildPayload(clients, financialRows, cancellations) {
         distinctClients: byClient.size,
         clientsWithMultipleRows: multiples.length,
         maxRowsPerClient: multiples.length ? Math.max(...multiples.map((m) => m.count)) : 1,
-        rule: "updated_at → created_at → id; uma linha analítica por client_id",
+        rule: "Preferir updated_at > created_at mais recente; uma linha analítica por client_id",
       },
+      timestampAudit,
       historyAudit: {
         hasUpdateHistory: false,
         activityLogsFinancialEvents: "partial_not_used",
         note:
-          "activity_logs contém eventos de client_financial_data, porém a cobertura é parcial frente ao total de registros; não usada para KPIs de quantidade de atualizações.",
+          "Sem histórico de eventos: totalFinancialUpdates = clientes com updated_at > created_at (registro alterado após a criação).",
       },
       futureFields: {
         valor_imoveis_quitados:
@@ -612,6 +714,29 @@ function buildPayload(clients, financialRows, cancellations) {
       },
     },
   };
+}
+
+/** Fonte única reutilizada pelo handler e por runners/smoke. */
+export async function computeFinancialUpdatesPayload() {
+  const configError = configurationError();
+  if (configError) {
+    const err = new Error(configError);
+    err.code = "config";
+    throw err;
+  }
+  await probeFinancialTable();
+  const [{ rows: financialRows, warnings: fetchWarnings }, clients, cancellations] = await Promise.all([
+    fetchFinancialRowsResilient(),
+    fetchAll("clients", CLIENT_SELECT),
+    fetchAll("cancellations", CANCEL_SELECT),
+  ]);
+  const payload = buildPayload(clients, financialRows, cancellations);
+  if (fetchWarnings.length) {
+    payload.warnings = [...(payload.warnings || []), ...fetchWarnings];
+    payload.quality = payload.quality || {};
+    payload.quality.warnings = [...(payload.quality.warnings || []), ...fetchWarnings];
+  }
+  return payload;
 }
 
 export default async (request) => {
@@ -628,18 +753,7 @@ export default async (request) => {
     return Response.json({ error: configError }, { status: 503, headers: { "Cache-Control": "no-store" } });
   }
   try {
-    await probeFinancialTable();
-    const [{ rows: financialRows, warnings: fetchWarnings }, clients, cancellations] = await Promise.all([
-      fetchFinancialRowsResilient(),
-      fetchAll("clients", CLIENT_SELECT),
-      fetchAll("cancellations", CANCEL_SELECT),
-    ]);
-    const payload = buildPayload(clients, financialRows, cancellations);
-    if (fetchWarnings.length) {
-      payload.warnings = [...(payload.warnings || []), ...fetchWarnings];
-      payload.quality = payload.quality || {};
-      payload.quality.warnings = [...(payload.quality.warnings || []), ...fetchWarnings];
-    }
+    const payload = await computeFinancialUpdatesPayload();
     return Response.json(payload, { headers: { "Cache-Control": "no-store" } });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Falha ao consolidar atualização financeira";

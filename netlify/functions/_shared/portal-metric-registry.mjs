@@ -6,6 +6,13 @@ import { computeMechanismsPayload } from "../mechanisms.mjs";
 import { computeOnboardingPayload } from "../onboarding.mjs";
 import { computeMeetingsPayload } from "../meetings.mjs";
 import { computeGeneralDataPayload } from "../general-data.mjs";
+import {
+  computeEpPerformancePayload,
+} from "../ep-performance.mjs";
+import {
+  computeStatisticalCrossesPayload,
+} from "../statistical-crosses.mjs";
+import { computePharusEpMeetingsPayload } from "../pharus-ep-meetings.mjs";
 import { computeSupportPayload } from "../support.mjs";
 import { computeCancellationsPayload } from "../cancellations.mjs";
 import { computePharusMechanismsPayload } from "../pharus-mechanisms.mjs";
@@ -30,7 +37,7 @@ export const portalDomainExecutors = {
   },
   pharus_mechanisms: {
     id: "pharus_mechanisms",
-    label: "App Pharus · Mecanismos sugeridos",
+    label: "App Pharus · Mecanismos vinculados",
     compute: computePharusMechanismsPayload,
   },
   journey: {
@@ -57,6 +64,21 @@ export const portalDomainExecutors = {
     id: "cancellations",
     label: "Cancelamento",
     compute: computeCancellationsPayload,
+  },
+  ep_performance: {
+    id: "ep_performance",
+    label: "Performance do EP",
+    compute: computeEpPerformancePayload,
+  },
+  statistical_crosses: {
+    id: "statistical_crosses",
+    label: "Cruzamentos Estatísticos",
+    compute: computeStatisticalCrossesPayload,
+  },
+  pharus_ep_meetings: {
+    id: "pharus_ep_meetings",
+    label: "Reuniões App Pharus (EP)",
+    compute: computePharusEpMeetingsPayload,
   },
 };
 
@@ -125,6 +147,28 @@ export const portalMetricRegistry = {
     aggregation: "count",
     definition:
       "Cliente com status bruto congelado e sem churn efetivado ou distrato assinado.",
+  },
+  cancelled_without_confirmed_date: {
+    domain: "general",
+    label: "Cancelados sem data confirmada",
+    payloadPath: "summary.cancelledWithoutConfirmedDate",
+    sampleSizePath: "summary.totalClients",
+    unit: "clients",
+    aggregation: "count",
+    definition:
+      "Status bruto Cancelado/Churn sem churn_efetivado_at nem distrato_assinado_at.",
+    aliases: ["cancelados sem data", "churn sem data confirmada"],
+  },
+  non_active_clients: {
+    domain: "general",
+    label: "Clientes não ativos",
+    payloadPath: "summary.nonActiveClients",
+    sampleSizePath: "summary.totalClients",
+    unit: "clients",
+    aggregation: "count",
+    definition:
+      "Congelados + cancelados sem data confirmada. Não inclui ativos nem cancelados confirmados.",
+    aliases: ["clientes nao ativos", "fora da carteira ativa"],
   },
   median_stay_days: {
     domain: "general",
@@ -308,8 +352,8 @@ export const portalMetricRegistry = {
     sampleSizePath: "summary.availableMechanisms",
     unit: "mechanisms",
     aggregation: "sum",
-    definition: "Vínculos com status normalizado Implementado (concluído).",
-    aliases: ["mecanismos implementados", "quantos foram implementados", "implementados"],
+    definition: "Vínculos com status normalizado Implementado (concluído). Gráfico Implementados por segmento usa somente esses vínculos.",
+    aliases: ["mecanismos implementados", "quantos foram implementados", "implementados", "implementados por segmento", "andamento por segmento"],
   },
   in_progress_mechanisms: {
     domain: "mechanisms",
@@ -418,32 +462,52 @@ export const portalMetricRegistry = {
     definition: "Contagem sobre clients[] do payload de Mecanismos: inProgress === 1.",
   },
 
-  /* ---------- APP PHARUS (sugestões — não implementação) ---------- */
+  /* ---------- APP PHARUS (vínculos suggested = mecanismo associado) ---------- */
   pharus_users_with_suggestions: {
     domain: "pharus_mechanisms",
-    label: "Usuários com mecanismos sugeridos (App Pharus)",
-    payloadPath: "summary.usersWithSuggestions",
-    sampleSizePath: "summary.usersWithSuggestions",
+    label: "Usuários com mecanismos (App Pharus)",
+    payloadPath: "summary.usersWithMechanisms",
+    sampleSizePath: "summary.usersWithMechanisms",
     unit: "users",
     aggregation: "count",
-    definition: "Usuários distintos com sugestão em user_mechanisms no App Pharus. Não misturar com BASE QV.",
+    definition: "Usuários distintos com vínculo em user_mechanisms (inclui suggested). Não misturar com BASE QV.",
+    aliases: [
+      "usuarios com mecanismos no app pharus",
+      "quantos usuarios possuem mecanismos no app pharus",
+      "usuarios com mecanismos sugeridos no app pharus",
+    ],
   },
   pharus_total_suggestions: {
     domain: "pharus_mechanisms",
-    label: "Total de sugestões (App Pharus)",
-    payloadPath: "summary.totalSuggestions",
-    sampleSizePath: "summary.totalSuggestions",
-    unit: "suggestions",
+    label: "Mecanismos vinculados (App Pharus)",
+    payloadPath: "summary.linkedMechanisms",
+    sampleSizePath: "summary.linkedMechanisms",
+    unit: "links",
     aggregation: "count",
-    definition: "Registros em user_mechanisms (App Pharus). Não são implementações.",
+    definition: "Vínculos únicos user_id + mechanism_id no App Pharus (status suggested).",
   },
   pharus_top_suggested_mechanism: {
     domain: "pharus_mechanisms",
-    label: "Mecanismo mais sugerido (App Pharus)",
+    label: "Mecanismo mais vinculado (App Pharus)",
     payloadPath: "summary.topSuggestedMechanism",
     unit: "mechanism",
     aggregation: "top",
-    definition: "Nome do mecanismo com mais sugestões no App Pharus.",
+    definition: "Nome do mecanismo com mais vínculos no App Pharus.",
+  },
+  combined_people_with_mechanisms: {
+    domain: "mechanisms",
+    label: "Clientes com mecanismos (duas fontes)",
+    payloadPath: "summary.combinedPeopleWithMechanisms",
+    unit: "people",
+    aggregation: "count",
+    definition:
+      "Soma bruta BASE QV + App Pharus quando não há chave confiável de deduplicação. Informar ressalva ao responder.",
+    aliases: [
+      "quantos clientes possuem mecanismos nas duas fontes",
+      "total consolidado de mecanismos",
+      "clientes com mecanismos nas duas fontes",
+    ],
+    caveats: ["Sem deduplicação entre BASE QV e App Pharus; soma bruta."],
   },
 
   /* ---------- JOURNEY (página Jornada — distinto de Mecanismos) ---------- */
@@ -470,6 +534,155 @@ export const portalMetricRegistry = {
     definition: "Clientes cujo estágio atual não está entre os estágios abertos de onboarding.",
     aliases: ["concluiram onboarding", "onboarding concluido"],
   },
+  clients_with_first_meeting: {
+    domain: "meetings",
+    label: "Clientes com primeira reunião",
+    payloadPath: "summary.clientsWithFirstMeeting",
+    sampleSizePath: "summary.clientsWithFirstMeeting",
+    unit: "clients",
+    aggregation: "count",
+    definition: "Clientes com primeira reunião realizada (BASE QV; Airtable só como fallback).",
+    aliases: ["cobertura da primeira reuniao", "clientes com primeira reuniao"],
+  },
+  clients_with_meeting: {
+    domain: "meetings",
+    label: "Clientes com reunião",
+    payloadPath: "summary.clientsWithMeeting",
+    sampleSizePath: "summary.clientsWithMeeting",
+    unit: "clients",
+    aggregation: "count",
+    definition: "Clientes distintos com pelo menos uma reunião válida registrada no recorte.",
+    aliases: [
+      "clientes com reuniao",
+      "quantos clientes possuem alguma reuniao",
+      "clientes com pelo menos uma reuniao",
+    ],
+  },
+  average_interval_between_meetings: {
+    domain: "meetings",
+    label: "Intervalo médio entre reuniões",
+    payloadPath: "summary.averageIntervalDays",
+    averagePath: "summary.averageIntervalDays",
+    medianPath: "summary.typicalIntervalDays",
+    sampleSizePath: "summary.intervalDaysStats.validCount",
+    unit: "days",
+    aggregation: "average",
+    definition:
+      "Média aritmética dos intervalos positivos entre reuniões válidas consecutivas com presença confirmada.",
+    aliases: ["intervalo medio entre reunioes", "intervalo medio", "intervalo tipico entre reunioes"],
+  },
+  total_meeting_reschedules: {
+    domain: "meetings",
+    label: "Remarcações",
+    payloadPath: "summary.totalReschedules",
+    sampleSizePath: "summary.totalReschedules",
+    unit: "meetings",
+    aggregation: "count",
+    definition:
+      "Total de remarcações estruturadas (meeting_attendance.remarcado). Cobertura parcial: pode não representar o total real.",
+    aliases: ["quantas remarcacoes", "total de remarcacoes", "reunioes remarcadas"],
+    caveats: ["Cobertura parcial dos dados estruturados de remarcações."],
+  },
+  attendance_rate: {
+    domain: "meetings",
+    label: "Taxa de comparecimento",
+    payloadPath: "summary.attendanceRate",
+    sampleSizePath: "summary.eligibleMeetings",
+    unit: "percent",
+    aggregation: "rate",
+    definition:
+      "1 − (no-shows ÷ reuniões elegíveis). Elegíveis = total − futuras − canceladas. Fonte: meeting_attendance.status.",
+    aliases: [
+      "taxa de comparecimento",
+      "qual a taxa de comparecimento",
+      "comparecimento",
+      "taxa de presenca",
+    ],
+  },
+  no_show_rate: {
+    domain: "meetings",
+    label: "Taxa de no-show",
+    payloadPath: "summary.noShowRate",
+    sampleSizePath: "summary.eligibleMeetings",
+    unit: "percent",
+    aggregation: "rate",
+    definition: "no-shows ÷ reuniões elegíveis (total − futuras − canceladas).",
+    aliases: ["taxa de no-show", "qual a taxa de no-show", "percentual de no-show"],
+  },
+  cancelled_meetings_count: {
+    domain: "meetings",
+    label: "Reuniões canceladas",
+    payloadPath: "summary.cancelledMeetings",
+    sampleSizePath: "summary.cancelledMeetings",
+    unit: "meetings",
+    aggregation: "count",
+    definition: "Reuniões com attendanceStatus cancelada (não misturar com no-show).",
+    aliases: [
+      "quantas reunioes foram canceladas",
+      "quantas reuniões foram canceladas",
+      "reunioes canceladas",
+      "reuniões canceladas",
+    ],
+  },
+  top_meeting_types: {
+    domain: "meetings",
+    label: "Tipos de reunião mais frequentes",
+    payloadPath: "meetingTypesFromCsv.byFamily",
+    unit: "meetings",
+    aggregation: "top",
+    definition:
+      "Distribuição por família a partir do CSV exclusivo do gráfico Reuniões por tipo. Não usa o dataset operacional de reuniões.",
+    aliases: [
+      "quais tipos de reuniao sao mais frequentes",
+      "quais tipos de reunião são mais frequentes",
+      "tipos de reuniao mais frequentes",
+      "tipos de reunião mais frequentes",
+    ],
+    caveats: ["Fonte exclusiva: CSV de tipos de reunião."],
+  },
+  clients_with_zero_noshows: {
+    domain: "meetings",
+    label: "Clientes sem no-show",
+    payloadPath: "noShowFrequency",
+    unit: "clients",
+    aggregation: "count",
+    definition: "Clientes do recorte classificados na faixa 0 no-shows.",
+    aliases: ["quantos clientes nao tiveram no-show", "clientes com 0 no-shows"],
+    distributionLookup: { path: "noShowFrequency", key: "zero", field: "clients" },
+  },
+  clients_with_1_2_noshows: {
+    domain: "meetings",
+    label: "Clientes com 1–2 no-shows",
+    payloadPath: "noShowFrequency",
+    unit: "clients",
+    aggregation: "count",
+    definition: "Clientes do recorte com 1 ou 2 faltas.",
+    aliases: ["quantos clientes tiveram entre 1 e 2 no-shows"],
+    distributionLookup: { path: "noShowFrequency", key: "one_to_two", field: "clients" },
+  },
+  clients_with_5_plus_noshows: {
+    domain: "meetings",
+    label: "Clientes com 5 ou mais no-shows",
+    payloadPath: "noShowFrequency",
+    unit: "clients",
+    aggregation: "count",
+    definition: "Clientes do recorte com 5 ou mais faltas.",
+    aliases: ["quantos tiveram 5 ou mais no-shows", "clientes com 5 ou mais faltas"],
+    distributionLookup: { path: "noShowFrequency", key: "five_or_more", field: "clients" },
+  },
+  first_meeting_airtable_fallback: {
+    domain: "meetings",
+    label: "Primeiras reuniões via fallback Airtable",
+    payloadPath: "summary.firstMeetingSources.airtable",
+    sampleSizePath: "summary.clientsWithFirstMeeting",
+    unit: "clients",
+    aggregation: "count",
+    definition: "Quantidade de primeiras reuniões recuperadas pelo backup Airtable.",
+    aliases: [
+      "quantas primeiras reunioes vieram do fallback do airtable",
+      "fallback airtable primeira reuniao",
+    ],
+  },
 
   /* ---------- ATENDIMENTO (research.acionamentos) ---------- */
   total_support_tickets: {
@@ -479,7 +692,7 @@ export const portalMetricRegistry = {
     sampleSizePath: "summary.totalTickets",
     unit: "tickets",
     aggregation: "count",
-    definition: "Contagem de acionamentos em research.acionamentos no payload de Atendimento.",
+    definition: "Contagem distinta de acionamentos em research.acionamentos.",
   },
   open_support_tickets: {
     domain: "support",
@@ -531,18 +744,90 @@ export const portalMetricRegistry = {
     label: "Clientes identificados",
     payloadPath: "summary.identifiedClients",
     sampleSizePath: "summary.totalTickets",
-    unit: "tickets",
+    unit: "clients",
     aggregation: "count",
-    definition: "Acionamentos com client_found=true ou client_id preenchido.",
+    definition: "Clientes distintos (baseqv_client_id) em research.v_acionamentos_tratados.",
   },
-  unidentified_support_clients: {
+  tickets_with_identified_client: {
     domain: "support",
-    label: "Clientes não identificados",
-    payloadPath: "summary.unidentifiedClients",
+    label: "Acionamentos com cliente identificado",
+    payloadPath: "summary.ticketsWithClient",
     sampleSizePath: "summary.totalTickets",
     unit: "tickets",
     aggregation: "count",
-    definition: "Acionamentos sem vínculo confirmado (client_found=false e client_id nulo).",
+    definition: "Acionamentos com pelo menos um cliente BASE QV identificado.",
+  },
+  support_identification_coverage: {
+    domain: "support",
+    label: "Cobertura de identificação",
+    payloadPath: "summary.identificationCoverage",
+    sampleSizePath: "summary.totalTickets",
+    unit: "percent",
+    aggregation: "rate",
+    definition: "ticketsWithClient / totalTickets.",
+  },
+  unidentified_support_clients: {
+    domain: "support",
+    label: "Acionamentos sem cliente identificado",
+    payloadPath: "summary.ticketsWithoutClient",
+    sampleSizePath: "summary.totalTickets",
+    unit: "tickets",
+    aggregation: "count",
+    definition: "Acionamentos sem baseqv_client_id válido.",
+  },
+  support_identified_from_description: {
+    domain: "support",
+    label: "Identificados pela descrição",
+    payloadPath: "summary.identifiedFromDescription",
+    sampleSizePath: "summary.totalTickets",
+    unit: "tickets",
+    aggregation: "count",
+    definition: "Clientes/acionamentos identificados via e-mail na descrição.",
+  },
+  support_corporate_email_tickets: {
+    domain: "support",
+    label: "E-mail corporativo no campo",
+    payloadPath: "summary.corporateEmailTickets",
+    sampleSizePath: "summary.totalTickets",
+    unit: "tickets",
+    aggregation: "count",
+    definition: "Campo com @quartavia.com.br.",
+  },
+  support_multiple_clients_tickets: {
+    domain: "support",
+    label: "Acionamentos com múltiplos clientes",
+    payloadPath: "summary.ticketsWithMultipleClients",
+    sampleSizePath: "summary.totalTickets",
+    unit: "tickets",
+    aggregation: "count",
+    definition: "baseqv_quantidade_matches > 1.",
+  },
+  support_unmatched_emails: {
+    domain: "support",
+    label: "E-mails sem correspondência",
+    payloadPath: "summary.unmatchedEmailTickets",
+    sampleSizePath: "summary.totalTickets",
+    unit: "tickets",
+    aggregation: "count",
+    definition: "E-mail externo sem match na BASE QV.",
+  },
+  support_needs_reprocessing: {
+    domain: "support",
+    label: "Precisam de reprocessamento",
+    payloadPath: "summary.needsReprocessing",
+    sampleSizePath: "summary.totalTickets",
+    unit: "tickets",
+    aggregation: "count",
+    definition: "precisa_reprocessar / aguardando_processamento.",
+  },
+  top_support_clients: {
+    domain: "support",
+    label: "Clientes com mais acionamentos",
+    payloadPath: "clientsWithMostTickets",
+    sampleSizePath: "summary.identifiedClients",
+    unit: "label",
+    aggregation: "top",
+    definition: "Top 10 clientes por acionamentos distintos.",
   },
   top_support_area: {
     domain: "support",
@@ -552,6 +837,166 @@ export const portalMetricRegistry = {
     unit: "label",
     aggregation: "top",
     definition: "Área/setor com maior volume de acionamentos no período.",
+  },
+  top_support_type: {
+    domain: "support",
+    label: "Tipo de solicitação mais frequente",
+    payloadPath: "summary.topType",
+    sampleSizePath: "summary.totalTickets",
+    unit: "label",
+    aggregation: "top",
+    definition: "Tipo de solicitação com maior volume no período.",
+  },
+  top_support_requesters: {
+    domain: "support",
+    label: "Solicitantes com maior volume",
+    payloadPath: "byRequester",
+    sampleSizePath: "summary.totalTickets",
+    unit: "label",
+    aggregation: "top",
+    definition: "Top 10 solicitantes por volume de acionamentos.",
+  },
+  support_without_area: {
+    domain: "support",
+    label: "Acionamentos sem área",
+    payloadPath: "summary.withoutArea",
+    sampleSizePath: "summary.totalTickets",
+    unit: "tickets",
+    aggregation: "count",
+    definition: "Acionamentos sem area_setor informado.",
+  },
+  support_without_type: {
+    domain: "support",
+    label: "Acionamentos sem tipo",
+    payloadPath: "summary.withoutType",
+    sampleSizePath: "summary.totalTickets",
+    unit: "tickets",
+    aggregation: "count",
+    definition: "Acionamentos sem tipo_solicitacao informado.",
+  },
+  support_monthly_evolution: {
+    domain: "support",
+    label: "Evolução dos acionamentos",
+    payloadPath: "monthlyEvolution",
+    sampleSizePath: "summary.totalTickets",
+    unit: "tickets",
+    aggregation: "trend",
+    definition: "Série temporal por data_abertura.",
+  },
+
+  /* ---------- PERFORMANCE EP ---------- */
+  ep_clients_by_advisor: {
+    domain: "ep_performance",
+    label: "Clientes por EP",
+    payloadPath: "byAdvisor",
+    sampleSizePath: "summary.totalClients",
+    unit: "label",
+    aggregation: "top",
+    definition: "Carteira por Engenheiro Patrimonial atual.",
+  },
+  ep_meeting_coverage: {
+    domain: "ep_performance",
+    label: "Cobertura de reuniões por EP",
+    payloadPath: "summary.meetingCoverage",
+    sampleSizePath: "summary.totalClients",
+    unit: "percent",
+    aggregation: "rate",
+    definition: "Clientes com ≥1 reunião válida ÷ carteira.",
+  },
+  ep_clients_without_meeting: {
+    domain: "ep_performance",
+    label: "Clientes sem reunião",
+    payloadPath: "summary.clientsWithoutMeeting",
+    sampleSizePath: "summary.totalClients",
+    unit: "clients",
+    aggregation: "count",
+    definition: "Clientes da carteira sem reunião válida.",
+  },
+  ep_cancelled_share: {
+    domain: "ep_performance",
+    label: "Percentual cancelado da carteira",
+    payloadPath: "summary.cancelledShareOfPortfolio",
+    sampleSizePath: "summary.totalClients",
+    unit: "percent",
+    aggregation: "rate",
+    definition:
+      "Cancelados confirmados ÷ carteira do EP atualmente vinculado (não é taxa temporal).",
+  },
+  ep_nps: {
+    domain: "ep_performance",
+    label: "NPS por EP",
+    payloadPath: "summary.npsRaw",
+    sampleSizePath: "summary.npsResponses",
+    unit: "index",
+    aggregation: "value",
+    definition:
+      "NPS = % Promotores (9–10) − % Detratores (0–6). Média da nota não é NPS. EP atual no join.",
+  },
+  ep_pharus_meetings: {
+    domain: "ep_performance",
+    label: "Reuniões no App Pharus",
+    payloadPath: "pharusMeetings.summary.totalMeetings",
+    sampleSizePath: "pharusMeetings.summary.totalMeetings",
+    unit: "meetings",
+    aggregation: "count",
+    definition: "Reuniões registradas no App Pharus (seção isolada).",
+  },
+  ep_small_samples: {
+    domain: "ep_performance",
+    label: "EPs com amostra pequena",
+    payloadPath: "summary.advisorsWithPortfolio",
+    sampleSizePath: "summary.advisorsWithPortfolio",
+    unit: "label",
+    aggregation: "count",
+    definition: "EPs com carteira < 10 clientes (badge amostra pequena).",
+  },
+
+  /* ---------- CRUZAMENTOS ESTATÍSTICOS ---------- */
+  sc_top_association: {
+    domain: "statistical_crosses",
+    label: "Variáveis mais associadas ao cancelamento",
+    payloadPath: "summary.topAssociationLabel",
+    sampleSizePath: "summary.analyzedClients",
+    unit: "association",
+    aggregation: "top",
+    definition: "Maior magnitude de associação (não causalidade).",
+  },
+  sc_nps: {
+    domain: "statistical_crosses",
+    label: "NPS nos cruzamentos",
+    payloadPath: "summary.npsIndex",
+    sampleSizePath: "summary.npsResponses",
+    unit: "index",
+    aggregation: "value",
+    definition:
+      "Índice NPS preditivo (respostas após cancelamento excluídas). Não é média da nota.",
+  },
+  sc_confirmed_cancellations: {
+    domain: "statistical_crosses",
+    label: "Cancelamentos confirmados na análise",
+    payloadPath: "summary.confirmedCancellations",
+    sampleSizePath: "summary.analyzedClients",
+    unit: "clients",
+    aggregation: "count",
+    definition: "Eventos = churn efetivado ou distrato assinado.",
+  },
+  sc_excluded_variables: {
+    domain: "statistical_crosses",
+    label: "Variáveis excluídas",
+    payloadPath: "excludedVariables",
+    sampleSizePath: "summary.analyzedClients",
+    unit: "label",
+    aggregation: "top",
+    definition: "Variáveis fora da análise por cobertura/amostra/leakage.",
+  },
+  sc_survival: {
+    domain: "statistical_crosses",
+    label: "Curva de permanência",
+    payloadPath: "survival",
+    sampleSizePath: "summary.analyzedClients",
+    unit: "label",
+    aggregation: "trend",
+    definition: "Kaplan–Meier com cancelamento confirmado como evento.",
   },
 
   /* ---------- CANCELAMENTO (BASE QV) ---------- */
@@ -564,6 +1009,51 @@ export const portalMetricRegistry = {
     aggregation: "count",
     definition:
       "Clientes com churn_efetivado_at ou distrato_assinado_at (não arquivados). Intenção/pedido não contam.",
+  },
+  clients_in_cancellation_process: {
+    domain: "cancellations",
+    label: "Clientes em processo de cancelamento",
+    payloadPath: "summary.clientsInCancellationProcess",
+    sampleSizePath: "summary.totalDistinctClients",
+    unit: "clients",
+    aggregation: "count",
+    definition:
+      "Clientes com intenção ou pedido e sem churn/distrato efetivado (não arquivados).",
+    aliases: [
+      "clientes em processo de cancelamento",
+      "em processo de cancelamento",
+      "intencao ou pedido sem efetivacao",
+    ],
+  },
+  typical_days_in_cancellation_process: {
+    domain: "cancellations",
+    label: "Tempo típico em processo de cancelamento",
+    payloadPath: "summary.timing.medianDaysInProcess.median",
+    sampleSizePath: "summary.timing.medianDaysInProcess.sampleSize",
+    unit: "days",
+    aggregation: "median",
+    definition:
+      "Mediana de dias em processo para clientes ainda não efetivados (hoje − coalesce(data_pedido, intencao_registrada_at)).",
+    aliases: [
+      "tempo tipico no processo de cancelamento",
+      "mediana de dias em processo",
+    ],
+  },
+  cancellation_process_by_status: {
+    domain: "cancellations",
+    label: "Clientes por etapa do processo de cancelamento",
+    payloadPath: null,
+    distributionLookup: { path: "distributions.byProcessStatus" },
+    sampleSizePath: "summary.clientsInCancellationProcess",
+    unit: "clients",
+    aggregation: "distribution",
+    definition:
+      "Distribuição de clientes em processo por cancellation_statuses.name (join status_id = id).",
+    aliases: [
+      "quantos estao em cada etapa do processo",
+      "distribuicao por status do processo de cancelamento",
+      "etapas do processo de cancelamento",
+    ],
   },
   cancellation_intentions: {
     domain: "cancellations",
@@ -683,7 +1173,7 @@ export const portalMetricRegistry = {
     sampleSizePath: "summary.financialSampleSize",
     unit: "days",
     aggregation: "median",
-    definition: "Mediana de dias sem atualização financeira anterior ao cancelamento.",
+    definition: "Mediana de dias sem atualização financeira anterior ao cancelamento. Atualização válida somente se updated_at > created_at.",
   },
   median_days_without_interaction_before_cancellation: {
     domain: "cancellations",
@@ -777,6 +1267,42 @@ export async function resolveMetricFromDashboard(domain, metricId, filters = {},
     };
   }
 
+  // Soma bruta BASE QV + App Pharus (sem chave confiável de deduplicação)
+  if (metricId === "combined_people_with_mechanisms") {
+    const mechExec = portalDomainExecutors.mechanisms;
+    const phExec = portalDomainExecutors.pharus_mechanisms;
+    const [mechPayload, phPayload] = await Promise.all([
+      options.payload || mechExec.compute(),
+      phExec.compute(),
+    ]);
+    const baseQv = Number(mechPayload?.summary?.clientsWithMechanisms) || 0;
+    const pharus = Number(
+      phPayload?.summary?.usersWithMechanisms
+      ?? phPayload?.summary?.usersWithSuggestion
+      ?? phPayload?.summary?.usersWithSuggestions
+      ?? 0,
+    );
+    const combined = baseQv + pharus;
+    return {
+      success: true,
+      metric: metricId,
+      domain: entry.domain,
+      label: entry.label,
+      aggregation: "count",
+      value: combined,
+      sample_size: combined,
+      unit: entry.unit,
+      definition: entry.definition,
+      payload_path: "summary.combinedPeopleWithMechanisms",
+      value_detail: {
+        combinedMode: "gross_sum",
+        baseQvClientsWithMechanisms: baseQv,
+        appPharusUsersWithMechanisms: pharus,
+      },
+      caveats: entry.caveats || [],
+    };
+  }
+
   const executor = portalDomainExecutors[entry.domain];
   if (!executor?.compute) {
     return {
@@ -818,10 +1344,15 @@ export async function resolveMetricFromDashboard(domain, metricId, filters = {},
 
   if (entry.distributionLookup) {
     const list = getByPath(payload, entry.distributionLookup.path) || [];
+    const lookup = entry.distributionLookup;
     const item = Array.isArray(list)
-      ? list.find((row) => String(row.label) === String(entry.distributionLookup.label))
+      ? list.find((row) => {
+        if (lookup.key != null) return String(row.key) === String(lookup.key);
+        return String(row.label) === String(lookup.label);
+      })
       : null;
-    value = item?.count ?? 0;
+    const field = lookup.field || "count";
+    value = item?.[field] ?? item?.count ?? 0;
   } else if (typeof entry.countFromClients === "function") {
     value = clientsRows.filter(entry.countFromClients).length;
     sampleSize = clientsRows.length;
@@ -853,6 +1384,10 @@ export async function resolveMetricFromDashboard(domain, metricId, filters = {},
     } else if (value.label != null) {
       value = String(value.label);
     }
+  }
+  if (metricId === "top_meeting_types" && Array.isArray(value) && value.length) {
+    const top = value[0];
+    value = `${top.label} (${top.count}${top.percent != null ? ` · ${top.percent}%` : ""})`;
   }
 
   const aggregation = options.aggregation || entry.aggregation;
@@ -1118,8 +1653,11 @@ function recomputeSupportSummaryLikeDashboard(rows) {
   const totalTickets = rows.length;
   const openTickets = rows.filter((t) => t.isOpen).length;
   const urgentTickets = rows.filter((t) => t.priority === "Urgente").length;
-  const identifiedClients = rows.filter((t) => t.clientIdentified).length;
-  const unidentifiedClients = rows.filter((t) => !t.clientIdentified).length;
+  const ticketsWithClient = rows.filter((t) => t.clientIdentified).length;
+  const identifiedClientIds = new Set(rows.map((t) => t.primaryClientId).filter(Boolean));
+  const identifiedClients = identifiedClientIds.size;
+  const ticketsWithoutClient = totalTickets - ticketsWithClient;
+  const unidentifiedClients = ticketsWithoutClient;
   const resolvedTickets = rows.filter((t) => t.isResolved).length;
   const resolutionRate = totalTickets
     ? Math.round((resolvedTickets / totalTickets) * 1000) / 10
@@ -1132,22 +1670,36 @@ function recomputeSupportSummaryLikeDashboard(rows) {
     ? Math.round(percentile(resValues, 50) * 10) / 10
     : null;
   const areaMap = new Map();
+  const typeMap = new Map();
   for (const t of rows) {
-    if (!t.area || t.area === "Não informado") continue;
-    areaMap.set(t.area, (areaMap.get(t.area) || 0) + 1);
+    const area = t.areaChart || t.area;
+    if (area && area !== "Não informado") areaMap.set(area, (areaMap.get(area) || 0) + 1);
+    if (t.type && t.type !== "Não informado") typeMap.set(t.type, (typeMap.get(t.type) || 0) + 1);
   }
-  const topArea = [...areaMap.entries()]
-    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], "pt-BR"))[0]?.[0] || null;
+  const topAreaEntry = [...areaMap.entries()]
+    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], "pt-BR"))[0] || null;
+  const topTypeEntry = [...typeMap.entries()]
+    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], "pt-BR"))[0] || null;
   return {
     totalTickets,
     openTickets,
     urgentTickets,
     identifiedClients,
+    ticketsWithClient,
+    identificationCoverage: totalTickets
+      ? Math.round((ticketsWithClient / totalTickets) * 1000) / 10
+      : 0,
+    ticketsWithoutClient,
     unidentifiedClients,
+    withoutArea: rows.filter((t) => (t.areaChart || t.area) === "Não informado" || !t.area).length,
+    withoutType: rows.filter((t) => !t.type || t.type === "Não informado").length,
     resolvedTickets,
     resolutionRate,
     medianResolutionHours,
-    topArea,
+    topArea: topAreaEntry?.[0] || null,
+    topAreaCount: topAreaEntry?.[1] || 0,
+    topType: topTypeEntry?.[0] || null,
+    topTypeCount: topTypeEntry?.[1] || 0,
   };
 }
 

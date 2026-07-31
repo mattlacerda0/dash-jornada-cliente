@@ -1,6 +1,10 @@
 import { getPharusSupabaseClient } from "./_shared/env.mjs";
+import {
+  applyFirstMeetingFallbackToClientRows,
+  loadAirtableFirstMeetingIndex,
+} from "./_shared/first-meeting-fallback.mjs";
 
-const CLIENT_SELECT = "id,codigo,name,data_inicio_ciclo,created_at,status,engenheiro_patrimonial";
+const CLIENT_SELECT = "id,codigo,name,data_inicio_ciclo,created_at,status,engenheiro_patrimonial,cpf,cpf_digits,email,phone,phone_digits";
 const PHARUS_EVENTS_SELECT = "*";
 
 function configurationError() {
@@ -339,7 +343,14 @@ function transitionDurations(journeysByClient, stagesById) {
 
 async function buildPayload() {
   const warnings = [];
-  const clients = await fetchAll("clients", CLIENT_SELECT);
+  const [clients, airtableIndex] = await Promise.all([
+    fetchAll("clients", CLIENT_SELECT),
+    loadAirtableFirstMeetingIndex().catch((error) => ({
+      available: false,
+      reason: error instanceof Error ? error.message : "Falha ao carregar índice Airtable.",
+      warnings: [],
+    })),
+  ]);
   const sourceResults = {
     client_meetings: await fetchAllSafe("client_meetings"),
     client_journeys: await fetchAllSafe("client_journeys"),
@@ -352,6 +363,9 @@ async function buildPayload() {
   }
   const pharusEvents = await fetchPharusMetricEvents(warnings);
   const pharusOnboarding = summarizePharusOnboardingEvents(pharusEvents);
+  if (airtableIndex?.reason && !airtableIndex.available) {
+    warnings.push(`airtable_fallback: ${airtableIndex.reason}`);
+  }
 
   const meetingsByClient = byClient(Array.isArray(sourceResults.client_meetings) ? sourceResults.client_meetings : []);
   const journeysByClient = byClient(Array.isArray(sourceResults.client_journeys) ? sourceResults.client_journeys : []);
@@ -419,6 +433,19 @@ async function buildPayload() {
     };
   });
 
+  const beforeFallbackWithMeeting = rows.filter((row) => row.firstMeetingDate).length;
+  const { coverage: firstMeetingFallbackCoverage } = applyFirstMeetingFallbackToClientRows(
+    rows,
+    clients,
+    airtableIndex,
+  );
+  for (const row of rows) {
+    if (row.firstMeetingSource === "airtable" && row.firstMeetingDate) {
+      row.daysToFirstMeeting = nonNegativeDaysBetween(parseDate(row.contractDate), parseDate(row.firstMeetingDate));
+    }
+  }
+  const afterFallbackWithMeeting = rows.filter((row) => row.firstMeetingDate).length;
+
   const total = rows.length || 1;
   const withFirstMeeting = rows.filter((row) => row.daysToFirstMeeting != null).length;
   const withPlanDelivery = rows.filter((row) => row.daysToPlanDelivery != null).length;
@@ -472,6 +499,18 @@ async function buildPayload() {
       appPharusCompletedOnboarding: pharusCompletedCount,
       appPharusTotalOnboardingCount: pharusTotalOnboardingCount,
       averageStageDays: indicators[6].value,
+      firstMeetingCoverageBeforeFallback: Math.round((beforeFallbackWithMeeting / total) * 1000) / 10,
+      firstMeetingCoverageAfterFallback: Math.round((afterFallbackWithMeeting / total) * 1000) / 10,
+      firstMeetingSources: {
+        base_qv: firstMeetingFallbackCoverage?.primary || beforeFallbackWithMeeting,
+        airtable: firstMeetingFallbackCoverage?.airtable || 0,
+        unavailable: firstMeetingFallbackCoverage?.unavailable || 0,
+      },
+      airtableFallback: {
+        available: Boolean(airtableIndex?.available),
+        reason: airtableIndex?.reason || null,
+        coverage: firstMeetingFallbackCoverage || null,
+      },
     },
     indicators,
     distributions: {

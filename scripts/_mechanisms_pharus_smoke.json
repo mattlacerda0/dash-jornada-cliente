@@ -1,0 +1,264 @@
+{
+  "baseQv": {
+    "ok": true,
+    "clientsWithMechanisms": 136,
+    "portfolioClients": 3271,
+    "epCount": 31,
+    "topEp": [
+      {
+        "engineer": "Gustavo Papeschi Mariano",
+        "totalClients": 83,
+        "withImpl": 30,
+        "without": 53,
+        "percent": 36.1,
+        "implementations": 71,
+        "types": 9
+      },
+      {
+        "engineer": "Eduardo Peroni",
+        "totalClients": 104,
+        "withImpl": 32,
+        "without": 72,
+        "percent": 30.8,
+        "implementations": 69,
+        "types": 10
+      },
+      {
+        "engineer": "Lucas Barrientos",
+        "totalClients": 95,
+        "withImpl": 20,
+        "without": 75,
+        "percent": 21.1,
+        "implementations": 57,
+        "types": 9
+      },
+      {
+        "engineer": "Julio Cienkonog",
+        "totalClients": 71,
+        "withImpl": 7,
+        "without": 64,
+        "percent": 9.9,
+        "implementations": 14,
+        "types": 8
+      },
+      {
+        "engineer": "Rodrigo Amorim",
+        "totalClients": 79,
+        "withImpl": 2,
+        "without": 77,
+        "percent": 2.5,
+        "implementations": 2,
+        "types": 1
+      }
+    ],
+    "warningCount": 1,
+    "uniqueWarnings": 1,
+    "duplicateWarnings": false,
+    "sampleWarnings": [
+      "Categoria pouco preenchida (4/19). Gráfico de dimensão usa mercado (18/19)."
+    ]
+  },
+  "appPharus": {
+    "ok": true,
+    "available": true,
+    "status": "connected",
+    "schema": "core",
+    "message": "App Pharus conectado",
+    "summary": {
+      "catalogMechanisms": 11,
+      "engines": 2,
+      "categories": 3,
+      "linkedMechanisms": 357,
+      "suggestions": 357,
+      "totalSuggestions": 357,
+      "suggestionRowsRaw": 357,
+      "suggestionsDeduped": 357,
+      "usersWithMechanisms": 57,
+      "usersWithSuggestion": 57,
+      "usersWithSuggestions": 57,
+      "linkedMechanismTypes": 11,
+      "suggestedMechanismTypes": 11,
+      "distinctSuggestedTypes": 11,
+      "topSuggestedMechanism": {
+        "name": "Autoconstrução",
+        "count": 50,
+        "percent": 87.7
+      },
+      "recentSuggestions30d": 316,
+      "orphanMechanismIds": 0,
+      "duplicateSuggestionPairs": 0,
+      "invalidJsonRecords": 0,
+      "onlySuggestedStatus": true
+    },
+    "metadata": {
+      "source": "App Pharus",
+      "catalogTable": "core.mechanisms",
+      "relationTable": "core.user_mechanisms",
+      "projectId": "qvtqufdivpbmubooawdm",
+      "onlySuggestedStatus": true,
+      "suggestionDedup": "user_id + mechanism_id",
+      "includedStatuses": [
+        "suggested"
+      ],
+      "epAggregation": false,
+      "coverageUnavailable": true,
+      "coverageNote": "Cobertura % não exibida: denominador de usuários ativos da plataforma não definido.",
+      "userDirectory": null
+    },
+    "rowsCount": 357,
+    "sampleRows": [
+      {
+        "userId": "49c7a549-9bea-4315-8365-4b4f0a8cfa4b",
+        "userName": "Usuário não identificado",
+        "mechanismName": "Autoconstrução",
+        "status": "suggested"
+      },
+      {
+        "userId": "83c4346d-b3af-4d79-8f9a-83d015f27b0e",
+        "userName": "Usuário não identificado",
+        "mechanismName": "Autoconstrução",
+        "status": "suggested"
+      },
+      {
+        "userId": "506d163c-e809-4b78-a5a7-1b4272ee8e6b",
+        "userName": "Usuário não identificado",
+        "mechanismName": "Autoconstrução",
+        "status": "suggested"
+      }
+    ],
+    "catalogByEngine": [
+      {
+        "label": "M2 Reserva",
+        "count": 9,
+        "percent": 81.8
+      },
+      {
+        "label": "M1 Aporte",
+        "count": 2,
+        "percent": 18.2
+      }
+    ],
+    "topSuggested": [
+      {
+        "mechanismId": "self-construction",
+        "label": "Autoconstrução",
+        "name": "Autoconstrução",
+        "users": 50,
+        "count": 50,
+        "suggestions": 50,
+        "percent": 87.7,
+        "engine": "M1 Aporte",
+        "category": "Ganho de Capital"
+      },
+      {
+        "mechanismId": "serial-auction",
+        "label": "Leilão Serial",
+        "name": "Leilão Serial",
+        "users": 50,
+        "count": 50,
+        "suggestions": 50,
+        "percent": 87.7,
+        "engine": "M2 Reserva",
+        "category": "Ganho de Capital"
+      },
+      {
+        "mechanismId": "real-estate-scaling",
+        "label": "Escala Imobiliária",
+        "name": "Escala Imobiliária",
+        "users": 45,
+        "count": 45,
+        "suggestions": 45,
+        "percent": 78.9,
+        "engine": "M2 Reserva",
+        "category": "Ganho de Capital"
+      },
+      {
+        "mechanismId": "green-credit",
+        "label": "Crédito Verde",
+        "name": "Crédito Verde",
+        "users": 40,
+        "count": 40,
+        "suggestions": 40,
+        "percent": 70.2,
+        "engine": "M2 Reserva",
+        "category": "Recebíveis"
+      },
+      {
+        "mechanismId": "scaled-fixed-income",
+        "label": "Renda Fixa Escalonada + Trava de Inflação",
+        "name": "Renda Fixa Escalonada + Trava de Inflação",
+        "users": 39,
+        "count": 39,
+        "suggestions": 39,
+        "percent": 68.4,
+        "engine": "M1 Aporte",
+        "category": "Ganho de Capital"
+      },
+      {
+        "mechanismId": "arroba-cycle",
+        "label": "Ciclo de Arroba",
+        "name": "Ciclo de Arroba",
+        "users": 34,
+        "count": 34,
+        "suggestions": 34,
+        "percent": 59.6,
+        "engine": "M2 Reserva",
+        "category": "Recebíveis"
+      },
+      {
+        "mechanismId": "synthetic-income",
+        "label": "Renda Sintética",
+        "name": "Renda Sintética",
+        "users": 33,
+        "count": 33,
+        "suggestions": 33,
+        "percent": 57.9,
+        "engine": "M2 Reserva",
+        "category": "Recebíveis"
+      },
+      {
+        "mechanismId": "qvra11",
+        "label": "QVRA11",
+        "name": "QVRA11",
+        "users": 28,
+        "count": 28,
+        "suggestions": 28,
+        "percent": 49.1,
+        "engine": "M2 Reserva",
+        "category": "Recebíveis"
+      }
+    ],
+    "statusDistribution": [
+      {
+        "label": "suggested",
+        "count": 357,
+        "percent": 100
+      }
+    ],
+    "onlySuggested": true,
+    "warnings": [
+      {
+        "code": "accounts_unavailable",
+        "message": "core.accounts indisponível; tabela de vínculos sem nome/e-mail.",
+        "count": 1
+      },
+      {
+        "code": "user_mechanisms_partial_columns",
+        "message": "user_mechanisms sem updated_at (core.user_mechanisms: HTTP 400); coluna de atualização ficará vazia.",
+        "count": 1
+      },
+      {
+        "code": "suggested_counts_as_link",
+        "message": "Vínculos com status suggested são tratados como mecanismos associados ao usuário no App Pharus (não como implementação BASE QV).",
+        "count": 1
+      }
+    ],
+    "publicSchema404": false
+  },
+  "combined": {
+    "mode": "gross_sum",
+    "baseQv": 136,
+    "appPharus": 57,
+    "total": 193
+  }
+}

@@ -85,6 +85,22 @@
                        "dest":  "/api/quality.js?fn=satisfaction"
                    },
                    {
+                       "src":  "/api/ep-performance",
+                       "dest":  "/api/quality.js?fn=ep-performance"
+                   },
+                   {
+                       "src":  "/api/pharus-ep-meetings",
+                       "dest":  "/api/quality.js?fn=pharus-ep-meetings"
+                   },
+                   {
+                       "src":  "/api/statistical-crosses",
+                       "dest":  "/api/quality.js?fn=statistical-crosses"
+                   },
+                   {
+                       "src":  "/api/temporal-indicators",
+                       "dest":  "/api/quality.js?fn=temporal-indicators"
+                   },
+                   {
                        "src":  "/api/(.*)",
                        "dest":  "/api/$1.js"
                    },

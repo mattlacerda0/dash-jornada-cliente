@@ -19,6 +19,10 @@ module.exports = async function handler(req, res) {
     "support": () => import("../netlify/functions/support.mjs"),
     "cancellations": () => import("../netlify/functions/cancellations.mjs"),
     "satisfaction": () => import("../netlify/functions/satisfaction.mjs"),
+    "ep-performance": () => import("../netlify/functions/ep-performance.mjs"),
+    "pharus-ep-meetings": () => import("../netlify/functions/pharus-ep-meetings.mjs"),
+    "statistical-crosses": () => import("../netlify/functions/statistical-crosses.mjs"),
+    "temporal-indicators": () => import("../netlify/functions/temporal-indicators.mjs"),
   };
 
   const loadRoute = routes[routeName] || routes.quality;

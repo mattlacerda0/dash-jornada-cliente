@@ -317,10 +317,9 @@ export function normalizePlanFilters(raw = {}) {
     cancelled_without_date: "Cancelado sem data confirmada",
     frozen: "Congelado", congelado: "Congelado",
     unknown: "Não informado", "não informado": "Não informado", "nao informado": "Não informado",
-    non_active: null,
-  };
     active_or_frozen: "active_or_frozen",
     active_and_frozen: "active_or_frozen",
+    non_active: null,
   };
   const statusRaw = raw.client_status ?? raw.status ?? raw.clientStatus;
   if (statusRaw != null) {

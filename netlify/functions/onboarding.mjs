@@ -4,7 +4,8 @@ import {
   loadAirtableFirstMeetingIndex,
 } from "./_shared/first-meeting-fallback.mjs";
 
-const CLIENT_SELECT = "id,codigo,name,data_inicio_ciclo,created_at,status,engenheiro_patrimonial,cpf,cpf_digits,email,phone,phone_digits";
+const CLIENT_SELECT =
+  "id,codigo,name,data_inicio_ciclo,created_at,status,engenheiro_patrimonial,cpf,cpf_digits,email,phone,phone_digits";
 const PHARUS_EVENTS_SELECT = "*";
 
 function configurationError() {
@@ -343,29 +344,34 @@ function transitionDurations(journeysByClient, stagesById) {
 
 async function buildPayload() {
   const warnings = [];
-  const [clients, airtableIndex] = await Promise.all([
+  const [clients, airtableIndex, ...sourceEntries] = await Promise.all([
     fetchAll("clients", CLIENT_SELECT),
-    loadAirtableFirstMeetingIndex().catch((error) => ({
+    loadAirtableFirstMeetingIndex().catch((err) => ({
       available: false,
-      reason: error instanceof Error ? error.message : "Falha ao carregar índice Airtable.",
+      reason: err?.message || "Falha ao carregar índice Airtable.",
       warnings: [],
     })),
+    fetchAllSafe("client_meetings"),
+    fetchAllSafe("client_journeys"),
+    fetchAllSafe("client_mecanismos"),
+    fetchAllSafe("client_implementation_meeting_date"),
+    fetchAllSafe("journey_stages"),
   ]);
   const sourceResults = {
-    client_meetings: await fetchAllSafe("client_meetings"),
-    client_journeys: await fetchAllSafe("client_journeys"),
-    client_mecanismos: await fetchAllSafe("client_mecanismos"),
-    client_implementation_meeting_date: await fetchAllSafe("client_implementation_meeting_date"),
-    journey_stages: await fetchAllSafe("journey_stages"),
+    client_meetings: sourceEntries[0],
+    client_journeys: sourceEntries[1],
+    client_mecanismos: sourceEntries[2],
+    client_implementation_meeting_date: sourceEntries[3],
+    journey_stages: sourceEntries[4],
   };
   for (const [table, result] of Object.entries(sourceResults)) {
     if (!Array.isArray(result)) warnings.push(`${table}: ${result.error}`);
   }
-  const pharusEvents = await fetchPharusMetricEvents(warnings);
-  const pharusOnboarding = summarizePharusOnboardingEvents(pharusEvents);
   if (airtableIndex?.reason && !airtableIndex.available) {
     warnings.push(`airtable_fallback: ${airtableIndex.reason}`);
   }
+  const pharusEvents = await fetchPharusMetricEvents(warnings);
+  const pharusOnboarding = summarizePharusOnboardingEvents(pharusEvents);
 
   const meetingsByClient = byClient(Array.isArray(sourceResults.client_meetings) ? sourceResults.client_meetings : []);
   const journeysByClient = byClient(Array.isArray(sourceResults.client_journeys) ? sourceResults.client_journeys : []);
@@ -441,7 +447,10 @@ async function buildPayload() {
   );
   for (const row of rows) {
     if (row.firstMeetingSource === "airtable" && row.firstMeetingDate) {
-      row.daysToFirstMeeting = nonNegativeDaysBetween(parseDate(row.contractDate), parseDate(row.firstMeetingDate));
+      const contractDate = parseDate(row.contractDate);
+      const meetingDate = parseDate(row.firstMeetingDate);
+      row.daysToFirstMeeting =
+        contractDate && meetingDate ? daysBetween(contractDate, meetingDate) : row.daysToFirstMeeting;
     }
   }
   const afterFallbackWithMeeting = rows.filter((row) => row.firstMeetingDate).length;

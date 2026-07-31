@@ -37,7 +37,7 @@ export const portalDomainExecutors = {
   },
   pharus_mechanisms: {
     id: "pharus_mechanisms",
-    label: "App Pharus · Mecanismos sugeridos",
+    label: "App Pharus · Mecanismos vinculados",
     compute: computePharusMechanismsPayload,
   },
   journey: {
@@ -352,8 +352,8 @@ export const portalMetricRegistry = {
     sampleSizePath: "summary.availableMechanisms",
     unit: "mechanisms",
     aggregation: "sum",
-    definition: "Vínculos com status normalizado Implementado (concluído).",
-    aliases: ["mecanismos implementados", "quantos foram implementados", "implementados"],
+    definition: "Vínculos com status normalizado Implementado (concluído). Gráfico Implementados por segmento usa somente esses vínculos.",
+    aliases: ["mecanismos implementados", "quantos foram implementados", "implementados", "implementados por segmento", "andamento por segmento"],
   },
   in_progress_mechanisms: {
     domain: "mechanisms",
@@ -462,32 +462,52 @@ export const portalMetricRegistry = {
     definition: "Contagem sobre clients[] do payload de Mecanismos: inProgress === 1.",
   },
 
-  /* ---------- APP PHARUS (sugestões — não implementação) ---------- */
+  /* ---------- APP PHARUS (vínculos suggested = mecanismo associado) ---------- */
   pharus_users_with_suggestions: {
     domain: "pharus_mechanisms",
-    label: "Usuários com mecanismos sugeridos (App Pharus)",
-    payloadPath: "summary.usersWithSuggestions",
-    sampleSizePath: "summary.usersWithSuggestions",
+    label: "Usuários com mecanismos (App Pharus)",
+    payloadPath: "summary.usersWithMechanisms",
+    sampleSizePath: "summary.usersWithMechanisms",
     unit: "users",
     aggregation: "count",
-    definition: "Usuários distintos com sugestão em user_mechanisms no App Pharus. Não misturar com BASE QV.",
+    definition: "Usuários distintos com vínculo em user_mechanisms (inclui suggested). Não misturar com BASE QV.",
+    aliases: [
+      "usuarios com mecanismos no app pharus",
+      "quantos usuarios possuem mecanismos no app pharus",
+      "usuarios com mecanismos sugeridos no app pharus",
+    ],
   },
   pharus_total_suggestions: {
     domain: "pharus_mechanisms",
-    label: "Total de sugestões (App Pharus)",
-    payloadPath: "summary.totalSuggestions",
-    sampleSizePath: "summary.totalSuggestions",
-    unit: "suggestions",
+    label: "Mecanismos vinculados (App Pharus)",
+    payloadPath: "summary.linkedMechanisms",
+    sampleSizePath: "summary.linkedMechanisms",
+    unit: "links",
     aggregation: "count",
-    definition: "Registros em user_mechanisms (App Pharus). Não são implementações.",
+    definition: "Vínculos únicos user_id + mechanism_id no App Pharus (status suggested).",
   },
   pharus_top_suggested_mechanism: {
     domain: "pharus_mechanisms",
-    label: "Mecanismo mais sugerido (App Pharus)",
+    label: "Mecanismo mais vinculado (App Pharus)",
     payloadPath: "summary.topSuggestedMechanism",
     unit: "mechanism",
     aggregation: "top",
-    definition: "Nome do mecanismo com mais sugestões no App Pharus.",
+    definition: "Nome do mecanismo com mais vínculos no App Pharus.",
+  },
+  combined_people_with_mechanisms: {
+    domain: "mechanisms",
+    label: "Clientes com mecanismos (duas fontes)",
+    payloadPath: "summary.combinedPeopleWithMechanisms",
+    unit: "people",
+    aggregation: "count",
+    definition:
+      "Soma bruta BASE QV + App Pharus quando não há chave confiável de deduplicação. Informar ressalva ao responder.",
+    aliases: [
+      "quantos clientes possuem mecanismos nas duas fontes",
+      "total consolidado de mecanismos",
+      "clientes com mecanismos nas duas fontes",
+    ],
+    caveats: ["Sem deduplicação entre BASE QV e App Pharus; soma bruta."],
   },
 
   /* ---------- JOURNEY (página Jornada — distinto de Mecanismos) ---------- */
@@ -523,6 +543,132 @@ export const portalMetricRegistry = {
     aggregation: "count",
     definition: "Clientes com primeira reunião realizada (BASE QV; Airtable só como fallback).",
     aliases: ["cobertura da primeira reuniao", "clientes com primeira reuniao"],
+  },
+  clients_with_meeting: {
+    domain: "meetings",
+    label: "Clientes com reunião",
+    payloadPath: "summary.clientsWithMeeting",
+    sampleSizePath: "summary.clientsWithMeeting",
+    unit: "clients",
+    aggregation: "count",
+    definition: "Clientes distintos com pelo menos uma reunião válida registrada no recorte.",
+    aliases: [
+      "clientes com reuniao",
+      "quantos clientes possuem alguma reuniao",
+      "clientes com pelo menos uma reuniao",
+    ],
+  },
+  average_interval_between_meetings: {
+    domain: "meetings",
+    label: "Intervalo médio entre reuniões",
+    payloadPath: "summary.averageIntervalDays",
+    averagePath: "summary.averageIntervalDays",
+    medianPath: "summary.typicalIntervalDays",
+    sampleSizePath: "summary.intervalDaysStats.validCount",
+    unit: "days",
+    aggregation: "average",
+    definition:
+      "Média aritmética dos intervalos positivos entre reuniões válidas consecutivas com presença confirmada.",
+    aliases: ["intervalo medio entre reunioes", "intervalo medio", "intervalo tipico entre reunioes"],
+  },
+  total_meeting_reschedules: {
+    domain: "meetings",
+    label: "Remarcações",
+    payloadPath: "summary.totalReschedules",
+    sampleSizePath: "summary.totalReschedules",
+    unit: "meetings",
+    aggregation: "count",
+    definition:
+      "Total de remarcações estruturadas (meeting_attendance.remarcado). Cobertura parcial: pode não representar o total real.",
+    aliases: ["quantas remarcacoes", "total de remarcacoes", "reunioes remarcadas"],
+    caveats: ["Cobertura parcial dos dados estruturados de remarcações."],
+  },
+  attendance_rate: {
+    domain: "meetings",
+    label: "Taxa de comparecimento",
+    payloadPath: "summary.attendanceRate",
+    sampleSizePath: "summary.eligibleMeetings",
+    unit: "percent",
+    aggregation: "rate",
+    definition:
+      "1 − (no-shows ÷ reuniões elegíveis). Elegíveis = total − futuras − canceladas. Fonte: meeting_attendance.status.",
+    aliases: [
+      "taxa de comparecimento",
+      "qual a taxa de comparecimento",
+      "comparecimento",
+      "taxa de presenca",
+    ],
+  },
+  no_show_rate: {
+    domain: "meetings",
+    label: "Taxa de no-show",
+    payloadPath: "summary.noShowRate",
+    sampleSizePath: "summary.eligibleMeetings",
+    unit: "percent",
+    aggregation: "rate",
+    definition: "no-shows ÷ reuniões elegíveis (total − futuras − canceladas).",
+    aliases: ["taxa de no-show", "qual a taxa de no-show", "percentual de no-show"],
+  },
+  cancelled_meetings_count: {
+    domain: "meetings",
+    label: "Reuniões canceladas",
+    payloadPath: "summary.cancelledMeetings",
+    sampleSizePath: "summary.cancelledMeetings",
+    unit: "meetings",
+    aggregation: "count",
+    definition: "Reuniões com attendanceStatus cancelada (não misturar com no-show).",
+    aliases: [
+      "quantas reunioes foram canceladas",
+      "quantas reuniões foram canceladas",
+      "reunioes canceladas",
+      "reuniões canceladas",
+    ],
+  },
+  top_meeting_types: {
+    domain: "meetings",
+    label: "Tipos de reunião mais frequentes",
+    payloadPath: "meetingTypesFromCsv.byFamily",
+    unit: "meetings",
+    aggregation: "top",
+    definition:
+      "Distribuição por família a partir do CSV exclusivo do gráfico Reuniões por tipo. Não usa o dataset operacional de reuniões.",
+    aliases: [
+      "quais tipos de reuniao sao mais frequentes",
+      "quais tipos de reunião são mais frequentes",
+      "tipos de reuniao mais frequentes",
+      "tipos de reunião mais frequentes",
+    ],
+    caveats: ["Fonte exclusiva: CSV de tipos de reunião."],
+  },
+  clients_with_zero_noshows: {
+    domain: "meetings",
+    label: "Clientes sem no-show",
+    payloadPath: "noShowFrequency",
+    unit: "clients",
+    aggregation: "count",
+    definition: "Clientes do recorte classificados na faixa 0 no-shows.",
+    aliases: ["quantos clientes nao tiveram no-show", "clientes com 0 no-shows"],
+    distributionLookup: { path: "noShowFrequency", key: "zero", field: "clients" },
+  },
+  clients_with_1_2_noshows: {
+    domain: "meetings",
+    label: "Clientes com 1–2 no-shows",
+    payloadPath: "noShowFrequency",
+    unit: "clients",
+    aggregation: "count",
+    definition: "Clientes do recorte com 1 ou 2 faltas.",
+    aliases: ["quantos clientes tiveram entre 1 e 2 no-shows"],
+    distributionLookup: { path: "noShowFrequency", key: "one_to_two", field: "clients" },
+  },
+  clients_with_5_plus_noshows: {
+    domain: "meetings",
+    label: "Clientes com 5 ou mais no-shows",
+    payloadPath: "noShowFrequency",
+    unit: "clients",
+    aggregation: "count",
+    definition: "Clientes do recorte com 5 ou mais faltas.",
+    aliases: ["quantos tiveram 5 ou mais no-shows", "clientes com 5 ou mais faltas"],
+    distributionLookup: { path: "noShowFrequency", key: "five_or_more", field: "clients" },
   },
   first_meeting_airtable_fallback: {
     domain: "meetings",
@@ -1027,7 +1173,7 @@ export const portalMetricRegistry = {
     sampleSizePath: "summary.financialSampleSize",
     unit: "days",
     aggregation: "median",
-    definition: "Mediana de dias sem atualização financeira anterior ao cancelamento.",
+    definition: "Mediana de dias sem atualização financeira anterior ao cancelamento. Atualização válida somente se updated_at > created_at.",
   },
   median_days_without_interaction_before_cancellation: {
     domain: "cancellations",
@@ -1121,6 +1267,42 @@ export async function resolveMetricFromDashboard(domain, metricId, filters = {},
     };
   }
 
+  // Soma bruta BASE QV + App Pharus (sem chave confiável de deduplicação)
+  if (metricId === "combined_people_with_mechanisms") {
+    const mechExec = portalDomainExecutors.mechanisms;
+    const phExec = portalDomainExecutors.pharus_mechanisms;
+    const [mechPayload, phPayload] = await Promise.all([
+      options.payload || mechExec.compute(),
+      phExec.compute(),
+    ]);
+    const baseQv = Number(mechPayload?.summary?.clientsWithMechanisms) || 0;
+    const pharus = Number(
+      phPayload?.summary?.usersWithMechanisms
+      ?? phPayload?.summary?.usersWithSuggestion
+      ?? phPayload?.summary?.usersWithSuggestions
+      ?? 0,
+    );
+    const combined = baseQv + pharus;
+    return {
+      success: true,
+      metric: metricId,
+      domain: entry.domain,
+      label: entry.label,
+      aggregation: "count",
+      value: combined,
+      sample_size: combined,
+      unit: entry.unit,
+      definition: entry.definition,
+      payload_path: "summary.combinedPeopleWithMechanisms",
+      value_detail: {
+        combinedMode: "gross_sum",
+        baseQvClientsWithMechanisms: baseQv,
+        appPharusUsersWithMechanisms: pharus,
+      },
+      caveats: entry.caveats || [],
+    };
+  }
+
   const executor = portalDomainExecutors[entry.domain];
   if (!executor?.compute) {
     return {
@@ -1162,10 +1344,15 @@ export async function resolveMetricFromDashboard(domain, metricId, filters = {},
 
   if (entry.distributionLookup) {
     const list = getByPath(payload, entry.distributionLookup.path) || [];
+    const lookup = entry.distributionLookup;
     const item = Array.isArray(list)
-      ? list.find((row) => String(row.label) === String(entry.distributionLookup.label))
+      ? list.find((row) => {
+        if (lookup.key != null) return String(row.key) === String(lookup.key);
+        return String(row.label) === String(lookup.label);
+      })
       : null;
-    value = item?.count ?? 0;
+    const field = lookup.field || "count";
+    value = item?.[field] ?? item?.count ?? 0;
   } else if (typeof entry.countFromClients === "function") {
     value = clientsRows.filter(entry.countFromClients).length;
     sampleSize = clientsRows.length;
@@ -1197,6 +1384,10 @@ export async function resolveMetricFromDashboard(domain, metricId, filters = {},
     } else if (value.label != null) {
       value = String(value.label);
     }
+  }
+  if (metricId === "top_meeting_types" && Array.isArray(value) && value.length) {
+    const top = value[0];
+    value = `${top.label} (${top.count}${top.percent != null ? ` · ${top.percent}%` : ""})`;
   }
 
   const aggregation = options.aggregation || entry.aggregation;

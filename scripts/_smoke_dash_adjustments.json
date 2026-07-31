@@ -1,0 +1,79 @@
+{
+  "meetings": {
+    "totalMeetings": 6590,
+    "totalNoShows": 736,
+    "totalReschedules": 122,
+    "attendanceRate": 87.5,
+    "clientsWithMeeting": 1404,
+    "csvAvailable": true,
+    "csvDistinctUuids": 11673,
+    "csvDistinctTypes": 49,
+    "csvTopFamilies": [
+      {
+        "label": "Checkpoint",
+        "count": 5271,
+        "percent": 45.2
+      },
+      {
+        "label": "Kickoff",
+        "count": 1265,
+        "percent": 10.8
+      },
+      {
+        "label": "Rota Patrimonial",
+        "count": 1060,
+        "percent": 9.1
+      },
+      {
+        "label": "Especial",
+        "count": 953,
+        "percent": 8.2
+      },
+      {
+        "label": "Ativação das Engrenagens",
+        "count": 649,
+        "percent": 5.6
+      },
+      {
+        "label": "Tração Patrimonial",
+        "count": 549,
+        "percent": 4.7
+      },
+      {
+        "label": "Implementação",
+        "count": 537,
+        "percent": 4.6
+      },
+      {
+        "label": "Central de Inteligência",
+        "count": 464,
+        "percent": 4
+      }
+    ],
+    "operationalHasTypes": false
+  },
+  "financial": {
+    "totalClients": 3271,
+    "withData": 2997,
+    "postCreation": 2006,
+    "updated30": 1239,
+    "medianDays": 15,
+    "audit": {
+      "totalRecords": 2997,
+      "updatedEqualsCreated": 991,
+      "updatedAfterCreated": 2006,
+      "updatedBeforeCreated": 0,
+      "missingCreatedAt": 0,
+      "missingUpdatedAt": 0,
+      "invalidOrIncompleteTimestamps": 0,
+      "medianDaysCreatedToUpdate": 114.1,
+      "rule": "isUpdated = updated_at > created_at"
+    }
+  },
+  "cancellations": {
+    "effective": 53,
+    "intentions": 154,
+    "orders": 123,
+    "inProcess": 101
+  }
+}

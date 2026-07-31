@@ -96,7 +96,7 @@
     .mech-unit-defs b{color:var(--color-text);font-weight:600}
     .kpi-block-label{margin:18px 0 10px;font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--color-text-muted)}
     .kpi-block-label:first-of-type{margin-top:4px}
-    /* Mecanismos: destaque laranja (sem azul) */
+    /* Mecanismos BASE QV: destaque laranja */
     #view-mechanisms .metric.kpi-primary{
       border-color:rgba(244,121,32,.42);
       border-top:2px solid var(--color-primary);
@@ -109,11 +109,32 @@
     }
     #view-mechanisms .metric.kpi-secondary .metric-value{font-size:26px}
     #view-mechanisms .metric.highlight{border-top-color:var(--color-primary)}
+    /* Visão consolidada + App Pharus: destaque azul */
+    #view-mechanisms #kKpisCombined .metric.kpi-blue,
+    #view-mechanisms .pharus-section .metric.kpi-primary{
+      border:1px solid rgba(105,168,255,.55);
+      border-top:2px solid var(--color-info);
+      box-shadow:0 0 0 1px rgba(105,168,255,.12),0 0 24px rgba(105,168,255,.18);
+      background:linear-gradient(180deg,rgba(105,168,255,.14),rgba(26,26,26,.92));
+    }
+    #view-mechanisms #kKpisCombined .metric.kpi-blue .metric-label,
+    #view-mechanisms .pharus-section .metric.kpi-primary .metric-label{color:#9ec5ff}
+    #view-mechanisms #kKpisCombined .metric.kpi-blue .metric-value,
+    #view-mechanisms .pharus-section .metric.kpi-primary .metric-value{color:#c5ddff;font-size:34px}
+    /* Gráficos App Pharus em azul */
+    #view-mechanisms .pharus-section .hbar-track span,
+    #view-mechanisms .pharus-section .mechanism-chart-track span{
+      background:linear-gradient(90deg,#3d7fd6,#69a8ff) !important;
+    }
+    #view-mechanisms .pharus-section .donut-wrap .legend i{
+      background:#69a8ff;
+    }
+    #view-mechanisms .summary.kpis-mech-1{grid-template-columns:minmax(260px,440px)}
     #view-mechanisms .summary.kpis-mech-3{grid-template-columns:repeat(3,1fr)}
     #view-mechanisms .summary.kpis-mech-4{grid-template-columns:repeat(4,1fr)}
     #view-mechanisms .summary.kpis-mech-2{grid-template-columns:repeat(2,1fr)}
     /* Cancelamento: processo (intenção → pedido → efetivado) */
-    #view-cancellations .summary.kpis-cancel-primary{grid-template-columns:repeat(4,1fr);margin-bottom:8px}
+    #view-cancellations .summary.kpis-cancel-primary{grid-template-columns:repeat(3,1fr);margin-bottom:8px}
     #view-cancellations .summary.kpis-cancel-retention{grid-template-columns:repeat(3,1fr);margin-top:4px}
     #view-cancellations .summary.kpis-cancel-ops{grid-template-columns:repeat(4,1fr);margin-top:4px}
     #view-cancellations .cancel-timing-strip{
@@ -200,6 +221,97 @@
     #view-cancellations .kpi-block-label .help{
       text-transform:none;letter-spacing:0;font-weight:600;flex:0 0 auto
     }
+    #view-meetings .meeting-type-row{
+      display:grid;
+      grid-template-columns:minmax(190px,1fr) minmax(260px,2fr) minmax(110px,auto);
+      gap:12px;
+      align-items:center;
+      width:100%;
+      max-width:100%;
+      min-width:0;
+      box-sizing:border-box;
+      margin:8px 0;
+      cursor:default;
+      position:relative;
+    }
+    #view-meetings .meeting-type-label{
+      min-width:0;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+      font-size:13px;
+      color:var(--color-text);
+    }
+    #view-meetings .meeting-type-track{
+      width:100%;
+      min-width:0;
+      height:10px;
+      border-radius:999px;
+      background:rgba(255,255,255,.08);
+      overflow:hidden;
+    }
+    #view-meetings .meeting-type-fill{
+      display:block;
+      height:100%;
+      max-width:100%;
+      border-radius:999px;
+      background:linear-gradient(90deg,rgba(244,121,32,.95),rgba(255,170,90,.85));
+    }
+    #view-meetings .meeting-type-value{
+      text-align:right;
+      font-variant-numeric:tabular-nums;
+      font-size:12px;
+      color:var(--color-text-muted);
+      white-space:nowrap;
+    }
+    #view-meetings .meeting-type-tip{
+      display:none;
+      position:absolute;
+      z-index:20;
+      left:50%;
+      bottom:calc(100% + 6px);
+      transform:translateX(-50%);
+      max-width:min(320px,90vw);
+      padding:8px 10px;
+      border-radius:8px;
+      background:#1a1a1a;
+      border:1px solid rgba(255,255,255,.14);
+      box-shadow:0 8px 24px rgba(0,0,0,.45);
+      color:var(--color-text);
+      font-size:12px;
+      line-height:1.35;
+      white-space:normal;
+      pointer-events:none;
+    }
+    #view-meetings .meeting-type-row:hover .meeting-type-tip,
+    #view-meetings .meeting-type-row:focus-within .meeting-type-tip,
+    #view-meetings .meeting-type-row.is-tip-open .meeting-type-tip{
+      display:block;
+    }
+    #view-meetings #mChartTypes{
+      width:100%;
+      max-width:100%;
+      min-width:0;
+      overflow-x:hidden;
+    }
+    @media(max-width:780px){
+      #view-meetings .meeting-type-row{
+        grid-template-columns:minmax(0,1fr) auto;
+        grid-template-areas:"label value" "track track";
+        gap:6px 10px;
+      }
+      #view-meetings .meeting-type-label{grid-area:label;white-space:normal}
+      #view-meetings .meeting-type-track{grid-area:track}
+      #view-meetings .meeting-type-value{grid-area:value}
+    }
+    #view-cancellations .metric.kpi-effective{
+      border:1px solid rgba(244,121,32,.55);
+      box-shadow:0 0 0 1px rgba(244,121,32,.12),0 0 24px rgba(244,121,32,.18);
+      border-top:2px solid var(--color-primary);
+      background:linear-gradient(180deg,rgba(244,121,32,.14),rgba(26,26,26,.92));
+    }
+    #view-cancellations .metric.kpi-effective .metric-label{color:#f0b07a}
+    #view-cancellations .metric.kpi-effective .metric-value{color:#ffc796;font-size:36px}
     #view-cancellations #cProcessExplainer.portal-alert{
       padding:10px 12px;margin:12px 0 8px;gap:10px;align-items:flex-start
     }
@@ -307,6 +419,81 @@
       border-left:3px solid var(--color-warning);
       padding-left:10px;
       margin-top:10px;
+    }
+    #view-mechanisms{overflow-x:hidden;max-width:100%}
+    #view-mechanisms .container,
+    #view-mechanisms .charts,
+    #view-mechanisms .chart-card,
+    #view-mechanisms .table-panel,
+    #view-mechanisms .summary,
+    #view-mechanisms .metric{min-width:0;max-width:100%;box-sizing:border-box}
+    #view-mechanisms .chart-card{overflow:hidden;width:100%}
+    #view-mechanisms .chart-card h3,
+    #view-mechanisms .chart-card p{overflow-wrap:anywhere;word-break:break-word}
+    #view-mechanisms .donut-wrap{display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap;min-width:0;max-width:100%}
+    #view-mechanisms .donut-wrap .legend{min-width:0;flex:1 1 160px;max-width:100%}
+    #view-mechanisms .donut-wrap .legend div{overflow-wrap:anywhere;word-break:break-word}
+    #view-mechanisms .table-wrap{max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
+    #view-mechanisms .ep-table{width:100%;min-width:720px}
+    #view-mechanisms .source-tag{
+      display:inline-flex;align-items:center;gap:6px;margin:0 0 12px;padding:4px 10px;
+      border-radius:999px;border:1px solid var(--color-border);font-size:11px;font-weight:700;
+      letter-spacing:.04em;text-transform:uppercase;color:var(--color-text-muted);background:#1c1c1c
+    }
+    #view-mechanisms .source-tag--pharus{border-color:rgba(105,168,255,.45);color:#9ec5ff}
+    #view-mechanisms .pharus-section{margin-top:36px;padding-top:28px;border-top:1px solid var(--color-border)}
+    #view-mechanisms .pharus-note{
+      margin:0 0 14px;padding:10px 12px;font-size:12px;color:var(--color-text-muted);line-height:1.45;
+      background:rgba(20,24,32,.72);border:1px solid rgba(105,168,255,.28);border-radius:10px;
+    }
+    #view-mechanisms .pharus-status-note{
+      margin:8px 0 0;padding:10px 12px;border:1px dashed var(--color-border);border-radius:10px;
+      font-size:12px;color:var(--color-text-muted);background:#171717
+    }
+    #view-mechanisms .mechanism-chart-row,
+    #view-mechanisms .hbar{
+      display:grid;
+      grid-template-columns:minmax(180px,1fr) minmax(220px,2fr) minmax(100px,auto);
+      gap:12px;align-items:center;margin:11px 0;min-width:0;max-width:100%;width:100%;box-sizing:border-box
+    }
+    #view-mechanisms .mechanism-chart-label,
+    #view-mechanisms .hbar-label{
+      font-size:12px;color:var(--color-text-muted);overflow:hidden;text-overflow:ellipsis;
+      white-space:nowrap;line-height:1.35;min-width:0;max-width:100%
+    }
+    #view-mechanisms .mechanism-chart-track,
+    #view-mechanisms .hbar-track{
+      height:9px;background:#303030;border-radius:999px;overflow:hidden;min-width:0;width:100%;max-width:100%
+    }
+    #view-mechanisms .mechanism-chart-track span,
+    #view-mechanisms .hbar-track span{
+      display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,var(--color-primary),#ff9b50);max-width:100%
+    }
+    #view-mechanisms .mechanism-chart-value,
+    #view-mechanisms .hbar-val{
+      font-size:12px;text-align:right;color:var(--color-text);white-space:nowrap;
+      font-variant-numeric:tabular-nums;line-height:1.35;min-width:0
+    }
+    #view-mechanisms .type-stat-row{
+      display:grid;grid-template-columns:minmax(120px,1.2fr) minmax(140px,1.4fr) minmax(64px,72px);
+      gap:10px;align-items:center;margin:0 0 10px;font-size:12px;min-width:0;max-width:100%
+    }
+    #view-mechanisms .type-stat-row .type-stat-name{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    @media(max-width:780px){
+      #view-mechanisms .mechanism-chart-row,
+      #view-mechanisms .hbar{
+        grid-template-columns:minmax(0,1fr) auto;
+        grid-template-areas:"label value" "track track";
+        gap:6px 10px;margin:12px 0
+      }
+      #view-mechanisms .mechanism-chart-label,
+      #view-mechanisms .hbar-label{grid-area:label;white-space:normal;overflow:visible;text-overflow:unset}
+      #view-mechanisms .mechanism-chart-track,
+      #view-mechanisms .hbar-track{grid-area:track}
+      #view-mechanisms .mechanism-chart-value,
+      #view-mechanisms .hbar-val{grid-area:value;text-align:right}
+      #view-mechanisms .type-stat-row{grid-template-columns:minmax(0,1fr) auto;gap:8px}
+      #view-mechanisms .type-stat-row .bars{grid-column:1/-1}
     }
     .type-stat-row{display:grid;grid-template-columns:minmax(120px,1.2fr) minmax(140px,1.4fr) 72px;gap:10px;align-items:center;margin:0 0 10px;font-size:12px}
     .type-stat-row .bars{display:grid;gap:4px}
@@ -643,7 +830,7 @@
     .timeline{display:grid;gap:10px;margin-top:12px}.timeline-item{border:1px solid var(--color-border);border-radius:10px;padding:12px;background:#1a1a1a}.timeline-item .meta{font-size:11px;color:var(--color-text-subtle);margin-top:4px}
     .indicator-matrix{display:grid;gap:12px}.indicator-row{display:grid;grid-template-columns:minmax(210px,1.15fr) 132px minmax(150px,.7fr) minmax(260px,1.55fr) 120px;gap:0;border:1px solid var(--color-border);border-radius:var(--radius-md);overflow:hidden;background:#202020}.indicator-cell{padding:13px 14px;border-right:1px solid var(--color-border);font-size:13px}.indicator-cell:last-child{border-right:0}.indicator-head{background:#2b2f34;color:var(--color-text);font-weight:700;text-transform:uppercase;letter-spacing:.04em}.indicator-status{display:flex;align-items:center;font-weight:700}.indicator-status.sim{background:rgba(66,201,133,.14);color:#c7f5dd}.indicator-status.no{background:rgba(239,107,115,.16);color:#ffb9bd}.indicator-status.base{background:rgba(246,189,75,.13);color:#ffe0a1}.indicator-coverage{font-weight:700;color:var(--color-text)}.indicator-coverage span{display:block;margin-top:2px;color:var(--color-text-muted);font-size:11px;font-weight:500}.viability-stack{grid-template-columns:1fr}
     @media(max-width:1100px){.cards,.charts{grid-template-columns:1fr}.summary,.summary.kpis-8,#view-support .summary.kpis-support-6,#view-mechanisms .summary.kpis-mech-3,#view-mechanisms .summary.kpis-mech-4,#view-mechanisms .summary.kpis-mech-2,#view-cancellations .summary.kpis-cancel-primary,#view-cancellations .summary.kpis-cancel-retention,#view-cancellations .summary.kpis-cancel-ops{grid-template-columns:repeat(2,1fr)}.filters,.filters.general,.filters.meetings,.filters.mechanisms,.filters.financial{grid-template-columns:1fr 1fr}.month-row{grid-template-columns:64px minmax(100px,1fr) minmax(160px,1fr)}.month-val{white-space:normal}}
-    @media(max-width:780px){.layout{grid-template-columns:1fr}.sidebar{display:none}main{padding:20px}.page-header{display:block}.status{text-align:left;margin-top:12px}.filters,.filters.general,.filters.mechanisms,.filters.financial,.summary,.cards,.charts,#view-support .summary.kpis-support-6,#view-mechanisms .summary.kpis-mech-3,#view-mechanisms .summary.kpis-mech-4,#view-mechanisms .summary.kpis-mech-2,#view-cancellations .summary.kpis-cancel-primary,#view-cancellations .summary.kpis-cancel-retention,#view-cancellations .summary.kpis-cancel-ops{grid-template-columns:1fr}.topbar{padding:0 20px}.status-actions{align-items:flex-start;justify-content:space-between}.hbar{grid-template-columns:minmax(108px,36%) minmax(48px,1fr) minmax(96px,104px);gap:8px;margin:9px 0}.hbar-val{font-size:11px}.month-row{grid-template-columns:1fr;gap:8px}.month-val{text-align:left}.month-count{margin-left:0;width:100%}#view-mechanisms .help[data-tip]::after{left:0;transform:none;width:min(240px,78vw)}}
+    @media(max-width:780px){.layout{grid-template-columns:1fr}.sidebar{display:none}main{padding:20px}.page-header{display:block}.status{text-align:left;margin-top:12px}.filters,.filters.general,.filters.mechanisms,.filters.financial,.summary,.cards,.charts,#view-support .summary.kpis-support-6,#view-mechanisms .summary.kpis-mech-1,#view-mechanisms .summary.kpis-mech-3,#view-mechanisms .summary.kpis-mech-4,#view-mechanisms .summary.kpis-mech-2,#view-cancellations .summary.kpis-cancel-primary,#view-cancellations .summary.kpis-cancel-retention,#view-cancellations .summary.kpis-cancel-ops{grid-template-columns:1fr}.topbar{padding:0 20px}.status-actions{align-items:flex-start;justify-content:space-between}.hbar{grid-template-columns:minmax(108px,36%) minmax(48px,1fr) minmax(96px,104px);gap:8px;margin:9px 0}.hbar-val{font-size:11px}.month-row{grid-template-columns:1fr;gap:8px}.month-val{text-align:left}.month-count{margin-left:0;width:100%}#view-mechanisms .help[data-tip]::after{left:0;transform:none;width:min(240px,78vw)}}
     #portal-root[hidden],#auth-root[hidden]{display:none!important}
     /* Auth Guard: portal só existe visualmente quando autenticado */
     body:not([data-auth="authenticated"]) #portal-root{display:none!important;visibility:hidden!important;pointer-events:none!important}
@@ -1120,7 +1307,6 @@
           </section>
 
           <section class="summary" id="jKpis"></section>
-          <div class="portal-alert portal-alert--warning" id="jSourceAlert" data-alert-id="journey-source-warning" hidden role="status"></div>
 
           <div class="section-head">
             <div><h2>Indicadores de prazo e conclusão</h2><p>Médias e distribuições calculadas a partir da BASE QV.</p></div>
@@ -1186,6 +1372,15 @@
 
           <section class="filters meetings" aria-label="Filtros de reuniões">
             <label>Busca<input id="mSearch" placeholder="Nome, código ou ID" /></label>
+            <label>Status do cliente<select id="mClientStatus">
+              <option value="all">Todos</option>
+              <option value="active">Ativos</option>
+              <option value="active_or_frozen">Ativos e congelados</option>
+              <option value="frozen">Congelados</option>
+              <option value="cancelled">Cancelados confirmados</option>
+              <option value="cancelled_no_date">Marcados como cancelados, sem data</option>
+              <option value="unknown">Não informados</option>
+            </select></label>
             <label>Engenheiro Patrimonial<select id="mEngineer"><option value="all">Todos</option></select></label>
             <label>Período<select id="mPeriod">
               <option value="all">Todo o histórico</option>
@@ -1249,7 +1444,24 @@
             <article class="chart-card"><h3>Status das reuniões</h3><p>Presença consolidada</p><div id="mChartStatus"></div></article>
             <article class="chart-card"><h3>Frequência por cliente</h3><p>Quantidade de reuniões na carteira</p><div id="mChartFreq"></div></article>
             <article class="chart-card"><h3>Dias desde a última reunião</h3><p>Recência da última reunião considerada</p><div id="mChartDays"></div></article>
-            <article class="chart-card"><h3>Intervalo médio entre reuniões</h3><p>Entre reuniões com presença confirmada</p><div id="mChartInterval"></div></article>
+            <article class="chart-card"><h3>Intervalo médio entre reuniões</h3><p>Intervalo médio entre reuniões consecutivas válidas.</p><div id="mChartInterval"></div></article>
+            <article class="chart-card"><h3>Frequência de no-show por cliente</h3><p>Distribuição dos clientes pelo total de faltas registradas no recorte.</p><div id="mChartNoShowFreq"></div></article>
+            <article class="chart-card" style="grid-column:1/-1">
+              <div class="month-chart-head">
+                <div>
+                  <h3>Reuniões por tipo</h3>
+                  <p>Distribuição calculada exclusivamente a partir do CSV de tipos de reunião. Fonte exclusiva deste gráfico: arquivo CSV de tipos de reunião.</p>
+                </div>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+                  <div class="seg" id="mTypeModeSeg" role="group" aria-label="Modo do gráfico de tipos">
+                    <button type="button" data-type-mode="family" class="active">Categoria consolidada</button>
+                    <button type="button" data-type-mode="raw">Tipo original</button>
+                  </div>
+                  <button class="btn engineers-toggle" id="mToggleTypes" type="button">Ver todos</button>
+                </div>
+              </div>
+              <div id="mChartTypes"></div>
+            </article>
             <article class="chart-card" style="grid-column:1/-1"><h3>Reuniões por Engenheiro Patrimonial</h3><p>Volume de reuniões vinculadas aos clientes</p><div id="mChartEngineers"></div><button class="btn engineers-toggle" id="mToggleEngineers" type="button">Ver todos</button></article>
           </section>
 
@@ -1265,6 +1477,7 @@
                     <th data-msort="clientName">Cliente</th>
                     <th data-msort="clientCode">Código</th>
                     <th data-msort="engineer">Engenheiro Patrimonial</th>
+                    <th data-msort="analyticalStatus">Status</th>
                     <th data-msort="totalMeetings" class="num">Total</th>
                     <th data-msort="meetingsPerMonth" class="num">Média/mês</th>
                     <th data-msort="lastMeetingDate">Última reunião</th>
@@ -1378,10 +1591,14 @@
           </aside>
           <div class="portal-alert portal-alert--warning" id="kSourceAlert" data-alert-id="mechanisms-source-warning" hidden role="status"></div>
 
-          <div class="kpi-block-label">Cobertura</div>
+          <div class="kpi-block-label">Visão Consolidada BASE QV + App Pharus</div>
+          <section class="summary kpis-mech-1" id="kKpisCombined" aria-label="Visão Consolidada BASE QV + App Pharus"></section>
+
+          <div class="source-tag">Fonte: BASE QV</div>
+          <div class="kpi-block-label">Cobertura · BASE QV</div>
           <section class="summary kpis-mech-4" id="kKpisCoverage"></section>
-          <div class="kpi-block-label">Andamento</div>
-          <section class="summary kpis-mech-4" id="kKpisProgress"></section>
+          <div class="kpi-block-label">Andamento · BASE QV</div>
+          <section class="summary kpis-mech-3" id="kKpisProgress"></section>
           <div class="kpi-block-label">Tempo e evolução</div>
           <section class="summary kpis-mech-2" id="kKpisTime"></section>
           <aside class="portal-alert portal-alert--warning unused-types-box" id="kUnusedTypes" data-alert-id="mechanisms-unused-types" hidden role="status"></aside>
@@ -1389,7 +1606,7 @@
           <div class="section-head"><div><h2>Distribuições</h2><p>Unidade marcada em cada gráfico: clientes, vínculos ou tipos do catálogo.</p></div></div>
           <section class="charts">
             <article class="chart-card"><h3>Status dos vínculos</h3><p>Unidade: vínculos (cliente + mecanismo) · quantidade e % do total</p><div id="kChartStatus"></div></article>
-            <article class="chart-card"><h3>Quantidade de mecanismos por cliente</h3><p>Unidade: clientes filtrados · faixas 1, 2, 3, 4, 5+</p><div id="kChartRecCount"></div></article>
+            <article class="chart-card"><h3>Quantidade de mecanismos por cliente</h3><p>Distribuição de clientes por quantidade de mecanismos vinculados.</p><div id="kChartRecCount"></div></article>
             <article class="chart-card"><h3>Cobertura do catálogo</h3><p>Unidade: tipos de mecanismo · utilizados × sem utilização</p><div id="kChartCatalog"></div></article>
             <article class="chart-card" style="grid-column:1/-1">
               <div class="month-chart-head">
@@ -1397,7 +1614,8 @@
                   <h3>Utilização por tipo de mecanismo</h3>
                   <p>Clientes vinculados e implementações por tipo do catálogo</p>
                 </div>
-                <button class="btn engineers-toggle" id="kToggleTypes" type="button">Menos utilizados</button>
+                <button class="btn engineers-toggle" id="kToggleTypesSort" type="button">Menos utilizados</button>
+                <button class="btn engineers-toggle" id="kToggleTypesAll" type="button">Ver todos</button>
               </div>
               <div id="kChartTypes"></div>
             </article>
@@ -1417,25 +1635,41 @@
             </article>
             <article class="chart-card"><h3>Tempo até a primeira implementação</h3><p>Unidade: clientes · da entrada à primeira conclusão</p><div id="kChartFirst"></div></article>
             <article class="chart-card"><h3>Dias desde a última implementação</h3><p>Unidade: clientes · recência da última conclusão</p><div id="kChartSince"></div></article>
-            <article class="chart-card"><h3>Andamento por segmento</h3><p>Unidade: vínculos · clientes, implementados e %</p><div id="kChartSegment"></div></article>
+            <article class="chart-card"><h3>Implementados por segmento</h3><p>Unidade: vínculos implementados · clientes com implementação e %</p><div id="kChartSegment" role="img" aria-label="Implementados por segmento"></div></article>
+            <article class="chart-card" style="grid-column:1/-1">
+              <div class="month-chart-head">
+                <div>
+                  <h3>Clientes com mecanismo implementado por EP</h3>
+                  <p>Percentual sobre a carteira total do EP · O vínculo utiliza o EP atualmente associado ao cliente.</p>
+                </div>
+                <div class="seg" id="kEpChartSortSeg" role="group" aria-label="Ordenação do gráfico por EP">
+                  <button type="button" data-ep-chart-sort="percent" class="active">Por %</button>
+                  <button type="button" data-ep-chart-sort="clients">Por quantidade</button>
+                </div>
+                <button class="btn engineers-toggle" id="kToggleEpAll" type="button">Ver todos</button>
+              </div>
+              <div id="kChartEpImpl"></div>
+            </article>
             <article class="chart-card" style="grid-column:1/-1">
               <div class="month-chart-head">
                 <div>
                   <h3>Análise por Engenheiro Patrimonial</h3>
-                  <p>Clique nos cabeçalhos para ordenar. Amostras pequenas (&lt; 5 clientes) ficam destacadas.</p>
+                  <p>Carteira completa por EP (com e sem mecanismo). O vínculo utiliza o EP atualmente associado ao cliente.</p>
                 </div>
                 <span class="export-host" id="kEpExportHost"></span>
               </div>
+              <label style="max-width:280px;margin:0 0 10px">Busca EP<input id="kEpSearch" placeholder="Nome do EP" /></label>
               <div class="table-wrap" style="max-height:420px;margin-top:0">
                 <table class="ep-table" id="kEpTable">
                   <thead>
                     <tr>
-                      <th data-ep-sort="engineer">EP</th>
-                      <th class="num" data-ep-sort="clients">Clientes</th>
-                      <th class="num" data-ep-sort="links">Vínculos</th>
-                      <th class="num" data-ep-sort="implemented">Implementados</th>
-                      <th class="num" data-ep-sort="implementationPercent">% implementado</th>
-                      <th class="num" data-ep-sort="typicalDaysToFirstImplementation">Dias típicos até 1ª</th>
+                      <th data-ep-sort="engineer">Engenheiro Patrimonial</th>
+                      <th class="num" data-ep-sort="totalClients">Total de clientes</th>
+                      <th class="num" data-ep-sort="clientsWithImplemented">Com mecanismo implementado</th>
+                      <th class="num" data-ep-sort="clientsWithoutImplemented">Sem mecanismo implementado</th>
+                      <th class="num" data-ep-sort="implementationPercent">% da carteira com mecanismo</th>
+                      <th class="num" data-ep-sort="implementations">Implementações</th>
+                      <th class="num" data-ep-sort="typesImplemented">Tipos de mecanismo</th>
                     </tr>
                   </thead>
                   <tbody></tbody>
@@ -1446,7 +1680,7 @@
 
           <section class="table-panel">
             <div class="section-head" style="margin:0">
-              <div><h2>Detalhamento por cliente</h2><p>Clique em uma linha para ver os vínculos.</p></div>
+              <div><h2>Detalhamento por cliente</h2><p>Clique em uma linha para ver os vínculos. · Fonte: BASE QV</p></div>
               <div class="section-head-actions"><span class="export-host" id="kExportHost"></span><span class="counter" id="kCounter"></span></div>
             </div>
             <div class="table-wrap">
@@ -1459,7 +1693,6 @@
                     <th data-ksort="segment">Segmento</th>
                     <th data-ksort="engineer">EP</th>
                     <th data-ksort="available" class="num">Qtd mecanismos</th>
-                    <th data-ksort="eligible" class="num">Aptos</th>
                     <th data-ksort="inProgress" class="num">Iniciados</th>
                     <th data-ksort="implemented" class="num">Concluídos</th>
                     <th data-ksort="implementationPercent" class="num">% implementado</th>
@@ -1479,6 +1712,115 @@
                 <button class="btn" id="kNext" type="button">Próxima</button>
               </div>
             </div>
+          </section>
+
+          <section class="pharus-section" id="kPharusSection" aria-label="Mecanismos no App Pharus">
+            <div class="section-head">
+              <div>
+                <h2>Mecanismos no App Pharus</h2>
+                <p>Catálogo disponível e sugestões registradas na plataforma.</p>
+              </div>
+              <div class="status-actions">
+                <div class="status"><b id="kPharusStatus" style="color:var(--color-warning)">● Aguardando</b><span id="kPharusUpdated">Não carregado</span></div>
+              </div>
+            </div>
+            <div class="source-tag source-tag--pharus">Fonte: App Pharus</div>
+            <p class="pharus-note">
+              <span class="help" tabindex="0" data-tip="Vínculos com status suggested são tratados como mecanismos associados ao usuário nesta análise. Não misturar com implementação da BASE QV.">?</span>
+              Os indicadores abaixo consideram somente dados do App Pharus. Vínculos com status suggested são tratados como mecanismos associados aos usuários.
+            </p>
+            <div id="kPharusAlert" hidden></div>
+            <section class="filters mechanisms" aria-label="Filtros App Pharus" id="kPharusFilters">
+              <label>Busca<input id="phSearch" placeholder="Nome do mecanismo" /></label>
+              <label>Motor<select id="phEngine"><option value="all">Todos</option></select></label>
+              <label>Categoria<select id="phCategory"><option value="all">Todas</option></select></label>
+              <label>Risco<select id="phRisk"><option value="all">Todos</option></select></label>
+              <label>Mercado<select id="phMarket"><option value="all">Todos</option></select></label>
+              <label>Status da sugestão<select id="phStatus"><option value="all">Todos</option></select></label>
+              <button class="btn" id="phClear" type="button">Limpar filtros</button>
+            </section>
+            <div class="kpi-block-label">Catálogo e vínculos · App Pharus</div>
+            <section class="summary kpis-mech-3" id="kPharusKpis"></section>
+            <p class="pharus-note" style="margin-top:-6px">Os vínculos registrados como suggested são considerados mecanismos associados ao usuário nesta análise.</p>
+            <div class="section-head"><div><h2>Distribuições do App Pharus</h2><p>Catálogo e vínculos — sem misturar com BASE QV.</p></div></div>
+            <section class="charts">
+              <article class="chart-card"><h3>Quantidade de mecanismos por usuário</h3><p>Distribuição de usuários por quantidade de mecanismos vinculados.</p><div id="phChartMechPerUser"></div></article>
+              <article class="chart-card"><h3>Catálogo por motor</h3><p>Quantidade de mecanismos distintos</p><div id="phChartEngine"></div></article>
+              <article class="chart-card"><h3>Mecanismos por categoria</h3><p>Fonte: data.category</p><div id="phChartCategory"></div></article>
+              <article class="chart-card"><h3>Perfil de risco do catálogo</h3><p>Fonte: data.risk</p><div id="phChartRisk"></div></article>
+              <article class="chart-card"><h3>Mecanismos mais vinculados</h3><p>Usuários distintos com vínculo (deduplicados por user + mecanismo)</p><div id="phChartSuggested"></div></article>
+            </section>
+            <div id="phStatusNote" class="pharus-status-note" hidden></div>
+            <section class="table-panel" style="margin-top:18px">
+              <div class="section-head" style="margin:0">
+                <div><h2>Catálogo de mecanismos do App Pharus</h2><p>Clique em uma linha para ver detalhes.</p></div>
+                <div class="section-head-actions"><span class="export-host" id="phExportHost"></span><span class="counter" id="phCounter"></span></div>
+              </div>
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th data-ph-sort="name">Mecanismo</th>
+                      <th data-ph-sort="engine">Motor</th>
+                      <th data-ph-sort="category">Categoria</th>
+                      <th data-ph-sort="secondaryCategory">Categoria secundária</th>
+                      <th data-ph-sort="market">Mercado</th>
+                      <th data-ph-sort="risk">Risco</th>
+                      <th data-ph-sort="horizon">Horizonte</th>
+                      <th data-ph-sort="estimatedReturn">Retorno estimado</th>
+                    </tr>
+                  </thead>
+                  <tbody id="phRows"></tbody>
+                </table>
+              </div>
+              <div class="empty" id="phEmpty" hidden>Nenhum mecanismo no catálogo filtrado.</div>
+            </section>
+            <section class="table-panel" style="margin-top:22px">
+              <div class="section-head" style="margin:0">
+                <div>
+                  <h2>Detalhamento dos mecanismos no App Pharus</h2>
+                  <p>Uma linha por vínculo único (usuário + mecanismo). Clique para abrir o drawer.</p>
+                </div>
+                <div class="section-head-actions"><span class="export-host" id="phLinkExportHost"></span><span class="counter" id="phLinkCounter"></span></div>
+              </div>
+              <section class="filters mechanisms" aria-label="Filtros dos vínculos App Pharus" id="kPharusLinkFilters">
+                <label>Busca<input id="phLinkSearch" placeholder="Usuário, e-mail ou mecanismo" /></label>
+                <label>Mecanismo<select id="phLinkMechanism"><option value="all">Todos</option></select></label>
+                <label>Motor<select id="phLinkEngine"><option value="all">Todos</option></select></label>
+                <label>Categoria<select id="phLinkCategory"><option value="all">Todas</option></select></label>
+                <label>Risco<select id="phLinkRisk"><option value="all">Todos</option></select></label>
+                <label>Status<select id="phLinkStatus"><option value="all">Todos</option></select></label>
+                <button class="btn" id="phLinkClear" type="button">Limpar filtros</button>
+              </section>
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th data-ph-link-sort="userName">Usuário</th>
+                      <th data-ph-link-sort="userEmail">E-mail</th>
+                      <th data-ph-link-sort="userId">ID do usuário</th>
+                      <th data-ph-link-sort="mechanismName">Mecanismo</th>
+                      <th data-ph-link-sort="engine">Motor</th>
+                      <th data-ph-link-sort="category">Categoria</th>
+                      <th data-ph-link-sort="market">Mercado</th>
+                      <th data-ph-link-sort="risk">Risco</th>
+                      <th data-ph-link-sort="status">Status do vínculo</th>
+                      <th data-ph-link-sort="createdAt">Criação</th>
+                      <th data-ph-link-sort="updatedAt">Atualização</th>
+                    </tr>
+                  </thead>
+                  <tbody id="phLinkRows"></tbody>
+                </table>
+              </div>
+              <div class="empty" id="phLinkEmpty" hidden>Nenhum vínculo encontrado para os filtros.</div>
+              <div class="pagination">
+                <div id="phLinkPageInfo"></div>
+                <div>
+                  <button class="btn" id="phLinkPrev" type="button">Anterior</button>
+                  <button class="btn" id="phLinkNext" type="button">Próxima</button>
+                </div>
+              </div>
+            </section>
           </section>
 
         </div>
@@ -1566,7 +1908,7 @@
               <div class="month-chart-head">
                 <div>
                   <h3>Atualizações financeiras por mês</h3>
-                  <p>Clientes distintos com financialUpdateDate no mês</p>
+                  <p>Clientes distintos com updated_at &gt; created_at no mês</p>
                 </div>
                 <div class="seg" id="fMonthRangeSeg" role="group" aria-label="Período do gráfico mensal">
                   <button type="button" data-f-month-range="6" class="active">Últimos 6 meses</button>
@@ -2873,24 +3215,31 @@ ${dataRows}
     /** Normaliza warnings (string | {message} | {code,label,count}) em lista agregada. */
     function normalizePortalWarnings(warnings) {
       const map = new Map();
+      const fold = (s) => String(s || '')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase()
+        .trim()
+        .replace(/\s+/g, ' ');
       for (const raw of (Array.isArray(warnings) ? warnings : [])) {
         if (raw == null) continue;
         if (typeof raw === 'string') {
           const msg = raw.trim();
           if (!msg) continue;
-          const cur = map.get(msg) || { code: msg, label: msg, count: 0, severity: 'warning' };
+          const key = `msg|${fold(msg)}`;
+          const cur = map.get(key) || { code: msg, label: msg, count: 0, severity: 'warning' };
           cur.count += 1;
-          map.set(msg, cur);
+          map.set(key, cur);
           continue;
         }
         if (typeof raw !== 'object') continue;
-        const code = String(raw.code || raw.message || raw.reason || 'warning').trim();
-        const label = String(raw.label || raw.message || raw.reason || code).trim();
+        const code = String(raw.code || '').trim();
+        const label = String(raw.label || raw.message || raw.reason || code || 'warning').trim();
         if (!label) continue;
-        const key = code || label;
+        const key = code ? `code|${fold(code)}|${fold(label)}` : `msg|${fold(label)}`;
         const add = Number(raw.count);
         const cur = map.get(key) || {
-          code: key,
+          code: code || key,
           label,
           count: 0,
           severity: raw.severity || 'warning'
@@ -2974,7 +3323,7 @@ ${dataRows}
       }
       const summaryMessage = options.message
         || (aggregated.length === 1
-          ? formatWarningLine(aggregated[0])
+          ? 'Há alertas de qualidade nas fontes desta página. Os indicadores disponíveis continuam sendo exibidos.'
           : `Há ${fmt.format(aggregated.length)} tipos de alerta nas fontes desta página. Os indicadores disponíveis continuam sendo exibidos.`);
       mountPortalAlert(el, {
         id: alertId,
@@ -3076,15 +3425,21 @@ ${dataRows}
         showSourceWarningsAlert('#pSourceAlert', 'plan-source-warning', 'Alertas das fontes do plano patrimonial', planState.payload.sources?.warnings || []);
       }
       if (nav === 'journey' && typeof onboardingState !== 'undefined' && onboardingState.payload) {
-        showSourceWarningsAlert('#jSourceAlert', 'journey-source-warning', 'Alertas das fontes de jornada', onboardingState.payload.sources?.warnings || []);
+        if (onboardingState.payload.sources?.warnings?.length && typeof console !== 'undefined') {
+          console.debug('[Jornada/Onboarding]', onboardingState.payload.sources.warnings);
+        }
       }
-      if (nav === 'meetings' && typeof meetingsState !== 'undefined' && meetingsState.payload) {
-        showSourceWarningsAlert('#mSourceAlert', 'meetings-source-warning', 'Alertas de qualidade das reuniões', meetingsState.payload.quality?.warnings || []);
+      if (nav === 'meetings' && typeof meetingsState !== 'undefined' && meetingsState.payload && typeof renderMeetings === 'function') {
+        renderMeetings();
       }
       if (nav === 'mechanisms' && typeof mechanismsState !== 'undefined' && mechanismsState.payload) {
         restoreStaticPortalAlert('#kUnitsExplainer', 'mechanisms-units-explainer');
-        showSourceWarningsAlert('#kSourceAlert', 'mechanisms-source-warning', 'Alertas de qualidade dos mecanismos', mechanismsState.payload.quality?.warnings || []);
+        showSourceWarningsAlert('#kSourceAlert', 'mechanisms-source-warning', 'Alertas de qualidade dos mecanismos', mechanismsState.payload.quality?.warnings || [], {
+          note: 'Fonte: BASE QV'
+        });
         if (typeof renderMechanisms === 'function') renderMechanisms();
+        if (mechanismsState.pharus && typeof renderPharusMechanisms === 'function') renderPharusMechanisms();
+        else if (typeof loadPharusMechanisms === 'function' && !mechanismsState.pharusLoading) loadPharusMechanisms();
       }
       if (nav === 'financial' && typeof financialState !== 'undefined' && financialState.payload) {
         if (typeof renderFinancial === 'function') renderFinancial();
@@ -4763,7 +5118,13 @@ ${dataRows}
       return status || 'Não informado';
     }
     function clientStatusLabel(client) {
+      if (typeof client === 'string') {
+        return analyticalStatusDisplayLabel(
+          client === 'Cancelado confirmado' ? 'Cancelado' : client
+        );
+      }
       if (client?.analyticalStatus) return analyticalStatusDisplayLabel(client.analyticalStatus);
+      if (client?.clientStatus) return analyticalStatusDisplayLabel(client.clientStatus);
       if (client?.status === 'Ativo' || client?.status === 'Congelado' || client?.status === 'Não informado') {
         return client.status;
       }
@@ -5747,7 +6108,9 @@ ${dataRows}
         status.textContent = payload.sources?.warnings?.length ? '? Portal conectado com alertas' : '? Portal conectado';
         status.style.color = payload.sources?.warnings?.length ? 'var(--color-warning)' : 'var(--color-success)';
         document.querySelector('#jUpdated').textContent = `Atualizado em ${new Date(payload.generatedAt).toLocaleString('pt-BR')}`;
-        showSourceWarningsAlert('#jSourceAlert', 'journey-source-warning', 'Alertas das fontes de jornada', payload.sources?.warnings || []);
+        if (payload.sources?.warnings?.length && typeof console !== 'undefined') {
+          console.debug('[Jornada/Onboarding]', payload.sources.warnings);
+        }
       } catch (error) {
         if (requestId !== onboardingState.requestId) return;
         status.textContent = '● Falha na atualização'; status.style.color = 'var(--color-danger)';
@@ -5809,11 +6172,14 @@ ${dataRows}
     /* -------- Reuniões -------- */
     const meetingsState = {
       payload: null, page: 1, pageSize: 25, sortKey: 'totalMeetings', sortDir: 'desc',
-      showAllEngineers: false, monthRange: '6', monthsAll: [], monthsVisible: [],
+      showAllEngineers: false, showAllTypes: false, typeMode: 'family',
+      monthRange: '6', monthsAll: [], monthsVisible: [],
       loading: false, requestId: 0
     };
     const mFilters = {
-      search: document.querySelector('#mSearch'), engineer: document.querySelector('#mEngineer'),
+      search: document.querySelector('#mSearch'),
+      clientStatus: document.querySelector('#mClientStatus'),
+      engineer: document.querySelector('#mEngineer'),
       period: document.querySelector('#mPeriod'), from: document.querySelector('#mFrom'), to: document.querySelector('#mTo'),
       attendance: document.querySelector('#mAttendance'), freq: document.querySelector('#mFreq'),
       first: document.querySelector('#mFirst'), absence: document.querySelector('#mHasAbsence'),
@@ -5823,6 +6189,13 @@ ${dataRows}
     const M_FREQ_BANDS = ['Nenhuma', '1 reunião', '2 a 3', '4 a 6', '7 a 12', 'Mais de 12'];
     const M_DAYS_BANDS = ['Até 30 dias', '31 a 60 dias', '61 a 90 dias', '91 a 180 dias', 'Mais de 180 dias', 'Nunca realizou reunião'];
     const M_INTERVAL_BANDS = ['Até 30 dias', '31 a 60 dias', '61 a 90 dias', 'Mais de 90 dias', 'Sem intervalo calculável'];
+    const M_NOSHOW_FREQ_BANDS = [
+      { key: 'zero', label: '0 no-shows', minimum: 0, maximum: 0 },
+      { key: 'one_to_two', label: '1–2 no-shows', minimum: 1, maximum: 2 },
+      { key: 'three_to_four', label: '3–4 no-shows', minimum: 3, maximum: 4 },
+      { key: 'five_or_more', label: '5 ou mais no-shows', minimum: 5, maximum: null }
+    ];
+    const M_RESCHEDULE_COVERAGE_TIP = 'Cobertura parcial: este valor considera apenas remarcações registradas de forma estruturada e pode não representar o total real.';
 
     function periodStart() {
       const p = mFilters.period.value;
@@ -5841,6 +6214,7 @@ ${dataRows}
     function hasActiveMeetingFilters() {
       return Boolean(
         mFilters.search.value.trim() ||
+        (mFilters.clientStatus?.value && mFilters.clientStatus.value !== 'all') ||
         mFilters.engineer.value !== 'all' ||
         mFilters.period.value !== 'all' ||
         mFilters.attendance.value !== 'all' ||
@@ -5970,6 +6344,7 @@ ${dataRows}
         ...client,
         meetings,
         totalMeetings: meetings.length,
+        hasValidMeeting: meetings.some((m) => m.meetingDateStatus === 'valid') || meetings.length > 0,
         absences,
         reschedules,
         lastMeetingDate,
@@ -5979,7 +6354,7 @@ ${dataRows}
         meetingsPerMonth,
         frequencyBand: mFreqBand(meetings.length),
         daysSinceBand: mDaysBand(daysSinceLastMeeting),
-        intervalBand: mIntervalBand(intervalStats.median ?? intervalStats.mean),
+        intervalBand: mIntervalBand(intervalStats.mean ?? intervalStats.median),
         _periodScoped: periodActive
       };
     }
@@ -6092,6 +6467,10 @@ ${dataRows}
       const periodActive = mFilters.period.value !== 'all';
       return source.filter(c => {
         const meetings = clientMeetingsInPeriod(c);
+        if (mFilters.clientStatus?.value && mFilters.clientStatus.value !== 'all'
+          && !matchesClientStatusFilter(c.analyticalStatus || c.clientStatus || c, mFilters.clientStatus.value)) {
+          return false;
+        }
         if (mFilters.engineer.value !== 'all' && c.engineer !== mFilters.engineer.value) return false;
         if (mFilters.first.value === 'yes' && c.firstMeetingCompleted !== true) return false;
         if (mFilters.first.value === 'no' && c.firstMeetingCompleted !== false) return false;
@@ -6166,25 +6545,57 @@ ${dataRows}
       }
       const daysSinceStats = robustStatsClient(rows.map(c => c.daysSinceLastMeeting).filter(v => v != null));
       const intervalValues = rows
-        .map(c => c.typicalIntervalDays ?? c.averageIntervalDays)
+        .map(c => c.averageIntervalDays)
         .filter(v => v != null && v >= 0);
       const intervalStats = robustStatsClient(intervalValues);
       const totalNoShows = rows.reduce((a, c) => a + (c.absences || 0), 0);
       const totalReschedules = rows.reduce((a, c) => a + (c.reschedules || 0), 0);
       const now = new Date();
-      const classifiable = meetings.filter(m => {
+      // Deduplicar antes da taxa
+      const deduped = [];
+      const seen = new Set();
+      for (const m of meetings) {
+        const key = m.meetingId || `${m.source}|${m.startTime}|${m.title || ''}`;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        deduped.push(m);
+      }
+      const futureMeetings = deduped.filter((m) => {
+        const start = m.startTime ? new Date(m.startTime) : null;
+        return start && !Number.isNaN(start.getTime()) && start > now;
+      }).length;
+      const cancelledMeetings = deduped.filter((m) => m.attendanceStatus === 'cancelada').length;
+      const eligibleMeetings = Math.max(0, deduped.length - futureMeetings - cancelledMeetings);
+      const noShowsEligible = deduped.filter((m) => {
         const start = m.startTime ? new Date(m.startTime) : null;
         if (!start || start > now) return false;
-        return m.attendanceStatus === 'compareceu' || m.attendanceStatus === 'nao_compareceu';
-      });
-      const attended = classifiable.filter(m => m.attendanceStatus === 'compareceu').length;
-      const attendanceRate = classifiable.length
-        ? Math.round((attended / classifiable.length) * 1000) / 10
+        if (m.attendanceStatus === 'cancelada') return false;
+        return m.attendanceStatus === 'nao_compareceu';
+      }).length;
+      const attendedMeetings = eligibleMeetings > 0
+        ? Math.max(0, eligibleMeetings - noShowsEligible)
+        : 0;
+      const noShowRate = eligibleMeetings > 0
+        ? Math.round((noShowsEligible / eligibleMeetings) * 1000) / 10
+        : null;
+      const attendanceRate = eligibleMeetings > 0
+        ? Math.round((1 - noShowsEligible / eligibleMeetings) * 1000) / 10
         : null;
       const withFirst = rows.filter(c => c.firstMeetingCompleted === true).length;
+      const clientsWithMeeting = rows.filter(c => {
+        if (c.hasValidMeeting === true) return true;
+        if (c.journeyMeetingsCount > 0) return true;
+        const ms = c.meetings || [];
+        return ms.some(m => m.meetingDateStatus === 'valid' || (m.meetingDateStatus !== 'before_client_entry' && m.meetingDateStatus !== 'invalid' && m.meetingDateStatus !== 'future'));
+      }).length;
       const portfolio = rows.length || 1;
       return {
         totalMeetings,
+        futureMeetings,
+        cancelledMeetings,
+        eligibleMeetings,
+        attendedMeetings,
+        comparecimentos: attendedMeetings,
         averageMeetingsPerMonth,
         averageDaysSinceLastMeeting: daysSinceStats.mean,
         typicalDaysSinceLastMeeting: daysSinceStats.median,
@@ -6194,14 +6605,156 @@ ${dataRows}
         intervalDaysStats: intervalStats,
         totalNoShows,
         totalAbsences: totalNoShows,
+        noShowsEligible,
+        noShowRate,
         totalReschedules,
         attendanceRate,
+        attendanceInsufficientData: eligibleMeetings <= 0,
+        clientsWithMeeting,
         clientsWithFirstMeeting: withFirst,
         clientsWithoutFirstMeeting: rows.filter(c => c.firstMeetingCompleted === false).length,
         firstMeetingCompletionRate: Math.round((withFirst / portfolio) * 1000) / 10,
+        meetingCoverageRate: Math.round((clientsWithMeeting / portfolio) * 1000) / 10,
         filteredClients: rows.length,
         periodScoped: periodActive
       };
+    }
+
+    function normalizeMeetingEventTypeClient(rawEventType) {
+      const raw = String(rawEventType || '').trim() || 'Não informado';
+      const folded = raw.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
+        .replace(/[®™]/g, '').replace(/\|/g, ' ').replace(/[^a-z0-9]+/g, ' ').trim().replace(/\s+/g, ' ');
+      const product =
+        /\bpharus\b/.test(folded) ? 'Pharus'
+          : /\bpatrimonium\b/.test(folded) ? 'Patrimonium'
+            : /\bdavos\b/.test(folded) ? 'DAVOS'
+              : /\bquartavia\b|\bqv\b/.test(folded) ? 'QV'
+                : null;
+      const rules = [
+        ['Checkpoint', /\bcheckpoint\b/],
+        ['Kickoff', /\bkick\s*off\b|\bkickoff\b/],
+        ['Rota Patrimonial', /\brota patrimonial\b/],
+        ['Especial', /\bespecial\b/],
+        ['Ativação das Engrenagens', /\bativacao das engrenagens\b/],
+        ['Tração Patrimonial', /\btracao patrimonial\b/],
+        ['Central de Inteligência', /\bcentral de inteligencia\b/],
+        ['Implementação', /\bimplementacao\b/],
+        ['Mapeamento', /\bmapeamento\b/],
+        ['Mecanismos', /\bmecanismos?\b/],
+        ['Alinhamento', /\balinhamento\b/],
+        ['VIP Planning', /\bvip planning\b/],
+        ['Acompanhamento', /\bacompanhamento\b/],
+        ['Revisão', /\brevisao\b/],
+        ['DAVOS', /\bdavos\b/]
+      ];
+      let meetingFamily = 'Outros tipos';
+      for (const [family, re] of rules) {
+        if (re.test(folded)) { meetingFamily = family; break; }
+      }
+      return {
+        rawEventType: raw,
+        meetingFamily,
+        productContext: product,
+        normalizedLabel: product && meetingFamily !== 'Outros tipos' ? `${meetingFamily} — ${product}` : meetingFamily
+      };
+    }
+
+    function calculateMeetingTypeDistribution(meetings) {
+      const mode = meetingsState.typeMode === 'raw' ? 'raw' : 'family';
+      const map = new Map();
+      const now = new Date();
+      for (const m of meetings || []) {
+        const norm = normalizeMeetingEventTypeClient(m.title || m.rawEventType);
+        const key = mode === 'raw' ? norm.rawEventType : norm.meetingFamily;
+        const start = m.startTime ? new Date(m.startTime) : null;
+        const future = Boolean(start && !Number.isNaN(start.getTime()) && start > now);
+        const canceled = m.attendanceStatus === 'cancelada';
+        const cur = map.get(key) || { label: key, count: 0, canceled: 0, future: 0 };
+        cur.count += 1;
+        if (canceled) cur.canceled += 1;
+        if (future) cur.future += 1;
+        map.set(key, cur);
+      }
+      const total = [...map.values()].reduce((a, r) => a + r.count, 0) || 1;
+      return [...map.values()]
+        .map((r) => ({
+          ...r,
+          percent: Math.round((r.count / total) * 1000) / 10,
+          cancelRate: r.count ? Math.round((r.canceled / r.count) * 1000) / 10 : null
+        }))
+        .sort((a, b) => b.count - a.count || a.label.localeCompare(b.label, 'pt-BR'));
+    }
+
+    function renderMeetingTypesChart() {
+      const el = document.querySelector('#mChartTypes');
+      if (!el) return;
+      const csv = meetingsState.payload?.meetingTypesFromCsv;
+      const mode = meetingsState.typeMode === 'raw' ? 'raw' : 'family';
+      const all = mode === 'raw'
+        ? (csv?.byRaw || [])
+        : (csv?.byFamily || []);
+      if (!csv?.available && !all.length) {
+        el.innerHTML = '<div class="empty" style="display:block">CSV de tipos de reunião indisponível</div>';
+        return;
+      }
+      const limit = mode === 'raw' ? 10 : 8;
+      const list = meetingsState.showAllTypes ? all : all.slice(0, limit);
+      const max = Math.max(...list.map((i) => i.count), 1);
+      el.innerHTML = list.map((i) => {
+        const width = Math.max(0, Math.min(100, (i.count / max) * 100));
+        const tip = `${i.label}: ${fmt.format(i.count)} · ${pct(i.percent)} · Fonte: CSV de tipos de reunião`;
+        return `<div class="meeting-type-row" tabindex="0" data-tip-text="${escapeHtml(tip)}">
+          <div class="meeting-type-tip" role="tooltip">${escapeHtml(tip)}</div>
+          <div class="meeting-type-label" title="${escapeHtml(i.label)}">${escapeHtml(i.label)}</div>
+          <div class="meeting-type-track"><div class="meeting-type-fill" style="width:${width}%"></div></div>
+          <div class="meeting-type-value">${fmt.format(i.count)} · ${pct(i.percent)}</div>
+        </div>`;
+      }).join('') || '<div class="empty" style="display:block">Sem tipos no CSV</div>';
+      el.querySelectorAll('.meeting-type-row').forEach((row) => {
+        row.addEventListener('click', (ev) => {
+          if (!window.matchMedia('(hover: none)').matches) return;
+          el.querySelectorAll('.meeting-type-row.is-tip-open').forEach((r) => {
+            if (r !== row) r.classList.remove('is-tip-open');
+          });
+          row.classList.toggle('is-tip-open');
+          ev.stopPropagation();
+        });
+      });
+      if (!el.dataset.tipBound) {
+        el.dataset.tipBound = '1';
+        document.addEventListener('click', () => {
+          el.querySelectorAll('.meeting-type-row.is-tip-open').forEach((r) => r.classList.remove('is-tip-open'));
+        });
+      }
+      const toggle = document.querySelector('#mToggleTypes');
+      if (toggle) {
+        toggle.hidden = all.length <= limit;
+        toggle.textContent = meetingsState.showAllTypes ? 'Ver menos' : 'Ver todos';
+      }
+      document.querySelectorAll('#mTypeModeSeg [data-type-mode]').forEach((btn) => {
+        btn.classList.toggle('active', btn.getAttribute('data-type-mode') === meetingsState.typeMode);
+      });
+    }
+
+    function calculateNoShowFrequency(rows) {
+      const universe = rows.length || 0;
+      const counts = Object.fromEntries(M_NOSHOW_FREQ_BANDS.map((b) => [b.key, 0]));
+      for (const c of rows) {
+        const n = Number(c.absences) || 0;
+        let key = 'five_or_more';
+        if (n <= 0) key = 'zero';
+        else if (n <= 2) key = 'one_to_two';
+        else if (n <= 4) key = 'three_to_four';
+        counts[key] += 1;
+      }
+      return M_NOSHOW_FREQ_BANDS.map((band) => {
+        const clients = counts[band.key] || 0;
+        return {
+          ...band,
+          clients,
+          percentage: universe > 0 ? Math.round((clients / universe) * 1000) / 10 : 0
+        };
+      });
     }
 
     function calculateMeetingDistributions(rows) {
@@ -6235,7 +6788,13 @@ ${dataRows}
       const dist = calculateMeetingDistributions(data);
       const meetings = data.flatMap(c => (c.meetings || []).filter(isAnalyticMeeting));
       const noShows = summary.totalNoShows ?? summary.totalAbsences ?? 0;
-      const attendanceRateText = summary.attendanceRate == null ? 'Não calculável' : pct(summary.attendanceRate);
+      const attendanceRateText = summary.attendanceInsufficientData || summary.attendanceRate == null
+        ? 'Dados insuficientes'
+        : pct(summary.attendanceRate);
+      const attendanceTip = 'A taxa considera apenas reuniões já ocorridas e não canceladas. No-shows são divididos pelo total de reuniões elegíveis.';
+      const attendanceNote = summary.attendanceInsufficientData
+        ? 'Sem reuniões elegíveis no recorte'
+        : `No-show ${summary.noShowRate == null ? '—' : pct(summary.noShowRate)} · elegíveis ${fmt.format(summary.eligibleMeetings || 0)}`;
       const scopeNote = summary.periodScoped
         ? 'Considerando o período selecionado'
         : (hasActiveMeetingFilters() ? `Sobre ${fmt.format(summary.filteredClients)} clientes filtrados` : 'Carteira completa');
@@ -6246,17 +6805,35 @@ ${dataRows}
         <article class="metric highlight"><div class="metric-label">Total de reuniões</div><div class="metric-value">${fmt.format(summary.totalMeetings)}</div><div class="metric-note">${scopeNote}</div></article>
         <article class="metric"><div class="metric-label">Média de reuniões/mês</div><div class="metric-value">${summary.averageMeetingsPerMonth == null ? '—' : fmt.format(summary.averageMeetingsPerMonth)}</div><div class="metric-note">${summary.periodScoped ? 'Divisor do período filtrado' : 'Sobre o histórico do recorte'}</div></article>
         <article class="metric"><div class="metric-label">Dias desde a última reunião <span class="help" title="${escapeHtml(daysTip)}">?</span></div><div class="metric-value">${(summary.typicalDaysSinceLastMeeting ?? summary.averageDaysSinceLastMeeting) == null ? '—' : fmt.format(Math.round(summary.typicalDaysSinceLastMeeting ?? summary.averageDaysSinceLastMeeting))}</div><div class="metric-note">Mediana · média ${summary.averageDaysSinceLastMeeting == null ? '—' : fmt.format(Math.round(summary.averageDaysSinceLastMeeting))}</div></article>
-        <article class="metric"><div class="metric-label">Intervalo típico <span class="help" title="Mediana de intervalos positivos entre reuniões válidas consecutivas do recorte. Valores negativos e pré-entrada são excluídos.">?</span></div><div class="metric-value">${(summary.typicalIntervalDays ?? summary.averageIntervalDays) == null ? '—' : fmt.format(Math.round(summary.typicalIntervalDays ?? summary.averageIntervalDays)) + ' d'}</div><div class="metric-note">Mediana · média ${summary.averageIntervalDays == null ? '—' : fmt.format(Math.round(summary.averageIntervalDays)) + ' d'}</div></article>
+        <article class="metric"><div class="metric-label">Intervalo médio entre reuniões <span class="help" title="Média aritmética dos intervalos positivos entre reuniões válidas consecutivas (presença confirmada) do recorte. Valores negativos e pré-entrada são excluídos.">?</span></div><div class="metric-value">${summary.averageIntervalDays == null ? '—' : fmt.format(Math.round(summary.averageIntervalDays)) + ' d'}</div><div class="metric-note">Intervalo médio entre reuniões consecutivas válidas.${summary.typicalIntervalDays == null ? '' : ` · Mediana ${fmt.format(Math.round(summary.typicalIntervalDays))} d`}</div></article>
         <article class="metric"><div class="metric-label">Total de no-shows <span class="help" title="Quantidade de reuniões com ausência confirmada no recorte filtrado.">?</span></div><div class="metric-value">${fmt.format(noShows)}</div><div class="metric-note">${scopeNote}</div></article>
-        <article class="metric"><div class="metric-label">Total de remarcações</div><div class="metric-value">${fmt.format(summary.totalReschedules)}</div><div class="metric-note">${scopeNote}</div></article>
-        <article class="metric"><div class="metric-label">Taxa de comparecimento <span class="help" title="Numerador e denominador do mesmo conjunto filtrado (presenças sobre status confirmado).">?</span></div><div class="metric-value" style="font-size:${summary.attendanceRate == null ? '22px' : '30px'}">${attendanceRateText}</div><div class="metric-note">${scopeNote}</div></article>
-        <article class="metric"><div class="metric-label">Clientes com primeira reunião <span class="help" title="Clientes do recorte com pelo menos uma presença confirmada válida na jornada.">?</span></div><div class="metric-value">${fmt.format(summary.clientsWithFirstMeeting)}</div><div class="metric-note">${pct(summary.firstMeetingCompletionRate || 0)} da carteira filtrada</div></article>`;
+        <article class="metric"><div class="metric-label">Remarcações <span class="help" tabindex="0" data-tip="${escapeHtml(M_RESCHEDULE_COVERAGE_TIP)}" title="${escapeHtml(M_RESCHEDULE_COVERAGE_TIP)}">?</span></div><div class="metric-value">${fmt.format(summary.totalReschedules)}</div><div class="metric-note">${scopeNote}</div></article>
+        <article class="metric"><div class="metric-label">Taxa de comparecimento <span class="help" tabindex="0" data-tip="${escapeHtml(attendanceTip)}" title="${escapeHtml(attendanceTip)}">?</span></div><div class="metric-value" style="font-size:${summary.attendanceInsufficientData || summary.attendanceRate == null ? '18px' : '30px'}">${attendanceRateText}</div><div class="metric-note">${attendanceNote}</div></article>
+        <article class="metric"><div class="metric-label">Clientes com reunião <span class="help" title="Clientes com pelo menos uma reunião válida registrada no recorte.">?</span></div><div class="metric-value">${fmt.format(summary.clientsWithMeeting ?? summary.clientsWithFirstMeeting ?? 0)}</div><div class="metric-note">Clientes com pelo menos uma reunião válida registrada.</div></article>`;
 
+      const noShowFreq = (!hasActiveMeetingFilters() && Array.isArray(meetingsState.payload.noShowFrequency) && meetingsState.payload.noShowFrequency.length)
+        ? meetingsState.payload.noShowFrequency
+        : calculateNoShowFrequency(data);
+      const noShowUniverse = (!hasActiveMeetingFilters() && meetingsState.payload.metadata?.noShowFrequencyUniverse != null)
+        ? meetingsState.payload.metadata.noShowFrequencyUniverse
+        : data.length;
       renderMonthChart(meetings);
+      renderMeetingTypesChart();
       document.querySelector('#mChartStatus').innerHTML = donut(dist.attendanceStatus || []);
       document.querySelector('#mChartFreq').innerHTML = hBars(dist.meetingFrequency || []);
       document.querySelector('#mChartDays').innerHTML = hBars(dist.daysSinceLastMeeting || []);
       document.querySelector('#mChartInterval').innerHTML = hBars(dist.intervalRanges || []);
+      {
+        const maxN = Math.max(...noShowFreq.map((b) => b.clients), 1);
+        document.querySelector('#mChartNoShowFreq').innerHTML = noShowFreq.map((b) => {
+          const tip = `${b.label}: ${fmt.format(b.clients)} clientes · ${pct(b.percentage)} · universo ${fmt.format(noShowUniverse)}`;
+          return `<div class="hbar" title="${escapeHtml(tip)}">
+            <div class="hbar-label" title="${escapeHtml(b.label)}">${escapeHtml(b.label)}</div>
+            <div class="hbar-track"><span style="width:${(b.clients / maxN) * 100}%"></span></div>
+            <div class="hbar-val">${fmt.format(b.clients)} · ${pct(b.percentage)}</div>
+          </div>`;
+        }).join('') || '<div class="empty" style="display:block">Sem dados</div>';
+      }
       document.querySelector('#mChartEngineers').innerHTML = hBars(dist.meetingsByEngineer || [], meetingsState.showAllEngineers ? null : 8);
       document.querySelector('#mToggleEngineers').textContent = meetingsState.showAllEngineers ? 'Ver principais' : 'Ver todos';
 
@@ -6270,11 +6847,12 @@ ${dataRows}
           c.absences > 0 ? 'warn-absence' : '',
           c.firstMeetingCompleted === false ? 'warn-nofirst' : ''
         ].filter(Boolean).join(' ');
-        const intervalShow = c.typicalIntervalDays ?? c.averageIntervalDays;
+        const intervalShow = c.averageIntervalDays;
         return `<tr class="${classes}" data-mid="${escapeHtml(c.clientId)}">
           <td class="truncate" title="${escapeHtml(c.clientName)}">${escapeHtml(c.clientName)}</td>
           <td>${escapeHtml(c.clientCode || 'Não informado')}</td>
           <td class="truncate" title="${escapeHtml(c.engineer)}">${escapeHtml(c.engineer)}</td>
+          <td>${statusBadge(clientStatusLabel(c))}</td>
           <td class="num">${fmt.format(c.totalMeetings)}</td>
           <td class="num">${c.meetingsPerMonth == null ? '—' : fmt.format(c.meetingsPerMonth)}</td>
           <td>${dateBR(c.lastMeetingDate)}</td>
@@ -6291,18 +6869,25 @@ ${dataRows}
       document.querySelector('#mPageInfo').textContent = `Página ${meetingsState.page} de ${pages}`;
       document.querySelector('#mPrev').disabled = meetingsState.page <= 1;
       document.querySelector('#mNext').disabled = meetingsState.page >= pages;
+
+      if (typeof showSourceWarningsAlert === 'function') {
+        showSourceWarningsAlert('#mSourceAlert', 'meetings-source-warning', 'Alertas de qualidade das reuniões', meetingsState.payload.quality?.warnings || [], {
+          note: 'Avisos agregados da consolidação de reuniões.'
+        });
+      }
     }
     function openMeetingDrawer(client) {
       document.querySelector('#drawerTitle').textContent = client.clientName;
       document.querySelector('#drawerSub').textContent = `Código ${client.clientCode || 'Não informado'} · ID ${client.clientId}`;
       const items = [
+        ['Status', clientStatusLabel(client.analyticalStatus || client.clientStatus || client)],
         ['Total de reuniões', fmt.format(client.totalMeetings)],
         ['Média por mês', client.meetingsPerMonth == null ? 'Não informado' : fmt.format(client.meetingsPerMonth)],
         ['Última reunião', dateBR(client.lastMeetingDate)],
         ['Dias sem reunião', client.daysSinceLastMeeting == null ? 'Não informado' : fmt.format(client.daysSinceLastMeeting)],
         ['Intervalo médio', client.averageIntervalDays == null ? 'Não informado' : `${fmt.format(Math.round(client.averageIntervalDays))} dias`],
         ['Faltas', fmt.format(client.absences)],
-        ['Remarcações', fmt.format(client.reschedules)],
+        ['Remarcações', `${fmt.format(client.reschedules)} (cobertura parcial)`],
         ['Canceladas', client.cancelledMeetings == null ? 'Não informado' : fmt.format(client.cancelledMeetings)],
         ['Primeira reunião', client.firstMeetingCompleted === true ? 'Realizou' : client.firstMeetingCompleted === false ? 'Não realizou' : 'Não informado'],
         ['Data da primeira', dateBR(client.firstMeetingDate)],
@@ -6353,7 +6938,7 @@ ${dataRows}
         status.textContent = payload.quality?.warnings?.length ? '? Supabase conectado com alertas' : '? Supabase conectado';
         status.style.color = payload.quality?.warnings?.length ? 'var(--color-warning)' : 'var(--color-success)';
         document.querySelector('#mUpdated').textContent = `Atualizado em ${new Date(payload.generatedAt).toLocaleString('pt-BR')}`;
-        showSourceWarningsAlert('#mSourceAlert', 'meetings-source-warning', 'Alertas de qualidade das reuniões', payload.quality?.warnings || []);
+        // Alertas finais (incl. cobertura parcial de remarcações) são montados em renderMeetings().
       } catch (error) {
         if (requestId !== meetingsState.requestId) return;
         if (error?.code === 'AUTH_REQUIRED' || error?.code === 'AUTH_FORBIDDEN' || error?.message === 'AUTH_REQUIRED') return;
@@ -6370,6 +6955,7 @@ ${dataRows}
     Object.values(mFilters).forEach(el => el && el.addEventListener('input', () => { meetingsState.page = 1; renderMeetings(); }));
     document.querySelector('#mClear').addEventListener('click', () => {
       mFilters.search.value = '';
+      if (mFilters.clientStatus) mFilters.clientStatus.value = 'all';
       ['engineer', 'period', 'attendance', 'freq', 'first', 'absence', 'reschedule'].forEach(k => mFilters[k].value = 'all');
       mFilters.from.value = ''; mFilters.to.value = '';
       meetingsState.page = 1; renderMeetings();
@@ -6378,6 +6964,17 @@ ${dataRows}
     document.querySelector('#mPrev').addEventListener('click', () => { meetingsState.page -= 1; renderMeetings(); });
     document.querySelector('#mNext').addEventListener('click', () => { meetingsState.page += 1; renderMeetings(); });
     document.querySelector('#mToggleEngineers').addEventListener('click', () => { meetingsState.showAllEngineers = !meetingsState.showAllEngineers; renderMeetings(); });
+    document.querySelector('#mToggleTypes')?.addEventListener('click', () => {
+      meetingsState.showAllTypes = !meetingsState.showAllTypes;
+      renderMeetings();
+    });
+    document.querySelector('#mTypeModeSeg')?.addEventListener('click', (event) => {
+      const btn = event.target.closest('[data-type-mode]');
+      if (!btn) return;
+      meetingsState.typeMode = btn.getAttribute('data-type-mode') === 'raw' ? 'raw' : 'family';
+      meetingsState.showAllTypes = false;
+      renderMeetings();
+    });
     const monthRangeSeg = document.querySelector('#mMonthRangeSeg');
     if (monthRangeSeg) {
       monthRangeSeg.addEventListener('click', (event) => {
@@ -6423,8 +7020,14 @@ ${dataRows}
     const mechanismsState = {
       payload: null, page: 1, pageSize: 25, sortKey: 'clientName', sortDir: 'asc',
       clientStatusFilter: 'all', monthRange: '6', showTypesAsc: false,
-      epSortKey: 'links', epSortDir: 'desc',
-      loading: false, requestId: 0
+      showAllTypes: false, showAllEp: false,
+      epSortKey: 'implementationPercent', epSortDir: 'desc',
+      epChartSort: 'percent', epSearch: '',
+      loading: false, requestId: 0,
+      pharus: null, pharusLoading: false, pharusRequestId: 0,
+      phSortKey: 'name', phSortDir: 'asc',
+      phLinkSortKey: 'mechanismName', phLinkSortDir: 'asc',
+      phLinkPage: 1, phLinkPageSize: 25
     };
     const kFilters = {
       search: document.querySelector('#kSearch'),
@@ -6709,34 +7312,88 @@ ${dataRows}
     }
 
     function recomputeByEngineer(rows) {
+      const portfolio = mechanismsState.payload?.distributions?.byAdvisor
+        || mechanismsState.payload?.distributions?.byEngineer
+        || [];
+      const filter = mechanismsState.clientStatusFilter;
       const epMap = new Map();
+      for (const port of portfolio) {
+        const key = port.engineer || 'Não informado';
+        let totalClients = port.totalClients ?? port.clients ?? 0;
+        if (filter !== 'all' && port.byStatus) {
+          if (filter === 'active_or_frozen') {
+            totalClients = (port.byStatus.Ativo || 0) + (port.byStatus.Congelado || 0);
+          } else {
+            const statusLabel = {
+              active: 'Ativo',
+              cancelled: 'Cancelado',
+              frozen: 'Congelado',
+              unknown: 'Não informado'
+            }[filter];
+            totalClients = statusLabel ? (port.byStatus[statusLabel] || 0) : totalClients;
+          }
+        }
+        epMap.set(key, {
+          engineer: key,
+          totalClients,
+          clientsWithImplemented: 0,
+          implementations: 0,
+          typeIds: new Set(),
+          links: 0
+        });
+      }
       for (const c of rows) {
         const key = c.engineer || 'Não informado';
-        const cur = epMap.get(key) || {
-          engineer: key, clients: 0, links: 0, implemented: 0, firstDays: []
-        };
-        cur.clients += 1;
-        cur.links += c.available;
-        cur.implemented += c.implemented;
-        if (c.daysToFirstImplementation != null && c.daysToFirstImplementation >= 0) {
-          cur.firstDays.push(c.daysToFirstImplementation);
+        let cur = epMap.get(key);
+        if (!cur) {
+          cur = {
+            engineer: key,
+            totalClients: 0,
+            clientsWithImplemented: 0,
+            implementations: 0,
+            typeIds: new Set(),
+            links: 0
+          };
+          epMap.set(key, cur);
         }
-        epMap.set(key, cur);
+        cur.links += c.available || 0;
+        if ((c.implemented || 0) > 0) {
+          cur.clientsWithImplemented += 1;
+          cur.implementations += c.implemented;
+          for (const m of c.mechanisms || []) {
+            if (m.status === 'Implementado' && m.mechanismId) cur.typeIds.add(String(m.mechanismId));
+          }
+        }
       }
-      return [...epMap.values()].map(row => ({
-        engineer: row.engineer,
-        clients: row.clients,
-        links: row.links,
-        implemented: row.implemented,
-        implementationPercent: row.links
-          ? Math.round((row.implemented / row.links) * 1000) / 10
-          : null,
-        typicalDaysToFirstImplementation: (() => {
-          const med = robustStatsClient(row.firstDays).median;
-          return med == null ? null : Math.round(med);
-        })(),
-        sampleSmall: row.clients < 5
-      }));
+      const q = (mechanismsState.epSearch || '').trim().toLowerCase();
+      const engFilter = kFilters.engineer?.value || 'all';
+      return [...epMap.values()]
+        .map((row) => {
+          const clientsWithoutImplemented = Math.max(0, row.totalClients - row.clientsWithImplemented);
+          const implementationPercent = row.totalClients
+            ? Math.round((row.clientsWithImplemented / row.totalClients) * 1000) / 10
+            : null;
+          return {
+            engineer: row.engineer,
+            totalClients: row.totalClients,
+            clients: row.totalClients,
+            clientsWithImplemented: row.clientsWithImplemented,
+            clientsWithoutImplemented,
+            implementations: row.implementations,
+            implemented: row.implementations,
+            typesImplemented: row.typeIds.size,
+            distinctImplementedTypes: row.typeIds.size,
+            implementationPercent,
+            portfolioImplementationPercent: implementationPercent,
+            links: row.links,
+            sampleSmall: row.totalClients < 5
+          };
+        })
+        .filter((row) => {
+          if (engFilter !== 'all' && row.engineer !== engFilter) return false;
+          if (q && !row.engineer.toLowerCase().includes(q)) return false;
+          return row.totalClients > 0;
+        });
     }
 
     function distCount(rows, keyFn, ordered) {
@@ -6806,8 +7463,10 @@ ${dataRows}
         const cmp = a.clientsLinked - b.clientsLinked || a.name.localeCompare(b.name, 'pt-BR');
         return mechanismsState.showTypesAsc ? cmp : -cmp;
       });
-      const maxClients = Math.max(...sorted.map(t => t.clientsLinked), 1);
-      const html = sorted.map(t => {
+      const limit = 8;
+      const visible = mechanismsState.showAllTypes ? sorted : sorted.slice(0, limit);
+      const maxClients = Math.max(...visible.map(t => t.clientsLinked), 1);
+      const html = visible.map(t => {
         const pctVal = t.implementationPercent == null ? '—' : pct(t.implementationPercent);
         const wClients = (t.clientsLinked / maxClients) * 100;
         const wImpl = t.clientsLinked ? (t.implemented / maxClients) * 100 : 0;
@@ -6822,14 +7481,23 @@ ${dataRows}
         </div>`;
       }).join('') || '<div class="empty" style="display:block">Sem tipos no catálogo</div>';
       document.querySelector('#kChartTypes').innerHTML = html;
-      const toggle = document.querySelector('#kToggleTypes');
-      if (toggle) toggle.textContent = mechanismsState.showTypesAsc ? 'Mais utilizados' : 'Menos utilizados';
+      const sortToggle = document.querySelector('#kToggleTypesSort');
+      if (sortToggle) sortToggle.textContent = mechanismsState.showTypesAsc ? 'Mais utilizados' : 'Menos utilizados';
+      const allToggle = document.querySelector('#kToggleTypesAll');
+      if (allToggle) {
+        allToggle.hidden = sorted.length <= limit;
+        allToggle.textContent = mechanismsState.showAllTypes ? 'Ver menos' : 'Ver todos';
+      }
     }
 
     function renderEpTable(byEngineer) {
       const key = mechanismsState.epSortKey;
       const dir = mechanismsState.epSortDir;
-      const sorted = [...byEngineer].sort((a, b) => {
+      const q = (mechanismsState.epSearch || '').trim().toLowerCase();
+      const filtered = q
+        ? byEngineer.filter((r) => String(r.engineer || '').toLowerCase().includes(q))
+        : byEngineer;
+      const sorted = [...filtered].sort((a, b) => {
         const av = a[key], bv = b[key];
         let cmp = 0;
         if (av == null && bv == null) cmp = 0;
@@ -6841,15 +7509,77 @@ ${dataRows}
       });
       const tbody = document.querySelector('#kEpTable tbody');
       if (!tbody) return;
-      tbody.innerHTML = sorted.map(row => `
-        <tr class="${row.sampleSmall ? 'sample-small' : ''}" title="${row.sampleSmall ? 'Amostra pequena (< 5 clientes)' : ''}">
+      tbody.innerHTML = sorted.map(row => {
+        const tip = [
+          `Carteira: ${fmt.format(row.totalClients)}`,
+          `Com mecanismo: ${fmt.format(row.clientsWithImplemented)}`,
+          `Sem mecanismo: ${fmt.format(row.clientsWithoutImplemented)}`,
+          `Implementações: ${fmt.format(row.implementations)}`,
+          `Tipos: ${fmt.format(row.typesImplemented)}`,
+          `Percentual: ${row.implementationPercent == null ? '—' : pct(row.implementationPercent)}`
+        ].join(' · ');
+        return `
+        <tr class="${row.sampleSmall ? 'sample-small' : ''}" title="${escapeHtml(tip)}">
           <td>${escapeHtml(row.engineer)}${row.sampleSmall ? ' *' : ''}</td>
-          <td class="num">${fmt.format(row.clients)}</td>
-          <td class="num">${fmt.format(row.links)}</td>
-          <td class="num">${fmt.format(row.implemented)}</td>
+          <td class="num">${fmt.format(row.totalClients)}</td>
+          <td class="num">${fmt.format(row.clientsWithImplemented)}</td>
+          <td class="num">${fmt.format(row.clientsWithoutImplemented)}</td>
           <td class="num">${row.implementationPercent == null ? '—' : pct(row.implementationPercent)}</td>
-          <td class="num">${row.typicalDaysToFirstImplementation == null ? '—' : fmt.format(row.typicalDaysToFirstImplementation) + ' d'}</td>
-        </tr>`).join('') || '<tr><td colspan="6">Sem dados</td></tr>';
+          <td class="num">${fmt.format(row.implementations)}</td>
+          <td class="num">${fmt.format(row.typesImplemented)}</td>
+        </tr>`;
+      }).join('') || '<tr><td colspan="7">Sem dados</td></tr>';
+    }
+
+    function renderEpImplChart(byEngineer) {
+      const el = document.querySelector('#kChartEpImpl');
+      if (!el) return;
+      const sortKey = mechanismsState.epChartSort === 'clients' ? 'clientsWithImplemented' : 'implementationPercent';
+      const sorted = [...byEngineer]
+        .filter((r) => r.totalClients > 0)
+        .sort((a, b) => (b[sortKey] ?? -1) - (a[sortKey] ?? -1) || a.engineer.localeCompare(b.engineer, 'pt-BR'));
+      const limit = 8;
+      const visible = mechanismsState.showAllEp ? sorted : sorted.slice(0, limit);
+      const max = Math.max(...visible.map((r) => r.clientsWithImplemented || 0), 1);
+      el.innerHTML = visible.map((row) => {
+        const tip = [
+          row.engineer,
+          `Carteira: ${fmt.format(row.totalClients)}`,
+          `Com mecanismo: ${fmt.format(row.clientsWithImplemented)}`,
+          `Sem mecanismo: ${fmt.format(row.clientsWithoutImplemented)}`,
+          `Implementações: ${fmt.format(row.implementations)}`,
+          `Tipos: ${fmt.format(row.typesImplemented)}`,
+          `Percentual: ${row.implementationPercent == null ? '—' : pct(row.implementationPercent)}`
+        ].join(' · ');
+        const value = `${fmt.format(row.clientsWithImplemented)} · ${row.implementationPercent == null ? '—' : pct(row.implementationPercent)}`;
+        return `<div class="mechanism-chart-row" title="${escapeHtml(tip)}">
+          <div class="mechanism-chart-label" title="${escapeHtml(row.engineer)}">${escapeHtml(row.engineer)}</div>
+          <div class="mechanism-chart-track"><span style="width:${(row.clientsWithImplemented / max) * 100}%"></span></div>
+          <div class="mechanism-chart-value">${value}</div>
+        </div>`;
+      }).join('') || '<div class="empty" style="display:block">Sem dados por EP</div>';
+      document.querySelectorAll('#kEpChartSortSeg [data-ep-chart-sort]').forEach((btn) => {
+        btn.classList.toggle('active', btn.getAttribute('data-ep-chart-sort') === mechanismsState.epChartSort);
+      });
+      const epToggle = document.querySelector('#kToggleEpAll');
+      if (epToggle) {
+        epToggle.hidden = sorted.length <= limit;
+        epToggle.textContent = mechanismsState.showAllEp ? 'Ver menos' : 'Ver todos';
+      }
+    }
+
+    function renderCombinedMechanismKpis(summary) {
+      const el = document.querySelector('#kKpisCombined');
+      if (!el) return;
+      const baseQv = summary.clientsWithMechanisms || 0;
+      const pharusUsers = Number(mechanismsState.pharus?.summary?.usersWithMechanisms
+        ?? mechanismsState.pharus?.summary?.usersWithSuggestion
+        ?? mechanismsState.pharus?.summary?.usersWithSuggestions
+        ?? 0);
+      const pharusOk = mechanismsState.pharus?.available !== false && mechanismsState.pharus?.success !== false;
+      const combined = baseQv + (pharusOk ? pharusUsers : 0);
+      el.innerHTML = `
+        <article class="metric kpi-blue highlight"><div class="metric-label">Clientes com mecanismos <span class="help" tabindex="0" data-tip="Soma bruta das duas fontes; pode haver pessoas presentes em ambas. Não há chave confiável de deduplicação entre BASE QV e App Pharus neste portal.">?</span></div><div class="metric-value">${fmt.format(combined)}</div><div class="metric-note">Registros consolidados de clientes com mecanismos nas duas fontes: BASE QV + App Pharus.<br>BASE QV ${fmt.format(baseQv)} + App Pharus ${pharusOk ? fmt.format(pharusUsers) : '—'} = ${fmt.format(combined)}</div></article>`;
     }
 
     function renderMechanisms() {
@@ -6859,7 +7589,8 @@ ${dataRows}
       const links = summary.availableMechanisms;
       const allMechs = rows.flatMap(c => c.mechanisms || []);
 
-      const statusRaw = distCount(allMechs, m => m.status, ['Apto', 'Em andamento', 'Implementado', 'Não informado']);
+      const statusRaw = distCount(allMechs, m => m.status, ['Em andamento', 'Implementado', 'Não informado'])
+        .filter((i) => i.label !== 'Apto' && i.label !== 'Aptos');
       const statusDist = statusRaw.map(i => ({
         ...i,
         label: K_STATUS_LABELS[i.label] || i.label,
@@ -6870,12 +7601,14 @@ ${dataRows}
       const firstDist = distCount(rows, c => c.daysToFirstRange, ['Até 7 dias', 'De 8 a 15 dias', 'De 16 a 30 dias', 'De 31 a 60 dias', 'De 61 a 90 dias', 'Mais de 90 dias', 'Sem implementação']);
       const sinceDist = distCount(rows, c => c.daysSinceLastRange, ['Até 30 dias', 'De 31 a 60 dias', 'De 61 a 90 dias', 'De 91 a 180 dias', 'Mais de 180 dias', 'Nunca implementou']);
 
-      const recCountBands = ['1', '2', '3', '4', '5 ou mais'];
+      const recCountBands = ['1 mecanismo', '2 mecanismos', '3 a 4 mecanismos', '5 ou mais mecanismos'];
       const recCountDist = distCount(rows, c => {
         const n = c.available || 0;
         if (n <= 0) return null;
-        if (n >= 5) return '5 ou mais';
-        return String(n);
+        if (n === 1) return '1 mecanismo';
+        if (n === 2) return '2 mecanismos';
+        if (n <= 4) return '3 a 4 mecanismos';
+        return '5 ou mais mecanismos';
       }, recCountBands).filter(i => i.label);
 
       const typeStats = recomputeTypeStats(rows);
@@ -6916,16 +7649,17 @@ ${dataRows}
         }
       }
 
+      renderCombinedMechanismKpis(summary);
+
       document.querySelector('#kKpisCoverage').innerHTML = `
-        <article class="metric kpi-primary"><div class="metric-label">Clientes com mecanismos <span class="help" tabindex="0" data-tip="Cada cliente é contado uma única vez, mesmo que possua vários mecanismos.">?</span></div><div class="metric-value">${fmt.format(summary.clientsWithMechanisms)}</div><div class="metric-note">Clientes distintos com pelo menos um mecanismo vinculado.</div></article>
-        <article class="metric kpi-secondary"><div class="metric-label">Tipos utilizados <span class="help" tabindex="0" data-tip="Existem ${summary.catalogMechanisms == null ? '—' : fmt.format(summary.catalogMechanisms)} tipos cadastrados no catálogo e ${fmt.format(summary.typesUsed)} já aparecem vinculados a pelo menos um cliente.">?</span></div><div class="metric-value">${typesValue}</div><div class="metric-note">Tipos do catálogo que já estão vinculados a clientes.</div></article>
+        <article class="metric kpi-primary"><div class="metric-label">Clientes com mecanismos — BASE QV <span class="help" tabindex="0" data-tip="Cada cliente é contado uma única vez, mesmo que possua vários mecanismos.">?</span></div><div class="metric-value">${fmt.format(summary.clientsWithMechanisms)}</div><div class="metric-note">BASE QV · clientes distintos com pelo menos um mecanismo vinculado.</div></article>
+        <article class="metric kpi-secondary"><div class="metric-label">Tipos de mecanismos <span class="help" tabindex="0" data-tip="Existem ${summary.catalogMechanisms == null ? '—' : fmt.format(summary.catalogMechanisms)} tipos cadastrados no catálogo e ${fmt.format(summary.typesUsed)} já aparecem vinculados a pelo menos um cliente.">?</span></div><div class="metric-value">${typesValue}</div><div class="metric-note">Catálogo BASE QV · utilizados / cadastrados.</div></article>
         <article class="metric kpi-secondary"><div class="metric-label">Tipos sem utilização <span class="help" tabindex="0" data-tip="${escapeHtml(unusedTip)}">?</span></div><div class="metric-value">${fmt.format(summary.typesUnused)}</div><div class="metric-note">Tipos ainda não vinculados a nenhum cliente.</div></article>
         <article class="metric kpi-primary"><div class="metric-label">Mecanismo mais utilizado <span class="help" tabindex="0" data-tip="${escapeHtml(topMechTip)}">?</span></div><div class="metric-value" style="font-size:${topMech && topMech.clientCount > 0 ? '18px' : '22px'}">${topMechValue}</div><div class="metric-note">${escapeHtml(topMechNote)}</div></article>`;
 
       document.querySelector('#kKpisProgress').innerHTML = `
         <article class="metric kpi-primary"><div class="metric-label">Mecanismos implementados <span class="help" tabindex="0" data-tip="Conta as combinações entre cliente e mecanismo que chegaram ao status concluído.">?</span></div><div class="metric-value">${fmt.format(summary.implementedMechanisms)}</div><div class="metric-note">Vínculos com status concluído.</div></article>
         <article class="metric kpi-secondary"><div class="metric-label">Em andamento <span class="help" tabindex="0" data-tip="Mecanismos iniciados e ainda não concluídos.">?</span></div><div class="metric-value">${fmt.format(summary.inProgressMechanisms)}</div><div class="metric-note">Mecanismos iniciados e ainda não concluídos.</div></article>
-        <article class="metric kpi-secondary"><div class="metric-label">Aptos para iniciar <span class="help" tabindex="0" data-tip="Mecanismos disponíveis que ainda não foram iniciados.">?</span></div><div class="metric-value">${fmt.format(summary.eligibleMechanisms)}</div><div class="metric-note">Mecanismos disponíveis que ainda não foram iniciados.</div></article>
         <article class="metric kpi-primary"><div class="metric-label">Percentual implementado <span class="help" tabindex="0" data-tip="Calculado dividindo os vínculos concluídos pelos vínculos únicos entre cliente e mecanismo.">?</span></div><div class="metric-value">${summary.implementationPercent == null ? '—' : pct(summary.implementationPercent)}</div><div class="metric-note">${fmt.format(summary.implementedMechanisms)} implementados de ${fmt.format(summary.availableMechanisms)} vínculos previstos.</div></article>`;
 
       document.querySelector('#kKpisTime').innerHTML = `
@@ -6950,8 +7684,9 @@ ${dataRows}
 
       const mechStatusColors = K_STATUS_COLORS;
       const statusNoteClass = statusSum === links ? 'note-muted' : 'note-muted warn-amber';
+      const aptosHidden = allMechs.filter((m) => m.status === 'Apto').length;
       document.querySelector('#kChartStatus').innerHTML = donut(statusDist, mechStatusColors) +
-        (links ? `<p class="${statusNoteClass}">Soma dos status: ${fmt.format(statusSum)} · Vínculos: ${fmt.format(links)}${statusSum === links ? ' · partição OK' : ' · divergência'}</p>` : '');
+        (links ? `<p class="${statusNoteClass}">Soma exibida: ${fmt.format(statusSum)} · Vínculos totais: ${fmt.format(links)}${aptosHidden ? ` · Aptos omitidos da visualização: ${fmt.format(aptosHidden)}` : ''}${statusSum + aptosHidden === links ? ' · partição OK' : ''}</p>` : '');
       document.querySelector('#kChartRecCount').innerHTML = hBars(recCountDist);
 
       const catalogTotal = summary.catalogMechanisms || 0;
@@ -6971,13 +7706,13 @@ ${dataRows}
 
       const segItems = bySegment.map(s => ({
         label: s.segment,
-        count: s.links,
+        count: s.implemented,
         percent: s.implementationPercent == null ? 0 : s.implementationPercent
       }));
       const segMax = Math.max(...segItems.map(i => i.count), 1);
       document.querySelector('#kChartSegment').innerHTML = segItems.map(i => {
         const row = bySegment.find(s => s.segment === i.label);
-        const metric = `${fmt.format(row.clients)} cl. · ${fmt.format(row.implemented)}/${fmt.format(row.links)} · ${row.implementationPercent == null ? '—' : pct(row.implementationPercent)}`;
+        const metric = `${fmt.format(row.implemented)} impl. · ${fmt.format(row.clients)} cl. · ${row.implementationPercent == null ? '—' : pct(row.implementationPercent)}`;
         return `<div class="hbar" title="${escapeHtml(i.label)}: ${metric}">
           <div class="hbar-label" title="${escapeHtml(i.label)}">${escapeHtml(i.label)}</div>
           <div class="hbar-track"><span style="width:${(i.count / segMax) * 100}%"></span></div>
@@ -6986,6 +7721,7 @@ ${dataRows}
       }).join('') || '<div class="empty" style="display:block">Sem dados</div>';
 
       renderEpTable(byEngineer);
+      renderEpImplChart(byEngineer);
 
       const pages = Math.max(1, Math.ceil(rows.length / mechanismsState.pageSize));
       if (mechanismsState.page > pages) mechanismsState.page = pages;
@@ -7001,7 +7737,6 @@ ${dataRows}
           <td>${segmentBadge(c)}</td>
           <td class="truncate" title="${escapeHtml(c.engineer)}">${escapeHtml(c.engineer)}</td>
           <td class="num">${fmt.format(c.available)}</td>
-          <td class="num">${fmt.format(c.eligible)}</td>
           <td class="num">${fmt.format(c.inProgress)}</td>
           <td class="num">${fmt.format(c.implemented)}</td>
           <td class="num">${pctBadge(c.implementationPercent)}</td>
@@ -7025,7 +7760,6 @@ ${dataRows}
         ['Segmento', client.segment || 'Dados insuficientes'],
         ['Engenheiro Patrimonial', client.engineer],
         ['Qtd mecanismos', fmt.format(client.available)],
-        ['Aptos', fmt.format(client.eligible)],
         ['Iniciados', fmt.format(client.inProgress)],
         ['Concluídos', fmt.format(client.implemented)],
         ['% implementado', client.implementationPercent == null ? 'Não informado' : pct(client.implementationPercent)],
@@ -7055,7 +7789,335 @@ ${dataRows}
       document.querySelector('#drawer').setAttribute('aria-hidden', 'false');
     }
 
-    /* App Pharus: conexão/API mantidas no backend; UI desta página não carrega /api/pharus-mechanisms. */
+    /* App Pharus — seção separada (não mistura com BASE QV). */
+    const phFilters = {
+      search: document.querySelector('#phSearch'),
+      engine: document.querySelector('#phEngine'),
+      category: document.querySelector('#phCategory'),
+      risk: document.querySelector('#phRisk'),
+      market: document.querySelector('#phMarket'),
+      status: document.querySelector('#phStatus')
+    };
+    const phLinkFilters = {
+      search: document.querySelector('#phLinkSearch'),
+      mechanism: document.querySelector('#phLinkMechanism'),
+      engine: document.querySelector('#phLinkEngine'),
+      category: document.querySelector('#phLinkCategory'),
+      risk: document.querySelector('#phLinkRisk'),
+      status: document.querySelector('#phLinkStatus')
+    };
+
+    function filteredPharusCatalog() {
+      const rows = mechanismsState.pharus?.catalogRows || mechanismsState.pharus?.catalog || [];
+      const q = (phFilters.search?.value || '').trim().toLowerCase();
+      return rows.filter((r) => {
+        if (phFilters.engine?.value && phFilters.engine.value !== 'all' && r.engine !== phFilters.engine.value) return false;
+        if (phFilters.category?.value && phFilters.category.value !== 'all' && r.category !== phFilters.category.value) return false;
+        if (phFilters.risk?.value && phFilters.risk.value !== 'all' && r.risk !== phFilters.risk.value) return false;
+        if (phFilters.market?.value && phFilters.market.value !== 'all' && r.market !== phFilters.market.value) return false;
+        if (q) {
+          const hay = `${r.name || ''} ${r.engine || ''} ${r.category || ''}`.toLowerCase();
+          if (!hay.includes(q)) return false;
+        }
+        return true;
+      }).sort((a, b) => {
+        const key = mechanismsState.phSortKey;
+        const av = a[key], bv = b[key];
+        let cmp = 0;
+        if (av == null && bv == null) cmp = 0;
+        else if (av == null) cmp = 1;
+        else if (bv == null) cmp = -1;
+        else cmp = String(av).localeCompare(String(bv), 'pt-BR', { numeric: true });
+        return mechanismsState.phSortDir === 'asc' ? cmp : -cmp;
+      });
+    }
+
+    function filteredPharusLinks() {
+      const rows = mechanismsState.pharus?.rows || [];
+      const q = (phLinkFilters.search?.value || '').trim().toLowerCase();
+      return rows.filter((r) => {
+        if (phLinkFilters.mechanism?.value && phLinkFilters.mechanism.value !== 'all'
+          && String(r.mechanismId) !== String(phLinkFilters.mechanism.value)
+          && r.mechanismName !== phLinkFilters.mechanism.value) return false;
+        if (phLinkFilters.engine?.value && phLinkFilters.engine.value !== 'all' && r.engine !== phLinkFilters.engine.value) return false;
+        if (phLinkFilters.category?.value && phLinkFilters.category.value !== 'all' && r.category !== phLinkFilters.category.value) return false;
+        if (phLinkFilters.risk?.value && phLinkFilters.risk.value !== 'all' && r.risk !== phLinkFilters.risk.value) return false;
+        if (phLinkFilters.status?.value && phLinkFilters.status.value !== 'all' && r.status !== phLinkFilters.status.value) return false;
+        if (q) {
+          const hay = `${r.userName || ''} ${r.userEmail || ''} ${r.userId || ''} ${r.mechanismName || ''}`.toLowerCase();
+          if (!hay.includes(q)) return false;
+        }
+        return true;
+      }).sort((a, b) => {
+        const key = mechanismsState.phLinkSortKey;
+        const av = a[key], bv = b[key];
+        let cmp = 0;
+        if (av == null && bv == null) cmp = 0;
+        else if (av == null) cmp = 1;
+        else if (bv == null) cmp = -1;
+        else if (typeof av === 'number' && typeof bv === 'number') cmp = av - bv;
+        else cmp = String(av).localeCompare(String(bv), 'pt-BR', { numeric: true });
+        return mechanismsState.phLinkSortDir === 'asc' ? cmp : -cmp;
+      });
+    }
+
+    function renderPharusLinkTable() {
+      const rows = filteredPharusLinks();
+      const pages = Math.max(1, Math.ceil(rows.length / mechanismsState.phLinkPageSize));
+      if (mechanismsState.phLinkPage > pages) mechanismsState.phLinkPage = pages;
+      const start = (mechanismsState.phLinkPage - 1) * mechanismsState.phLinkPageSize;
+      const pageRows = rows.slice(start, start + mechanismsState.phLinkPageSize);
+      const tbody = document.querySelector('#phLinkRows');
+      if (tbody) {
+        tbody.innerHTML = pageRows.map((r, idx) => `
+          <tr data-ph-link-idx="${start + idx}">
+            <td class="truncate" title="${escapeHtml(r.userName || 'Usuário não identificado')}">${escapeHtml(r.userName || 'Usuário não identificado')}</td>
+            <td class="truncate" title="${escapeHtml(r.userEmail || 'E-mail não informado')}">${escapeHtml(r.userEmail || 'E-mail não informado')}</td>
+            <td class="truncate" title="${escapeHtml(String(r.userId || ''))}">${escapeHtml(String(r.userId || '—'))}</td>
+            <td class="truncate" title="${escapeHtml(r.mechanismName || '')}">${escapeHtml(r.mechanismName || 'Não informado')}</td>
+            <td>${escapeHtml(r.engine || 'Não informado')}</td>
+            <td>${escapeHtml(r.category || 'Não informado')}</td>
+            <td>${escapeHtml(r.market || 'Não informado')}</td>
+            <td>${escapeHtml(r.risk || 'Não informado')}</td>
+            <td>${escapeHtml(r.status || 'Não informado')}</td>
+            <td>${dateBR(r.createdAt)}</td>
+            <td>${dateBR(r.updatedAt)}</td>
+          </tr>`).join('') || '';
+      }
+      const empty = document.querySelector('#phLinkEmpty');
+      if (empty) empty.style.display = rows.length ? 'none' : 'block';
+      const counter = document.querySelector('#phLinkCounter');
+      if (counter) counter.textContent = `${rows.length} vínculos`;
+      const pageInfo = document.querySelector('#phLinkPageInfo');
+      if (pageInfo) pageInfo.textContent = `Página ${mechanismsState.phLinkPage} de ${pages}`;
+      const prev = document.querySelector('#phLinkPrev');
+      const next = document.querySelector('#phLinkNext');
+      if (prev) prev.disabled = mechanismsState.phLinkPage <= 1;
+      if (next) next.disabled = mechanismsState.phLinkPage >= pages;
+    }
+
+    function renderPharusMechanisms() {
+      const payload = mechanismsState.pharus;
+      const statusEl = document.querySelector('#kPharusStatus');
+      const updatedEl = document.querySelector('#kPharusUpdated');
+      const kpis = document.querySelector('#kPharusKpis');
+      if (!payload) {
+        if (kpis) kpis.innerHTML = '';
+        return;
+      }
+      const failed = payload.available === false || payload.success === false || payload.source?.status === 'failed';
+      if (statusEl) {
+        statusEl.textContent = failed
+          ? '● App Pharus indisponível'
+          : (payload.source?.status === 'connected_with_warnings' ? '● App Pharus com alertas' : '● App Pharus conectado');
+        statusEl.style.color = failed ? 'var(--color-danger)' : (payload.source?.status === 'connected_with_warnings' ? 'var(--color-warning)' : 'var(--color-success)');
+      }
+      if (updatedEl) {
+        updatedEl.textContent = payload.generatedAt
+          ? `Atualizado em ${new Date(payload.generatedAt).toLocaleString('pt-BR')}`
+          : (payload.source?.message || 'Sem dados');
+      }
+      // Erros técnicos só no console (dev); UI usa nota discreta no cabeçalho.
+      const techWarnings = payload.qualityWarnings || payload.warnings || [];
+      if (techWarnings.length && typeof console !== 'undefined') {
+        console.debug('[App Pharus]', techWarnings);
+      }
+      if (failed) {
+        if (kpis) {
+          kpis.innerHTML = `<article class="metric"><div class="metric-label">App Pharus</div><div class="metric-value" style="font-size:18px">Indisponível</div><div class="metric-note">${escapeHtml(payload.source?.message || 'Falha na consulta')}</div></article>`;
+        }
+        ['#phChartMechPerUser', '#phChartEngine', '#phChartCategory', '#phChartRisk', '#phChartSuggested'].forEach((sel) => {
+          const el = document.querySelector(sel);
+          if (el) el.innerHTML = '<div class="empty" style="display:block">Fonte indisponível</div>';
+        });
+        const tbody = document.querySelector('#phRows');
+        if (tbody) tbody.innerHTML = '';
+        const linkBody = document.querySelector('#phLinkRows');
+        if (linkBody) linkBody.innerHTML = '';
+        if (mechanismsState.payload) renderCombinedMechanismKpis(calculateMechanismSummary(applyMechanismFilters()));
+        return;
+      }
+
+      const s = payload.summary || {};
+      if (kpis) {
+        kpis.innerHTML = `
+          <article class="metric kpi-primary"><div class="metric-label">Usuários com mecanismos <span class="help" tabindex="0" data-tip="Usuários distintos (user_id) com pelo menos um vínculo no App Pharus.">?</span></div><div class="metric-value">${fmt.format(s.usersWithMechanisms || s.usersWithSuggestion || s.usersWithSuggestions || 0)}</div><div class="metric-note">Unidade: usuários · App Pharus</div></article>
+          <article class="metric kpi-secondary"><div class="metric-label">Mecanismos no App Pharus</div><div class="metric-value">${fmt.format(s.catalogMechanisms || 0)}</div><div class="metric-note">Catálogo em core.mechanisms</div></article>
+          <article class="metric kpi-secondary"><div class="metric-label">Motores disponíveis</div><div class="metric-value">${fmt.format(s.engines || 0)}</div><div class="metric-note">data.engine distintos</div></article>
+          <article class="metric kpi-secondary"><div class="metric-label">Categorias principais</div><div class="metric-value">${fmt.format(s.categories || 0)}</div><div class="metric-note">data.category distintos</div></article>
+          <article class="metric kpi-secondary"><div class="metric-label">Mecanismos vinculados</div><div class="metric-value">${fmt.format(s.linkedMechanisms || s.suggestions || s.totalSuggestions || 0)}</div><div class="metric-note">Vínculos únicos user + mecanismo</div></article>
+          <article class="metric kpi-secondary"><div class="metric-label">Tipos de mecanismos vinculados</div><div class="metric-value">${fmt.format(s.linkedMechanismTypes || s.suggestedMechanismTypes || s.distinctSuggestedTypes || 0)}</div><div class="metric-note">mechanism_id distintos</div></article>`;
+      }
+
+      const catalogTotal = s.catalogMechanisms || 1;
+      const byEngine = (payload.catalogByEngine || payload.distributions?.catalogByEngine || []).map((i) => ({
+        ...i,
+        percent: i.percent ?? (catalogTotal ? Math.round((i.count / catalogTotal) * 1000) / 10 : 0)
+      }));
+      const byCategory = payload.catalogByCategory || payload.distributions?.catalogByCategory || [];
+      const byRisk = payload.catalogByRisk || payload.distributions?.catalogByRisk || [];
+      const bySuggested = (payload.suggestionsByMechanism || payload.byMechanism || []).map((i) => ({
+        label: i.label || i.name,
+        count: i.users ?? i.count ?? 0,
+        percent: i.percent ?? 0
+      }));
+      const byMechPerUser = payload.mechanismsPerUser || payload.distributions?.mechanismsPerUser || [];
+      const phMechPerUserEl = document.querySelector('#phChartMechPerUser');
+      if (phMechPerUserEl) phMechPerUserEl.innerHTML = hBars(byMechPerUser);
+      document.querySelector('#phChartEngine').innerHTML = hBars(byEngine);
+      document.querySelector('#phChartCategory').innerHTML = hBars(byCategory);
+      document.querySelector('#phChartRisk').innerHTML = hBars(byRisk);
+      document.querySelector('#phChartSuggested').innerHTML = hBars(bySuggested, 12);
+
+      const statusNote = document.querySelector('#phStatusNote');
+      const onlySuggested = payload.summary?.onlySuggestedStatus ?? payload.metadata?.onlySuggestedStatus;
+      const statusDist = payload.statusDistribution || payload.distributions?.byStatus || [];
+      if (statusNote) {
+        if (onlySuggested || (statusDist.length === 1 && /suggested/i.test(statusDist[0]?.label || ''))) {
+          statusNote.hidden = false;
+          statusNote.textContent = 'Todos os vínculos atuais estão registrados como suggested (associados ao usuário nesta análise).';
+        } else if (statusDist.length > 1) {
+          statusNote.hidden = false;
+          statusNote.innerHTML = `<strong>Status dos vínculos:</strong> ${statusDist.map((i) => `${escapeHtml(i.label)} (${fmt.format(i.count)})`).join(' · ')}`;
+        } else {
+          statusNote.hidden = true;
+        }
+      }
+
+      const rows = filteredPharusCatalog();
+      const tbody = document.querySelector('#phRows');
+      if (tbody) {
+        tbody.innerHTML = rows.map((r) => `
+          <tr data-ph-id="${escapeHtml(r.id)}">
+            <td class="truncate" title="${escapeHtml(r.name)}">${escapeHtml(r.name)}</td>
+            <td>${escapeHtml(r.engine || 'Não informado')}</td>
+            <td>${escapeHtml(r.category || 'Não informado')}</td>
+            <td>${escapeHtml(r.secondaryCategory || 'Não informado')}</td>
+            <td>${escapeHtml(r.market || 'Não informado')}</td>
+            <td>${escapeHtml(r.risk || 'Não informado')}</td>
+            <td>${escapeHtml(r.horizon || 'Não informado')}</td>
+            <td>${escapeHtml(r.estimatedReturn || 'Não informado')}</td>
+          </tr>`).join('') || '';
+      }
+      const empty = document.querySelector('#phEmpty');
+      if (empty) empty.style.display = rows.length ? 'none' : 'block';
+      const counter = document.querySelector('#phCounter');
+      if (counter) counter.textContent = `${rows.length} mecanismos`;
+      renderPharusLinkTable();
+      if (mechanismsState.payload) renderCombinedMechanismKpis(calculateMechanismSummary(applyMechanismFilters()));
+    }
+
+    function openPharusMechanismDrawer(row) {
+      if (!row) return;
+      document.querySelector('#drawerTitle').textContent = row.name || 'Mecanismo';
+      document.querySelector('#drawerSub').textContent = `Fonte: App Pharus · ${row.engine || 'Motor não informado'}`;
+      const statusMap = row.suggestionStatuses || {};
+      const statusTxt = Object.keys(statusMap).length
+        ? Object.entries(statusMap).map(([k, v]) => `${k}: ${v}`).join(' · ')
+        : 'Vínculos suggested quando houver';
+      const items = [
+        ['Nome', row.name || 'Não informado'],
+        ['Descrição', row.description || 'Não informado'],
+        ['Estratégia', row.strategy || 'Não informado'],
+        ['Motor', row.engine || 'Não informado'],
+        ['Categoria', row.category || 'Não informado'],
+        ['Categoria secundária', row.secondaryCategory || 'Não informado'],
+        ['Mercado', row.market || 'Não informado'],
+        ['Risco', row.risk || 'Não informado'],
+        ['Horizonte', row.horizon || 'Não informado'],
+        ['Retorno estimado', row.estimatedReturn || 'Não informado'],
+        ['Capitalização', row.capitalization || 'Não informado'],
+        ['Janelas estratégicas', row.strategicWindows == null ? 'Não informado' : (typeof row.strategicWindows === 'string' ? row.strategicWindows : JSON.stringify(row.strategicWindows))],
+        ['Taxa administrativa', row.adminFee || 'Não informado'],
+        ['Usuários com mecanismos', fmt.format(row.suggestionUsers || 0)],
+        ['Status dos vínculos', statusTxt]
+      ];
+      document.querySelector('#drawerGrid').innerHTML =
+        items.map(([k, v]) => `<div class="drawer-item"><span>${k}</span><strong>${escapeHtml(String(v))}</strong></div>`).join('');
+      document.querySelector('#drawerWarnings').innerHTML = '<li style="color:var(--color-text-muted)">Vínculos suggested do App Pharus não são implementações da BASE QV.</li>';
+      document.querySelector('#drawer').classList.add('open');
+      document.querySelector('#drawer').setAttribute('aria-hidden', 'false');
+    }
+
+    function openPharusLinkDrawer(row) {
+      if (!row) return;
+      document.querySelector('#drawerTitle').textContent = row.userName || 'Usuário não identificado';
+      document.querySelector('#drawerSub').textContent = `App Pharus · ${row.mechanismName || 'Mecanismo'}`;
+      const userItems = [
+        ['Nome', row.userName || 'Usuário não identificado'],
+        ['E-mail', row.userEmail || 'E-mail não informado'],
+        ['user_id', row.userId || 'Não informado'],
+        ['Data de cadastro', dateBR(row.userCreatedAt)]
+      ];
+      const mechItems = [
+        ['Nome', row.mechanismName || 'Não informado'],
+        ['Descrição', row.description || 'Não informado'],
+        ['Motor', row.engine || 'Não informado'],
+        ['Categoria', row.category || 'Não informado'],
+        ['Categoria secundária', row.secondaryCategory || 'Não informado'],
+        ['Mercado', row.market || 'Não informado'],
+        ['Risco', row.risk || 'Não informado'],
+        ['Horizonte', row.horizon || 'Não informado'],
+        ['Retorno estimado', row.estimatedReturn || 'Não informado']
+      ];
+      const linkItems = [
+        ['Status', row.status || 'Não informado'],
+        ['created_at', dateBR(row.createdAt)],
+        ['updated_at', dateBR(row.updatedAt)],
+        ['mechanism_id', row.mechanismId || '—'],
+        ['link_id', row.linkId || '—']
+      ];
+      document.querySelector('#drawerGrid').innerHTML =
+        `<div class="drawer-section" style="grid-column:1/-1"><h3>Usuário</h3></div>` +
+        userItems.map(([k, v]) => `<div class="drawer-item"><span>${k}</span><strong>${escapeHtml(String(v))}</strong></div>`).join('') +
+        `<div class="drawer-section" style="grid-column:1/-1"><h3>Mecanismo</h3></div>` +
+        mechItems.map(([k, v]) => `<div class="drawer-item"><span>${k}</span><strong>${escapeHtml(String(v))}</strong></div>`).join('') +
+        `<div class="drawer-section" style="grid-column:1/-1"><h3>Vínculo</h3></div>` +
+        linkItems.map(([k, v]) => `<div class="drawer-item"><span>${k}</span><strong>${escapeHtml(String(v))}</strong></div>`).join('');
+      document.querySelector('#drawerWarnings').innerHTML = '<li style="color:var(--color-text-muted)">Fonte: core.user_mechanisms · status suggested conta como vínculo nesta análise.</li>';
+      document.querySelector('#drawer').classList.add('open');
+      document.querySelector('#drawer').setAttribute('aria-hidden', 'false');
+    }
+
+    async function loadPharusMechanisms() {
+      if (!isPortalAuthenticated()) return;
+      if (mechanismsState.pharusLoading) return;
+      mechanismsState.pharusLoading = true;
+      const requestId = ++mechanismsState.pharusRequestId;
+      try {
+        const response = await apiFetch(`/api/pharus-mechanisms?t=${Date.now()}`, { cache: 'no-store' });
+        const payload = await response.json();
+        if (requestId !== mechanismsState.pharusRequestId) return;
+        mechanismsState.pharus = payload;
+        mechanismsState.phLinkPage = 1;
+        const catalog = payload.catalogRows || payload.catalog || [];
+        fillSelect(phFilters.engine, [...new Set(catalog.map((r) => r.engine).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'pt-BR')), 'Todos');
+        fillSelect(phFilters.category, [...new Set(catalog.map((r) => r.category).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'pt-BR')), 'Todas');
+        fillSelect(phFilters.risk, [...new Set(catalog.map((r) => r.risk).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'pt-BR')), 'Todos');
+        fillSelect(phFilters.market, [...new Set(catalog.map((r) => r.market).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'pt-BR')), 'Todos');
+        const statuses = (payload.statusDistribution || payload.distributions?.byStatus || []).map((i) => i.label).filter(Boolean);
+        fillSelect(phFilters.status, statuses, 'Todos');
+        const links = payload.rows || [];
+        fillSelect(phLinkFilters.mechanism, [...new Set(links.map((r) => r.mechanismName).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'pt-BR')), 'Todos');
+        fillSelect(phLinkFilters.engine, [...new Set(links.map((r) => r.engine).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'pt-BR')), 'Todos');
+        fillSelect(phLinkFilters.category, [...new Set(links.map((r) => r.category).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'pt-BR')), 'Todas');
+        fillSelect(phLinkFilters.risk, [...new Set(links.map((r) => r.risk).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'pt-BR')), 'Todos');
+        fillSelect(phLinkFilters.status, [...new Set(links.map((r) => r.status).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'pt-BR')), 'Todos');
+        renderPharusMechanisms();
+      } catch (error) {
+        if (requestId !== mechanismsState.pharusRequestId) return;
+        mechanismsState.pharus = {
+          available: false,
+          success: false,
+          source: { status: 'failed', message: error.message || 'Falha ao consultar App Pharus' },
+          qualityWarnings: [{ code: 'fetch_error', message: error.message || 'Falha ao consultar App Pharus' }],
+          summary: {}
+        };
+        renderPharusMechanisms();
+      } finally {
+        if (requestId === mechanismsState.pharusRequestId) mechanismsState.pharusLoading = false;
+      }
+    }
 
     async function loadMechanisms() {
       if (!isPortalAuthenticated()) return;
@@ -7076,7 +8138,13 @@ ${dataRows}
         setKClientStatus('all');
         const clients = payload.clients || [];
         fillSelect(kFilters.segment, SEGMENT_ORDER.filter(s => clients.some(c => c.segment === s)), 'Todos');
-        fillSelect(kFilters.engineer, [...new Set(clients.map(c => c.engineer))].sort((a, b) => a.localeCompare(b, 'pt-BR')), 'Todos');
+        const epNames = [
+          ...new Set([
+            ...clients.map(c => c.engineer),
+            ...(payload.distributions?.byAdvisor || payload.distributions?.byEngineer || []).map(r => r.engineer)
+          ].filter(Boolean))
+        ].sort((a, b) => a.localeCompare(b, 'pt-BR'));
+        fillSelect(kFilters.engineer, epNames, 'Todos');
         const mechSelect = kFilters.mechanism;
         const curMech = mechSelect.value;
         mechSelect.innerHTML = '<option value="all">Todos</option>' + (payload.catalog?.mechanisms || []).map(m =>
@@ -7090,7 +8158,10 @@ ${dataRows}
         status.textContent = hasWarnings ? '? Supabase conectado com alertas' : '? Supabase conectado';
         status.style.color = hasWarnings ? 'var(--color-warning)' : 'var(--color-success)';
         document.querySelector('#kUpdated').textContent = `Atualizado em ${new Date(payload.generatedAt).toLocaleString('pt-BR')}`;
-        showSourceWarningsAlert('#kSourceAlert', 'mechanisms-source-warning', 'Alertas de qualidade dos mecanismos', payload.quality?.warnings || []);
+        showSourceWarningsAlert('#kSourceAlert', 'mechanisms-source-warning', 'Alertas de qualidade dos mecanismos', payload.quality?.warnings || [], {
+          note: 'Fonte: BASE QV'
+        });
+        loadPharusMechanisms();
       } catch (error) {
         if (requestId !== mechanismsState.requestId) return;
         if (error?.code === 'AUTH_REQUIRED' || error?.code === 'AUTH_FORBIDDEN' || error?.message === 'AUTH_REQUIRED') return;
@@ -7133,6 +8204,18 @@ ${dataRows}
     document.querySelector('#kRefresh').addEventListener('click', loadMechanisms);
     document.querySelector('#kPrev').addEventListener('click', () => { mechanismsState.page -= 1; renderMechanisms(); });
     document.querySelector('#kNext').addEventListener('click', () => { mechanismsState.page += 1; renderMechanisms(); });
+    document.querySelector('#kToggleTypesSort')?.addEventListener('click', () => {
+      mechanismsState.showTypesAsc = !mechanismsState.showTypesAsc;
+      renderMechanisms();
+    });
+    document.querySelector('#kToggleTypesAll')?.addEventListener('click', () => {
+      mechanismsState.showAllTypes = !mechanismsState.showAllTypes;
+      renderMechanisms();
+    });
+    document.querySelector('#kToggleEpAll')?.addEventListener('click', () => {
+      mechanismsState.showAllEp = !mechanismsState.showAllEp;
+      renderMechanisms();
+    });
     document.querySelector('#kToggleTypes')?.addEventListener('click', () => {
       mechanismsState.showTypesAsc = !mechanismsState.showTypesAsc;
       renderMechanisms();
@@ -7155,11 +8238,85 @@ ${dataRows}
       else { mechanismsState.epSortKey = key; mechanismsState.epSortDir = 'desc'; }
       renderMechanisms();
     }));
+    document.querySelector('#kEpSearch')?.addEventListener('input', () => {
+      mechanismsState.epSearch = document.querySelector('#kEpSearch').value || '';
+      renderMechanisms();
+    });
+    document.querySelector('#kEpChartSortSeg')?.addEventListener('click', (event) => {
+      const btn = event.target.closest('[data-ep-chart-sort]');
+      if (!btn) return;
+      mechanismsState.epChartSort = btn.getAttribute('data-ep-chart-sort') === 'clients' ? 'clients' : 'percent';
+      renderMechanisms();
+    });
     document.querySelector('#kRows').addEventListener('click', e => {
       const tr = e.target.closest('tr[data-kid]');
       if (!tr || !mechanismsState.payload) return;
       const client = mechanismsState.payload.clients.find(c => c.clientId === tr.dataset.kid);
       if (client) openMechanismDrawer(client);
+    });
+    Object.entries(phFilters).forEach(([key, el]) => {
+      if (!el) return;
+      el.addEventListener(key === 'search' ? 'input' : 'change', () => renderPharusMechanisms());
+    });
+    document.querySelector('#phClear')?.addEventListener('click', () => {
+      if (phFilters.search) phFilters.search.value = '';
+      ['engine', 'category', 'risk', 'market', 'status'].forEach((k) => {
+        if (phFilters[k]) phFilters[k].value = 'all';
+      });
+      renderPharusMechanisms();
+    });
+    Object.entries(phLinkFilters).forEach(([key, el]) => {
+      if (!el) return;
+      el.addEventListener(key === 'search' ? 'input' : 'change', () => {
+        mechanismsState.phLinkPage = 1;
+        renderPharusLinkTable();
+      });
+    });
+    document.querySelector('#phLinkClear')?.addEventListener('click', () => {
+      if (phLinkFilters.search) phLinkFilters.search.value = '';
+      ['mechanism', 'engine', 'category', 'risk', 'status'].forEach((k) => {
+        if (phLinkFilters[k]) phLinkFilters[k].value = 'all';
+      });
+      mechanismsState.phLinkPage = 1;
+      renderPharusLinkTable();
+    });
+    document.querySelector('#phLinkPrev')?.addEventListener('click', () => {
+      mechanismsState.phLinkPage -= 1;
+      renderPharusLinkTable();
+    });
+    document.querySelector('#phLinkNext')?.addEventListener('click', () => {
+      mechanismsState.phLinkPage += 1;
+      renderPharusLinkTable();
+    });
+    document.querySelectorAll('#view-mechanisms th[data-ph-sort]').forEach((th) => {
+      th.addEventListener('click', () => {
+        const key = th.dataset.phSort;
+        if (mechanismsState.phSortKey === key) mechanismsState.phSortDir = mechanismsState.phSortDir === 'asc' ? 'desc' : 'asc';
+        else { mechanismsState.phSortKey = key; mechanismsState.phSortDir = 'asc'; }
+        renderPharusMechanisms();
+      });
+    });
+    document.querySelectorAll('#view-mechanisms th[data-ph-link-sort]').forEach((th) => {
+      th.addEventListener('click', () => {
+        const key = th.dataset.phLinkSort;
+        if (mechanismsState.phLinkSortKey === key) mechanismsState.phLinkSortDir = mechanismsState.phLinkSortDir === 'asc' ? 'desc' : 'asc';
+        else { mechanismsState.phLinkSortKey = key; mechanismsState.phLinkSortDir = 'asc'; }
+        renderPharusLinkTable();
+      });
+    });
+    document.querySelector('#phRows')?.addEventListener('click', (e) => {
+      const tr = e.target.closest('tr[data-ph-id]');
+      if (!tr || !mechanismsState.pharus) return;
+      const rows = mechanismsState.pharus.catalogRows || mechanismsState.pharus.catalog || [];
+      const row = rows.find((r) => String(r.id) === String(tr.dataset.phId));
+      if (row) openPharusMechanismDrawer(row);
+    });
+    document.querySelector('#phLinkRows')?.addEventListener('click', (e) => {
+      const tr = e.target.closest('tr[data-ph-link-idx]');
+      if (!tr || !mechanismsState.pharus) return;
+      const rows = filteredPharusLinks();
+      const row = rows[Number(tr.dataset.phLinkIdx)];
+      if (row) openPharusLinkDrawer(row);
     });
 
     /* -------- Uso da Plataforma -------- */
@@ -7373,8 +8530,8 @@ ${dataRows}
       const band = fFilters.recency.value;
       if (band === 'all') return true;
       const days = c.daysSinceFinancialUpdate;
-      if (band === 'nodate') return c.hasFinancialData && (days == null || !c.financialUpdateDate);
-      if (!c.hasFinancialData || days == null) return false;
+      if (band === 'nodate') return c.hasFinancialData && !c.hasPostCreationUpdate;
+      if (!c.hasPostCreationUpdate || days == null) return false;
       if (band === '30') return days <= 30;
       if (band === '31-60') return days >= 31 && days <= 60;
       if (band === '61-90') return days >= 61 && days <= 90;
@@ -7412,6 +8569,7 @@ ${dataRows}
       const clientsWithFinancialData = withFinancial.length;
       const updatedLast30Days = withFinancial.filter(r => r.updatedLast30Days).length;
       const outdatedOver90Days = withFinancial.filter(r => r.outdatedOver90Days).length;
+      const clientsWithPostCreationUpdate = withFinancial.filter(r => r.hasPostCreationUpdate).length;
       const days = withFinancial.map(r => r.daysSinceFinancialUpdate).filter(d => d != null && Number.isFinite(d) && d >= 0).sort((a, b) => a - b);
       const median = days.length ? (days.length % 2 ? days[(days.length - 1) / 2] : (days[days.length / 2 - 1] + days[days.length / 2]) / 2) : null;
       const average = days.length ? days.reduce((a, b) => a + b, 0) / days.length : null;
@@ -7420,6 +8578,8 @@ ${dataRows}
         totalClients,
         clientsWithFinancialData,
         financialDataCoveragePercent: p(clientsWithFinancialData, totalClients),
+        clientsWithPostCreationUpdate,
+        totalFinancialUpdates: clientsWithPostCreationUpdate,
         updatedLast30Days,
         updatedLast30DaysPercentOfFinancial: p(updatedLast30Days, clientsWithFinancialData),
         updatedLast30DaysPercentOfPortfolio: p(updatedLast30Days, totalClients),
@@ -7459,7 +8619,7 @@ ${dataRows}
       }
       const nowKey = `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, '0')}`;
       for (const row of rows) {
-        if (!row.hasFinancialData || !row.financialUpdateDate) continue;
+        if (!row.hasPostCreationUpdate || !row.financialUpdateDate) continue;
         const d = new Date(row.financialUpdateDate);
         if (Number.isNaN(d.getTime()) || d > now) continue;
         const key = `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}`;
@@ -7538,7 +8698,9 @@ ${dataRows}
       document.querySelector('#drawerSub').textContent = `Código ${client.clientCode || 'Não informado'} · ID ${client.clientId}`;
       const sourceLabel = {
         updated_at: 'updated_at',
-        created_at: 'created_at (sem updated_at)',
+        updated_at_after_created: 'updated_at > created_at',
+        created_at: 'created_at (não conta como atualização)',
+        no_post_creation_update: 'Sem atualização após criação',
         unavailable: 'Indisponível'
       }[client.financialUpdateSource] || client.financialUpdateSource;
       const items = [
@@ -7575,17 +8737,18 @@ ${dataRows}
 
       document.querySelector('#fKpis').innerHTML = `
         <article class="metric"><div class="metric-label">Clientes com dados financeiros <span class="help" title="Clientes que possuem ao menos um registro de informações financeiras.">?</span></div><div class="metric-value">${fmtSafe(summary.clientsWithFinancialData)}</div><div class="metric-note">${pctSafe(summary.financialDataCoveragePercent)} da carteira</div></article>
-        <article class="metric"><div class="metric-label">Atualizados nos últimos 30 dias <span class="help" title="Clientes com registro financeiro criado ou atualizado nos últimos 30 dias.">?</span></div><div class="metric-value">${fmtSafe(summary.updatedLast30Days)}</div><div class="metric-note">${pctSafe(summary.updatedLast30DaysPercentOfFinancial)} com dados financeiros</div></article>
-        <article class="metric"><div class="metric-label">Recência típica da atualização <span class="help" title="Mediana de dias desde a atualização financeira mais recente de cada cliente.">?</span></div><div class="metric-value">${summary.medianDaysSinceUpdate == null ? '—' : fmtSafe(Math.round(summary.medianDaysSinceUpdate)) + ' d'}</div><div class="metric-note">Mediana · média ${summary.averageDaysSinceUpdate == null ? '—' : fmtSafe(Math.round(summary.averageDaysSinceUpdate))} dias</div></article>
-        <article class="metric"><div class="metric-label">Clientes com dados desatualizados <span class="help" title="Clientes com registro financeiro sem atualização há mais de 90 dias.">?</span></div><div class="metric-value">${fmtSafe(summary.outdatedOver90Days)}</div><div class="metric-note">${pctSafe(summary.outdatedOver90DaysPercent)} com dados financeiros</div></article>`;
+        <article class="metric"><div class="metric-label">Clientes com registro alterado após a criação <span class="help" title="Somente registros com updated_at posterior a created_at. A criação inicial não conta.">?</span></div><div class="metric-value">${fmtSafe(summary.clientsWithPostCreationUpdate ?? summary.totalFinancialUpdates)}</div><div class="metric-note">Regra: updated_at &gt; created_at</div></article>
+        <article class="metric"><div class="metric-label">Atualizados nos últimos 30 dias <span class="help" title="Clientes com updated_at &gt; created_at e atualização nos últimos 30 dias.">?</span></div><div class="metric-value">${fmtSafe(summary.updatedLast30Days)}</div><div class="metric-note">${pctSafe(summary.updatedLast30DaysPercentOfFinancial)} com dados financeiros</div></article>
+        <article class="metric"><div class="metric-label">Recência típica da atualização <span class="help" title="Mediana de dias desde a última atualização válida (updated_at &gt; created_at). Sem atualização válida = sem valor.">?</span></div><div class="metric-value">${summary.medianDaysSinceUpdate == null ? '—' : fmtSafe(Math.round(summary.medianDaysSinceUpdate)) + ' d'}</div><div class="metric-note">Mediana · média ${summary.averageDaysSinceUpdate == null ? '—' : fmtSafe(Math.round(summary.averageDaysSinceUpdate))} dias</div></article>
+        <article class="metric"><div class="metric-label">Clientes com dados desatualizados <span class="help" title="Clientes com atualização válida há mais de 90 dias.">?</span></div><div class="metric-value">${fmtSafe(summary.outdatedOver90Days)}</div><div class="metric-note">${pctSafe(summary.outdatedOver90DaysPercent)} com dados financeiros</div></article>`;
 
       const note = document.querySelector('#fHistoryNote');
       if (note) {
         mountPortalAlert(note, {
           id: 'financial-history-note',
           type: 'info',
-          title: 'Histórico financeiro',
-          message: 'A base atual armazena apenas o estado financeiro mais recente por cliente.',
+          title: 'Regra de atualização financeira',
+          message: 'Atualização válida somente quando updated_at é posterior a created_at. Sem histórico de eventos: o total reflete clientes com registro alterado após a criação.',
           icon: '?'
         });
       }
@@ -8732,10 +9895,9 @@ ${dataRows}
       };
 
       setHtml('#cKpisPrimary', `
-        <article class="metric kpi-primary"><div class="metric-label">Clientes em processo de cancelamento <span class="help" title="Cancelamentos efetivados são exibidos separadamente.">?</span></div><div class="metric-value">${fmt.format(summary.clientsInCancellationProcess || 0)}</div><div class="metric-note">Clientes com intenção ou pedido registrado, ainda sem cancelamento efetivado.</div></article>
-        <article class="metric kpi-secondary"><div class="metric-label">Intenções registradas</div><div class="metric-value">${fmt.format(summary.intentionsRegistered || 0)}</div><div class="metric-note">Sinalizações de possível cancelamento.</div></article>
+        <article class="metric kpi-effective"><div class="metric-label">Cancelamentos efetivados <span class="help" tabindex="0" data-tip="Somente cancelamentos confirmados retiram o cliente da carteira ativa.">?</span></div><div class="metric-value">${fmt.format(summary.effectiveCancellations ?? summary.totalCancellations ?? 0)}</div><div class="metric-note">Clientes com churn efetivado ou distrato assinado.</div></article>
         <article class="metric kpi-secondary"><div class="metric-label">Pedidos de cancelamento</div><div class="metric-value">${fmt.format(summary.ordersRegistered || 0)}</div><div class="metric-note">Pedidos formalizados, ainda não necessariamente concluídos.</div></article>
-        <article class="metric kpi-secondary"><div class="metric-label">Cancelamentos efetivados</div><div class="metric-value">${fmt.format(summary.effectiveCancellations ?? summary.totalCancellations ?? 0)}</div><div class="metric-note">Clientes com churn efetivado ou distrato assinado.</div></article>`);
+        <article class="metric kpi-primary"><div class="metric-label">Clientes em processo de cancelamento <span class="help" title="Cancelamentos efetivados são exibidos separadamente.">?</span></div><div class="metric-value">${fmt.format(summary.clientsInCancellationProcess || 0)}</div><div class="metric-note">Clientes com intenção ou pedido registrado, ainda sem cancelamento efetivado.</div></article>`);
 
       const timing = summary.timing || {};
       const timingItems = [
@@ -9540,11 +10702,12 @@ ${dataRows}
           { key: 'clientName', label: 'Cliente' },
           { key: 'clientCode', label: 'Código', value: (r) => r.clientCode || 'Não informado' },
           { key: 'engineer', label: 'Engenheiro Patrimonial' },
+          { key: 'analyticalStatus', label: 'Status', value: (r) => clientStatusLabel(r.analyticalStatus || r.clientStatus || r) },
           { key: 'totalMeetings', label: 'Total', value: (r) => fmt.format(r.totalMeetings) },
           { key: 'meetingsPerMonth', label: 'Média/mês', value: (r) => r.meetingsPerMonth == null ? '—' : fmt.format(r.meetingsPerMonth) },
           { key: 'lastMeetingDate', label: 'Última reunião', value: (r) => dateBR(r.lastMeetingDate) },
           { key: 'daysSinceLastMeeting', label: 'Dias sem reunião', value: (r) => r.daysSinceLastMeeting == null ? '—' : fmt.format(r.daysSinceLastMeeting) },
-          { key: 'averageIntervalDays', label: 'Intervalo médio', value: (r) => { const v = r.typicalIntervalDays ?? r.averageIntervalDays; return v == null ? '—' : `${Math.round(v)} d`; } },
+          { key: 'averageIntervalDays', label: 'Intervalo médio', value: (r) => r.averageIntervalDays == null ? '—' : `${Math.round(r.averageIntervalDays)} d` },
           { key: 'absences', label: 'No-shows', value: (r) => fmt.format(r.absences) },
           { key: 'reschedules', label: 'Remarcações', value: (r) => fmt.format(r.reschedules) },
           { key: 'cancelledMeetings', label: 'Canceladas', value: (r) => r.cancelledMeetings == null ? 'Não informado' : fmt.format(r.cancelledMeetings) },
@@ -9566,7 +10729,6 @@ ${dataRows}
           { key: 'segment', label: 'Segmento', value: (r) => segmentLabelOf(r) },
           { key: 'engineer', label: 'EP' },
           { key: 'available', label: 'Qtd mecanismos', value: (r) => fmt.format(r.available) },
-          { key: 'eligible', label: 'Aptos', value: (r) => fmt.format(r.eligible) },
           { key: 'inProgress', label: 'Iniciados', value: (r) => fmt.format(r.inProgress) },
           { key: 'implemented', label: 'Concluídos', value: (r) => fmt.format(r.implemented) },
           { key: 'implementationPercent', label: '% implementado', value: (r) => r.implementationPercent == null ? '—' : pct(r.implementationPercent) },
@@ -9585,12 +10747,54 @@ ${dataRows}
         filename: PortalTableExport.exportFilename('mecanismos-por-ep'),
         sheetName: 'EP Mecanismos',
         columns: [
-          { key: 'engineer', label: 'EP', value: (r) => `${r.engineer}${r.sampleSmall ? ' *' : ''}` },
-          { key: 'clients', label: 'Clientes', value: (r) => fmt.format(r.clients) },
-          { key: 'links', label: 'Vínculos', value: (r) => fmt.format(r.links) },
-          { key: 'implemented', label: 'Implementados', value: (r) => fmt.format(r.implemented) },
-          { key: 'implementationPercent', label: '% implementado', value: (r) => r.implementationPercent == null ? '—' : pct(r.implementationPercent) },
-          { key: 'typicalDaysToFirstImplementation', label: 'Dias típicos até 1ª', value: (r) => r.typicalDaysToFirstImplementation == null ? '—' : `${fmt.format(r.typicalDaysToFirstImplementation)} d` }
+          { key: 'engineer', label: 'Engenheiro Patrimonial', value: (r) => `${r.engineer}${r.sampleSmall ? ' *' : ''}` },
+          { key: 'totalClients', label: 'Total de clientes', value: (r) => fmt.format(r.totalClients) },
+          { key: 'clientsWithImplemented', label: 'Clientes com mecanismo implementado', value: (r) => fmt.format(r.clientsWithImplemented) },
+          { key: 'clientsWithoutImplemented', label: 'Clientes sem mecanismo implementado', value: (r) => fmt.format(r.clientsWithoutImplemented) },
+          { key: 'implementationPercent', label: '% da carteira com mecanismo', value: (r) => r.implementationPercent == null ? '—' : pct(r.implementationPercent) },
+          { key: 'implementations', label: 'Implementações', value: (r) => fmt.format(r.implementations) },
+          { key: 'typesImplemented', label: 'Tipos de mecanismo', value: (r) => fmt.format(r.typesImplemented) }
+        ],
+        rows
+      };
+    }
+
+    function getPharusCatalogExportPayload() {
+      const rows = filteredPharusCatalog();
+      return {
+        filename: PortalTableExport.exportFilename('app-pharus-catalogo-mecanismos'),
+        sheetName: 'Catálogo Pharus',
+        columns: [
+          { key: 'name', label: 'Mecanismo' },
+          { key: 'engine', label: 'Motor', value: (r) => r.engine || 'Não informado' },
+          { key: 'category', label: 'Categoria', value: (r) => r.category || 'Não informado' },
+          { key: 'secondaryCategory', label: 'Categoria secundária', value: (r) => r.secondaryCategory || 'Não informado' },
+          { key: 'market', label: 'Mercado', value: (r) => r.market || 'Não informado' },
+          { key: 'risk', label: 'Risco', value: (r) => r.risk || 'Não informado' },
+          { key: 'horizon', label: 'Horizonte', value: (r) => r.horizon || 'Não informado' },
+          { key: 'estimatedReturn', label: 'Retorno estimado', value: (r) => r.estimatedReturn || 'Não informado' }
+        ],
+        rows
+      };
+    }
+
+    function getPharusLinksExportPayload() {
+      const rows = filteredPharusLinks();
+      return {
+        filename: PortalTableExport.exportFilename('app-pharus-vinculos-mecanismos'),
+        sheetName: 'Vínculos Pharus',
+        columns: [
+          { key: 'userName', label: 'Usuário', value: (r) => r.userName || 'Usuário não identificado' },
+          { key: 'userEmail', label: 'E-mail', value: (r) => r.userEmail || 'E-mail não informado' },
+          { key: 'userId', label: 'ID do usuário' },
+          { key: 'mechanismName', label: 'Mecanismo' },
+          { key: 'engine', label: 'Motor', value: (r) => r.engine || 'Não informado' },
+          { key: 'category', label: 'Categoria', value: (r) => r.category || 'Não informado' },
+          { key: 'market', label: 'Mercado', value: (r) => r.market || 'Não informado' },
+          { key: 'risk', label: 'Risco', value: (r) => r.risk || 'Não informado' },
+          { key: 'status', label: 'Status do vínculo' },
+          { key: 'createdAt', label: 'Criação', value: (r) => dateBR(r.createdAt) },
+          { key: 'updatedAt', label: 'Atualização', value: (r) => dateBR(r.updatedAt) }
         ],
         rows
       };
@@ -9801,6 +11005,8 @@ ${dataRows}
         ['#mExportHost', getMeetingsExportPayload],
         ['#kExportHost', getMechanismsExportPayload],
         ['#kEpExportHost', getMechanismsEpExportPayload],
+        ['#phExportHost', getPharusCatalogExportPayload],
+        ['#phLinkExportHost', getPharusLinksExportPayload],
         ['#fExportHost', getFinancialExportPayload],
         ['#uExportHost', getPlatformExportPayload],
         ['#sExportHost', getSupportExportPayload],

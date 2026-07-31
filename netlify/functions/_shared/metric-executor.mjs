@@ -211,9 +211,22 @@ export function verbalizeMetricResult(queryPlan, result) {
     }
     return "Não há mecanismo calculável no recorte atual.";
   }
+  if (result.metric === "top_meeting_types") {
+    return `${label}: ${typeof result.value === "string" ? result.value : withUnit(result.value)}. Fonte exclusiva: CSV de tipos de reunião (não altera os demais indicadores de reuniões).`;
+  }
+  if (result.metric === "combined_people_with_mechanisms") {
+    const detail = result.value_detail || {};
+    return `Há ${fmt(result.value)} registros de clientes com mecanismos nas duas fontes (BASE QV ${fmt(detail.baseQvClientsWithMechanisms)} + App Pharus ${fmt(detail.appPharusUsersWithMechanisms)}). O total é soma bruta; pode haver pessoas presentes em ambas.`;
+  }
   if (result.domain === "pharus_mechanisms") {
     const raw = typeof result.value === "object" ? JSON.stringify(result.value) : withUnit(result.value);
-    return `No App Pharus, ${String(label).toLowerCase()}: ${raw}.`;
+    return `No App Pharus, ${String(label).toLowerCase()}: ${raw}. Vínculos suggested contam como mecanismos associados ao usuário nesta análise.`;
+  }
+  if (result.metric === "attendance_rate" || result.metric === "no_show_rate") {
+    return `${label}: ${withUnit(result.value)}. Considera apenas reuniões já ocorridas e não canceladas (elegíveis = total − futuras − canceladas).`;
+  }
+  if (result.metric === "total_meeting_reschedules" || result.metric === "rescheduled_meetings") {
+    return `${label}: ${withUnit(result.value)}. Cobertura parcial: considera apenas remarcações registradas de forma estruturada e pode não representar o total real.`;
   }
   if (unit === "clients") {
     const name = result.metric === "total_clients" || /^total de clientes$/i.test(label)

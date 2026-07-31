@@ -1,0 +1,77 @@
+{
+  "available": true,
+  "usersWithMechanisms": 58,
+  "linkedMechanisms": 362,
+  "identifiedUsers": 58,
+  "usersWithEmail": 58,
+  "mechanismsPerUser": [
+    {
+      "label": "1 mecanismo",
+      "count": 4,
+      "percent": 6.9
+    },
+    {
+      "label": "2 mecanismos",
+      "count": 2,
+      "percent": 3.4
+    },
+    {
+      "label": "3 a 4 mecanismos",
+      "count": 13,
+      "percent": 22.4
+    },
+    {
+      "label": "5 ou mais mecanismos",
+      "count": 39,
+      "percent": 67.2
+    }
+  ],
+  "implementationTiming": {
+    "status": "unavailable",
+    "reason": "Somente status suggested; sem data/status de conclusão no App Pharus."
+  },
+  "userDirectory": "core.personal_info + core.pre_registrations (+ CSV auxiliar quando presente)",
+  "userDirectoryCoverage": {
+    "usersWithMechanisms": 58,
+    "identifiedUsers": 58,
+    "usersWithEmail": 58,
+    "directorySize": 273
+  },
+  "csvMeta": {
+    "preRegistrationsCsv": {
+      "available": false,
+      "file": "pre_registrations_rows.csv",
+      "rows": 0
+    },
+    "personalInfoCsv": {
+      "available": false,
+      "file": "personal_info_rows.csv",
+      "rows": 0
+    }
+  },
+  "rowsSampleIdentified": [
+    {
+      "userName": "Abigail Giansante",
+      "hasEmail": true,
+      "source": "core.personal_info+core.pre_registrations",
+      "mechanismName": "Autoconstrução"
+    },
+    {
+      "userName": "Adriano Pedrosa",
+      "hasEmail": true,
+      "source": "core.personal_info+core.pre_registrations",
+      "mechanismName": "Autoconstrução"
+    },
+    {
+      "userName": "Alejandro Lusardo Bo",
+      "hasEmail": true,
+      "source": "core.personal_info+core.pre_registrations",
+      "mechanismName": "Autoconstrução"
+    }
+  ],
+  "identityRate": {
+    "linkRows": 362,
+    "identifiedLinks": 362,
+    "withEmailLinks": 362
+  }
+}

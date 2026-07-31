@@ -229,14 +229,12 @@ function buildFinancialMap(rows) {
     if (!clientId) continue;
     const updated = parseFlexibleDate(row.updated_at);
     const created = parseFlexibleDate(row.created_at);
+    // Mesma regra do dashboard Atualização Financeira: só conta se updated_at > created_at.
     let date = null;
     let source = "unavailable";
-    if (updated) {
+    if (updated && created && updated.getTime() > created.getTime()) {
       date = updated;
-      source = "updated_at";
-    } else if (created) {
-      date = created;
-      source = "created_at";
+      source = "updated_at_after_created";
     }
     const current = map.get(clientId);
     const score = date ? date.getTime() : 0;

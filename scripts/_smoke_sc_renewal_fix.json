@@ -1,0 +1,27 @@
+{
+  "renewedCard": 191,
+  "renewalDash": 191,
+  "diff": 0,
+  "cycle1": 3074,
+  "totalRenewals": 224,
+  "observationPeriod": {
+    "from": "2024-05-22",
+    "to": "2026-08-03",
+    "timezone": "America/Sao_Paulo"
+  },
+  "cutoffDate": "2026-08-03",
+  "timezone": "America/Sao_Paulo",
+  "audit": {
+    "excludedCount": 8,
+    "exclusionReasons": {
+      "Congelado (fora do filtro padrão ativos+cancelados)": 6,
+      "Status fora de ativos/cancelados efetivados (ex.: marcado sem confirmação)": 2
+    },
+    "renewedInStats": 183
+  },
+  "renewalAnalysis": {
+    "eligible": 3265,
+    "renewed": 191,
+    "notRenewed": 3074
+  }
+}

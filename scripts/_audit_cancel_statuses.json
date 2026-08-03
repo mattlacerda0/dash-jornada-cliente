@@ -1,0 +1,260 @@
+{
+  "statusColumns": [
+    "id",
+    "name",
+    "color",
+    "display_order",
+    "status_type",
+    "created_at",
+    "funnel_type"
+  ],
+  "statuses": [
+    {
+      "id": "a1c0e100-0000-0000-0000-000000000002",
+      "name": "Em retenção",
+      "color": "#a855f7",
+      "display_order": 11,
+      "status_type": "aberto",
+      "created_at": "2026-07-06T14:56:50.958557+00:00",
+      "funnel_type": "cancelamento"
+    },
+    {
+      "id": "a1c0e100-0000-0000-0000-000000000005",
+      "name": "Encerrado",
+      "color": "#22c55e",
+      "display_order": 16,
+      "status_type": "finalizado",
+      "created_at": "2026-07-06T14:56:50.958557+00:00",
+      "funnel_type": "cancelamento"
+    },
+    {
+      "id": "a1c0e100-0000-0000-0000-000000000006",
+      "name": "Em negociação",
+      "color": "#ec4899",
+      "display_order": 15,
+      "status_type": "aberto",
+      "created_at": "2026-07-06T15:09:13.227662+00:00",
+      "funnel_type": "cancelamento"
+    },
+    {
+      "id": "a1c0e100-0000-0000-0000-000000000001",
+      "name": "Nova intenção",
+      "color": "#f59e0b",
+      "display_order": 10,
+      "status_type": "aberto",
+      "created_at": "2026-07-06T14:56:50.958557+00:00",
+      "funnel_type": "cancelamento"
+    },
+    {
+      "id": "a1c0e100-0000-0000-0000-000000000003",
+      "name": "Decisão do cliente",
+      "color": "#3b82f6",
+      "display_order": 12,
+      "status_type": "aberto",
+      "created_at": "2026-07-06T14:56:50.958557+00:00",
+      "funnel_type": "cancelamento"
+    },
+    {
+      "id": "a1c0e100-0000-0000-0000-000000000004",
+      "name": "Saída em curso",
+      "color": "#f97316",
+      "display_order": 13,
+      "status_type": "aberto",
+      "created_at": "2026-07-06T14:56:50.958557+00:00",
+      "funnel_type": "cancelamento"
+    },
+    {
+      "id": "c275a499-3af5-4b20-b3aa-369c0ff9c499",
+      "name": "[LEGADO] Reembolso",
+      "color": "#ef4444",
+      "display_order": 4,
+      "status_type": "finalizado",
+      "created_at": "2026-05-20T14:46:14.813891+00:00",
+      "funnel_type": "retencao"
+    },
+    {
+      "id": "c7b479e3-465c-4b52-b2ba-5a496b0b5a86",
+      "name": "[LEGADO] Não retido",
+      "color": "#6b7280",
+      "display_order": 3,
+      "status_type": "finalizado",
+      "created_at": "2026-04-13T19:00:25.96475+00:00",
+      "funnel_type": "retencao"
+    },
+    {
+      "id": "cc6c6c42-67b0-4d77-9da6-db58ba9c3be2",
+      "name": "[LEGADO] Novo cancelamento",
+      "color": "#f97316",
+      "display_order": 0,
+      "status_type": "aberto",
+      "created_at": "2026-04-17T19:02:15.168029+00:00",
+      "funnel_type": "cancelamento"
+    },
+    {
+      "id": "eb012e15-26ee-43fc-adae-3f66e71b7d7b",
+      "name": "[LEGADO] Em retenção",
+      "color": "#a855f7",
+      "display_order": 1,
+      "status_type": "aberto",
+      "created_at": "2026-04-13T18:59:01.313818+00:00",
+      "funnel_type": "retencao"
+    },
+    {
+      "id": "c74e67b5-0dae-4c18-b800-c76c0d2f298f",
+      "name": "[LEGADO] Em negociação",
+      "color": "#ec4899",
+      "display_order": 1,
+      "status_type": "aberto",
+      "created_at": "2026-02-21T10:56:57.956706+00:00",
+      "funnel_type": "cancelamento"
+    },
+    {
+      "id": "75340454-be52-4708-8b36-79dd948ed374",
+      "name": "[LEGADO] Novo Possível Cancelamento",
+      "color": "#f59e0b",
+      "display_order": 0,
+      "status_type": "aberto",
+      "created_at": "2026-02-21T10:56:57.956706+00:00",
+      "funnel_type": "retencao"
+    },
+    {
+      "id": "a3eade65-a7b4-4c6c-9aa6-803d9c87969a",
+      "name": "[LEGADO] Churn Efetivado",
+      "color": "#ef4444",
+      "display_order": 4,
+      "status_type": "finalizado",
+      "created_at": "2026-03-11T11:19:18.456251+00:00",
+      "funnel_type": "cancelamento"
+    },
+    {
+      "id": "b5878b47-996e-4e7e-a5ed-90a665c86e4b",
+      "name": "[LEGADO] Retido",
+      "color": "#22c55e",
+      "display_order": 5,
+      "status_type": "finalizado",
+      "created_at": "2026-03-11T11:20:23.253646+00:00",
+      "funnel_type": "retencao"
+    },
+    {
+      "id": "53194d18-054e-40c3-a341-bc4d972f393f",
+      "name": "[LEGADO] Distrato Enviado",
+      "color": "#14b8a6",
+      "display_order": 3,
+      "status_type": "aberto",
+      "created_at": "2026-03-18T03:06:50.578625+00:00",
+      "funnel_type": "cancelamento"
+    },
+    {
+      "id": "cb3e4559-f785-4970-b553-b8e0b0e0a8a1",
+      "name": "[LEGADO] Sem contato",
+      "color": "#f97316",
+      "display_order": 2,
+      "status_type": "aberto",
+      "created_at": "2026-04-13T19:02:42.625127+00:00",
+      "funnel_type": "retencao"
+    },
+    {
+      "id": "4be38cc5-497d-4b34-b27f-c038d45b5453",
+      "name": "[LEGADO] Aguardando resposta",
+      "color": "#f97316",
+      "display_order": 2,
+      "status_type": "aberto",
+      "created_at": "2026-02-21T10:56:57.956706+00:00",
+      "funnel_type": "cancelamento"
+    }
+  ],
+  "distribution": [
+    {
+      "status_id": "a1c0e100-0000-0000-0000-000000000003",
+      "status_name": "Decisão do cliente",
+      "funnel_type": "cancelamento",
+      "sort": null,
+      "registros": 6,
+      "clientes_distintos": 6,
+      "raw": {
+        "id": "a1c0e100-0000-0000-0000-000000000003",
+        "name": "Decisão do cliente",
+        "color": "#3b82f6",
+        "display_order": 12,
+        "status_type": "aberto",
+        "created_at": "2026-07-06T14:56:50.958557+00:00",
+        "funnel_type": "cancelamento"
+      }
+    },
+    {
+      "status_id": "a1c0e100-0000-0000-0000-000000000002",
+      "status_name": "Em retenção",
+      "funnel_type": "cancelamento",
+      "sort": null,
+      "registros": 2,
+      "clientes_distintos": 2,
+      "raw": {
+        "id": "a1c0e100-0000-0000-0000-000000000002",
+        "name": "Em retenção",
+        "color": "#a855f7",
+        "display_order": 11,
+        "status_type": "aberto",
+        "created_at": "2026-07-06T14:56:50.958557+00:00",
+        "funnel_type": "cancelamento"
+      }
+    },
+    {
+      "status_id": "a1c0e100-0000-0000-0000-000000000005",
+      "status_name": "Encerrado",
+      "funnel_type": "cancelamento",
+      "sort": null,
+      "registros": 87,
+      "clientes_distintos": 86,
+      "raw": {
+        "id": "a1c0e100-0000-0000-0000-000000000005",
+        "name": "Encerrado",
+        "color": "#22c55e",
+        "display_order": 16,
+        "status_type": "finalizado",
+        "created_at": "2026-07-06T14:56:50.958557+00:00",
+        "funnel_type": "cancelamento"
+      }
+    },
+    {
+      "status_id": "a1c0e100-0000-0000-0000-000000000001",
+      "status_name": "Nova intenção",
+      "funnel_type": "cancelamento",
+      "sort": null,
+      "registros": 14,
+      "clientes_distintos": 3,
+      "raw": {
+        "id": "a1c0e100-0000-0000-0000-000000000001",
+        "name": "Nova intenção",
+        "color": "#f59e0b",
+        "display_order": 10,
+        "status_type": "aberto",
+        "created_at": "2026-07-06T14:56:50.958557+00:00",
+        "funnel_type": "cancelamento"
+      }
+    },
+    {
+      "status_id": "a1c0e100-0000-0000-0000-000000000004",
+      "status_name": "Saída em curso",
+      "funnel_type": "cancelamento",
+      "sort": null,
+      "registros": 73,
+      "clientes_distintos": 59,
+      "raw": {
+        "id": "a1c0e100-0000-0000-0000-000000000004",
+        "name": "Saída em curso",
+        "color": "#f97316",
+        "display_order": 13,
+        "status_type": "aberto",
+        "created_at": "2026-07-06T14:56:50.958557+00:00",
+        "funnel_type": "cancelamento"
+      }
+    }
+  ],
+  "pedidoAudit": {
+    "pedidoStatusIds": [],
+    "byStatusName": 0,
+    "byDataPedido": 124,
+    "overlap": 0,
+    "unionDistinct": 124
+  }
+}

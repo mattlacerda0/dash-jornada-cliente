@@ -8,11 +8,22 @@ import {
   NPS_MIN_RESPONSES_PER_EP,
 } from "./_shared/nps-metrics.mjs";
 import {
+  isConfirmedCancelledStatus,
+  isEffectiveCancelledStatus,
+  isMarkedCancelledNoEvidenceStatus,
+  isEffectiveCancelledWithoutDateStatus,
+} from "./_shared/analytical-cancellation.mjs";
+import {
   computeGeneralDataPayload,
   robustStats,
 } from "./general-data.mjs";
 import { computeMeetingsPayload } from "./meetings.mjs";
 import { computeMechanismsPayload } from "./mechanisms.mjs";
+import {
+  parseCurrentCycle,
+  renewalFromCycle,
+  cycleDistributionLabel,
+} from "./_shared/client-cycle-renewal.mjs";
 
 /**
  * Performance do Engenheiro Patrimonial (BASE QV).
@@ -72,50 +83,12 @@ function toIsoDate(value) {
   return d ? d.toISOString() : null;
 }
 
-/** Ciclo atual: clients.ciclo exposto como currentCycle/ciclo/cycle no general-data. */
-function parseCurrentCycle(client) {
-  const raw = client?.currentCycle ?? client?.ciclo ?? client?.cycle;
-  if (raw == null || raw === "") return null;
-  const n = Number(raw);
-  if (!Number.isFinite(n)) return null;
-  return Math.trunc(n);
-}
-
 function parseCycleStart(client) {
   return toIsoDate(client?.data_inicio_ciclo ?? client?.cycleStart ?? client?.contractDate);
 }
 
 function parseCycleEnd(client) {
   return toIsoDate(client?.data_fim_ciclo ?? client?.cycleEnd);
-}
-
-/** renewalCount = max(ciclo-1,0); renewed = ciclo>1; ciclo ≤0 inválido para renovação. */
-function renewalFromCycle(cycle) {
-  if (cycle == null || !Number.isFinite(cycle)) {
-    return { renewalCount: 0, renewed: false, valid: false, invalidReason: "missing" };
-  }
-  const c = Math.trunc(cycle);
-  if (c <= 0) {
-    return {
-      renewalCount: 0,
-      renewed: false,
-      valid: false,
-      invalidReason: c === 0 ? "zero" : "negative",
-    };
-  }
-  return {
-    renewalCount: Math.max(c - 1, 0),
-    renewed: c > 1,
-    valid: true,
-    invalidReason: null,
-  };
-}
-
-function cycleDistributionLabel(cycle) {
-  if (cycle == null || !Number.isFinite(cycle) || cycle <= 0) return "Não informado";
-  const c = Math.trunc(cycle);
-  if (c >= 5) return "Ciclo 5+";
-  return `Ciclo ${c}`;
 }
 
 function implementedMechanismDetails(mechClient) {
@@ -193,11 +166,15 @@ function pushThemeWarnings(warnings, code, label, messages, max = 5) {
 }
 
 function isConfirmedCancelled(status) {
-  return status === "Cancelado";
+  return isConfirmedCancelledStatus(status);
 }
 
 function isCancelledWithoutConfirmedDate(status) {
-  return status === "Cancelado sem data confirmada";
+  return isMarkedCancelledNoEvidenceStatus(status);
+}
+
+function isEffectiveCancelled(status) {
+  return isEffectiveCancelledStatus(status);
 }
 
 function confirmedCancelledClientIds(generalPayload) {
@@ -492,8 +469,9 @@ export function buildEpPerformanceFromPayloads(generalPayload, meetingsPayload, 
     }
 
     const analyticalStatus = client.analyticalStatus || client.status || "Não informado";
-    const cancelled = isConfirmedCancelled(analyticalStatus);
+    const cancelled = isEffectiveCancelled(analyticalStatus);
     const cancelledWithoutConfirmedDate = isCancelledWithoutConfirmedDate(analyticalStatus);
+    const cancelledEffectiveWithoutDate = isEffectiveCancelledWithoutDateStatus(analyticalStatus);
 
     const meetingClient = meetingByClient.get(clientId);
     const validMeetingStarts = (Array.isArray(meetingClient?.meetings) ? meetingClient.meetings : [])

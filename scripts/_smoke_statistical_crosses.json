@@ -1,0 +1,185 @@
+{
+  "summary": {
+    "analyzedClients": 2189,
+    "activeClients": 1736,
+    "confirmedCancellations": 453,
+    "cancelledWithDate": 446,
+    "cancelledWithoutDate": 7,
+    "renewedClients": 183,
+    "cycle1Clients": 1973,
+    "validNpsResponses": 275,
+    "censoredClients": 1736,
+    "evaluatedVariables": 31,
+    "averageCoverage": 73.3,
+    "observationPeriod": {
+      "from": "2024-05-22T00:00:00.000Z",
+      "to": "2026-08-03T14:02:02.022Z"
+    },
+    "topAssociationLabel": "Dias até primeira reunião",
+    "topAssociationAbs": 0.4493,
+    "topAssociationStrength": "moderada",
+    "topAssociationMeasure": "point_biserial",
+    "npsResponses": 275,
+    "npsIndex": 65.1,
+    "npsPortfolioCoverage": 12.6
+  },
+  "population": {
+    "total": 2189,
+    "totalClients": 2189,
+    "active": 1736,
+    "activeClients": 1736,
+    "cancelled": 453,
+    "confirmedCancelledClients": 453,
+    "cancelledWithDate": 446,
+    "cancelledWithoutDate": 7,
+    "frozen": 0,
+    "frozenClients": 0,
+    "unknown": 0,
+    "unknownClients": 0,
+    "excluded": 0,
+    "activeUsedInComparison": 1736,
+    "cancelledUsedInComparison": 453,
+    "events": 411,
+    "censored": 1346,
+    "survivalEligible": 1757,
+    "includeFrozenSeparate": false
+  },
+  "pendingRenewal": {
+    "status": "available",
+    "available": true,
+    "sourceFound": true,
+    "tables": [
+      "clients.ciclo"
+    ],
+    "note": "Renovação via clients.ciclo (general-data): currentCycle > 1 ⇒ renovado; renewalCount = max(ciclo−1, 0); ciclo ≥ 1 válido para análise."
+  },
+  "counts": {
+    "associations": 31,
+    "comparisons": 31,
+    "univariatePredictivePower": 30,
+    "predictivePower": 25,
+    "npsCorrelations": 20,
+    "npsGroups": 3,
+    "renewalNumeric": 18,
+    "renewalCategorical": 9,
+    "renewedVsNot": 19,
+    "tenureCorrelations": 20,
+    "tenureBuckets": 5,
+    "excludedVariables": 8,
+    "activeVsCancelled": 21
+  },
+  "renewalEligible": {
+    "eligible": 2156,
+    "renewed": 183,
+    "notRenewed": 1973
+  },
+  "survivalAtRisk": 1757,
+  "topAssociation": {
+    "id": "daysToFirstMeeting",
+    "label": "Dias até primeira reunião",
+    "abs": 0.4493
+  },
+  "delivery": {
+    "npsGroups": [
+      {
+        "label": "Promotores",
+        "n": 209,
+        "cancelled": 2,
+        "cancelledPct": 1,
+        "renewed": 45,
+        "renewedPct": 21.5
+      },
+      {
+        "label": "Neutros",
+        "n": 36,
+        "cancelled": 0,
+        "cancelledPct": 0,
+        "renewed": 5,
+        "renewedPct": 13.9
+      },
+      {
+        "label": "Detratores",
+        "n": 30,
+        "cancelled": 2,
+        "cancelledPct": 6.7,
+        "renewed": 1,
+        "renewedPct": 3.3
+      }
+    ],
+    "topAuc": {
+      "label": "Dias até primeira reunião",
+      "auc": 0.8531,
+      "aucAdjusted": 0.8531
+    },
+    "topChurnNumeric": [
+      {
+        "label": "Dias até primeira reunião",
+        "association": 0.4493
+      },
+      {
+        "label": "Permanência (dias)",
+        "association": 0.4281
+      },
+      {
+        "label": "Total de reuniões",
+        "association": -0.3399
+      },
+      {
+        "label": "Dias desde última reunião",
+        "association": 0.226
+      },
+      {
+        "label": "No-shows",
+        "association": -0.1663
+      }
+    ],
+    "survival": {
+      "nStart": 1757,
+      "events": 411,
+      "censored": 1346,
+      "medianSurvival": 432,
+      "groups": 14,
+      "logRank": {
+        "groupA": "APEX",
+        "groupB": "PRINCIPAL",
+        "pValue": 0.7769
+      }
+    },
+    "excludedLeakage": []
+  },
+  "metadata": {
+    "source": "BASE QV",
+    "cancellationRule": "isEffectiveCancelledStatus / isConfirmedCancelledStatus (analytical-cancellation via general-data)",
+    "renewalRule": "currentCycle > 1 ⇒ renovado; renewalCount = max(ciclo−1, 0); ciclo ≥ 1 válido",
+    "npsRule": "última resposta válida por cliente; preditivo exclui NPS após cancellationDate",
+    "cutoffDate": "2026-08-03T14:02:02.022Z",
+    "filtersApplied": {
+      "status": "active_cancelled"
+    },
+    "minSample": 30,
+    "minCoverage": 20,
+    "minDescriptive": 5,
+    "minInference": 30,
+    "population": {
+      "total": 2189,
+      "totalClients": 2189,
+      "active": 1736,
+      "activeClients": 1736,
+      "cancelled": 453,
+      "confirmedCancelledClients": 453,
+      "cancelledWithDate": 446,
+      "cancelledWithoutDate": 7,
+      "frozen": 0,
+      "frozenClients": 0,
+      "unknown": 0,
+      "unknownClients": 0,
+      "excluded": 0,
+      "activeUsedInComparison": 1736,
+      "cancelledUsedInComparison": 453,
+      "events": 411,
+      "censored": 1346,
+      "survivalEligible": 1757,
+      "includeFrozenSeparate": false
+    }
+  }
+}

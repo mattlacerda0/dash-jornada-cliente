@@ -1,0 +1,157 @@
+{
+  "effective": 453,
+  "intentionsOrOrders": 155,
+  "activeIntention": 75,
+  "orders": 124,
+  "intentions": 155,
+  "inProcess": 89,
+  "withoutDate": 7,
+  "archived": 210,
+  "audit": {
+    "onlyChurnEfetivadoAt": 2,
+    "onlyDistratoAssinadoAt": 0,
+    "onlyDistratoTextSigned": 7,
+    "onlyClientDataChurn": 392,
+    "multipleSources": 52,
+    "effectiveWithoutConfirmedDate": 7,
+    "totalDistinct": 453,
+    "cancellationsConfirmed": 61,
+    "clientsDataChurn": 401,
+    "overlapCancelAndDataChurn": 9,
+    "dateDivergence": {
+      "sameDay": 0,
+      "upTo1Day": 1,
+      "over1Day": 7,
+      "maxDiffDays": 62,
+      "clientsAffected": 8
+    }
+  },
+  "stages": [
+    {
+      "label": "Intenção/pedido de cancelamento",
+      "key": "intencao_pedido",
+      "count": 0,
+      "percent": 0,
+      "exclusive": true,
+      "rule": "Etapa atual exclusiva: efetivado > offboarding > retenção > intenção/pedido > nenhuma.",
+      "universe": "Clientes no processo de cancelamento (não arquivados por padrão)."
+    },
+    {
+      "label": "Retenção",
+      "key": "retencao",
+      "count": 0,
+      "percent": 0,
+      "exclusive": true,
+      "rule": "Etapa atual exclusiva: efetivado > offboarding > retenção > intenção/pedido > nenhuma.",
+      "universe": "Clientes no processo de cancelamento (não arquivados por padrão)."
+    },
+    {
+      "label": "Offboarding",
+      "key": "offboarding",
+      "count": 89,
+      "percent": 16.4,
+      "exclusive": true,
+      "rule": "Etapa atual exclusiva: efetivado > offboarding > retenção > intenção/pedido > nenhuma.",
+      "universe": "Clientes no processo de cancelamento (não arquivados por padrão)."
+    },
+    {
+      "label": "Cancelamento efetivado",
+      "key": "efetivado",
+      "count": 453,
+      "percent": 83.6,
+      "exclusive": true,
+      "rule": "Etapa atual exclusiva: efetivado > offboarding > retenção > intenção/pedido > nenhuma.",
+      "universe": "Clientes no processo de cancelamento (não arquivados por padrão)."
+    },
+    {
+      "label": "Sem etapa identificada",
+      "key": "nenhuma",
+      "count": 0,
+      "percent": 0,
+      "exclusive": true,
+      "rule": "Etapa atual exclusiva: efetivado > offboarding > retenção > intenção/pedido > nenhuma.",
+      "universe": "Clientes no processo de cancelamento (não arquivados por padrão)."
+    }
+  ],
+  "segmentTop": [
+    [
+      "PRINCIPAL",
+      198
+    ],
+    [
+      "APEX",
+      195
+    ],
+    [
+      "DEBTS",
+      49
+    ],
+    [
+      "PRIVATE",
+      46
+    ],
+    [
+      "OVER",
+      33
+    ],
+    [
+      "Dados insuficientes",
+      21
+    ]
+  ],
+  "insuficientes": 21,
+  "situations": [
+    [
+      "Cancelamento efetivado com data",
+      446
+    ],
+    [
+      "Em offboarding",
+      89
+    ],
+    [
+      "Cancelamento efetivado sem data",
+      7
+    ]
+  ],
+  "monthSample": [
+    {
+      "month": "2026-06",
+      "label": "2026-06",
+      "intentions": 30,
+      "effective": 113,
+      "effectiveCancellations": 113,
+      "difference": -83,
+      "note": "Séries independentes por data; não é taxa de conversão do mesmo cliente."
+    },
+    {
+      "month": "2026-07",
+      "label": "2026-07",
+      "intentions": 36,
+      "effective": 97,
+      "effectiveCancellations": 97,
+      "difference": -61,
+      "note": "Séries independentes por data; não é taxa de conversão do mesmo cliente."
+    },
+    {
+      "month": "2026-08",
+      "label": "2026-08",
+      "intentions": 0,
+      "effective": 0,
+      "effectiveCancellations": 0,
+      "difference": 0,
+      "note": "Séries independentes por data; não é taxa de conversão do mesmo cliente."
+    }
+  ],
+  "rule": {
+    "cancellations": "churn_efetivado_at OR distrato_assinado_at OR distrato='Assinado'",
+    "clients": "data_churn",
+    "union": "count(distinct client_id)",
+    "datePriority": [
+      "churn_efetivado_at",
+      "distrato_assinado_at",
+      "clients.data_churn"
+    ],
+    "withoutDate": "distrato Assinado sem data → efetivado sem data confirmada (fora do mensal)"
+  }
+}

@@ -1,0 +1,756 @@
+{
+  "generatedAt": "2026-07-31T21:17:30.793Z",
+  "cancelAudit": {
+    "onlyChurnEfetivadoAt": 0,
+    "onlyDistratoAssinadoAt": 0,
+    "onlyDistratoTextSigned": 94,
+    "onlyClientDataChurn": 386,
+    "multipleSources": 58,
+    "effectiveWithoutConfirmedDate": 94,
+    "totalDistinct": 538,
+    "cancellationsConfirmed": 152,
+    "clientsDataChurn": 399,
+    "overlapCancelAndDataChurn": 13
+  },
+  "portfolioChartOthers": {
+    "totalInOtherSegment": 809,
+    "note": "Outros = carteira − Ativos − Congelados − Cancelado (efetivado). Inclui 'Cancelado sem data confirmada' e 'Não informado'.",
+    "reasonDistribution": {
+      "Status bruto Cancelado sem data encontrada": 809
+    },
+    "sample": [
+      {
+        "clientId": "002dde03-02ed-4af3-9ea0-108137b376cc",
+        "rawStatus": "churn",
+        "rawNormalized": "Cancelado",
+        "analyticalStatus": "Cancelado sem data confirmada",
+        "hasDataChurn": false,
+        "hasChurnEfetivadoAt": false,
+        "hasDistratoAssinadoAt": false,
+        "hasDistratoAssinadoText": false,
+        "hasCancellationsRow": false,
+        "isCancelledAnalytical": false,
+        "cancelSource": null,
+        "reason": "Status bruto Cancelado sem data encontrada"
+      },
+      {
+        "clientId": "0045dcca-6193-4939-a312-ab8a80f54235",
+        "rawStatus": "churn",
+        "rawNormalized": "Cancelado",
+        "analyticalStatus": "Cancelado sem data confirmada",
+        "hasDataChurn": false,
+        "hasChurnEfetivadoAt": false,
+        "hasDistratoAssinadoAt": false,
+        "hasDistratoAssinadoText": false,
+        "hasCancellationsRow": false,
+        "isCancelledAnalytical": false,
+        "cancelSource": null,
+        "reason": "Status bruto Cancelado sem data encontrada"
+      },
+      {
+        "clientId": "0085024f-e18e-4049-985b-c5e78be1e7b1",
+        "rawStatus": "churn",
+        "rawNormalized": "Cancelado",
+        "analyticalStatus": "Cancelado sem data confirmada",
+        "hasDataChurn": false,
+        "hasChurnEfetivadoAt": false,
+        "hasDistratoAssinadoAt": false,
+        "hasDistratoAssinadoText": false,
+        "hasCancellationsRow": false,
+        "isCancelledAnalytical": false,
+        "cancelSource": null,
+        "reason": "Status bruto Cancelado sem data encontrada"
+      },
+      {
+        "clientId": "012009ec-95ab-44de-8531-7daaa146b300",
+        "rawStatus": "churn",
+        "rawNormalized": "Cancelado",
+        "analyticalStatus": "Cancelado sem data confirmada",
+        "hasDataChurn": false,
+        "hasChurnEfetivadoAt": false,
+        "hasDistratoAssinadoAt": false,
+        "hasDistratoAssinadoText": false,
+        "hasCancellationsRow": false,
+        "isCancelledAnalytical": false,
+        "cancelSource": null,
+        "reason": "Status bruto Cancelado sem data encontrada"
+      },
+      {
+        "clientId": "012c9339-9218-46dc-91fe-569820b60eb0",
+        "rawStatus": "churn",
+        "rawNormalized": "Cancelado",
+        "analyticalStatus": "Cancelado sem data confirmada",
+        "hasDataChurn": false,
+        "hasChurnEfetivadoAt": false,
+        "hasDistratoAssinadoAt": false,
+        "hasDistratoAssinadoText": false,
+        "hasCancellationsRow": false,
+        "isCancelledAnalytical": false,
+        "cancelSource": null,
+        "reason": "Status bruto Cancelado sem data encontrada"
+      },
+      {
+        "clientId": "0180d89d-ce18-4ef6-8c8b-127d8ef24d67",
+        "rawStatus": "churn",
+        "rawNormalized": "Cancelado",
+        "analyticalStatus": "Cancelado sem data confirmada",
+        "hasDataChurn": false,
+        "hasChurnEfetivadoAt": false,
+        "hasDistratoAssinadoAt": false,
+        "hasDistratoAssinadoText": false,
+        "hasCancellationsRow": false,
+        "isCancelledAnalytical": false,
+        "cancelSource": null,
+        "reason": "Status bruto Cancelado sem data encontrada"
+      },
+      {
+        "clientId": "01a27bb3-4446-473f-8bb8-1bc5edb079d9",
+        "rawStatus": "churn",
+        "rawNormalized": "Cancelado",
+        "analyticalStatus": "Cancelado sem data confirmada",
+        "hasDataChurn": false,
+        "hasChurnEfetivadoAt": false,
+        "hasDistratoAssinadoAt": false,
+        "hasDistratoAssinadoText": false,
+        "hasCancellationsRow": false,
+        "isCancelledAnalytical": false,
+        "cancelSource": null,
+        "reason": "Status bruto Cancelado sem data encontrada"
+      },
+      {
+        "clientId": "01ac55f6-0ace-45b1-8d92-65c0283d28df",
+        "rawStatus": "churn",
+        "rawNormalized": "Cancelado",
+        "analyticalStatus": "Cancelado sem data confirmada",
+        "hasDataChurn": false,
+        "hasChurnEfetivadoAt": false,
+        "hasDistratoAssinadoAt": false,
+        "hasDistratoAssinadoText": false,
+        "hasCancellationsRow": false,
+        "isCancelledAnalytical": false,
+        "cancelSource": null,
+        "reason": "Status bruto Cancelado sem data encontrada"
+      },
+      {
+        "clientId": "01d1bd22-c704-47ac-b7ab-7beec727dbae",
+        "rawStatus": "churn",
+        "rawNormalized": "Cancelado",
+        "analyticalStatus": "Cancelado sem data confirmada",
+        "hasDataChurn": false,
+        "hasChurnEfetivadoAt": false,
+        "hasDistratoAssinadoAt": false,
+        "hasDistratoAssinadoText": false,
+        "hasCancellationsRow": false,
+        "isCancelledAnalytical": false,
+        "cancelSource": null,
+        "reason": "Status bruto Cancelado sem data encontrada"
+      },
+      {
+        "clientId": "020a676a-8c38-42e8-ae1e-7fe38bfa4edb",
+        "rawStatus": "churn",
+        "rawNormalized": "Cancelado",
+        "analyticalStatus": "Cancelado sem data confirmada",
+        "hasDataChurn": false,
+        "hasChurnEfetivadoAt": false,
+        "hasDistratoAssinadoAt": false,
+        "hasDistratoAssinadoText": false,
+        "hasCancellationsRow": false,
+        "isCancelledAnalytical": false,
+        "cancelSource": null,
+        "reason": "Status bruto Cancelado sem data encontrada"
+      },
+      {
+        "clientId": "025f67bd-45bd-4fd4-8559-4cd848541327",
+        "rawStatus": "churn",
+        "rawNormalized": "Cancelado",
+        "analyticalStatus": "Cancelado sem data confirmada",
+        "hasDataChurn": false,
+        "hasChurnEfetivadoAt": false,
+        "hasDistratoAssinadoAt": false,
+        "hasDistratoAssinadoText": false,
+        "hasCancellationsRow": false,
+        "isCancelledAnalytical": false,
+        "cancelSource": null,
+        "reason": "Status bruto Cancelado sem data encontrada"
+      },
+      {
+        "clientId": "02df0bd6-f2e4-438d-a4ea-77fcd3cf8379",
+        "rawStatus": "churn",
+        "rawNormalized": "Cancelado",
+        "analyticalStatus": "Cancelado sem data confirmada",
+        "hasDataChurn": false,
+        "hasChurnEfetivadoAt": false,
+        "hasDistratoAssinadoAt": false,
+        "hasDistratoAssinadoText": false,
+        "hasCancellationsRow": false,
+        "isCancelledAnalytical": false,
+        "cancelSource": null,
+        "reason": "Status bruto Cancelado sem data encontrada"
+      },
+      {
+        "clientId": "02f862b1-b85c-418a-bda4-ef37cd407409",
+        "rawStatus": "churn",
+        "rawNormalized": "Cancelado",
+        "analyticalStatus": "Cancelado sem data confirmada",
+        "hasDataChurn": false,
+        "hasChurnEfetivadoAt": false,
+        "hasDistratoAssinadoAt": false,
+        "hasDistratoAssinadoText": false,
+        "hasCancellationsRow": false,
+        "isCancelledAnalytical": false,
+        "cancelSource": null,
+        "reason": "Status bruto Cancelado sem data encontrada"
+      },
+      {
+        "clientId": "046a8262-0264-49c5-95a5-5de48b37777a",
+        "rawStatus": "churn",
+        "rawNormalized": "Cancelado",
+        "analyticalStatus": "Cancelado sem data confirmada",
+        "hasDataChurn": false,
+        "hasChurnEfetivadoAt": false,
+        "hasDistratoAssinadoAt": false,
+        "hasDistratoAssinadoText": false,
+        "hasCancellationsRow": false,
+        "isCancelledAnalytical": false,
+        "cancelSource": null,
+        "reason": "Status bruto Cancelado sem data encontrada"
+      },
+      {
+        "clientId": "04a3743b-a9ed-4cf3-a56a-72dc7443978b",
+        "rawStatus": "churn",
+        "rawNormalized": "Cancelado",
+        "analyticalStatus": "Cancelado sem data confirmada",
+        "hasDataChurn": false,
+        "hasChurnEfetivadoAt": false,
+        "hasDistratoAssinadoAt": false,
+        "hasDistratoAssinadoText": false,
+        "hasCancellationsRow": false,
+        "isCancelledAnalytical": false,
+        "cancelSource": null,
+        "reason": "Status bruto Cancelado sem data encontrada"
+      },
+      {
+        "clientId": "0545b9b0-aad9-4c5c-bcb5-31357154bd9a",
+        "rawStatus": "churn",
+        "rawNormalized": "Cancelado",
+        "analyticalStatus": "Cancelado sem data confirmada",
+        "hasDataChurn": false,
+        "hasChurnEfetivadoAt": false,
+        "hasDistratoAssinadoAt": false,
+        "hasDistratoAssinadoText": false,
+        "hasCancellationsRow": false,
+        "isCancelledAnalytical": false,
+        "cancelSource": null,
+        "reason": "Status bruto Cancelado sem data encontrada"
+      },
+      {
+        "clientId": "0591e520-cbb5-4c44-85f2-b4c0f30d6337",
+        "rawStatus": "churn",
+        "rawNormalized": "Cancelado",
+        "analyticalStatus": "Cancelado sem data confirmada",
+        "hasDataChurn": false,
+        "hasChurnEfetivadoAt": false,
+        "hasDistratoAssinadoAt": false,
+        "hasDistratoAssinadoText": false,
+        "hasCancellationsRow": false,
+        "isCancelledAnalytical": false,
+        "cancelSource": null,
+        "reason": "Status bruto Cancelado sem data encontrada"
+      },
+      {
+        "clientId": "066b96ef-1fdb-4a68-b5b5-18ee9be4f1f2",
+        "rawStatus": "churn",
+        "rawNormalized": "Cancelado",
+        "analyticalStatus": "Cancelado sem data confirmada",
+        "hasDataChurn": false,
+        "hasChurnEfetivadoAt": false,
+        "hasDistratoAssinadoAt": false,
+        "hasDistratoAssinadoText": false,
+        "hasCancellationsRow": false,
+        "isCancelledAnalytical": false,
+        "cancelSource": null,
+        "reason": "Status bruto Cancelado sem data encontrada"
+      },
+      {
+        "clientId": "06772c53-e2b3-40d5-b8d6-3b1836c66975",
+        "rawStatus": "churn",
+        "rawNormalized": "Cancelado",
+        "analyticalStatus": "Cancelado sem data confirmada",
+        "hasDataChurn": false,
+        "hasChurnEfetivadoAt": false,
+        "hasDistratoAssinadoAt": false,
+        "hasDistratoAssinadoText": false,
+        "hasCancellationsRow": false,
+        "isCancelledAnalytical": false,
+        "cancelSource": null,
+        "reason": "Status bruto Cancelado sem data encontrada"
+      },
+      {
+        "clientId": "06cb94e5-f5d1-4737-aa4d-428fa482615b",
+        "rawStatus": "churn",
+        "rawNormalized": "Cancelado",
+        "analyticalStatus": "Cancelado sem data confirmada",
+        "hasDataChurn": false,
+        "hasChurnEfetivadoAt": false,
+        "hasDistratoAssinadoAt": false,
+        "hasDistratoAssinadoText": false,
+        "hasCancellationsRow": false,
+        "isCancelledAnalytical": false,
+        "cancelSource": null,
+        "reason": "Status bruto Cancelado sem data encontrada"
+      },
+      {
+        "clientId": "06fea19e-278f-4416-ab6f-5717ab41158f",
+        "rawStatus": "churn",
+        "rawNormalized": "Cancelado",
+        "analyticalStatus": "Cancelado sem data confirmada",
+        "hasDataChurn": false,
+        "hasChurnEfetivadoAt": false,
+        "hasDistratoAssinadoAt": false,
+        "hasDistratoAssinadoText": false,
+        "hasCancellationsRow": false,
+        "isCancelledAnalytical": false,
+        "cancelSource": null,
+        "reason": "Status bruto Cancelado sem data encontrada"
+      },
+      {
+        "clientId": "078ddae9-fa67-4678-bd53-e0f7f969f8b0",
+        "rawStatus": "churn",
+        "rawNormalized": "Cancelado",
+        "analyticalStatus": "Cancelado sem data confirmada",
+        "hasDataChurn": false,
+        "hasChurnEfetivadoAt": false,
+        "hasDistratoAssinadoAt": false,
+        "hasDistratoAssinadoText": false,
+        "hasCancellationsRow": false,
+        "isCancelledAnalytical": false,
+        "cancelSource": null,
+        "reason": "Status bruto Cancelado sem data encontrada"
+      },
+      {
+        "clientId": "0818317b-659b-412d-bd67-d549d68c0085",
+        "rawStatus": "churn",
+        "rawNormalized": "Cancelado",
+        "analyticalStatus": "Cancelado sem data confirmada",
+        "hasDataChurn": false,
+        "hasChurnEfetivadoAt": false,
+        "hasDistratoAssinadoAt": false,
+        "hasDistratoAssinadoText": false,
+        "hasCancellationsRow": false,
+        "isCancelledAnalytical": false,
+        "cancelSource": null,
+        "reason": "Status bruto Cancelado sem data encontrada"
+      },
+      {
+        "clientId": "08204a6e-edb3-4c8f-a52f-d9cbe26041b3",
+        "rawStatus": "churn",
+        "rawNormalized": "Cancelado",
+        "analyticalStatus": "Cancelado sem data confirmada",
+        "hasDataChurn": false,
+        "hasChurnEfetivadoAt": false,
+        "hasDistratoAssinadoAt": false,
+        "hasDistratoAssinadoText": false,
+        "hasCancellationsRow": false,
+        "isCancelledAnalytical": false,
+        "cancelSource": null,
+        "reason": "Status bruto Cancelado sem data encontrada"
+      },
+      {
+        "clientId": "08442216-389b-4ef6-bccf-eb08988e3d71",
+        "rawStatus": "churn",
+        "rawNormalized": "Cancelado",
+        "analyticalStatus": "Cancelado sem data confirmada",
+        "hasDataChurn": false,
+        "hasChurnEfetivadoAt": false,
+        "hasDistratoAssinadoAt": false,
+        "hasDistratoAssinadoText": false,
+        "hasCancellationsRow": false,
+        "isCancelledAnalytical": false,
+        "cancelSource": null,
+        "reason": "Status bruto Cancelado sem data encontrada"
+      },
+      {
+        "clientId": "089d58fd-ecd4-489b-894e-6c74b6848ec4",
+        "rawStatus": "churn",
+        "rawNormalized": "Cancelado",
+        "analyticalStatus": "Cancelado sem data confirmada",
+        "hasDataChurn": false,
+        "hasChurnEfetivadoAt": false,
+        "hasDistratoAssinadoAt": false,
+        "hasDistratoAssinadoText": false,
+        "hasCancellationsRow": false,
+        "isCancelledAnalytical": false,
+        "cancelSource": null,
+        "reason": "Status bruto Cancelado sem data encontrada"
+      },
+      {
+        "clientId": "08b6a8e4-4820-4526-9578-22021cfd33ee",
+        "rawStatus": "churn",
+        "rawNormalized": "Cancelado",
+        "analyticalStatus": "Cancelado sem data confirmada",
+        "hasDataChurn": false,
+        "hasChurnEfetivadoAt": false,
+        "hasDistratoAssinadoAt": false,
+        "hasDistratoAssinadoText": false,
+        "hasCancellationsRow": false,
+        "isCancelledAnalytical": false,
+        "cancelSource": null,
+        "reason": "Status bruto Cancelado sem data encontrada"
+      },
+      {
+        "clientId": "08cfa43c-466c-4a2a-8ff3-47084776f272",
+        "rawStatus": "churn",
+        "rawNormalized": "Cancelado",
+        "analyticalStatus": "Cancelado sem data confirmada",
+        "hasDataChurn": false,
+        "hasChurnEfetivadoAt": false,
+        "hasDistratoAssinadoAt": false,
+        "hasDistratoAssinadoText": false,
+        "hasCancellationsRow": false,
+        "isCancelledAnalytical": false,
+        "cancelSource": null,
+        "reason": "Status bruto Cancelado sem data encontrada"
+      },
+      {
+        "clientId": "08f3dbe8-c693-4df7-ace6-9066164b9f1e",
+        "rawStatus": "churn",
+        "rawNormalized": "Cancelado",
+        "analyticalStatus": "Cancelado sem data confirmada",
+        "hasDataChurn": false,
+        "hasChurnEfetivadoAt": false,
+        "hasDistratoAssinadoAt": false,
+        "hasDistratoAssinadoText": false,
+        "hasCancellationsRow": false,
+        "isCancelledAnalytical": false,
+        "cancelSource": null,
+        "reason": "Status bruto Cancelado sem data encontrada"
+      },
+      {
+        "clientId": "0916b852-c9ce-4881-926d-3c5888abbbb8",
+        "rawStatus": "churn",
+        "rawNormalized": "Cancelado",
+        "analyticalStatus": "Cancelado sem data confirmada",
+        "hasDataChurn": false,
+        "hasChurnEfetivadoAt": false,
+        "hasDistratoAssinadoAt": false,
+        "hasDistratoAssinadoText": false,
+        "hasCancellationsRow": false,
+        "isCancelledAnalytical": false,
+        "cancelSource": null,
+        "reason": "Status bruto Cancelado sem data encontrada"
+      },
+      {
+        "clientId": "09b6a10f-7786-4870-a729-481a24688186",
+        "rawStatus": "churn",
+        "rawNormalized": "Cancelado",
+        "analyticalStatus": "Cancelado sem data confirmada",
+        "hasDataChurn": false,
+        "hasChurnEfetivadoAt": false,
+        "hasDistratoAssinadoAt": false,
+        "hasDistratoAssinadoText": false,
+        "hasCancellationsRow": false,
+        "isCancelledAnalytical": false,
+        "cancelSource": null,
+        "reason": "Status bruto Cancelado sem data encontrada"
+      },
+      {
+        "clientId": "09e4c2a5-8d7b-488e-901f-fe18cc6ec973",
+        "rawStatus": "churn",
+        "rawNormalized": "Cancelado",
+        "analyticalStatus": "Cancelado sem data confirmada",
+        "hasDataChurn": false,
+        "hasChurnEfetivadoAt": false,
+        "hasDistratoAssinadoAt": false,
+        "hasDistratoAssinadoText": false,
+        "hasCancellationsRow": false,
+        "isCancelledAnalytical": false,
+        "cancelSource": null,
+        "reason": "Status bruto Cancelado sem data encontrada"
+      },
+      {
+        "clientId": "09ecb352-d077-4f5a-af11-cb059b1d3dc0",
+        "rawStatus": "churn",
+        "rawNormalized": "Cancelado",
+        "analyticalStatus": "Cancelado sem data confirmada",
+        "hasDataChurn": false,
+        "hasChurnEfetivadoAt": false,
+        "hasDistratoAssinadoAt": false,
+        "hasDistratoAssinadoText": false,
+        "hasCancellationsRow": false,
+        "isCancelledAnalytical": false,
+        "cancelSource": null,
+        "reason": "Status bruto Cancelado sem data encontrada"
+      },
+      {
+        "clientId": "0a21385a-52da-4f2d-8c4a-7bc165288e13",
+        "rawStatus": "churn",
+        "rawNormalized": "Cancelado",
+        "analyticalStatus": "Cancelado sem data confirmada",
+        "hasDataChurn": false,
+        "hasChurnEfetivadoAt": false,
+        "hasDistratoAssinadoAt": false,
+        "hasDistratoAssinadoText": false,
+        "hasCancellationsRow": false,
+        "isCancelledAnalytical": false,
+        "cancelSource": null,
+        "reason": "Status bruto Cancelado sem data encontrada"
+      },
+      {
+        "clientId": "0a6e21e6-d785-487f-b8ee-8dbba21dd326",
+        "rawStatus": "churn",
+        "rawNormalized": "Cancelado",
+        "analyticalStatus": "Cancelado sem data confirmada",
+        "hasDataChurn": false,
+        "hasChurnEfetivadoAt": false,
+        "hasDistratoAssinadoAt": false,
+        "hasDistratoAssinadoText": false,
+        "hasCancellationsRow": false,
+        "isCancelledAnalytical": false,
+        "cancelSource": null,
+        "reason": "Status bruto Cancelado sem data encontrada"
+      },
+      {
+        "clientId": "0ac976f7-ce76-4459-94e6-a7816553891a",
+        "rawStatus": "churn",
+        "rawNormalized": "Cancelado",
+        "analyticalStatus": "Cancelado sem data confirmada",
+        "hasDataChurn": false,
+        "hasChurnEfetivadoAt": false,
+        "hasDistratoAssinadoAt": false,
+        "hasDistratoAssinadoText": false,
+        "hasCancellationsRow": false,
+        "isCancelledAnalytical": false,
+        "cancelSource": null,
+        "reason": "Status bruto Cancelado sem data encontrada"
+      },
+      {
+        "clientId": "0aec49c9-ab65-472d-be60-c48f23a9ebd2",
+        "rawStatus": "churn",
+        "rawNormalized": "Cancelado",
+        "analyticalStatus": "Cancelado sem data confirmada",
+        "hasDataChurn": false,
+        "hasChurnEfetivadoAt": false,
+        "hasDistratoAssinadoAt": false,
+        "hasDistratoAssinadoText": false,
+        "hasCancellationsRow": false,
+        "isCancelledAnalytical": false,
+        "cancelSource": null,
+        "reason": "Status bruto Cancelado sem data encontrada"
+      },
+      {
+        "clientId": "0afe21d1-7e92-436d-9e2f-c5ea13958c33",
+        "rawStatus": "churn",
+        "rawNormalized": "Cancelado",
+        "analyticalStatus": "Cancelado sem data confirmada",
+        "hasDataChurn": false,
+        "hasChurnEfetivadoAt": false,
+        "hasDistratoAssinadoAt": false,
+        "hasDistratoAssinadoText": false,
+        "hasCancellationsRow": false,
+        "isCancelledAnalytical": false,
+        "cancelSource": null,
+        "reason": "Status bruto Cancelado sem data encontrada"
+      },
+      {
+        "clientId": "0ba407f8-0bb1-4ef5-a5d2-ac69e5850797",
+        "rawStatus": "churn",
+        "rawNormalized": "Cancelado",
+        "analyticalStatus": "Cancelado sem data confirmada",
+        "hasDataChurn": false,
+        "hasChurnEfetivadoAt": false,
+        "hasDistratoAssinadoAt": false,
+        "hasDistratoAssinadoText": false,
+        "hasCancellationsRow": false,
+        "isCancelledAnalytical": false,
+        "cancelSource": null,
+        "reason": "Status bruto Cancelado sem data encontrada"
+      },
+      {
+        "clientId": "0c4b71a1-4ede-4c4c-87e5-ad7be2a473e8",
+        "rawStatus": "churn",
+        "rawNormalized": "Cancelado",
+        "analyticalStatus": "Cancelado sem data confirmada",
+        "hasDataChurn": false,
+        "hasChurnEfetivadoAt": false,
+        "hasDistratoAssinadoAt": false,
+        "hasDistratoAssinadoText": false,
+        "hasCancellationsRow": false,
+        "isCancelledAnalytical": false,
+        "cancelSource": null,
+        "reason": "Status bruto Cancelado sem data encontrada"
+      }
+    ]
+  },
+  "comparison": {
+    "Ativos": {
+      "before": 1635,
+      "after": 1635,
+      "delta": 0
+    },
+    "Congelados": {
+      "before": 289,
+      "after": 289,
+      "delta": 0
+    },
+    "Cancelados com data": {
+      "before": 444,
+      "after": 444,
+      "delta": 0
+    },
+    "Cancelados sem data (efetivado Assinado)": {
+      "before": 94,
+      "after": 94,
+      "delta": 0
+    },
+    "Marcados como cancelados sem evidência": {
+      "before": 809,
+      "after": 809,
+      "delta": 0
+    },
+    "Não informados reais": {
+      "before": 0,
+      "after": 0,
+      "delta": 0
+    },
+    "Total": {
+      "before": 3271,
+      "after": 3271,
+      "delta": 0
+    }
+  },
+  "transitions": {
+    "fromOthersToCancelled": 0,
+    "fromSemDataToComDataViaDataChurn": 391,
+    "dataChurnWithoutCancellationsRow": 385,
+    "multiSourceClients": 58
+  },
+  "dateDivergence": {
+    "clientsWithDivergentDates": 8,
+    "sameDay": 0,
+    "upTo1Day": 0,
+    "over1Day": 8,
+    "maxDiffDays": 62.5,
+    "sample": [
+      {
+        "clientId": "00aeb03d-a153-40bc-811c-74f3356e9328",
+        "dates": [
+          {
+            "source": "distrato_assinado_at",
+            "iso": "2026-05-11"
+          },
+          {
+            "source": "clients.data_churn",
+            "iso": "2026-03-20"
+          }
+        ],
+        "maxDiffDays": 52.7,
+        "chosenSource": "distrato_assinado_at"
+      },
+      {
+        "clientId": "5668d1d1-92dc-45a1-93db-bc4612e26c61",
+        "dates": [
+          {
+            "source": "distrato_assinado_at",
+            "iso": "2026-04-09"
+          },
+          {
+            "source": "clients.data_churn",
+            "iso": "2026-03-12"
+          }
+        ],
+        "maxDiffDays": 28.8,
+        "chosenSource": "distrato_assinado_at"
+      },
+      {
+        "clientId": "956db8e9-5b40-451d-a684-f116ff005d1b",
+        "dates": [
+          {
+            "source": "distrato_assinado_at",
+            "iso": "2026-06-03"
+          },
+          {
+            "source": "clients.data_churn",
+            "iso": "2026-05-18"
+          }
+        ],
+        "maxDiffDays": 16.8,
+        "chosenSource": "distrato_assinado_at"
+      },
+      {
+        "clientId": "9c95e022-3ba5-4f58-9729-dd6ad8bec27e",
+        "dates": [
+          {
+            "source": "distrato_assinado_at",
+            "iso": "2026-06-07"
+          },
+          {
+            "source": "clients.data_churn",
+            "iso": "2026-04-28"
+          }
+        ],
+        "maxDiffDays": 40.7,
+        "chosenSource": "distrato_assinado_at"
+      },
+      {
+        "clientId": "c6fe8cde-3ca7-4c28-a2c7-4a85b0af038b",
+        "dates": [
+          {
+            "source": "distrato_assinado_at",
+            "iso": "2026-04-15"
+          },
+          {
+            "source": "clients.data_churn",
+            "iso": "2026-05-06"
+          }
+        ],
+        "maxDiffDays": 20.3,
+        "chosenSource": "distrato_assinado_at"
+      },
+      {
+        "clientId": "db98ce22-d979-44b1-823a-ec251751dcc5",
+        "dates": [
+          {
+            "source": "distrato_assinado_at",
+            "iso": "2026-04-28"
+          },
+          {
+            "source": "clients.data_churn",
+            "iso": "2026-02-25"
+          }
+        ],
+        "maxDiffDays": 62.5,
+        "chosenSource": "distrato_assinado_at"
+      },
+      {
+        "clientId": "e03928a3-9762-4dac-b923-2aaaf1161595",
+        "dates": [
+          {
+            "source": "churn_efetivado_at",
+            "iso": "2026-07-08"
+          },
+          {
+            "source": "clients.data_churn",
+            "iso": "2026-07-07"
+          }
+        ],
+        "maxDiffDays": 1.8,
+        "chosenSource": "churn_efetivado_at"
+      },
+      {
+        "clientId": "f6afede3-6e1b-42fb-a96a-5a195e7c9dcf",
+        "dates": [
+          {
+            "source": "distrato_assinado_at",
+            "iso": "2026-05-28"
+          },
+          {
+            "source": "clients.data_churn",
+            "iso": "2026-07-09"
+          }
+        ],
+        "maxDiffDays": 41.3,
+        "chosenSource": "distrato_assinado_at"
+      }
+    ]
+  }
+}

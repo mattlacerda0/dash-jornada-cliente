@@ -7,7 +7,7 @@ import {
 } from "./_shared/analytical-cancellation.mjs";
 
 const CLIENT_SELECT =
-  "id,codigo,name,status,engenheiro_patrimonial";
+  "id,codigo,name,status,engenheiro_patrimonial,data_churn";
 const FINANCIAL_SELECT =
   "id,client_id,reserva_liquidez,ultima_renda_mensal,ultimo_aporte,possui_imovel,possui_carro,possui_consorcio,created_at,updated_at";
 const CANCEL_SELECT = ANALYTICAL_CANCEL_SELECT;
@@ -418,7 +418,7 @@ function buildMonthSeries(rows, now, monthsBack) {
 function buildPayload(clients, financialRows, cancellations) {
   const now = new Date();
   const today = startOfDay(now);
-  const { map: cancelMap } = buildAnalyticalCancellationMap(cancellations);
+  const { map: cancelMap } = buildAnalyticalCancellationMap(cancellations, clients);
   const { byClient, counts, multiples, rowsWithoutClientId } = buildFinancialMap(financialRows);
   const timestampAudit = auditFinancialTimestamps(financialRows);
   const clientIds = new Set(clients.map((c) => String(c.id)));
@@ -465,7 +465,7 @@ function buildPayload(clients, financialRows, cancellations) {
   for (const client of clients) {
     const clientId = String(client.id);
     const cancelInfo = cancelMap.get(String(clientId)) || cancelMap.get(clientId) || null;
-    const analyticalStatus = resolveAnalyticalStatus(client.status, cancelInfo?.date || null);
+    const analyticalStatus = resolveAnalyticalStatus(client.status, cancelInfo);
     const financial = byClient.get(clientId) || null;
     const dataWarnings = [];
 

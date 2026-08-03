@@ -8,6 +8,10 @@ import {
   normalizeClientStatus,
   parseFlexibleDate,
   resolveAnalyticalStatus,
+  isEffectiveCancelledStatus,
+  isMarkedCancelledNoEvidenceStatus,
+  isEffectiveCancelledWithoutDateStatus,
+  analyzeCancellationDateDivergence,
 } from "./_shared/analytical-cancellation.mjs";
 
 // domain, table, column, includeBlank
@@ -663,7 +667,7 @@ function pushAggregatedCancelWarning(warnings, { code, label, count, column = nu
 
 async function closedWithoutCancellationAudit() {
   const [clients, cancellations] = await Promise.all([
-    fetchAllRows("clients", "id,status,data_inicio_ciclo,created_at"),
+    fetchAllRows("clients", "id,status,data_inicio_ciclo,created_at,data_churn"),
     fetchAllRows("cancellations", ANALYTICAL_CANCEL_SELECT),
   ]);
   const {
@@ -672,7 +676,8 @@ async function closedWithoutCancellationAudit() {
     rowsWithoutClientId,
     rowsWithInvalidChurn,
     rowsWithInvalidDistrato,
-  } = buildAnalyticalCancellationMap(cancellations);
+    audit,
+  } = buildAnalyticalCancellationMap(cancellations, clients);
 
   let closed = 0;
   let closedWithoutDate = 0;
@@ -681,13 +686,35 @@ async function closedWithoutCancellationAudit() {
   let frozenWithChurn = 0;
   let frozenWithDistrato = 0;
   let cancelBeforeContract = 0;
+  let dataChurnWithoutCancelRow = 0;
+  let cancelRowWithoutDataChurn = 0;
+  let markedWithoutEvidence = 0;
+  let emptyStatus = 0;
+  let distratoTextWithoutDate = 0;
+  let dateDivergenceOver1d = 0;
+
+  const cancelClientIds = new Set(
+    (cancellations || [])
+      .filter((r) => !parseFlexibleDate(r.archived_at) && r.client_id)
+      .map((r) => String(r.client_id)),
+  );
 
   for (const client of clients) {
     const clientKey = String(client.id);
     const cancelInfo = cancelMap.get(clientKey) || null;
     const cancelDate = cancelInfo?.date || null;
     const rawNorm = normalizeClientStatus(client.status);
-    const analytical = resolveAnalyticalStatus(client.status, cancelDate);
+    const analytical = resolveAnalyticalStatus(client.status, cancelInfo);
+    const hasDataChurn = Boolean(parseFlexibleDate(client.data_churn));
+
+    if (!client.status || !String(client.status).trim()) emptyStatus += 1;
+    if (isMarkedCancelledNoEvidenceStatus(analytical)) markedWithoutEvidence += 1;
+    if (isEffectiveCancelledWithoutDateStatus(analytical)) distratoTextWithoutDate += 1;
+
+    if (hasDataChurn && !cancelClientIds.has(clientKey)) dataChurnWithoutCancelRow += 1;
+    if (cancelClientIds.has(clientKey) && cancelInfo?.isCancelled && !hasDataChurn) {
+      cancelRowWithoutDataChurn += 1;
+    }
 
     if (rawNorm === "Ativo" && cancelInfo?.hasChurnEfetivado) activeWithChurn += 1;
     if (rawNorm === "Ativo" && cancelInfo?.hasDistrato) activeWithDistrato += 1;
@@ -700,9 +727,39 @@ async function closedWithoutCancellationAudit() {
       if (contract && cancelDate < contract) cancelBeforeContract += 1;
     }
 
-    if (analytical !== "Cancelado") continue;
+    const divergence = analyzeCancellationDateDivergence(
+      {
+        churn_efetivado_at: cancelInfo?.hasChurnEfetivado ? cancelDate : null,
+        distrato_assinado_at: cancelInfo?.hasDistrato ? cancelDate : null,
+      },
+      client,
+    );
+    // Better divergence: use raw sources from map flags + client
+    if (hasDataChurn && (cancelInfo?.hasChurnEfetivado || cancelInfo?.hasDistrato)) {
+      const d2 = analyzeCancellationDateDivergence(
+        {
+          churn_efetivado_at: cancelInfo?.hasChurnEfetivado ? (cancelInfo.date || true) : null,
+          distrato_assinado_at: cancelInfo?.hasDistrato ? (cancelInfo.date || true) : null,
+        },
+        client,
+      );
+      // Use audit.dateDivergence instead for aggregate; count locally via data_churn vs chosen
+      if (
+        cancelInfo?.source
+        && cancelInfo.source !== "clients.data_churn"
+        && cancelInfo.date
+        && hasDataChurn
+      ) {
+        const dc = parseFlexibleDate(client.data_churn);
+        if (dc && Math.abs(dc.getTime() - cancelInfo.date.getTime()) > 86400000) {
+          dateDivergenceOver1d += 1;
+        }
+      }
+    }
+
+    if (!isEffectiveCancelledStatus(analytical)) continue;
     closed += 1;
-    if (!cancelDate) closedWithoutDate += 1;
+    if (!cancelDate || isEffectiveCancelledWithoutDateStatus(analytical)) closedWithoutDate += 1;
   }
 
   const pctClosed = closed ? Math.round((closedWithoutDate / closed) * 1000) / 10 : 0;
@@ -720,10 +777,18 @@ async function closedWithoutCancellationAudit() {
       rowsWithInvalidDistrato: rowsWithInvalidDistrato || 0,
       multiples: multiples?.size || 0,
       cancelBeforeContract,
+      dataChurnWithoutCancelRow,
+      cancelRowWithoutDataChurn,
+      markedWithoutEvidence,
+      emptyStatus,
+      distratoTextWithoutDate,
+      dateDivergenceOver1d: audit?.dateDivergence?.over1Day ?? dateDivergenceOver1d,
+      multiSource: audit?.multipleSources || 0,
     },
     notes: [
       `Cliente encerrado sem data de cancelamento: ${closedWithoutDate} casos (${pctClosed}% dos encerrados; ${pctAll}% da carteira).`,
       "Impacto na permanência: esses clientes são excluídos do indicador Permanência típica (não usam a data atual).",
+      `Regra consolidada: churn/distrato/data_churn — efetivados distintos=${audit?.totalDistinct ?? closed}.`,
     ],
   };
 }
@@ -958,6 +1023,46 @@ export default async (request) => {
       code: "cancellation_before_contract",
       label: "Cancelamento anterior à contratação",
       count: agg.cancelBeforeContract,
+    });
+    pushAggregatedCancelWarning(warnings, {
+      code: "data_churn_without_cancellations",
+      label: "clients.data_churn sem registro em cancellations",
+      count: agg.dataChurnWithoutCancelRow,
+      column: "data_churn",
+    });
+    pushAggregatedCancelWarning(warnings, {
+      code: "cancellations_without_data_churn",
+      label: "cancellations efetivado sem clients.data_churn",
+      count: agg.cancelRowWithoutDataChurn,
+      column: "data_churn",
+    });
+    pushAggregatedCancelWarning(warnings, {
+      code: "date_divergence_over_1d",
+      label: "Datas de cancelamento divergentes (>1 dia)",
+      count: agg.dateDivergenceOver1d,
+    });
+    pushAggregatedCancelWarning(warnings, {
+      code: "distrato_assinado_text_without_date",
+      label: "distrato Assinado sem data confirmada",
+      count: agg.distratoTextWithoutDate,
+      column: "distrato",
+    });
+    pushAggregatedCancelWarning(warnings, {
+      code: "marked_cancelled_without_evidence",
+      label: "Status bruto Cancelado sem evidência de efetivação",
+      count: agg.markedWithoutEvidence,
+      column: "status",
+    });
+    pushAggregatedCancelWarning(warnings, {
+      code: "client_empty_status",
+      label: "Cliente sem status",
+      count: agg.emptyStatus,
+      column: "status",
+    });
+    pushAggregatedCancelWarning(warnings, {
+      code: "multiple_cancellation_sources",
+      label: "Cliente com múltiplas fontes de cancelamento",
+      count: agg.multiSource,
     });
   } catch (error) {
     const warning = buildFieldWarning(error, { table: "cancellations", column: null });

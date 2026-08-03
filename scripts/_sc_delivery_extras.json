@@ -1,0 +1,167 @@
+{
+  "excludedVariables": [
+    {
+      "id": "motivo_cancelamento",
+      "label": "Motivo de cancelamento",
+      "reason": "Vazamento — informação tipicamente disponível no/após o evento"
+    },
+    {
+      "id": "offboarding",
+      "label": "Offboarding / processo de saída",
+      "reason": "Vazamento — processo concomitante ou posterior ao churn"
+    },
+    {
+      "id": "cancellationDate",
+      "label": "Data de cancelamento",
+      "reason": "Define o desfecho — não é preditor"
+    },
+    {
+      "id": "cancellationStage",
+      "label": "Estágio de cancelamento",
+      "reason": "Vazamento processual"
+    },
+    {
+      "id": "hasCancellationProcess",
+      "label": "Possui processo de cancelamento",
+      "reason": "Vazamento — correlato direto do evento"
+    },
+    {
+      "id": "cancellationSource",
+      "label": "Fonte da data de cancelamento",
+      "reason": "Metadado do desfecho"
+    },
+    {
+      "id": "analyticalStatus",
+      "label": "Status analítico",
+      "reason": "Contém o rótulo de cancelamento (desfecho)"
+    },
+    {
+      "id": "stayDays",
+      "label": "Permanência (dias)",
+      "reason": "Para cancelados = tempo até evento; para ativos = censurado. Excluída do AUC (vazamento/censura)."
+    }
+  ],
+  "qualityWarnings": [
+    {
+      "code": "methodology",
+      "severity": "info",
+      "message": "Associações estatísticas descrevem coocorrência no recorte; amostras pequenas e dados ausentes afetam a estabilidade."
+    },
+    {
+      "code": "missing_hire_date",
+      "message": "Sem data de contratação — excluído da sobrevivência",
+      "count": 743,
+      "severity": "warning"
+    },
+    {
+      "code": "cancelled_without_confirmed_date",
+      "message": "Cancelado efetivado sem data confirmada — excluído da sobrevivência",
+      "count": 6,
+      "severity": "warning"
+    },
+    {
+      "code": "negative_stay",
+      "message": "Permanência negativa (cancelamento anterior à contratação)",
+      "count": 4,
+      "severity": "warning"
+    },
+    {
+      "code": "cancel_before_hire",
+      "message": "Cancelamento anterior à contratação — excluído da sobrevivência",
+      "count": 1,
+      "severity": "warning"
+    },
+    {
+      "code": "high_missing_vars",
+      "severity": "warning",
+      "message": "10 variável(eis) com ≥40% de ausência.",
+      "count": 10
+    },
+    {
+      "code": "nps_caveat",
+      "severity": "warning",
+      "message": "Cobertura NPS 12.6% abaixo de 20%."
+    },
+    {
+      "code": "nps_caveat",
+      "severity": "warning",
+      "message": "Poucos cancelamentos com NPS prévio — baixa potência."
+    }
+  ],
+  "tenureMedianFromComparison": {
+    "label": "Permanência (dias)",
+    "medianActive": 157,
+    "medianCancelled": 388
+  },
+  "tenureCorrelationsTop": [
+    {
+      "label": "Dias até primeira implementação",
+      "rho": 0.8655
+    },
+    {
+      "label": "Dias até primeira reunião",
+      "rho": 0.753
+    },
+    {
+      "label": "Intervalo médio entre reuniões",
+      "rho": 0.6063
+    },
+    {
+      "label": "Total de reuniões",
+      "rho": -0.4208
+    },
+    {
+      "label": "Dias desde última reunião",
+      "rho": 0.3124
+    }
+  ],
+  "renewedVsTop": [
+    {
+      "label": "Renda mensal",
+      "medRenewed": 35000,
+      "medNot": 40000
+    },
+    {
+      "label": "Reserva de liquidez",
+      "medRenewed": 129500,
+      "medNot": 152500.5
+    },
+    {
+      "label": "Último aporte",
+      "medRenewed": 5000,
+      "medNot": 5000
+    },
+    {
+      "label": "Patrimônio (imóveis quitados)",
+      "medRenewed": 642500,
+      "medNot": 500000
+    },
+    {
+      "label": "Total de reuniões",
+      "medRenewed": 2,
+      "medNot": 1
+    }
+  ],
+  "npsCorrTop": [
+    {
+      "label": "Dias até primeira implementação",
+      "value": 0.476
+    },
+    {
+      "label": "Último aporte",
+      "value": -0.19
+    },
+    {
+      "label": "Reserva de liquidez",
+      "value": -0.1789
+    },
+    {
+      "label": "Qtd. renovações (ciclo−1)",
+      "value": 0.131
+    },
+    {
+      "label": "Taxa de presença (proxy)",
+      "value": -0.1254
+    }
+  ]
+}

@@ -1,0 +1,52 @@
+{
+  "generatedAt": "2026-07-31T21:25:31.485Z",
+  "counts": {
+    "Ativos": 1635,
+    "Congelados": 289,
+    "Cancelados com data": 444,
+    "Cancelados efetivados sem data": 94,
+    "Marcados sem confirmação": 809,
+    "Não informados reais": 0,
+    "Total": 3271
+  },
+  "audit": {
+    "onlyChurnEfetivadoAt": 0,
+    "onlyDistratoAssinadoAt": 0,
+    "onlyDistratoTextSigned": 94,
+    "onlyClientDataChurn": 386,
+    "multipleSources": 58,
+    "effectiveWithoutConfirmedDate": 94,
+    "totalDistinct": 538,
+    "cancellationsConfirmed": 152,
+    "clientsDataChurn": 399,
+    "overlapCancelAndDataChurn": 13,
+    "dateDivergence": {
+      "sameDay": 0,
+      "upTo1Day": 1,
+      "over1Day": 7,
+      "maxDiffDays": 62,
+      "clientsAffected": 8
+    }
+  },
+  "portfolioChart": {
+    "oldOthersTotal": 809,
+    "oldOthersReasons": {
+      "Status bruto Cancelado sem data encontrada": 809
+    },
+    "newMarkedWithoutEvidence": 809,
+    "newOthersTrueUnknown": 0
+  },
+  "transitions": {
+    "dataChurnClients": 399,
+    "onlyDataChurn": 386,
+    "overlap": 13,
+    "multiSource": 58,
+    "dateDivergence": {
+      "sameDay": 0,
+      "upTo1Day": 1,
+      "over1Day": 7,
+      "maxDiffDays": 62,
+      "clientsAffected": 8
+    }
+  }
+}

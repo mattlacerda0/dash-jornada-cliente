@@ -22,6 +22,8 @@ const CLIENTS_STATUS = { schema: SUPABASE, table: "clients", column: "status" };
 const CANCEL_SOURCES = [
   { schema: SUPABASE, table: "cancellations", column: "churn_efetivado_at" },
   { schema: SUPABASE, table: "cancellations", column: "distrato_assinado_at" },
+  { schema: SUPABASE, table: "cancellations", column: "distrato" },
+  { schema: SUPABASE, table: "clients", column: "data_churn" },
 ];
 const FINANCIAL_SEGMENT_SOURCES = [
   { schema: SUPABASE, table: "client_financial_data", column: "ultima_renda_mensal" },

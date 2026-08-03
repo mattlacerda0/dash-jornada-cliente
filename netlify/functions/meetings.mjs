@@ -16,7 +16,7 @@ import {
 import { loadMeetingTypesFromCsv } from "./_shared/meeting-types-csv.mjs";
 
 const CLIENT_SELECT =
-  "id,codigo,name,status,engenheiro_patrimonial,data_inicio_ciclo,created_at,cpf,cpf_digits,email,phone,phone_digits";
+  "id,codigo,name,status,engenheiro_patrimonial,data_inicio_ciclo,created_at,cpf,cpf_digits,email,phone,phone_digits,data_churn";
 const CALENDLY_SELECT =
   "id,client_id,calendly_event_uri,event_name,start_time,end_time,host_email,manually_linked";
 const MANUAL_SELECT =
@@ -453,7 +453,7 @@ function buildPayload(clients, calendlyRows, manualRows, attendanceRows, implRow
   const { map: attendanceMap } = buildAttendanceMap(attendanceRows);
   const { meetings, duplicateSkips } = consolidateMeetings(calendlyRows, manualRows, attendanceMap);
   if (duplicateSkips) qualityWarnings.push(`${duplicateSkips} reuniões potencialmente duplicadas foram deduplicadas.`);
-  const { map: cancelMap } = buildAnalyticalCancellationMap(cancellations);
+  const { map: cancelMap } = buildAnalyticalCancellationMap(cancellations, clients);
 
   const meetingUris = new Set(meetings.map((m) => m.externalUri).filter(Boolean));
   let orphanAttendance = 0;

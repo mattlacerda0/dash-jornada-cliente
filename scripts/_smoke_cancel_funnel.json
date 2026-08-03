@@ -1,0 +1,198 @@
+{
+  "effective": 538,
+  "orders": 124,
+  "intentions": 155,
+  "evidenceFunnel": [
+    {
+      "stage": "Intenção de cancelamento",
+      "totalDistinctClients": 155,
+      "sources": [
+        {
+          "key": "status",
+          "label": "Status «Nova intenção»",
+          "clients": 3
+        },
+        {
+          "key": "date",
+          "label": "intencao_registrada_at preenchida",
+          "clients": 155
+        }
+      ],
+      "overlapClients": 3,
+      "percentage": 28.7,
+      "ruleDescription": "Status «Nova intenção» OU intencao_registrada_at preenchida. Total = união distinta por cliente."
+    },
+    {
+      "stage": "Pedidos de cancelamento",
+      "totalDistinctClients": 124,
+      "sources": [
+        {
+          "key": "status",
+          "label": "Status «Pedido de cancelamento» (inexistente na dimensão)",
+          "clients": 0
+        },
+        {
+          "key": "date",
+          "label": "data_pedido preenchida",
+          "clients": 124
+        }
+      ],
+      "overlapClients": 0,
+      "percentage": 23,
+      "ruleDescription": "Na dimensão atual não há status «Pedido de cancelamento». Total usa data_pedido preenchida (clientes distintos). Se o status for criado, passa a entrar no OR."
+    },
+    {
+      "stage": "Cancelamento efetivado",
+      "totalDistinctClients": 538,
+      "sources": [
+        {
+          "key": "churn_efetivado_at",
+          "label": "Churn efetivado",
+          "clients": 3
+        },
+        {
+          "key": "distrato_assinado_at",
+          "label": "Distrato com data",
+          "clients": 50
+        },
+        {
+          "key": "distrato_assinado_text",
+          "label": "Distrato textual assinado",
+          "clients": 152
+        },
+        {
+          "key": "clients.data_churn",
+          "label": "Data churn em clients",
+          "clients": 399
+        }
+      ],
+      "overlapClients": 58,
+      "percentage": 99.6,
+      "ruleDescription": "churn_efetivado_at OU distrato_assinado_at OU distrato=Assinado OU clients.data_churn. Total = união distinta; barras não somam o cartão.",
+      "multiSourceClients": 58
+    }
+  ],
+  "statusFunnelExclusive": [
+    {
+      "stage": "Nova intenção",
+      "n": 3,
+      "order": 10
+    },
+    {
+      "stage": "Em retenção",
+      "n": 2,
+      "order": 11
+    },
+    {
+      "stage": "Decisão do cliente",
+      "n": 6,
+      "order": 12
+    },
+    {
+      "stage": "Saída em curso",
+      "n": 59,
+      "order": 13
+    },
+    {
+      "stage": "Em negociação",
+      "n": 0,
+      "order": 15
+    },
+    {
+      "stage": "Encerrado",
+      "n": 85,
+      "order": 16
+    },
+    {
+      "stage": "Status não informado",
+      "n": 385,
+      "order": null
+    }
+  ],
+  "statusAudit": [
+    {
+      "status_id": "cc6c6c42-67b0-4d77-9da6-db58ba9c3be2",
+      "status_name": "[LEGADO] Novo cancelamento",
+      "display_order": 0,
+      "funnel_type": "cancelamento",
+      "status_type": "aberto"
+    },
+    {
+      "status_id": "75340454-be52-4708-8b36-79dd948ed374",
+      "status_name": "[LEGADO] Novo Possível Cancelamento",
+      "display_order": 0,
+      "funnel_type": "retencao",
+      "status_type": "aberto"
+    },
+    {
+      "status_id": "c74e67b5-0dae-4c18-b800-c76c0d2f298f",
+      "status_name": "[LEGADO] Em negociação",
+      "display_order": 1,
+      "funnel_type": "cancelamento",
+      "status_type": "aberto"
+    },
+    {
+      "status_id": "eb012e15-26ee-43fc-adae-3f66e71b7d7b",
+      "status_name": "[LEGADO] Em retenção",
+      "display_order": 1,
+      "funnel_type": "retencao",
+      "status_type": "aberto"
+    },
+    {
+      "status_id": "4be38cc5-497d-4b34-b27f-c038d45b5453",
+      "status_name": "[LEGADO] Aguardando resposta",
+      "display_order": 2,
+      "funnel_type": "cancelamento",
+      "status_type": "aberto"
+    },
+    {
+      "status_id": "cb3e4559-f785-4970-b553-b8e0b0e0a8a1",
+      "status_name": "[LEGADO] Sem contato",
+      "display_order": 2,
+      "funnel_type": "retencao",
+      "status_type": "aberto"
+    },
+    {
+      "status_id": "53194d18-054e-40c3-a341-bc4d972f393f",
+      "status_name": "[LEGADO] Distrato Enviado",
+      "display_order": 3,
+      "funnel_type": "cancelamento",
+      "status_type": "aberto"
+    },
+    {
+      "status_id": "c7b479e3-465c-4b52-b2ba-5a496b0b5a86",
+      "status_name": "[LEGADO] Não retido",
+      "display_order": 3,
+      "funnel_type": "retencao",
+      "status_type": "finalizado"
+    },
+    {
+      "status_id": "c275a499-3af5-4b20-b3aa-369c0ff9c499",
+      "status_name": "[LEGADO] Reembolso",
+      "display_order": 4,
+      "funnel_type": "retencao",
+      "status_type": "finalizado"
+    },
+    {
+      "status_id": "a3eade65-a7b4-4c6c-9aa6-803d9c87969a",
+      "status_name": "[LEGADO] Churn Efetivado",
+      "display_order": 4,
+      "funnel_type": "cancelamento",
+      "status_type": "finalizado"
+    },
+    {
+      "status_id": "b5878b47-996e-4e7e-a5ed-90a665c86e4b",
+      "status_name": "[LEGADO] Retido",
+      "display_order": 5,
+      "funnel_type": "retencao",
+      "status_type": "finalizado"
+    },
+    {
+      "status_id": "a1c0e100-0000-0000-0000-000000000001",
+      "status_name": "Nova intenção",
+      "display_order": 10,
+      "funnel_type": "cancelamento",
+      "status_type": "aberto"
+    }
+  ]
+}

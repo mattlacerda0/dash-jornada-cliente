@@ -3,12 +3,14 @@
  *
  * Intenção  = intencao_registrada_at
  * Pedido    = data_pedido
- * Efetivado = churn_efetivado_at OR distrato_assinado_at  (só isso tira da carteira ativa)
+ * Efetivado = churn_efetivado_at OR distrato_assinado_at OR distrato='Assinado'
+ *             OR clients.data_churn (via mapa analítico consolidado)
  *
  * data_pedido / intencao_registrada_at NÃO definem cancelamento analítico.
  */
 import {
   getAnalyticalCancellation,
+  isDistratoTextSigned,
   parseFlexibleDate,
 } from "./analytical-cancellation.mjs";
 import { categorizeCancellationReason } from "./cancellation-reason-category.mjs";
@@ -43,32 +45,69 @@ export const CANCELLATION_PROCESS_SELECT = [
   "stage_entered_at",
 ].join(",");
 
-/** Entrada no processo: pedido; se ausente, intenção. Não é data de cancelamento efetivo. */
-export function resolveProcessEntryDate(pedidoDate, intencaoDate) {
+/**
+ * Entrada no processo (não é data de cancelamento efetivo):
+ * coalesce(data_pedido, intencao_registrada_at, stage_entered_at).
+ * stage_entered_at só entra quando pedido/intenção estão vazios.
+ */
+export function resolveProcessEntryDate(pedidoDate, intencaoDate, stageEnteredAt = null) {
   if (pedidoDate) return { date: pedidoDate, source: "data_pedido" };
   if (intencaoDate) return { date: intencaoDate, source: "intencao_registrada_at" };
+  if (stageEnteredAt) return { date: stageEnteredAt, source: "stage_entered_at" };
   return { date: null, source: null };
 }
 
-export function resolveAnalyticalProcessSituation({ hasEfetivado, hasPedido, hasIntencao }) {
-  if (hasEfetivado) return "Cancelamento efetivado";
-  if (hasPedido || hasIntencao) return "Intenção/pedido em andamento";
+export function resolveAnalyticalProcessSituation({
+  hasEfetivado,
+  hasConfirmedDate = true,
+  hasOffboarding = false,
+  hasRetencao = false,
+  hasIntentionOrPedido = false,
+  hasPedido = false,
+  hasIntencao = false,
+}) {
+  if (hasEfetivado) {
+    return hasConfirmedDate
+      ? "Cancelamento efetivado com data"
+      : "Cancelamento efetivado sem data";
+  }
+  if (hasOffboarding) return "Em offboarding";
+  if (hasRetencao) return "Em retenção";
+  if (hasIntentionOrPedido || hasPedido || hasIntencao) return "Intenção/pedido em andamento";
   return "Sem etapa identificada";
 }
 
 export const STAGE = {
   EFETIVADO: "Cancelamento efetivado",
+  OFFBOARDING: "Offboarding",
+  RETENCAO: "Retenção",
+  INTENCAO_PEDIDO: "Intenção/pedido de cancelamento",
+  /** @deprecated use INTENCAO_PEDIDO — mantido para compatibilidade de filtros legados */
   PEDIDO: "Pedido de cancelamento",
+  /** @deprecated use INTENCAO_PEDIDO */
   INTENCAO: "Intenção de cancelamento",
   NENHUMA: "Sem etapa identificada",
 };
 
 export const STAGE_KEYS = {
   EFETIVADO: "efetivado",
+  OFFBOARDING: "offboarding",
+  RETENCAO: "retencao",
+  INTENCAO_PEDIDO: "intencao_pedido",
   PEDIDO: "pedido",
   INTENCAO: "intencao",
   NENHUMA: "nenhuma",
 };
+
+/** Status de cancellation_statuses que contam como intenção/pedido. */
+export function isIntentionPedidoStatusName(raw) {
+  const t = foldToken(raw);
+  if (!t) return false;
+  if (t.includes("nova inten")) return true;
+  if (t.includes("pedido") && t.includes("cancel")) return true;
+  if (t === "intencao" || t === "pedido") return true;
+  return false;
+}
 
 function blankToNull(value) {
   if (value == null) return null;
@@ -114,11 +153,6 @@ export function normalizeEstagioCliente(raw) {
   return blankToNull(raw) ? String(raw).trim() : "Não informado";
 }
 
-function isDistratoTextSigned(raw) {
-  const t = foldToken(raw);
-  return t === "assinado" || t.includes("assinado");
-}
-
 function startOfDay(date) {
   return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
 }
@@ -135,16 +169,33 @@ function validPositiveDays(start, end) {
 }
 
 function stageRank(stageKey) {
-  if (stageKey === STAGE_KEYS.EFETIVADO) return 3;
-  if (stageKey === STAGE_KEYS.PEDIDO) return 2;
-  if (stageKey === STAGE_KEYS.INTENCAO) return 1;
+  if (stageKey === STAGE_KEYS.EFETIVADO) return 5;
+  if (stageKey === STAGE_KEYS.OFFBOARDING) return 4;
+  if (stageKey === STAGE_KEYS.RETENCAO) return 3;
+  if (stageKey === STAGE_KEYS.INTENCAO_PEDIDO || stageKey === STAGE_KEYS.PEDIDO || stageKey === STAGE_KEYS.INTENCAO) {
+    return 2;
+  }
   return 0;
 }
 
-function resolveExclusiveStage({ hasEfetivado, hasPedido, hasIntencao }) {
+/**
+ * Etapa atual exclusiva (um cliente = uma barra):
+ * efetivado > offboarding > retenção > intenção/pedido > nenhuma
+ */
+function resolveExclusiveStage({
+  hasEfetivado,
+  hasOffboarding = false,
+  hasRetencao = false,
+  hasIntentionOrPedido = false,
+  hasPedido = false,
+  hasIntencao = false,
+}) {
   if (hasEfetivado) return { key: STAGE_KEYS.EFETIVADO, label: STAGE.EFETIVADO };
-  if (hasPedido) return { key: STAGE_KEYS.PEDIDO, label: STAGE.PEDIDO };
-  if (hasIntencao) return { key: STAGE_KEYS.INTENCAO, label: STAGE.INTENCAO };
+  if (hasOffboarding) return { key: STAGE_KEYS.OFFBOARDING, label: STAGE.OFFBOARDING };
+  if (hasRetencao) return { key: STAGE_KEYS.RETENCAO, label: STAGE.RETENCAO };
+  if (hasIntentionOrPedido || hasPedido || hasIntencao) {
+    return { key: STAGE_KEYS.INTENCAO_PEDIDO, label: STAGE.INTENCAO_PEDIDO };
+  }
   return { key: STAGE_KEYS.NENHUMA, label: STAGE.NENHUMA };
 }
 
@@ -160,10 +211,10 @@ function parseDateOrInvalid(raw, invalidBag) {
 }
 
 /**
- * Uma linha analítica por client_id a partir de public.cancellations.
+ * Uma linha analítica por client_id a partir de public.cancellations (+ clients.data_churn).
  * Por padrão ignora archived_at preenchido.
  */
-export function buildCancellationProcessMap(cancellations, { includeArchived = false } = {}) {
+export function buildCancellationProcessMap(cancellations, { includeArchived = false, clients = [] } = {}) {
   const map = new Map();
   const activeCounts = new Map();
   let rowsWithoutClientId = 0;
@@ -208,17 +259,22 @@ export function buildCancellationProcessMap(cancellations, { includeArchived = f
       ...row,
       churn_efetivado_at: churnParsed.date || row.churn_efetivado_at,
       distrato_assinado_at: distratoParsed.date || row.distrato_assinado_at,
+      distrato: row.distrato,
     });
 
-    // Prefer parsed dates for stages
     const churnDate = churnParsed.date;
     const distratoDate = distratoParsed.date;
     const pedidoDate = pedidoParsed.date;
     const intencaoDate = intencaoParsed.date;
+    // Efetivado: churn/distrato dates OU distrato texto Assinado (getAnalyticalCancellation)
     const hasEfetivado = Boolean(churnDate || distratoDate || analytical.isCancelled);
     const hasPedido = Boolean(pedidoDate);
     const hasIntencao = Boolean(intencaoDate);
-    const exclusive = resolveExclusiveStage({ hasEfetivado, hasPedido, hasIntencao });
+    const retentionStart = enteredRetencao.date || retencaoIniciada.date;
+    const hasRetencao = Boolean(retentionStart) || toBool(row.passou_retencao) === true;
+    const hasOffboarding = Boolean(enteredOffboarding.date);
+    // hasIntentionOrPedido: datas; status de intenção/pedido é enriquecido no endpoint.
+    const hasIntentionOrPedidoDates = hasPedido || hasIntencao;
 
     const distratoText = blankToNull(row.distrato);
     if (isDistratoTextSigned(distratoText) && !distratoDate) {
@@ -245,7 +301,6 @@ export function buildCancellationProcessMap(cancellations, { includeArchived = f
       blankToNull(row.responsavel_name) || blankToNull(row.assigned_to) || null;
     const valorPago = toNumber(row.valor_pago);
     const valorReembolso = toNumber(row.valor_a_reembolsar);
-    const retentionStart = enteredRetencao.date || retencaoIniciada.date;
 
     const chronologicalIssues = [];
     if (intencaoDate && pedidoDate && pedidoDate < intencaoDate) {
@@ -258,12 +313,21 @@ export function buildCancellationProcessMap(cancellations, { includeArchived = f
       chronologicalIssues.push("efetivado_antes_intencao");
     }
 
-    const processEntry = resolveProcessEntryDate(pedidoDate, intencaoDate);
-    const inProcessCurrently = (hasPedido || hasIntencao) && !hasEfetivado;
+    const processEntry = resolveProcessEntryDate(pedidoDate, intencaoDate, stageEntered.date);
+    const hasIntentionOrPedido = hasIntentionOrPedidoDates;
+    const exclusive = resolveExclusiveStage({
+      hasEfetivado,
+      hasOffboarding,
+      hasRetencao,
+      hasIntentionOrPedido,
+    });
+    const inProcessCurrently = hasIntentionOrPedido && !hasEfetivado;
     const analyticalSituation = resolveAnalyticalProcessSituation({
       hasEfetivado,
-      hasPedido,
-      hasIntencao,
+      hasConfirmedDate: analytical.hasConfirmedDate !== false && Boolean(analytical.cancellationDate),
+      hasOffboarding,
+      hasRetencao,
+      hasIntentionOrPedido,
     });
 
     const candidate = {
@@ -282,9 +346,13 @@ export function buildCancellationProcessMap(cancellations, { includeArchived = f
       distratoAssinadoAt: distratoDate,
       analyticalCancellationAt: analytical.cancellationDate || null,
       analyticalSource: analytical.source || null,
+      hasConfirmedDate: analytical.hasConfirmedDate === true,
       hasIntencao,
       hasPedido,
+      hasIntentionOrPedido,
       hasEfetivado,
+      hasRetencao,
+      hasOffboarding,
       exclusiveStageKey: exclusive.key,
       exclusiveStage: exclusive.label,
       stageRank: stageRank(exclusive.key),
@@ -340,24 +408,48 @@ export function buildCancellationProcessMap(cancellations, { includeArchived = f
       const hasIntencao = primary.hasIntencao || secondary.hasIntencao;
       const hasPedido = primary.hasPedido || secondary.hasPedido;
       const hasEfetivado = primary.hasEfetivado || secondary.hasEfetivado;
+      const hasRetencao = primary.hasRetencao || secondary.hasRetencao
+        || primary.passouRetencao === true || secondary.passouRetencao === true;
+      const hasOffboarding = Boolean(
+        primary.hasOffboarding || secondary.hasOffboarding
+        || primary.enteredOffboardingAt || secondary.enteredOffboardingAt,
+      );
       const intencaoAt = primary.intencaoAt || secondary.intencaoAt;
       const pedidoAt = primary.pedidoAt || secondary.pedidoAt;
-      const processEntry = resolveProcessEntryDate(pedidoAt, intencaoAt);
-      const excl = resolveExclusiveStage({ hasEfetivado, hasPedido, hasIntencao });
+      const stageEnteredAt = primary.stageEnteredAt || secondary.stageEnteredAt;
+      const processEntry = resolveProcessEntryDate(pedidoAt, intencaoAt, stageEnteredAt);
+      const hasIntentionOrPedido = hasPedido || hasIntencao
+        || primary.hasIntentionOrPedido || secondary.hasIntentionOrPedido;
+      const excl = resolveExclusiveStage({
+        hasEfetivado,
+        hasOffboarding,
+        hasRetencao,
+        hasIntentionOrPedido,
+      });
+      const hasConfirmedDate = Boolean(
+        primary.hasConfirmedDate || secondary.hasConfirmedDate
+        || primary.analyticalCancellationAt || secondary.analyticalCancellationAt,
+      );
       return {
         ...primary,
         hasIntencao,
         hasPedido,
+        hasIntentionOrPedido,
         hasEfetivado,
+        hasRetencao,
+        hasOffboarding,
         intencaoAt,
         pedidoAt,
+        stageEnteredAt,
         processEntryAt: processEntry.date,
         processEntrySource: processEntry.source,
-        inProcessCurrently: (hasPedido || hasIntencao) && !hasEfetivado,
+        inProcessCurrently: hasIntentionOrPedido && !hasEfetivado,
         analyticalSituation: resolveAnalyticalProcessSituation({
           hasEfetivado,
-          hasPedido,
-          hasIntencao,
+          hasConfirmedDate,
+          hasOffboarding,
+          hasRetencao,
+          hasIntentionOrPedido,
         }),
         churnEfetivadoAt: primary.churnEfetivadoAt || secondary.churnEfetivadoAt,
         distratoAssinadoAt: primary.distratoAssinadoAt || secondary.distratoAssinadoAt,
@@ -368,6 +460,8 @@ export function buildCancellationProcessMap(cancellations, { includeArchived = f
           primary.passouRetencao === true || secondary.passouRetencao === true
             ? true
             : primary.passouRetencao ?? secondary.passouRetencao,
+        retentionStartAt: primary.retentionStartAt || secondary.retentionStartAt,
+        enteredOffboardingAt: primary.enteredOffboardingAt || secondary.enteredOffboardingAt,
         isCritical: primary.isCritical || secondary.isCritical,
         exclusiveStageKey: excl.key,
         exclusiveStage: excl.label,
@@ -384,6 +478,100 @@ export function buildCancellationProcessMap(cancellations, { includeArchived = f
     } else {
       map.set(clientKey, mergeProcessFields(current, candidate));
     }
+  }
+
+  // União com clients.data_churn (efetivação sem linha em cancellations ou reforço de data)
+  for (const client of clients || []) {
+    const clientKey = blankToNull(client?.id);
+    if (!clientKey) continue;
+    const dataChurn = parseFlexibleDate(client.data_churn);
+    if (!dataChurn) continue;
+    const key = String(clientKey);
+    const existing = map.get(key);
+    if (existing) {
+      if (!existing.hasEfetivado) {
+        existing.hasEfetivado = true;
+        existing.analyticalCancellationAt = existing.analyticalCancellationAt || dataChurn;
+        existing.analyticalSource = existing.analyticalSource || "clients.data_churn";
+        existing.hasConfirmedDate = true;
+        const excl = resolveExclusiveStage({
+          hasEfetivado: true,
+          hasOffboarding: existing.hasOffboarding,
+          hasRetencao: existing.hasRetencao,
+          hasIntentionOrPedido: existing.hasIntentionOrPedido || existing.hasPedido || existing.hasIntencao,
+        });
+        existing.exclusiveStageKey = excl.key;
+        existing.exclusiveStage = excl.label;
+        existing.stageRank = stageRank(excl.key);
+        existing.analyticalSituation = resolveAnalyticalProcessSituation({
+          hasEfetivado: true,
+          hasConfirmedDate: true,
+          hasOffboarding: existing.hasOffboarding,
+          hasRetencao: existing.hasRetencao,
+          hasIntentionOrPedido: existing.hasIntentionOrPedido || existing.hasPedido || existing.hasIntencao,
+        });
+        existing.inProcessCurrently = false;
+      } else if (!existing.analyticalCancellationAt) {
+        // Efetivado por texto Assinado sem data → data_churn preenche
+        existing.analyticalCancellationAt = dataChurn;
+        existing.analyticalSource = existing.analyticalSource || "clients.data_churn";
+        existing.hasConfirmedDate = true;
+        existing.analyticalSituation = resolveAnalyticalProcessSituation({
+          hasEfetivado: true,
+          hasConfirmedDate: true,
+          hasOffboarding: existing.hasOffboarding,
+          hasRetencao: existing.hasRetencao,
+          hasIntentionOrPedido: existing.hasIntentionOrPedido,
+        });
+      }
+      existing.hasClientDataChurn = true;
+      continue;
+    }
+    map.set(key, {
+      clientId: key,
+      hasEfetivado: true,
+      hasPedido: false,
+      hasIntencao: false,
+      hasIntentionOrPedido: false,
+      hasRetencao: false,
+      hasOffboarding: false,
+      analyticalCancellationAt: dataChurn,
+      analyticalSource: "clients.data_churn",
+      hasConfirmedDate: true,
+      hasClientDataChurn: true,
+      exclusiveStageKey: STAGE_KEYS.EFETIVADO,
+      exclusiveStage: STAGE.EFETIVADO,
+      stageRank: stageRank(STAGE_KEYS.EFETIVADO),
+      analyticalSituation: "Cancelamento efetivado com data",
+      inProcessCurrently: false,
+      intencaoAt: null,
+      pedidoAt: null,
+      processEntryAt: null,
+      processEntrySource: null,
+      motivo: null,
+      motivoCategoriaDb: null,
+      reasonCategory: "Não informado",
+      passouRetencao: null,
+      retentionStartAt: null,
+      desfecho: null,
+      isRetido: false,
+      hasDesfecho: false,
+      hasTratativa: false,
+      isCritical: false,
+      tratativa: null,
+      responsavel: null,
+      valorPago: null,
+      valorReembolso: null,
+      estagioCliente: "Não informado",
+      enteredOffboardingAt: null,
+      stageEnteredAt: null,
+      statusId: null,
+      distratoTextSignedWithoutDate: false,
+      chronologicalIssues: [],
+      archivedAt: null,
+      updatedAt: dataChurn,
+      cancellationRowId: null,
+    });
   }
 
   const multiples = new Set(

@@ -9,13 +9,20 @@ import { computeGeneralDataPayload } from "../general-data.mjs";
 import {
   computeEpPerformancePayload,
 } from "../ep-performance.mjs";
-import {
-  computeStatisticalCrossesPayload,
-} from "../statistical-crosses.mjs";
 import { computePharusEpMeetingsPayload } from "../pharus-ep-meetings.mjs";
 import { computeSupportPayload } from "../support.mjs";
 import { computeCancellationsPayload } from "../cancellations.mjs";
 import { computePharusMechanismsPayload } from "../pharus-mechanisms.mjs";
+
+/** Lazy import — Cruzamentos não pode bloquear o carregamento do catálogo/assistente. */
+let statisticalCrossesComputePromise = null;
+async function computeStatisticalCrossesPayloadLazy(options = {}) {
+  if (!statisticalCrossesComputePromise) {
+    statisticalCrossesComputePromise = import("../statistical-crosses.mjs").then((m) => m.computeStatisticalCrossesPayload);
+  }
+  const compute = await statisticalCrossesComputePromise;
+  return compute(options);
+}
 
 function getByPath(obj, path) {
   if (!obj || !path) return undefined;
@@ -73,7 +80,7 @@ export const portalDomainExecutors = {
   statistical_crosses: {
     id: "statistical_crosses",
     label: "Cruzamentos Estatísticos",
-    compute: computeStatisticalCrossesPayload,
+    compute: computeStatisticalCrossesPayloadLazy,
   },
   pharus_ep_meetings: {
     id: "pharus_ep_meetings",
@@ -105,7 +112,7 @@ export const portalMetricRegistry = {
     unit: "clients",
     aggregation: "count",
     definition:
-      "Clientes com status analítico Ativo: status bruto ativo e sem churn_efetivado_at nem distrato_assinado_at (registro não arquivado).",
+      "Clientes com status analítico Ativo: status bruto ativo e sem a regra consolidada (churn_efetivado_at OU distrato_assinado_at OU distrato='Assinado' OU clients.data_churn (união distinta por client_id; não arquivado)).",
   },
   active_or_frozen_clients: {
     domain: "general",
@@ -136,7 +143,7 @@ export const portalMetricRegistry = {
     unit: "clients",
     aggregation: "count",
     definition:
-      "Cliente cancelado é aquele que possui churn efetivado ou distrato assinado em registro não arquivado.",
+      "Cliente cancelado é aquele que possui evidência consolidada: churn_efetivado_at OU distrato_assinado_at OU distrato='Assinado' OU clients.data_churn (união distinta por client_id; não arquivado). prioridade: churn_efetivado_at > distrato_assinado_at > clients.data_churn; distrato Assinado sem data = efetivado sem data confirmada.",
   },
   frozen_clients: {
     domain: "general",
@@ -146,17 +153,17 @@ export const portalMetricRegistry = {
     unit: "clients",
     aggregation: "count",
     definition:
-      "Cliente com status bruto congelado e sem churn efetivado ou distrato assinado.",
+      "Cliente com status bruto congelado e sem a regra consolidada (churn_efetivado_at OU distrato_assinado_at OU distrato='Assinado' OU clients.data_churn (união distinta por client_id; não arquivado)).",
   },
   cancelled_without_confirmed_date: {
     domain: "general",
-    label: "Cancelados sem data confirmada",
+    label: "Marcados como cancelados sem confirmação",
     payloadPath: "summary.cancelledWithoutConfirmedDate",
     sampleSizePath: "summary.totalClients",
     unit: "clients",
     aggregation: "count",
     definition:
-      "Status bruto Cancelado/Churn sem churn_efetivado_at nem distrato_assinado_at.",
+      "Status bruto Cancelado/Churn sem a regra consolidada (churn_efetivado_at OU distrato_assinado_at OU distrato='Assinado' OU clients.data_churn (união distinta por client_id; não arquivado)).",
     aliases: ["cancelados sem data", "churn sem data confirmada"],
   },
   non_active_clients: {
@@ -959,26 +966,80 @@ export const portalMetricRegistry = {
     sampleSizePath: "summary.analyzedClients",
     unit: "association",
     aggregation: "top",
-    definition: "Maior magnitude de associação (não causalidade).",
+    definition: "Maior magnitude de associação observada com cancelamento efetivado (não causalidade).",
+    aliases: [
+      "maior associacao com churn",
+      "variaveis associadas ao cancelamento",
+      "correlacao com churn",
+    ],
+  },
+  sc_active_clients: {
+    domain: "statistical_crosses",
+    label: "Clientes ativos na análise",
+    payloadPath: "summary.activeClients",
+    sampleSizePath: "summary.analyzedClients",
+    unit: "clients",
+    aggregation: "count",
+    definition: "Status analítico Ativo sem cancelamento efetivado.",
+  },
+  sc_renewed_clients: {
+    domain: "statistical_crosses",
+    label: "Clientes renovados (ciclo > 1)",
+    payloadPath: "summary.renewedClients",
+    sampleSizePath: "summary.analyzedClients",
+    unit: "clients",
+    aggregation: "count",
+    definition: "clients.ciclo > 1 — presença de mais de um ciclo, não taxa contratual formal.",
+    aliases: ["clientes renovados", "associacao com renovacao", "ciclo maior que 1"],
+  },
+  sc_cycle1_clients: {
+    domain: "statistical_crosses",
+    label: "Clientes no ciclo 1",
+    payloadPath: "summary.cycle1Clients",
+    sampleSizePath: "summary.analyzedClients",
+    unit: "clients",
+    aggregation: "count",
+    definition: "clients.ciclo = 1 (não renovados na métrica de ciclos).",
   },
   sc_nps: {
     domain: "statistical_crosses",
     label: "NPS nos cruzamentos",
     payloadPath: "summary.npsIndex",
-    sampleSizePath: "summary.npsResponses",
+    sampleSizePath: "summary.validNpsResponses",
     unit: "index",
     aggregation: "value",
     definition:
-      "Índice NPS preditivo (respostas após cancelamento excluídas). Não é média da nota.",
+      "Índice NPS preditivo (% Promotores − % Detratores). Respostas após cancelamento excluídas. Não é média da nota.",
+    aliases: ["nps e cancelamento", "relacao nps churn", "como nps se relaciona"],
+  },
+  sc_nps_responses: {
+    domain: "statistical_crosses",
+    label: "Respostas NPS válidas",
+    payloadPath: "summary.validNpsResponses",
+    sampleSizePath: "summary.analyzedClients",
+    unit: "clients",
+    aggregation: "count",
+    definition: "Última resposta NPS válida por cliente no recorte preditivo.",
   },
   sc_confirmed_cancellations: {
     domain: "statistical_crosses",
-    label: "Cancelamentos confirmados na análise",
+    label: "Cancelamentos efetivados na análise",
     payloadPath: "summary.confirmedCancellations",
     sampleSizePath: "summary.analyzedClients",
     unit: "clients",
     aggregation: "count",
-    definition: "Eventos = churn efetivado ou distrato assinado.",
+    definition:
+      "Cancelamento efetivado: churn_efetivado_at OU distrato_assinado_at OU distrato Assinado OU clients.data_churn.",
+  },
+  sc_top_auc: {
+    domain: "statistical_crosses",
+    label: "Maior AUC univariada",
+    payloadPath: "univariatePredictivePower",
+    sampleSizePath: "summary.analyzedClients",
+    unit: "label",
+    aggregation: "top",
+    definition: "Maior AUC ajustada (max(AUC, 1−AUC)) entre variáveis elegíveis — poder discriminativo, não precisão.",
+    aliases: ["maior auc", "poder preditivo individual", "auc univariada"],
   },
   sc_excluded_variables: {
     domain: "statistical_crosses",
@@ -987,7 +1048,8 @@ export const portalMetricRegistry = {
     sampleSizePath: "summary.analyzedClients",
     unit: "label",
     aggregation: "top",
-    definition: "Variáveis fora da análise por cobertura/amostra/leakage.",
+    definition: "Variáveis fora da análise por leakage, cobertura, amostra, constante ou inválida.",
+    aliases: ["variaveis excluidas", "por que variavel foi excluida"],
   },
   sc_survival: {
     domain: "statistical_crosses",
@@ -996,7 +1058,23 @@ export const portalMetricRegistry = {
     sampleSizePath: "summary.analyzedClients",
     unit: "label",
     aggregation: "trend",
-    definition: "Kaplan–Meier com cancelamento confirmado como evento.",
+    definition:
+      "Kaplan–Meier: evento = cancelamento efetivado com data; censura = data de corte. Probabilidade de permanência ≠ % ativos sem explicação.",
+    aliases: [
+      "curva de sobrevivencia",
+      "probabilidade de permanencia",
+      "kaplan meier",
+      "quantos clientes na curva",
+    ],
+  },
+  sc_median_survival: {
+    domain: "statistical_crosses",
+    label: "Mediana de sobrevivência",
+    payloadPath: "survival.overall.medianSurvival",
+    sampleSizePath: "survival.overall.nStart",
+    unit: "days",
+    aggregation: "value",
+    definition: "Tempo (dias) em que a curva KM atinge 50%, se atingido.",
   },
 
   /* ---------- CANCELAMENTO (BASE QV) ---------- */
@@ -1008,7 +1086,7 @@ export const portalMetricRegistry = {
     unit: "clients",
     aggregation: "count",
     definition:
-      "Clientes com churn_efetivado_at ou distrato_assinado_at (não arquivados). Intenção/pedido não contam.",
+      "Clientes com churn_efetivado_at ou distrato_assinado_at ou distrato Assinado ou clients.data_churn ou distrato Assinado ou clients.data_churn (não arquivados). Intenção/pedido não contam.",
   },
   clients_in_cancellation_process: {
     domain: "cancellations",

@@ -44,6 +44,56 @@ export function round3(n) {
   return Math.round(n * 1000) / 1000;
 }
 
+/** Cobertura percentual (0–100); zero válidos é 0, não null. */
+export function coveragePct(valid, total) {
+  if (total == null || !Number.isFinite(total) || total <= 0) return null;
+  if (valid == null || !Number.isFinite(valid) || valid < 0) return 0;
+  return Math.round((valid / total) * 1000) / 10;
+}
+
+function averageRanks(values) {
+  const indexed = values.map((v, i) => ({ v, i })).sort((a, b) => a.v - b.v);
+  const ranks = new Array(values.length);
+  let i = 0;
+  while (i < indexed.length) {
+    let j = i;
+    while (j < indexed.length && indexed[j].v === indexed[i].v) j += 1;
+    const avg = (i + 1 + j) / 2;
+    for (let k = i; k < j; k += 1) ranks[indexed[k].i] = avg;
+    i = j;
+  }
+  return ranks;
+}
+
+/** Correlação de Spearman (ranks + Pearson); empates usam rank médio. */
+export function spearman(x, y) {
+  const pairs = [];
+  const nIn = Math.min(x?.length || 0, y?.length || 0);
+  for (let i = 0; i < nIn; i += 1) {
+    if (x[i] == null || !Number.isFinite(Number(x[i]))) continue;
+    if (y[i] == null || !Number.isFinite(Number(y[i]))) continue;
+    pairs.push({ x: Number(x[i]), y: Number(y[i]) });
+  }
+  const n = pairs.length;
+  if (n < 3) return { rho: null, n, warning: "sample_too_small" };
+  const rx = averageRanks(pairs.map((p) => p.x));
+  const ry = averageRanks(pairs.map((p) => p.y));
+  const mx = mean(rx);
+  const my = mean(ry);
+  let num = 0;
+  let dx = 0;
+  let dy = 0;
+  for (let i = 0; i < n; i += 1) {
+    const a = rx[i] - mx;
+    const b = ry[i] - my;
+    num += a * b;
+    dx += a * a;
+    dy += b * b;
+  }
+  if (!dx || !dy) return { rho: null, n, warning: "zero_variance" };
+  return { rho: round4(num / Math.sqrt(dx * dy)), n, warning: null };
+}
+
 /** Mann–Whitney U (two-sided p via normal approximation with tie correction). */
 export function mannWhitney(groupA, groupB) {
   const a = groupA.filter((v) => v != null && Number.isFinite(v));

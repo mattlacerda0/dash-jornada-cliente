@@ -1,0 +1,104 @@
+{
+  "baseQv": 136,
+  "crossSourceCoverage": {
+    "baseQvClients": 136,
+    "appPharusUsers": 58,
+    "matchedInBoth": 0,
+    "baseQvOnly": 136,
+    "appPharusOnly": 58,
+    "unmatchedAppPharus": 58,
+    "ambiguousMatches": 0,
+    "nameOnlyMatches": 0,
+    "consolidatedUniquePeople": null,
+    "consolidationMode": "gross_sum",
+    "matchPriority": [
+      "shared_id",
+      "cpf",
+      "email",
+      "phone",
+      "name"
+    ]
+  },
+  "crossSourceRowsSample": [
+    {
+      "pharusUserId": "e0348c21-7451-441a-afe6-91079037d6f5",
+      "pharusName": "Abigail Giansante",
+      "pharusEmail": "abigailsantana085@gmail.com",
+      "cpfMasked": null,
+      "foundInBaseQv": false,
+      "clientId": null,
+      "clientCode": null,
+      "engineer": null,
+      "matchMethod": null,
+      "matchStatus": "unmatched",
+      "pharusMechanismCount": 11,
+      "qvMechanismCount": 0
+    },
+    {
+      "pharusUserId": "ae5b9323-860a-4d79-a096-bca214d7e061",
+      "pharusName": "Adriano Pedrosa",
+      "pharusEmail": "adrianopedrosajr@gmail.com",
+      "cpfMasked": null,
+      "foundInBaseQv": false,
+      "clientId": null,
+      "clientCode": null,
+      "engineer": null,
+      "matchMethod": null,
+      "matchStatus": "unmatched",
+      "pharusMechanismCount": 7,
+      "qvMechanismCount": 0
+    },
+    {
+      "pharusUserId": "aae466ce-2b5b-477a-a2a3-868e1e00457b",
+      "pharusName": "Alejandro Lusardo Bo",
+      "pharusEmail": "alejandrolusardo@hotmail.com",
+      "cpfMasked": null,
+      "foundInBaseQv": false,
+      "clientId": null,
+      "clientCode": null,
+      "engineer": null,
+      "matchMethod": null,
+      "matchStatus": "unmatched",
+      "pharusMechanismCount": 4,
+      "qvMechanismCount": 0
+    },
+    {
+      "pharusUserId": "87fc4b11-fd15-4905-bc74-3583a9b3a9e5",
+      "pharusName": "Allan Borges",
+      "pharusEmail": "allan.borgez@gmail.com",
+      "cpfMasked": null,
+      "foundInBaseQv": false,
+      "clientId": null,
+      "clientCode": null,
+      "engineer": null,
+      "matchMethod": null,
+      "matchStatus": "unmatched",
+      "pharusMechanismCount": 5,
+      "qvMechanismCount": 0
+    },
+    {
+      "pharusUserId": "cd87a934-8384-4dea-bd7c-40d2bc590fa3",
+      "pharusName": "Anderson Braga",
+      "pharusEmail": "anderson.braga@cettps.com.br",
+      "cpfMasked": null,
+      "foundInBaseQv": false,
+      "clientId": null,
+      "clientCode": null,
+      "engineer": null,
+      "matchMethod": null,
+      "matchStatus": "unmatched",
+      "pharusMechanismCount": 7,
+      "qvMechanismCount": 0
+    }
+  ],
+  "warnings": {
+    "pharusMissingIdentity": 0,
+    "ambiguousMatches": 0,
+    "unmatched": 58,
+    "nameOnlyMatches": 0,
+    "emailDuplicates": 0,
+    "cpfDuplicates": 0,
+    "phoneDuplicates": 0,
+    "qvMultiUser": 0
+  }
+}

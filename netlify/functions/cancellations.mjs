@@ -2,10 +2,8 @@
  * Cancelamentos — processo operacional (BASE QV / public.*).
  *
  * Universo: 1 linha por client_id não arquivado em public.cancellations
- * (intenção, pedido ou efetivado). Cancelamento analítico = só churn/distrato.
- *
- * App Pharus (mecanismos / último acesso) fica fora desta versão.
- * Reuniões antes do cancelamento: presença confirmada (compareceu).
+ * (intenção, pedido ou efetivado) ∪ clients com data_churn.
+ * Cancelamento efetivado = churn/distrato/data_churn (união distinta).
  */
 import { requireCorporateAuth } from "./_shared/auth.mjs";
 import { dataConfigurationError } from "./_shared/env.mjs";
@@ -14,7 +12,11 @@ import {
   CANCELLATION_REASON_CATEGORIES,
   categorizeCancellationReason,
 } from "./_shared/cancellation-reason-category.mjs";
-import { parseFlexibleDate } from "./_shared/analytical-cancellation.mjs";
+import {
+  parseFlexibleDate,
+  buildAnalyticalCancellationMap,
+  resolveAnalyticalStatusFromMaps,
+} from "./_shared/analytical-cancellation.mjs";
 import {
   CANCELLATION_PROCESS_SELECT,
   STAGE,
@@ -26,13 +28,15 @@ import {
   blankToNull,
   toNumber,
   resolveAnalyticalProcessSituation,
+  isIntentionPedidoStatusName,
 } from "./_shared/cancellation-process.mjs";
+import { buildOrEvidenceGroup, statusNameMatches } from "./_shared/or-evidence.mjs";
 
 const STATUS_DIM_SELECT = "id,name,color,display_order,status_type,funnel_type,created_at";
 const STATUS_UNKNOWN_LABEL = "Status não informado";
 
 const CLIENT_SELECT =
-  "id,codigo,name,status,data_inicio_ciclo,created_at,engenheiro_patrimonial,segmentacao,motivo_churn";
+  "id,codigo,name,status,data_inicio_ciclo,created_at,engenheiro_patrimonial,segmentacao,motivo_churn,data_churn";
 const CANCEL_SELECT = CANCELLATION_PROCESS_SELECT;
 const FINANCIAL_SELECT =
   "id,client_id,ultima_renda_mensal,ultimo_aporte,reserva_liquidez,valor_imoveis_quitados,cheque_especial,parcelamento_cartao,credito_pessoal,credito_consignado,created_at,updated_at";
@@ -64,8 +68,9 @@ const FINANCIAL_RANGES = [
 ];
 
 const EXCLUSIVE_STAGE_ORDER = [
-  STAGE.INTENCAO,
-  STAGE.PEDIDO,
+  STAGE.INTENCAO_PEDIDO,
+  STAGE.RETENCAO,
+  STAGE.OFFBOARDING,
   STAGE.EFETIVADO,
   STAGE.NENHUMA,
 ];
@@ -227,6 +232,7 @@ function buildFinancialMap(rows) {
   for (const row of rows) {
     const clientId = blankToNull(row.client_id);
     if (!clientId) continue;
+    const key = String(clientId);
     const updated = parseFlexibleDate(row.updated_at);
     const created = parseFlexibleDate(row.created_at);
     // Mesma regra do dashboard Atualização Financeira: só conta se updated_at > created_at.
@@ -236,11 +242,11 @@ function buildFinancialMap(rows) {
       date = updated;
       source = "updated_at_after_created";
     }
-    const current = map.get(clientId);
+    const current = map.get(key);
     const score = date ? date.getTime() : 0;
     const currentScore = current?.date ? current.date.getTime() : -1;
     if (!current || score > currentScore || (score === currentScore && Number(row.id) > Number(current.id || 0))) {
-      map.set(clientId, {
+      map.set(key, {
         id: row.id,
         date,
         source,
@@ -258,6 +264,23 @@ function buildFinancialMap(rows) {
     }
   }
   return map;
+}
+
+/** Segmento idêntico ao Dados Gerais (calculateClientSegment + financialMap). Independente da data de churn. */
+function resolveClientSegmentInfo(clientId, client, financialMap) {
+  const financial =
+    financialMap.get(String(clientId))
+    || (client?.id != null ? financialMap.get(String(client.id)) : null)
+    || null;
+  return calculateClientSegment(
+    {
+      monthlyIncome: financial?.monthlyIncome ?? null,
+      liquidityReserve: financial?.liquidityReserve ?? null,
+      lastContribution: financial?.lastContribution ?? null,
+      paidPropertiesValue: financial?.paidPropertiesValue ?? null,
+    },
+    financial?.debt || {},
+  );
 }
 
 function buildAttendanceMap(rows) {
@@ -374,6 +397,53 @@ function buildCancelMonthSeries(dates, now, monthsBack = 12) {
   return [...buckets.entries()].map(([month, count]) => ({ month, label: month, count }));
 }
 
+/** Séries mensais agrupadas: intenções × efetivados (clientes distintos por mês/série). */
+function buildIntentionVsEffectiveMonthSeries(rows, now, monthsBack = 12) {
+  const buckets = new Map();
+  for (let i = monthsBack - 1; i >= 0; i -= 1) {
+    const d = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - i, 1));
+    const key = `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}`;
+    buckets.set(key, { intentions: new Set(), effective: new Set() });
+  }
+  const nowKey = `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, "0")}`;
+
+  for (const row of rows || []) {
+    const clientId = String(row.clientId || "");
+    if (!clientId) continue;
+    const intencaoAt = row.intencaoAt instanceof Date
+      ? row.intencaoAt
+      : parseFlexibleDate(row.intencaoAt);
+    if (intencaoAt && intencaoAt <= now) {
+      const key = `${intencaoAt.getUTCFullYear()}-${String(intencaoAt.getUTCMonth() + 1).padStart(2, "0")}`;
+      if (key <= nowKey && buckets.has(key)) buckets.get(key).intentions.add(clientId);
+    }
+    // Efetivados sem data confirmada NÃO entram no gráfico mensal
+    if (row.hasEfetivado && row.hasConfirmedDate !== false) {
+      const d = row.cancellationDate instanceof Date
+        ? row.cancellationDate
+        : parseFlexibleDate(row.cancellationDate);
+      if (d && d <= now) {
+        const key = `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}`;
+        if (key <= nowKey && buckets.has(key)) buckets.get(key).effective.add(clientId);
+      }
+    }
+  }
+
+  return [...buckets.entries()].map(([month, sets]) => {
+    const intentions = sets.intentions.size;
+    const effective = sets.effective.size;
+    return {
+      month,
+      label: month,
+      intentions,
+      effective,
+      effectiveCancellations: effective,
+      difference: intentions - effective,
+      note: "Séries independentes por data; não é taxa de conversão do mesmo cliente.",
+    };
+  });
+}
+
 function pushWarning(list, code, message, extra = {}) {
   list.push({ code, message, severity: extra.severity || "warning", ...extra });
 }
@@ -387,6 +457,8 @@ function enrichMeetingsAndFinancial({
   financialMap,
   dataWarnings,
 }) {
+  const segmentInfo = resolveClientSegmentInfo(clientId, client, financialMap);
+
   if (!cancellationDate) {
     return {
       meetingsBeforeCancellation: null,
@@ -400,10 +472,7 @@ function enrichMeetingsAndFinancial({
       daysSinceFinancialUpdate: null,
       financialRecencyBand: "Sem atualização anterior",
       meetingsSummary: null,
-      segmentInfo: calculateClientSegment(
-        { monthlyIncome: null, liquidityReserve: null, lastContribution: null, paidPropertiesValue: null },
-        {},
-      ),
+      segmentInfo,
     };
   }
 
@@ -433,7 +502,7 @@ function enrichMeetingsAndFinancial({
     dataWarnings.push("Cliente sem reunião realizada anterior ao cancelamento");
   }
 
-  const financial = financialMap.get(clientId) || financialMap.get(client?.id) || null;
+  const financial = financialMap.get(String(clientId)) || (client?.id != null ? financialMap.get(String(client.id)) : null) || null;
   let financialUpdateDate = null;
   let financialUpdateSource = "unavailable";
   let daysSinceFinancialUpdate = null;
@@ -452,16 +521,6 @@ function enrichMeetingsAndFinancial({
   } else {
     dataWarnings.push("Cliente sem atualização financeira anterior");
   }
-
-  const segmentInfo = calculateClientSegment(
-    {
-      monthlyIncome: financial?.monthlyIncome ?? null,
-      liquidityReserve: financial?.liquidityReserve ?? null,
-      lastContribution: financial?.lastContribution ?? null,
-      paidPropertiesValue: financial?.paidPropertiesValue ?? null,
-    },
-    financial?.debt || {},
-  );
 
   return {
     meetingsBeforeCancellation: meetingsBeforeCount,
@@ -526,6 +585,177 @@ function resolveProcessStatus(statusId, statusById) {
   };
 }
 
+/**
+ * Funil baseado em cancellation_statuses + evidências com OR deduplicado.
+ * A) statusFunnelExclusive — etapa atual (1 cliente = 1 status), ordenada por display_order
+ * B) evidenceFunnel — evidências sobrepostas (intenção/pedido/efetivado) com sources
+ */
+function buildStatusAndEvidenceFunnel(rows, statusById) {
+  const universe = rows.length || 1;
+  const statusCounts = new Map();
+  for (const r of rows) {
+    if (!r.processStatusId && !r.processStatusName) continue;
+    // Inclui todos com status de processo (mesmo efetivados) para visão de status atual
+    const key = r.processStatusName || STATUS_UNKNOWN_LABEL;
+    if (!statusCounts.has(key)) {
+      statusCounts.set(key, {
+        name: key,
+        displayOrder: r.processStatusOrder,
+        clients: new Set(),
+      });
+    }
+    const bucket = statusCounts.get(key);
+    if (bucket.displayOrder == null && r.processStatusOrder != null) {
+      bucket.displayOrder = r.processStatusOrder;
+    }
+    bucket.clients.add(String(r.clientId));
+  }
+
+  // Completar ordem a partir da dimensão
+  for (const dim of statusById.values()) {
+    if (!statusCounts.has(dim.name)) {
+      statusCounts.set(dim.name, {
+        name: dim.name,
+        displayOrder: dim.displayOrder,
+        clients: new Set(),
+        funnelType: dim.funnelType,
+        statusType: dim.statusType,
+      });
+    } else {
+      const b = statusCounts.get(dim.name);
+      b.funnelType = dim.funnelType;
+      b.statusType = dim.statusType;
+      if (b.displayOrder == null) b.displayOrder = dim.displayOrder;
+    }
+  }
+
+  const statusFunnelExclusive = [...statusCounts.values()]
+    .filter((s) => s.clients.size > 0 || (s.funnelType === "cancelamento" && !String(s.name).includes("[LEGADO]")))
+    .map((s) => ({
+      stage: s.name,
+      totalDistinctClients: s.clients.size,
+      sources: [{ key: "status", label: "Status da BASE QV", clients: s.clients.size }],
+      overlapClients: 0,
+      percentage: pct(s.clients.size, universe),
+      displayOrder: s.displayOrder,
+      funnelType: s.funnelType || null,
+      statusType: s.statusType || null,
+      exclusive: true,
+      ruleDescription: `Status atual do processo em cancellation_statuses (${s.name}). Cada cliente conta uma vez.`,
+    }))
+    .sort((a, b) => {
+      const ao = a.displayOrder;
+      const bo = b.displayOrder;
+      if (ao != null && bo != null && ao !== bo) return ao - bo;
+      if (ao != null && bo == null) return -1;
+      if (ao == null && bo != null) return 1;
+      return b.totalDistinctClients - a.totalDistinctClients;
+    });
+
+  // Evidências OR
+  const novaIntencao = new Set(
+    rows
+      .filter((r) => statusNameMatches(r.processStatusName, ["nova intencao", "nova intenção"]))
+      .map((r) => String(r.clientId)),
+  );
+  const intencaoDate = new Set(
+    rows.filter((r) => r.hasIntencao).map((r) => String(r.clientId)),
+  );
+  const pedidoDate = new Set(
+    rows.filter((r) => r.hasPedido).map((r) => String(r.clientId)),
+  );
+  // Não existe status "Pedido de cancelamento" na dimensão atual — documentado
+  const pedidoStatus = new Set(); // reservado se a dimensão ganhar o nome
+
+  const churnSrc = new Set();
+  const distratoAtSrc = new Set();
+  const distratoTextSrc = new Set();
+  const dataChurnSrc = new Set();
+  for (const r of rows) {
+    if (!r.hasEfetivado) continue;
+    const id = String(r.clientId);
+    const matched = Array.isArray(r.sourcesMatched) ? r.sourcesMatched : [];
+    if (matched.includes("churn_efetivado_at")) churnSrc.add(id);
+    if (matched.includes("distrato_assinado_at")) distratoAtSrc.add(id);
+    if (matched.includes("distrato_assinado_text")) distratoTextSrc.add(id);
+    if (matched.includes("clients.data_churn")) dataChurnSrc.add(id);
+    if (!matched.length) {
+      const src = r.cancellationDateSource || null;
+      if (src === "churn_efetivado_at") churnSrc.add(id);
+      else if (src === "distrato_assinado_at") distratoAtSrc.add(id);
+      else if (src === "distrato_assinado_text") distratoTextSrc.add(id);
+      else if (src === "clients.data_churn") dataChurnSrc.add(id);
+      else if (r.hasClientDataChurn) dataChurnSrc.add(id);
+      else if (r.hasDistratoTextSigned) distratoTextSrc.add(id);
+    }
+  }
+
+  const intentionEvidence = buildOrEvidenceGroup({
+    stage: "Intenção de cancelamento",
+    ruleDescription:
+      "Status «Nova intenção» OU intencao_registrada_at preenchida. Total = união distinta por cliente.",
+    universeSize: universe,
+    sources: [
+      { key: "status", label: "Status «Nova intenção»", set: novaIntencao },
+      { key: "date", label: "intencao_registrada_at preenchida", set: intencaoDate },
+    ],
+  });
+
+  const pedidoEvidence = buildOrEvidenceGroup({
+    stage: "Pedidos de cancelamento",
+    ruleDescription:
+      "Na dimensão atual não há status «Pedido de cancelamento». Total usa data_pedido preenchida (clientes distintos). Se o status for criado, passa a entrar no OR.",
+    universeSize: universe,
+    sources: [
+      { key: "status", label: "Status «Pedido de cancelamento» (inexistente na dimensão)", set: pedidoStatus },
+      { key: "date", label: "data_pedido preenchida", set: pedidoDate },
+    ],
+  });
+
+  const efetivadoEvidence = buildOrEvidenceGroup({
+    stage: "Cancelamento efetivado",
+    ruleDescription:
+      "churn_efetivado_at OU distrato_assinado_at OU distrato=Assinado OU clients.data_churn. Total = união distinta; barras não somam o cartão.",
+    universeSize: universe,
+    sources: [
+      { key: "churn_efetivado_at", label: "Churn efetivado", set: churnSrc },
+      { key: "distrato_assinado_at", label: "Distrato com data", set: distratoAtSrc },
+      { key: "distrato_assinado_text", label: "Distrato textual assinado", set: distratoTextSrc },
+      { key: "clients.data_churn", label: "Data churn em clients", set: dataChurnSrc },
+    ],
+  });
+
+  // Overlap multi-fonte efetivado
+  const allEff = new Set([...churnSrc, ...distratoAtSrc, ...distratoTextSrc, ...dataChurnSrc]);
+  let multiSourceEff = 0;
+  for (const id of allEff) {
+    const n = [churnSrc, distratoAtSrc, distratoTextSrc, dataChurnSrc].filter((s) => s.has(id)).length;
+    if (n > 1) multiSourceEff += 1;
+  }
+  efetivadoEvidence.overlapClients = multiSourceEff;
+  efetivadoEvidence.multiSourceClients = multiSourceEff;
+
+  const evidenceFunnel = [intentionEvidence, pedidoEvidence, efetivadoEvidence];
+
+  return {
+    mode: "status_dimension_plus_evidence",
+    note:
+      "Dois conceitos: (A) status atual exclusivo via cancellation_statuses.display_order; (B) evidências sobrepostas com OR deduplicado. Não misturar soma das barras com o total.",
+    statusAudit: [...statusById.values()]
+      .sort((a, b) => (a.displayOrder ?? 999) - (b.displayOrder ?? 999))
+      .map((s) => ({
+        status_id: s.id,
+        status_name: s.name,
+        display_order: s.displayOrder,
+        funnel_type: s.funnelType,
+        status_type: s.statusType,
+      })),
+    statusFunnelExclusive,
+    evidenceFunnel,
+    funnel: evidenceFunnel,
+  };
+}
+
 function buildPayload(
   clients,
   cancellations,
@@ -536,7 +766,11 @@ function buildPayload(
   statusRows = [],
 ) {
   const now = new Date();
-  const process = buildCancellationProcessMap(cancellations, { includeArchived: false });
+  const process = buildCancellationProcessMap(cancellations, {
+    includeArchived: false,
+    clients,
+  });
+  const analyticalCancel = buildAnalyticalCancellationMap(cancellations, clients);
   const {
     map: processMap,
     multiples,
@@ -578,8 +812,18 @@ function buildPayload(
     if (!client) orphanCancelCount += 1;
 
     const dataWarnings = [];
-    const cancellationDate = proc.analyticalCancellationAt || null;
-    const cancellationDateSource = proc.analyticalSource || null;
+    const cancelInfo = analyticalCancel.map.get(String(clientId)) || null;
+    // Preferir mapa consolidado (inclui data_churn / distrato texto)
+    const hasEfetivado = Boolean(cancelInfo?.isCancelled || proc.hasEfetivado);
+    const cancellationDate = cancelInfo?.date || proc.analyticalCancellationAt || null;
+    const cancellationDateSource = cancelInfo?.source || proc.analyticalSource || null;
+    const hasConfirmedDate = cancelInfo
+      ? Boolean(cancelInfo.hasConfirmedDate && cancelInfo.date)
+      : Boolean(proc.hasConfirmedDate && cancellationDate);
+
+    if (hasEfetivado && !hasConfirmedDate) {
+      dataWarnings.push("Efetivado sem data confirmada");
+    }
 
     const hireCycle = client ? parseFlexibleDate(client.data_inicio_ciclo) : null;
     const createdAt = client ? parseFlexibleDate(client.created_at) : null;
@@ -589,7 +833,7 @@ function buildPayload(
     let daysToCancellation = null;
     let stayMonths = null;
     let stayRange = "Dados insuficientes";
-    if (proc.hasEfetivado && hireDate && cancellationDate) {
+    if (hasEfetivado && hireDate && cancellationDate) {
       const days = daysBetween(hireDate, cancellationDate);
       if (days < 0) {
         dataWarnings.push("Cancelamento anterior à contratação");
@@ -600,7 +844,7 @@ function buildPayload(
         stayMonths = Math.floor(days / 30);
         stayRange = stayRangeFromMonths(stayMonths);
       }
-    } else if (proc.hasEfetivado) {
+    } else if (hasEfetivado) {
       if (!hireDate) dataWarnings.push("Data de contratação ausente");
       if (!cancellationDate) dataWarnings.push("Data de cancelamento ausente");
     }
@@ -632,20 +876,46 @@ function buildPayload(
     if (proc.processEntrySource === "data_pedido") processEntryFromPedido += 1;
     else if (proc.processEntrySource === "intencao_registrada_at") processEntryFromIntencao += 1;
 
-    const processEndForDuration = proc.hasEfetivado ? cancellationDate : now;
+    const processEndForDuration = hasEfetivado ? cancellationDate : now;
     const daysInProcess = validPositiveDays(proc.processEntryAt, processEndForDuration);
-    const analyticalSituation =
-      proc.analyticalSituation
-      || resolveAnalyticalProcessSituation({
-        hasEfetivado: proc.hasEfetivado,
-        hasPedido: proc.hasPedido,
-        hasIntencao: proc.hasIntencao,
-      });
-    const inProcessCurrently = Boolean(proc.inProcessCurrently);
+    const hasIntentionOrPedido = Boolean(
+      proc.hasPedido
+      || proc.hasIntencao
+      || proc.hasIntentionOrPedido
+      || isIntentionPedidoStatusName(processStatus.processStatusName),
+    );
+    const hasRetencao = Boolean(
+      proc.hasRetencao
+      || proc.passouRetencao === true
+      || proc.retentionStartAt,
+    );
+    const hasOffboarding = Boolean(proc.hasOffboarding || proc.enteredOffboardingAt);
+    const exclusiveRecalc = (() => {
+      if (hasEfetivado) return { key: STAGE_KEYS.EFETIVADO, label: STAGE.EFETIVADO };
+      if (hasOffboarding) return { key: STAGE_KEYS.OFFBOARDING, label: STAGE.OFFBOARDING };
+      if (hasRetencao) return { key: STAGE_KEYS.RETENCAO, label: STAGE.RETENCAO };
+      if (hasIntentionOrPedido) {
+        return { key: STAGE_KEYS.INTENCAO_PEDIDO, label: STAGE.INTENCAO_PEDIDO };
+      }
+      return { key: STAGE_KEYS.NENHUMA, label: STAGE.NENHUMA };
+    })();
+    const analyticalSituation = resolveAnalyticalProcessSituation({
+      hasEfetivado,
+      hasConfirmedDate,
+      hasOffboarding,
+      hasRetencao,
+      hasIntentionOrPedido,
+    });
+    const inProcessCurrently = hasIntentionOrPedido && !hasEfetivado;
+
+    const clientAnalyticalStatus = resolveAnalyticalStatusFromMaps(
+      client?.status,
+      cancelInfo || { isCancelled: hasEfetivado, date: cancellationDate },
+    );
 
     // Quality counters
-    if (proc.hasEfetivado && !proc.hasIntencao) efetivadoSemIntencao += 1;
-    if (proc.hasEfetivado && !proc.hasPedido) efetivadoSemPedido += 1;
+    if (hasEfetivado && !proc.hasIntencao) efetivadoSemIntencao += 1;
+    if (hasEfetivado && !proc.hasPedido) efetivadoSemPedido += 1;
     if (proc.hasPedido && !proc.hasIntencao) pedidoSemIntencao += 1;
     if (proc.hasIntencao && !hasReason) intencaoSemMotivo += 1;
     // Motivo preenchido mas categoria analítica ainda "Não informado"
@@ -654,7 +924,7 @@ function buildPayload(
     }
     if (proc.passouRetencao === true && !proc.retentionStartAt) passouSemDataRetencao += 1;
     if (proc.hasTratativa && !proc.hasDesfecho) tratativaSemDesfecho += 1;
-    if (proc.exclusiveStageKey === STAGE_KEYS.NENHUMA) semEtapa += 1;
+    if (exclusiveRecalc.key === STAGE_KEYS.NENHUMA) semEtapa += 1;
     if (proc.distratoTextSignedWithoutDate) clientsDistratoTextSignedWithoutDate += 1;
     if (proc.chronologicalIssues?.length) {
       chronologicalIssueClients += 1;
@@ -674,10 +944,10 @@ function buildPayload(
       daysSinceFinancialUpdate: null,
       financialRecencyBand: "Sem atualização anterior",
       meetingsSummary: null,
-      segmentInfo: null,
+      segmentInfo: resolveClientSegmentInfo(String(clientId), client, financialMap),
     };
 
-    if (proc.hasEfetivado) {
+    if (hasEfetivado) {
       enrichment = enrichMeetingsAndFinancial({
         clientId: String(clientId),
         client,
@@ -687,27 +957,16 @@ function buildPayload(
         financialMap,
         dataWarnings,
       });
-    } else if (client) {
-      // Segment still useful without meetings
-      const financial = financialMap.get(String(clientId)) || financialMap.get(client.id) || null;
-      enrichment.segmentInfo = calculateClientSegment(
-        {
-          monthlyIncome: financial?.monthlyIncome ?? null,
-          liquidityReserve: financial?.liquidityReserve ?? null,
-          lastContribution: financial?.lastContribution ?? null,
-          paidPropertiesValue: financial?.paidPropertiesValue ?? null,
-        },
-        financial?.debt || {},
-      );
     }
 
     const segmentLabel =
       enrichment.segmentInfo?.segmentLabel
-      || normalizeLabel(client?.segmentacao, "Dados insuficientes").label
       || "Dados insuficientes";
 
+    // Não usar segmentacao bruta de clients como fallback de erro de join —
+    // "Dados insuficientes" só quando calculateClientSegment assim classificou.
     const insufficientCore =
-      proc.hasEfetivado
+      hasEfetivado
       && (
         daysToCancellation == null
         || enrichment.meetingsBeforeCancellation == null
@@ -720,8 +979,9 @@ function buildPayload(
       clientName: blankToNull(client?.name) || "Não informado",
       engineer: normalizeLabel(client?.engenheiro_patrimonial).label,
       segment: segmentLabel,
-      exclusiveStage: proc.exclusiveStage,
-      exclusiveStageKey: proc.exclusiveStageKey,
+      analyticalStatus: clientAnalyticalStatus,
+      exclusiveStage: exclusiveRecalc.label,
+      exclusiveStageKey: exclusiveRecalc.key,
       processStatusId: processStatus.processStatusId,
       processStatusName: processStatus.processStatusName,
       processStatusOrder: processStatus.processStatusOrder,
@@ -737,10 +997,19 @@ function buildPayload(
       distratoAssinadoAt: toIso(proc.distratoAssinadoAt),
       cancellationDate: toIso(cancellationDate),
       cancellationDateSource,
-      hasIntencao: Boolean(proc.hasIntencao),
-      hasPedido: Boolean(proc.hasPedido),
-      hasEfetivado: Boolean(proc.hasEfetivado),
-      analyticalStatus: proc.hasEfetivado ? "Cancelado" : null,
+      hasConfirmedDate,
+      effectiveWithoutConfirmedDate: hasEfetivado && !hasConfirmedDate,
+      hasIntencao: proc.hasIntencao,
+      hasPedido: proc.hasPedido,
+      hasIntentionOrPedido,
+      hasEfetivado,
+      hasRetencao,
+      hasOffboarding,
+      hasClientDataChurn: Boolean(cancelInfo?.hasClientDataChurn || proc.hasClientDataChurn),
+      hasDistratoTextSigned: Boolean(cancelInfo?.hasDistratoTextSigned || proc.distratoTextSignedWithoutDate),
+      sourcesMatched: cancelInfo?.sourcesMatched || [],
+      dataChurnAt: toIso(client ? parseFlexibleDate(client.data_churn) : null),
+      distratoText: proc.distratoText || null,
       hireDate: toIso(hireDate),
       hireDateSource: hireSource,
       daysToCancellation,
@@ -795,8 +1064,16 @@ function buildPayload(
   const inProcessRows = rows.filter((r) => r.inProcessCurrently);
   const intentionsRegistered = rows.filter((r) => r.hasIntencao).length;
   const ordersRegistered = rows.filter((r) => r.hasPedido).length;
+  const intentionsOrOrdersRegistered = rows.filter((r) => r.hasIntentionOrPedido).length;
   const effectiveCancellations = efetivados.length;
   const clientsInCancellationProcess = inProcessRows.length;
+  const effectiveWithoutConfirmedDate = efetivados.filter((r) => r.effectiveWithoutConfirmedDate).length;
+
+  // Ativos com intenção: status analítico Ativo + intenção/pedido + sem efetivação
+  const activeWithCancellationIntention = rows.filter((r) => {
+    if (!r.hasIntentionOrPedido || r.hasEfetivado || r.isArchived) return false;
+    return r.analyticalStatus === "Ativo";
+  }).length;
 
   const pedidosComIntencao = rows.filter((r) => r.hasPedido && r.hasIntencao).length;
   const efetivadosComPedido = efetivados.filter((r) => r.hasPedido).length;
@@ -805,6 +1082,7 @@ function buildPayload(
   const funnel = {
     intentions: intentionsRegistered,
     orders: ordersRegistered,
+    intentionsOrOrders: intentionsOrOrdersRegistered,
     effective: effectiveCancellations,
     rateIntentionToOrder: rateOrInsufficient(pedidosComIntencao, intentionsRegistered),
     rateOrderToEffective: rateOrInsufficient(efetivadosComPedido, ordersRegistered),
@@ -815,12 +1093,17 @@ function buildPayload(
     label: e.label,
     key:
       e.label === STAGE.EFETIVADO ? STAGE_KEYS.EFETIVADO
-        : e.label === STAGE.PEDIDO ? STAGE_KEYS.PEDIDO
-          : e.label === STAGE.INTENCAO ? STAGE_KEYS.INTENCAO
-            : STAGE_KEYS.NENHUMA,
+        : e.label === STAGE.OFFBOARDING ? STAGE_KEYS.OFFBOARDING
+          : e.label === STAGE.RETENCAO ? STAGE_KEYS.RETENCAO
+            : e.label === STAGE.INTENCAO_PEDIDO ? STAGE_KEYS.INTENCAO_PEDIDO
+              : STAGE_KEYS.NENHUMA,
     count: e.count,
     percent: e.percent,
+    exclusive: true,
+    rule: "Etapa atual exclusiva: efetivado > offboarding > retenção > intenção/pedido > nenhuma.",
+    universe: "Clientes no processo de cancelamento (não arquivados por padrão).",
   }));
+  const statusEvidenceFunnel = buildStatusAndEvidenceFunnel(rows, statusById);
 
   const timing = {
     medianIntentionToOrder: medianOf(rows.map((r) => r.daysIntencaoToPedido)),
@@ -1120,8 +1403,11 @@ function buildPayload(
       totalDistinctClients,
       intentionsRegistered,
       ordersRegistered,
+      intentionsOrOrdersRegistered,
       effectiveCancellations,
       clientsInCancellationProcess,
+      activeWithCancellationIntention,
+      effectiveWithoutConfirmedDate,
       processEntryFromPedido,
       processEntryFromIntencao,
       processWithoutStatus: inProcessRows.filter((r) => r.processStatusName === STATUS_UNKNOWN_LABEL).length,
@@ -1129,6 +1415,9 @@ function buildPayload(
       totalCancellations: effectiveCancellations,
       archivedRecords: archivedRows,
       funnel,
+      statusEvidenceFunnel,
+      evidenceFunnel: statusEvidenceFunnel.evidenceFunnel,
+      statusFunnelExclusive: statusEvidenceFunnel.statusFunnelExclusive,
       exclusiveStages,
       timing,
       retention,
@@ -1224,10 +1513,14 @@ function buildPayload(
         efetivado: distributionFrom(efetivados, (r) => r.estagioCliente),
       },
       byMonth: buildCancelMonthSeries(
-        efetivados.map((r) => parseFlexibleDate(r.cancellationDate)).filter(Boolean),
+        efetivados
+          .filter((r) => r.hasConfirmedDate !== false)
+          .map((r) => parseFlexibleDate(r.cancellationDate))
+          .filter(Boolean),
         now,
         12,
       ),
+      byMonthIntentionVsEffective: buildIntentionVsEffectiveMonthSeries(rows, now, 12),
       byResponsible,
       byStayRange: distributionFrom(efetivados, (r) => r.stayRange, STAY_RANGES),
       byMeetingCount: distributionFrom(efetivados, (r) => r.meetingsBeforeBand, MEETING_RANGES),
@@ -1251,6 +1544,14 @@ function buildPayload(
         distratoTextSignedWithoutDate,
         invalidDateCount,
         multiples: multiples.size,
+      },
+      effectiveCancellationAudit: analyticalCancel.audit || null,
+      effectiveCancellationRule: {
+        cancellations: "churn_efetivado_at OR distrato_assinado_at OR distrato='Assinado'",
+        clients: "data_churn",
+        union: "count(distinct client_id)",
+        datePriority: ["churn_efetivado_at", "distrato_assinado_at", "clients.data_churn"],
+        withoutDate: "distrato Assinado sem data → efetivado sem data confirmada (fora do mensal)",
       },
     },
   };

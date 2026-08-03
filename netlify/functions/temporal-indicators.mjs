@@ -1,7 +1,13 @@
 import { requireCorporateAuth } from "./_shared/auth.mjs";
 import { dataConfigurationError, getDataEnv, getPharusEnv, getPharusSupabaseClient } from "./_shared/env.mjs";
+import {
+  ANALYTICAL_CANCEL_SELECT,
+  buildAnalyticalCancellationMap,
+  resolveAnalyticalStatusFromMaps,
+} from "./_shared/analytical-cancellation.mjs";
 
 const CLIENT_SELECT = "id,codigo,name,status,engenheiro_patrimonial,data_inicio_ciclo,created_at,data_churn";
+const CANCEL_SELECT = ANALYTICAL_CANCEL_SELECT;
 const MEETINGS_SELECT = "id,client_id,calendly_event_uri,event_name,start_time,end_time";
 const MANUAL_MEETINGS_SELECT = "id,client_id,title,start_time,end_time,google_event_id";
 const ATTENDANCE_SELECT = "calendly_event_uri,status,remarcado";
@@ -503,6 +509,7 @@ export async function computeTemporalIndicatorsPayload() {
   const monthSet = new Set(months);
   const [
     clients,
+    cancellations,
     clientMeetings,
     manualMeetings,
     attendanceRows,
@@ -514,6 +521,7 @@ export async function computeTemporalIndicatorsPayload() {
     pharusAuthRows,
   ] = await Promise.all([
     fetchDataAll("clients", CLIENT_SELECT),
+    fetchDataAllSafe("cancellations", CANCEL_SELECT, "updated_at.asc", warnings),
     fetchDataAllSafe("client_meetings", MEETINGS_SELECT, "start_time.asc", warnings),
     fetchDataAllSafe("manual_meetings", MANUAL_MEETINGS_SELECT, "start_time.asc", warnings),
     fetchDataAllSafe("meeting_attendance", ATTENDANCE_SELECT, "created_at.asc", warnings),
@@ -525,16 +533,23 @@ export async function computeTemporalIndicatorsPayload() {
     fetchPharusAuthUsers(warnings),
   ]);
 
+  const { map: cancelMap } = buildAnalyticalCancellationMap(cancellations, clients);
+
   const subjects = new Map();
   for (const client of clients) {
+    const cancelInfo = cancelMap.get(String(client.id)) || null;
+    const analyticalStatus = resolveAnalyticalStatusFromMaps(client.status, cancelInfo);
     ensureSubject(subjects, client.id, {
       clientId: String(client.id),
       code: blankToNull(client.codigo) || "",
       name: blankToNull(client.name) || String(client.id),
       engineer: blankToNull(client.engenheiro_patrimonial) || "Nao informado",
-      status: blankToNull(client.status) || "Nao informado",
+      status: analyticalStatus,
+      rawStatus: blankToNull(client.status) || "Nao informado",
       source: "BASE QV",
-      cancellationDate: parseDate(client.data_churn)?.toISOString() || null,
+      cancellationDate: cancelInfo?.date ? cancelInfo.date.toISOString() : null,
+      cancellationSource: cancelInfo?.source || null,
+      hasConfirmedCancellationDate: Boolean(cancelInfo?.hasConfirmedDate && cancelInfo?.date),
     });
   }
 

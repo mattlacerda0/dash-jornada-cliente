@@ -6,9 +6,10 @@ import {
   buildAnalyticalCancellationMap,
   resolveAnalyticalStatus,
 } from "./_shared/analytical-cancellation.mjs";
+import { matchPharusToBaseQv } from "./_shared/identity-match.mjs";
 
 const CLIENT_SELECT =
-  "id,codigo,name,status,engenheiro_patrimonial,data_inicio_ciclo,created_at";
+  "id,codigo,name,status,engenheiro_patrimonial,data_inicio_ciclo,created_at,data_churn,email,phone,cpf,cpf_digits,phone_digits";
 const CANCEL_SELECT = ANALYTICAL_CANCEL_SELECT;
 const CM_SELECT =
   "id,client_id,mecanismo_id,status,implemented_at,created_at,no_plano,sequence,valor_aplicado,source";
@@ -345,7 +346,7 @@ function daysSinceLastBand(days, never) {
 }
 
 function buildPayload(clients, cmRows, mechanisms, cancellations = [], financialRows = []) {
-  const { map: cancelMap } = buildAnalyticalCancellationMap(cancellations);
+  const { map: cancelMap } = buildAnalyticalCancellationMap(cancellations, clients);
   const financialMap = buildFinancialLookup(financialRows);
   const now = new Date();
   const currentMonth = currentMonthKey();
@@ -534,7 +535,7 @@ function buildPayload(clients, cmRows, mechanisms, cancellations = [], financial
     }).length;
 
     const cancelInfo = cancelMap.get(String(clientId)) || cancelMap.get(clientId) || null;
-    const analyticalStatus = resolveAnalyticalStatus(client?.status, cancelInfo?.date || null);
+    const analyticalStatus = resolveAnalyticalStatus(client?.status, cancelInfo);
     const fin = financialMap.get(clientId) || null;
     const segmentInfo = calculateClientSegment(
       fin
@@ -603,7 +604,7 @@ function buildPayload(clients, cmRows, mechanisms, cancellations = [], financial
   const portfolioByStatus = { Ativo: 0, Cancelado: 0, Congelado: 0, "Não informado": 0 };
   for (const client of clients) {
     const cancelInfo = cancelMap.get(String(client.id)) || null;
-    const st = resolveAnalyticalStatus(client?.status, cancelInfo?.date || null);
+    const st = resolveAnalyticalStatus(client?.status, cancelInfo);
     portfolioByStatus[st] = (portfolioByStatus[st] || 0) + 1;
   }
   const portfolioClients = clients.length;
@@ -778,7 +779,7 @@ function buildPayload(clients, cmRows, mechanisms, cancellations = [], financial
   for (const client of clients) {
     const eng = blankToNull(client.engenheiro_patrimonial) || "Não informado";
     const cancelInfo = cancelMap.get(String(client.id)) || null;
-    const st = resolveAnalyticalStatus(client?.status, cancelInfo?.date || null);
+    const st = resolveAnalyticalStatus(client?.status, cancelInfo);
     const cur = portfolioEp.get(eng) || {
       engineer: eng,
       totalClients: 0,
@@ -1042,7 +1043,93 @@ export async function computeMechanismsPayload() {
     fetchAll("cancellations", CANCEL_SELECT),
     fetchAll("client_financial_data", FINANCIAL_SELECT),
   ]);
-  return buildPayload(clients, cmRows, mechanisms, cancellations, financialRows);
+  const payload = buildPayload(clients, cmRows, mechanisms, cancellations, financialRows);
+
+  // Cobertura cruzada BASE QV × App Pharus (pessoas, não mecanismos)
+  let crossSourceCoverage = null;
+  let crossSourceRows = [];
+  let crossSourceWarnings = null;
+  try {
+    const { computePharusMechanismsPayload } = await import("./pharus-mechanisms.mjs");
+    const pharus = await computePharusMechanismsPayload();
+    if (pharus?.available !== false && pharus?.success !== false) {
+      const qvWithMech = (payload.clients || []).map((c) => ({
+        id: c.clientId,
+        codigo: c.clientCode,
+        name: c.clientName,
+        email: c.email || null,
+        cpf: c.cpf || c.cpf_digits || null,
+        phone: c.phone || c.phone_digits || null,
+        engineer: c.engineer,
+        mechanismCount: c.available || 0,
+      }));
+      // Enrich QV identity from raw clients
+      const idByClient = new Map((clients || []).map((c) => [String(c.id), c]));
+      for (const row of qvWithMech) {
+        const raw = idByClient.get(String(row.id));
+        if (!raw) continue;
+        row.email = raw.email || row.email;
+        row.cpf = raw.cpf || raw.cpf_digits || row.cpf;
+        row.phone = raw.phone || raw.phone_digits || row.phone;
+      }
+      const mechCountByUser = new Map();
+      for (const r of pharus.rows || []) {
+        const uid = String(r.userId || "");
+        if (!uid) continue;
+        mechCountByUser.set(uid, (mechCountByUser.get(uid) || 0) + 1);
+      }
+      const pharusUsers = [...mechCountByUser.entries()].map(([userId, mechanismCount]) => {
+        const sample = (pharus.rows || []).find((r) => String(r.userId) === userId) || {};
+        return {
+          userId,
+          name: sample.userName,
+          email: sample.userEmail,
+          mechanismCount,
+        };
+      });
+      const matched = matchPharusToBaseQv(qvWithMech, pharusUsers);
+      crossSourceCoverage = matched.crossSourceCoverage;
+      crossSourceRows = matched.crossSourceRows
+        .filter((r) => r.foundInBaseQv || r.matchStatus === "ambiguous" || r.matchStatus === "unmatched")
+        .slice(0, 500)
+        .map((r) => ({
+          pharusUserId: r.pharusUserId,
+          pharusName: r.pharusName,
+          pharusEmail: r.pharusEmail,
+          cpfMasked: r.cpfMasked,
+          foundInBaseQv: r.foundInBaseQv,
+          clientId: r.clientId,
+          clientCode: r.clientCode,
+          engineer: r.engineer,
+          matchMethod: r.matchMethod,
+          matchStatus: r.matchStatus,
+          pharusMechanismCount: r.pharusMechanismCount,
+          qvMechanismCount: r.qvMechanismCount,
+        }));
+      crossSourceWarnings = matched.warningsAgg;
+    }
+  } catch (err) {
+    crossSourceCoverage = {
+      baseQvClients: payload.summary?.clientsWithMechanisms || 0,
+      appPharusUsers: null,
+      matchedInBoth: null,
+      consolidationMode: "gross_sum",
+      consolidatedUniquePeople: null,
+      error: err instanceof Error ? err.message : String(err),
+    };
+  }
+
+  return {
+    ...payload,
+    crossSourceCoverage,
+    crossSourceRows,
+    quality: {
+      ...payload.quality,
+      crossSourceWarnings,
+      crossSourceNote:
+        "Deduplicação de pessoas entre BASE QV e App Pharus por e-mail/CPF/telefone/nome. CPF do App Pharus ainda não está no diretório live (personal_info/pre_registrations).",
+    },
+  };
 }
 
 export default async (request) => {

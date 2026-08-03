@@ -68,7 +68,7 @@ export const portalMetricCatalog = {
       "clientes com status ativo",
     ],
     description:
-      "Cliente com status bruto ativo e sem churn efetivado ou distrato assinado.",
+      "Cliente com status bruto ativo e sem a regra consolidada (churn_efetivado_at OU distrato_assinado_at OU distrato='Assinado' OU clients.data_churn (união distinta por client_id; não arquivado)).",
     aggregation: "count",
     allowedAggregations: ["count"],
     unit: "clients",
@@ -122,11 +122,11 @@ export const portalMetricCatalog = {
       "clientes com status cancelado",
     ],
     description:
-      "Cliente cancelado é aquele que possui churn efetivado ou distrato assinado em registro não arquivado.",
+      "Cliente cancelado é aquele que possui evidência consolidada: churn_efetivado_at OU distrato_assinado_at OU distrato='Assinado' OU clients.data_churn (união distinta por client_id; não arquivado). prioridade: churn_efetivado_at > distrato_assinado_at > clients.data_churn; distrato Assinado sem data = efetivado sem data confirmada.",
     aggregation: "count",
     allowedAggregations: ["count"],
     unit: "clients",
-    formula: "analyticalStatus === Cancelado (churn_efetivado_at ?? distrato_assinado_at)",
+    formula: "analyticalStatus === Cancelado (churn_efetivado_at ?? distrato_assinado_at ?? clients.data_churn | distrato Assinado)",
     sources: [
       { schema: SUPABASE, table: "clients", column: "status" },
       { schema: SUPABASE, table: "cancellations", column: "churn_efetivado_at" },
@@ -146,7 +146,7 @@ export const portalMetricCatalog = {
       "clientes pausados",
     ],
     description:
-      "Cliente com status bruto congelado e sem churn efetivado ou distrato assinado.",
+      "Cliente com status bruto congelado e sem a regra consolidada (churn_efetivado_at OU distrato_assinado_at OU distrato='Assinado' OU clients.data_churn (união distinta por client_id; não arquivado)).",
     aggregation: "count",
     allowedAggregations: ["count"],
     unit: "clients",
@@ -161,7 +161,7 @@ export const portalMetricCatalog = {
   cancelled_without_confirmed_date: {
     id: "cancelled_without_confirmed_date",
     domain: "general",
-    label: "Cancelados sem data confirmada",
+    label: "Marcados como cancelados sem confirmação",
     aliases: [
       "cancelados sem data confirmada",
       "cancelados sem data",
@@ -169,7 +169,7 @@ export const portalMetricCatalog = {
       "cancelado sem churn efetivado",
     ],
     description:
-      "Status bruto Cancelado/Churn sem churn_efetivado_at nem distrato_assinado_at. Não conta como cancelamento confirmado.",
+      "Status bruto Cancelado/Churn sem a regra consolidada (churn_efetivado_at OU distrato_assinado_at OU distrato='Assinado' OU clients.data_churn (união distinta por client_id; não arquivado)). Não conta como cancelamento efetivado; categoria 'Marcado como cancelado sem confirmação'.",
     aggregation: "count",
     allowedAggregations: ["count"],
     unit: "clients",
@@ -1970,11 +1970,11 @@ export const portalMetricCatalog = {
       "efetivamente cancelados",
     ],
     description:
-      "Clientes com cancelamento efetivado (churn_efetivado_at ou distrato_assinado_at em registro não arquivado). Intenção e pedido não contam.",
+      "Clientes com cancelamento efetivado (churn_efetivado_at ou distrato_assinado_at ou distrato Assinado ou clients.data_churn em registro não arquivado). Intenção e pedido não contam.",
     aggregation: "count",
     allowedAggregations: ["count"],
     unit: "clients",
-    formula: "count(distinct client_id) com churn_efetivado_at ou distrato_assinado_at",
+    formula: "count(distinct client_id) com churn_efetivado_at ou distrato_assinado_at ou distrato Assinado ou clients.data_churn ou distrato Assinado ou clients.data_churn",
     supportedFilters: ["engineer", "segment", "reason", "category"],
     sources: [
       { schema: SUPABASE, table: "cancellations", column: "client_id" },
@@ -2141,7 +2141,7 @@ export const portalMetricCatalog = {
       "distrato textual sem data",
     ],
     description:
-      "Registros com distrato textual 'Assinado' e distrato_assinado_at vazio. Não contam como cancelamento efetivado.",
+      "Registros com distrato textual 'Assinado' e distrato_assinado_at vazio. Contam como cancelamento efetivado sem data confirmada (fora do gráfico mensal).",
     aggregation: "count",
     allowedAggregations: ["count"],
     unit: "records",
@@ -2249,7 +2249,7 @@ export const portalMetricCatalog = {
       "média de dias até cancelamento",
     ],
     description:
-      "Média de dias entre contratação e data analítica de cancelamento (churn_efetivado_at ?? distrato_assinado_at).",
+      "Média de dias entre contratação e data analítica de cancelamento (churn_efetivado_at ?? distrato_assinado_at ?? clients.data_churn | distrato Assinado).",
     aggregation: "average",
     allowedAggregations: ["average"],
     unit: "days",

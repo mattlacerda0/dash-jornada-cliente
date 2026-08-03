@@ -1,0 +1,41 @@
+{
+  "clientCols": {
+    "email": {
+      "status": 200,
+      "body": "[{\"id\":\"34724fcf-8151-4cfc-94ad-eb5e85f56cc6\",\"email\":\"mdcristianpereira@gmail.com\"}]"
+    },
+    "phone": {
+      "status": 200,
+      "body": "[{\"id\":\"34724fcf-8151-4cfc-94ad-eb5e85f56cc6\",\"phone\":\"51999652955\"}]"
+    },
+    "cpf": {
+      "status": 200,
+      "body": "[{\"id\":\"34724fcf-8151-4cfc-94ad-eb5e85f56cc6\",\"cpf\":\"98837516053\"}]"
+    },
+    "cpf_digits": {
+      "status": 200,
+      "body": "[{\"id\":\"34724fcf-8151-4cfc-94ad-eb5e85f56cc6\",\"cpf_digits\":\"98837516053\"}]"
+    },
+    "phone_digits": {
+      "status": 200,
+      "body": "[{\"id\":\"34724fcf-8151-4cfc-94ad-eb5e85f56cc6\",\"phone_digits\":\"51999652955\"}]"
+    },
+    "telefone": {
+      "status": 400,
+      "body": "{\"code\":\"42703\",\"details\":null,\"hint\":null,\"message\":\"column clients.telefone does not exist\"}"
+    },
+    "documento": {
+      "status": 400,
+      "body": "{\"code\":\"42703\",\"details\":null,\"hint\":null,\"message\":\"column clients.documento does not exist\"}"
+    },
+    "name": {
+      "status": 200,
+      "body": "[{\"id\":\"34724fcf-8151-4cfc-94ad-eb5e85f56cc6\",\"name\":\"Cristian Amaral Pereira\"}]"
+    },
+    "codigo": {
+      "status": 200,
+      "body": "[{\"id\":\"34724fcf-8151-4cfc-94ad-eb5e85f56cc6\",\"codigo\":\"QV00798\"}]"
+    }
+  },
+  "pharus": {}
+}

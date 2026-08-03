@@ -15,9 +15,14 @@ import { computeGeneralDataPayload } from "./general-data.mjs";
 import { computeMeetingsPayload } from "./meetings.mjs";
 import { computeMechanismsPayload } from "./mechanisms.mjs";
 import {
+  isEffectiveCancelledStatus,
+  isConfirmedCancelledStatus,
+} from "./_shared/analytical-cancellation.mjs";
+import {
   associationStrength,
   buildContingencyFromGroups,
   chiSquareIndependence,
+  coveragePct,
   fisherExact2x2,
   kaplanMeier,
   logisticUnivariateAuc,
@@ -28,7 +33,15 @@ import {
   pointBiserial,
   round3,
   round4,
+  spearman,
 } from "./_shared/stats-tests.mjs";
+import {
+  parseCurrentCycle,
+  renewalFromCycle,
+  civilDateInSaoPaulo,
+  calendarDateFromValue,
+  PORTAL_TZ,
+} from "./_shared/client-cycle-renewal.mjs";
 
 const MIN_GROUP = 30;
 const MIN_AUC = 30;
@@ -47,11 +60,12 @@ const PENDING = {
       "NPS oficial 0–10 em nps_responses. Cruzamentos preditivos excluem respostas posteriores ao cancelamento. EP atual no join. CSAT Pharus ≠ NPS.",
   },
   renewal: {
-    status: "unavailable",
-    available: false,
-    sourceFound: false,
+    status: "available",
+    available: true,
+    sourceFound: true,
+    tables: ["clients.ciclo"],
     note:
-      "Renovação: sem população elegível / renovados confirmada na BASE QV. Não renderizar seção.",
+      "Renovação via clients.ciclo (general-data): currentCycle > 1 ⇒ renovado; renewalCount = max(ciclo−1, 0); ciclo ≥ 1 válido para análise.",
   },
   pharusPredictive: {
     status: "unavailable",
@@ -67,6 +81,17 @@ const PENDING = {
     note: "Sem evento de abandono/desativação no App Pharus; não usar último acesso como churn.",
   },
 };
+
+/** Exclusões metodológicas estáticas (vazamento / definem o desfecho). */
+const METHODOLOGY_EXCLUDED = [
+  { id: "motivo_cancelamento", label: "Motivo de cancelamento", reason: "Vazamento — informação tipicamente disponível no/após o evento" },
+  { id: "offboarding", label: "Offboarding / processo de saída", reason: "Vazamento — processo concomitante ou posterior ao churn" },
+  { id: "cancellationDate", label: "Data de cancelamento", reason: "Define o desfecho — não é preditor" },
+  { id: "cancellationStage", label: "Estágio de cancelamento", reason: "Vazamento processual" },
+  { id: "hasCancellationProcess", label: "Possui processo de cancelamento", reason: "Vazamento — correlato direto do evento" },
+  { id: "cancellationSource", label: "Fonte da data de cancelamento", reason: "Metadado do desfecho" },
+  { id: "analyticalStatus", label: "Status analítico", reason: "Contém o rótulo de cancelamento (desfecho)" },
+];
 
 function blankToNull(v) {
   if (v == null) return null;
@@ -95,13 +120,49 @@ function pct(n, d) {
   return Math.round((n / d) * 1000) / 10;
 }
 
-function inDateRange(iso, from, to) {
-  if (!from && !to) return true;
+/** Faixa SP inclusiva no início, exclusiva no fim: [from, toExclusive). */
+function inDateRange(iso, from, toExclusive) {
+  if (!from && !toExclusive) return true;
   const d = parseDate(iso);
   if (!d) return false;
   if (from && d < from) return false;
-  if (to && d > to) return false;
+  if (toExclusive && d >= toExclusive) return false;
   return true;
+}
+
+/** Início do dia civil em America/Sao_Paulo: YYYY-MM-DDT00:00:00-03:00 */
+function spDayStart(ymd) {
+  if (!ymd) return null;
+  const day = String(ymd).slice(0, 10);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(day)) return parseDate(ymd);
+  return parseDate(`${day}T00:00:00-03:00`);
+}
+
+/** Próximo dia civil SP (fim exclusivo do dia ymd). */
+function spNextDayStart(ymd) {
+  if (!ymd) return null;
+  const day = String(ymd).slice(0, 10);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(day)) return null;
+  const [y, m, d] = day.split("-").map(Number);
+  const dt = new Date(Date.UTC(y, m - 1, d));
+  dt.setUTCDate(dt.getUTCDate() + 1);
+  const ny = dt.getUTCFullYear();
+  const nm = String(dt.getUTCMonth() + 1).padStart(2, "0");
+  const nd = String(dt.getUTCDate()).padStart(2, "0");
+  return parseDate(`${ny}-${nm}-${nd}T00:00:00-03:00`);
+}
+
+function parseCycleNumber(raw) {
+  return parseCurrentCycle(raw != null && typeof raw === "object" ? raw : { currentCycle: raw });
+}
+
+function renewalFromCycleLocal(cycle) {
+  const r = renewalFromCycle(cycle);
+  return {
+    renewalCount: r.renewalCount,
+    hasRenewed: r.hasRenewed,
+    renewedValid: r.renewedValid,
+  };
 }
 
 function incomeBand(v) {
@@ -153,23 +214,32 @@ export function buildAnalyticalPopulation(generalPayload, meetingsPayload, mecha
     const m = meetingById.get(id) || null;
     const k = mechById.get(id) || null;
     const status = g.analyticalStatus || g.status || "Não informado";
-    const isCancelled = status === "Cancelado";
+    const isCancelled = isEffectiveCancelledStatus(status);
+    const cancellationDate = parseDate(g.cancellationDate);
+    const isCancelledWithDate = isConfirmedCancelledStatus(status) && Boolean(cancellationDate);
+    const hasConfirmedDate = isCancelled && Boolean(cancellationDate);
+    const cancelledWithoutDate = isCancelled && !cancellationDate;
     const isActive = status === "Ativo";
     const isFrozen = status === "Congelado";
 
     const contractDate = parseDate(g.contractDate);
     const createdAt = parseDate(g.createdAt);
     const hireDate = contractDate || createdAt;
-    const cancellationDate = parseDate(g.cancellationDate);
     let stayDays = g.stayDays;
     if (stayDays == null && hireDate) {
-      const end = isCancelled && cancellationDate ? cancellationDate : now;
+      const end = isCancelledWithDate ? cancellationDate : now;
       stayDays = daysBetween(hireDate, end);
       if (stayDays != null && stayDays < 0) {
         bump("negative_stay", "Permanência negativa (cancelamento anterior à contratação)");
         stayDays = null;
       }
     }
+
+    const currentCycle = parseCycleNumber(g.currentCycle ?? g.ciclo);
+    const renewal = renewalFromCycleLocal(currentCycle);
+    const engineer = blankToNull(g.engineer) || "Não informado";
+    const segment = blankToNull(g.segmentLabel) || blankToNull(g.segment) || "Dados insuficientes";
+    const paidPropertiesValue = g.paidPropertiesValue ?? g.patrimony ?? null;
 
     const meetingCount = m?.totalMeetings ?? null;
     const journeyCount = m?.journeyMeetingsCount ?? null;
@@ -192,7 +262,7 @@ export function buildAnalyticalPopulation(generalPayload, meetingsPayload, mecha
     let survivalEvent = 0;
     let survivalValid = false;
     if (hireDate) {
-      if (isCancelled && cancellationDate) {
+      if (isCancelledWithDate) {
         const t = daysBetween(hireDate, cancellationDate);
         if (t != null && t >= 0) {
           survivalTime = t;
@@ -208,6 +278,8 @@ export function buildAnalyticalPopulation(generalPayload, meetingsPayload, mecha
           survivalEvent = 0;
           survivalValid = true;
         }
+      } else {
+        bump("cancelled_without_confirmed_date", "Cancelado efetivado sem data confirmada — excluído da sobrevivência");
       }
     } else {
       bump("missing_hire_date", "Sem data de contratação — excluído da sobrevivência");
@@ -218,19 +290,35 @@ export function buildAnalyticalPopulation(generalPayload, meetingsPayload, mecha
       clientCode: blankToNull(g.clientCode) || blankToNull(g.codigo) || null,
       clientName: blankToNull(g.clientName) || blankToNull(g.name) || "Não informado",
       statusAnalytic: status,
+      analyticalStatus: status,
       isCancelled,
       isActive,
       isFrozen,
+      hasConfirmedDate,
+      cancelledWithoutDate,
+      cancellationSource: blankToNull(g.cancellationSource) || null,
       contractDate: contractDate ? contractDate.toISOString() : null,
+      hireDate: hireDate ? hireDate.toISOString() : null,
+      acquisitionDate: g.acquisitionDate || (hireDate ? hireDate.toISOString() : null),
       cancellationDate: cancellationDate ? cancellationDate.toISOString() : null,
-      observedEndDate: (isCancelled && cancellationDate ? cancellationDate : now).toISOString(),
+      observedEndDate: (isCancelledWithDate ? cancellationDate : now).toISOString(),
       stayDays,
       stayBand: stayBand(stayDays),
-      segment: blankToNull(g.segment) || blankToNull(g.segmentLabel) || "Dados insuficientes",
-      engineer: blankToNull(g.engineer) || "Não informado",
+      segment,
+      engineer,
+      advisor: engineer,
+      currentCycle,
+      renewalCount: renewal.renewalCount,
+      hasRenewed: renewal.hasRenewed,
+      renewed: renewal.hasRenewed,
+      renewedValid: renewal.renewedValid,
       monthlyIncome: g.monthlyIncome ?? null,
       liquidityReserve: g.liquidityReserve ?? null,
       lastContribution: g.lastContribution ?? null,
+      paidPropertiesValue,
+      patrimony: paidPropertiesValue,
+      daysSinceFinancialUpdate: g.daysSinceFinancialUpdate ?? null,
+      financialUpdateCount: g.financialUpdateCount ?? null,
       hasFinancialData: Boolean(g.hasFinancialProfile),
       incomeBand: g.incomeBand || incomeBand(g.monthlyIncome),
       liquidityBand: g.liquidityBand || liquidityBand(g.liquidityReserve),
@@ -254,6 +342,11 @@ export function buildAnalyticalPopulation(generalPayload, meetingsPayload, mecha
       daysToFirstImplementation: k?.daysToFirstImplementation ?? null,
       hasMechanism: (available ?? 0) > 0,
       hasFirstImplementation: (implemented ?? 0) > 0 || Boolean(k?.firstImplementationDate),
+      npsScore: null,
+      npsClass: null,
+      npsSubmittedAt: null,
+      hasNps: false,
+      npsPredictiveOk: false,
       survivalTime,
       survivalEvent,
       survivalValid,
@@ -267,12 +360,13 @@ export function buildAnalyticalPopulation(generalPayload, meetingsPayload, mecha
 }
 
 function applyPopulationFilters(clients, filters = {}, now = new Date()) {
-  const hireFrom = filters.hireFrom ? parseDate(filters.hireFrom) : null;
-  const hireTo = filters.hireTo ? parseDate(`${filters.hireTo}T23:59:59.999Z`) : null;
-  const cancelFrom = filters.cancelFrom ? parseDate(filters.cancelFrom) : null;
-  const cancelTo = filters.cancelTo ? parseDate(`${filters.cancelTo}T23:59:59.999Z`) : null;
-  const minSample = Number(filters.minSample);
-  // minSample applied later to variable results, not population drop
+  const hireFrom = filters.hireFrom ? spDayStart(filters.hireFrom) : null;
+  const hireTo = filters.hireTo ? spNextDayStart(filters.hireTo) : null;
+  const cancelFrom = filters.cancelFrom ? spDayStart(filters.cancelFrom) : null;
+  const cancelTo = filters.cancelTo ? spNextDayStart(filters.cancelTo) : null;
+  const cycleFilter = filters.currentCycle != null && filters.currentCycle !== "" && filters.currentCycle !== "all"
+    ? parseCycleNumber(filters.currentCycle)
+    : null;
 
   return clients.filter((c) => {
     if (filters.status && filters.status !== "all") {
@@ -283,16 +377,28 @@ function applyPopulationFilters(clients, filters = {}, now = new Date()) {
     }
     if (filters.segment && filters.segment !== "all" && c.segment !== filters.segment) return false;
     if (filters.engineer && filters.engineer !== "all" && c.engineer !== filters.engineer) return false;
+    if (filters.advisor && filters.advisor !== "all" && c.advisor !== filters.advisor) return false;
     if (filters.hasFinancial === "yes" && !c.hasFinancialData) return false;
     if (filters.hasFinancial === "no" && c.hasFinancialData) return false;
     if (filters.hasMeeting === "yes" && !c.hasMeeting) return false;
     if (filters.hasMeeting === "no" && c.hasMeeting) return false;
     if (filters.hasMechanism === "yes" && !c.hasMechanism) return false;
     if (filters.hasMechanism === "no" && c.hasMechanism) return false;
+    if (filters.hasNps === "yes" && !c.hasNps) return false;
+    if (filters.hasNps === "no" && c.hasNps) return false;
+    if (filters.renewed === "yes" && !c.hasRenewed) return false;
+    if (filters.renewed === "no" && c.hasRenewed) return false;
+    if (cycleFilter != null && c.currentCycle !== cycleFilter) return false;
+    if (filters.npsClass && filters.npsClass !== "all") {
+      const want = String(filters.npsClass).toLowerCase();
+      const map = { promoters: "promoter", promoter: "promoter", neutros: "passive", passive: "passive", neutrals: "passive", detratores: "detractor", detractor: "detractor" };
+      const cls = map[want] || want;
+      if (c.npsClass !== cls) return false;
+    }
     if (filters.incomeBand && filters.incomeBand !== "all" && c.incomeBand !== filters.incomeBand) return false;
     if (filters.liquidityBand && filters.liquidityBand !== "all" && c.liquidityBand !== filters.liquidityBand) return false;
     if (filters.stayBand && filters.stayBand !== "all" && c.stayBand !== filters.stayBand) return false;
-    if (!inDateRange(c.contractDate, hireFrom, hireTo)) return false;
+    if (!inDateRange(c.contractDate || c.hireDate, hireFrom, hireTo)) return false;
     if (cancelFrom || cancelTo) {
       if (!c.cancellationDate) return false;
       if (!inDateRange(c.cancellationDate, cancelFrom, cancelTo)) return false;
@@ -305,6 +411,7 @@ const NUMERIC_VARS = [
   { id: "monthlyIncome", label: "Renda mensal", field: "monthlyIncome", predictive: true, source: "client_financial_data.ultima_renda_mensal" },
   { id: "liquidityReserve", label: "Reserva de liquidez", field: "liquidityReserve", predictive: true, source: "client_financial_data.reserva_liquidez" },
   { id: "lastContribution", label: "Último aporte", field: "lastContribution", predictive: true, source: "client_financial_data.ultimo_aporte" },
+  { id: "paidPropertiesValue", label: "Patrimônio (imóveis quitados)", field: "paidPropertiesValue", predictive: true, source: "client_financial_data.valor_imoveis_quitados" },
   { id: "meetingCount", label: "Total de reuniões", field: "meetingCount", predictive: true, source: "client_meetings + manual_meetings (dashboard Reuniões)" },
   { id: "noShowCount", label: "No-shows", field: "noShowCount", predictive: true, source: "meeting_attendance" },
   { id: "rescheduleCount", label: "Remarcações", field: "rescheduleCount", predictive: true, source: "meeting_attendance.remarcado" },
@@ -316,6 +423,11 @@ const NUMERIC_VARS = [
   { id: "implementedMechanismCount", label: "Mecanismos implementados", field: "implementedMechanismCount", predictive: true, source: "client_mecanismos status concluído" },
   { id: "implementationPercent", label: "Percentual implementado", field: "implementationPercent", predictive: true, source: "dashboard Mecanismos" },
   { id: "daysToFirstImplementation", label: "Dias até primeira implementação", field: "daysToFirstImplementation", predictive: true, source: "dashboard Mecanismos" },
+  { id: "daysSinceFinancialUpdate", label: "Dias desde atualização financeira", field: "daysSinceFinancialUpdate", predictive: true, source: "general-data / financial updates (quando presente)" },
+  { id: "financialUpdateCount", label: "Qtd. atualizações financeiras", field: "financialUpdateCount", predictive: true, source: "general-data (quando presente)" },
+  { id: "renewalCount", label: "Qtd. renovações (ciclo−1)", field: "renewalCount", predictive: true, source: "clients.ciclo" },
+  { id: "currentCycle", label: "Ciclo atual", field: "currentCycle", predictive: true, source: "clients.ciclo" },
+  { id: "npsScore", label: "Nota NPS (0–10)", field: "npsScore", predictive: true, requireNpsPredictive: true, source: "nps_responses (última válida; preditivo exclui pós-cancelamento)" },
   { id: "stayDays", label: "Permanência (dias)", field: "stayDays", predictive: false, source: "contratação → cancelamento ou hoje", note: "Para cancelados = tempo até evento; para ativos = censurado. Excluída do AUC (vazamento/censura)." },
 ];
 
@@ -326,9 +438,17 @@ const CATEGORICAL_VARS = [
   { id: "hasMeeting", label: "Possui reunião", field: "hasMeeting", predictive: true, source: "dashboard Reuniões", binary: true },
   { id: "hasMechanism", label: "Possui mecanismo", field: "hasMechanism", predictive: true, source: "dashboard Mecanismos", binary: true },
   { id: "hasFirstImplementation", label: "Possui implementação", field: "hasFirstImplementation", predictive: true, source: "dashboard Mecanismos", binary: true },
+  { id: "hasRenewed", label: "Já renovou (ciclo > 1)", field: "hasRenewed", predictive: true, source: "clients.ciclo", binary: true },
+  { id: "npsClass", label: "Classe NPS", field: "npsClass", predictive: true, requireNpsPredictive: true, source: "nps_responses" },
   { id: "incomeBand", label: "Faixa de renda", field: "incomeBand", predictive: true, source: "derivado de renda" },
   { id: "liquidityBand", label: "Faixa de reserva", field: "liquidityBand", predictive: true, source: "derivado de reserva" },
 ];
+
+/** Filtra clientes elegíveis a uma variável (ex.: NPS preditivo). */
+function clientsForVar(def, list) {
+  if (def.requireNpsPredictive) return list.filter((c) => c.npsPredictiveOk && c.hasNps);
+  return list;
+}
 
 function missingRate(clients, field) {
   if (!clients.length) return 100;
@@ -636,7 +756,7 @@ function analyzeCategoricalVariable(def, active, cancelled, minSample) {
   };
 }
 
-export function analyzePopulation(clients, { minSample = MIN_GROUP, includeFrozenSeparate = false } = {}) {
+export function analyzePopulation(clients, { minSample = MIN_GROUP, includeFrozenSeparate = false, minCoverage = null } = {}) {
   const active = clients.filter((c) => c.isActive);
   const cancelled = clients.filter((c) => c.isCancelled);
   const frozen = clients.filter((c) => c.isFrozen);
@@ -645,10 +765,17 @@ export function analyzePopulation(clients, { minSample = MIN_GROUP, includeFroze
   const associations = [];
   const predictivePower = [];
   const quality = [];
-  const excluded = [];
+  const excluded = METHODOLOGY_EXCLUDED.map((e) => ({ ...e }));
 
   for (const def of NUMERIC_VARS) {
-    const row = analyzeNumericVariable(def, active, cancelled, minSample);
+    const a = clientsForVar(def, active);
+    const c = clientsForVar(def, cancelled);
+    const row = analyzeNumericVariable(def, a, c, minSample);
+    if (minCoverage != null && Number.isFinite(minCoverage) && (row.coveragePercent ?? 0) < minCoverage) {
+      row.status = "low_coverage";
+      row.reason = `Cobertura ${row.coveragePercent}% abaixo do mínimo ${minCoverage}%`;
+      row.warnings = [...new Set([...(row.warnings || []), "baixa cobertura"])];
+    }
     comparisons.push(row);
     associations.push({
       id: row.id,
@@ -681,8 +808,13 @@ export function analyzePopulation(clients, { minSample = MIN_GROUP, includeFroze
         label: row.label,
         type: row.type,
         auc: row.auc,
+        aucRaw: row.aucRaw ?? null,
+        aucAdjusted: null,
         aucInverted: row.aucInverted,
         direction: row.aucDirection,
+        status: row.status,
+        coverage: row.coveragePercent,
+        coveragePercent: row.coveragePercent,
         sample: (row.activeN || 0) + (row.cancelledN || 0),
         missingPercent: row.missingPercent,
         warnings: row.warnings,
@@ -695,6 +827,7 @@ export function analyzePopulation(clients, { minSample = MIN_GROUP, includeFroze
       label: def.label,
       type: "numeric",
       missingPercent: row.missingPercent,
+      coveragePercent: row.coveragePercent,
       activeN: row.activeN,
       cancelledN: row.cancelledN,
       sufficient: row.activeN >= minSample && row.cancelledN >= minSample,
@@ -702,7 +835,14 @@ export function analyzePopulation(clients, { minSample = MIN_GROUP, includeFroze
   }
 
   for (const def of CATEGORICAL_VARS) {
-    const row = analyzeCategoricalVariable(def, active, cancelled, minSample);
+    const a = clientsForVar(def, active);
+    const c = clientsForVar(def, cancelled);
+    const row = analyzeCategoricalVariable(def, a, c, minSample);
+    if (minCoverage != null && Number.isFinite(minCoverage) && (row.coveragePercent ?? 0) < minCoverage) {
+      row.status = "low_coverage";
+      row.reason = `Cobertura ${row.coveragePercent}% abaixo do mínimo ${minCoverage}%`;
+      row.warnings = [...new Set([...(row.warnings || []), "baixa cobertura"])];
+    }
     comparisons.push(row);
     associations.push({
       id: row.id,
@@ -735,8 +875,13 @@ export function analyzePopulation(clients, { minSample = MIN_GROUP, includeFroze
         label: row.label,
         type: row.type,
         auc: row.auc,
+        aucRaw: row.aucRaw ?? null,
+        aucAdjusted: null,
         aucInverted: row.aucInverted,
         direction: row.aucDirection,
+        status: row.status,
+        coverage: row.coveragePercent,
+        coveragePercent: row.coveragePercent,
         sample: (row.activeN || 0) + (row.cancelledN || 0),
         missingPercent: row.missingPercent,
         warnings: row.warnings,
@@ -747,14 +892,26 @@ export function analyzePopulation(clients, { minSample = MIN_GROUP, includeFroze
       label: def.label,
       type: "categorical",
       missingPercent: row.missingPercent,
+      coveragePercent: row.coveragePercent,
       activeN: row.activeN,
       cancelledN: row.cancelledN,
       sufficient: row.activeN >= minSample && row.cancelledN >= minSample,
     });
   }
 
+  // Fix aucAdjusted properly: max(aucRaw, 1-aucRaw) when aucRaw present, else auc (already adjusted)
+  for (const p of predictivePower) {
+    if (p.auc == null) {
+      p.aucAdjusted = null;
+    } else if (p.aucRaw != null && Number.isFinite(p.aucRaw)) {
+      p.aucAdjusted = round4(Math.max(p.aucRaw, 1 - p.aucRaw));
+    } else {
+      p.aucAdjusted = round4(Math.max(p.auc, 1 - p.auc));
+    }
+  }
+
   associations.sort((a, b) => (b.associationAbs || 0) - (a.associationAbs || 0));
-  predictivePower.sort((a, b) => (b.auc || 0) - (a.auc || 0));
+  predictivePower.sort((a, b) => (b.aucAdjusted || b.auc || 0) - (a.aucAdjusted || a.auc || 0));
 
   // Survival overall
   const survRecords = clients
@@ -798,7 +955,7 @@ export function analyzePopulation(clients, { minSample = MIN_GROUP, includeFroze
   }
 
   // Binary survival splits
-  for (const field of ["hasFinancialData", "hasMeeting", "hasMechanism"]) {
+  for (const field of ["hasFinancialData", "hasMeeting", "hasMechanism", "hasRenewed"]) {
     for (const level of [true, false]) {
       const subset = clients.filter((c) => c[field] === level && c.survivalValid);
       if (subset.length < MIN_KM_GROUP) continue;
@@ -817,6 +974,11 @@ export function analyzePopulation(clients, { minSample = MIN_GROUP, includeFroze
 
   const events = survRecords.filter((r) => r.event === 1).length;
   const censored = survRecords.filter((r) => r.event === 0).length;
+  const cancelledWithDate = clients.filter((c) => c.isCancelled && c.hasConfirmedDate).length;
+  const cancelledWithoutDate = clients.filter((c) => c.isCancelled && c.cancelledWithoutDate).length;
+
+  const numericAssociations = associations.filter((a) => a.type === "numeric");
+  const categoricalAssociations = associations.filter((a) => a.type === "categorical");
 
   return {
     population: {
@@ -826,9 +988,13 @@ export function analyzePopulation(clients, { minSample = MIN_GROUP, includeFroze
       activeClients: active.length,
       cancelled: cancelled.length,
       confirmedCancelledClients: cancelled.length,
+      cancelledWithDate,
+      cancelledWithoutDate,
       frozen: frozen.length,
       frozenClients: frozen.length,
+      unknown: clients.filter((c) => !c.isActive && !c.isCancelled && !c.isFrozen).length,
       unknownClients: clients.filter((c) => !c.isActive && !c.isCancelled && !c.isFrozen).length,
+      excluded: 0,
       activeUsedInComparison: active.length,
       cancelledUsedInComparison: cancelled.length,
       events,
@@ -837,9 +1003,11 @@ export function analyzePopulation(clients, { minSample = MIN_GROUP, includeFroze
       includeFrozenSeparate,
     },
     comparisons,
-    /** Não filtrar associações para zero — frontend diferencia status */
+    activeVsCancelled: comparisons.filter((r) => r.type === "numeric"),
     associations,
-    predictivePower: predictivePower.filter((p) => p.auc != null),
+    churnAssociations: { numeric: numericAssociations, categorical: categoricalAssociations },
+    predictivePower,
+    univariatePredictivePower: predictivePower,
     survival: {
       overall: {
         ...overall,
@@ -851,6 +1019,7 @@ export function analyzePopulation(clients, { minSample = MIN_GROUP, includeFroze
         },
       },
       groups,
+      atRisk: survRecords.length,
       logRank: logRankResult,
     },
     quality,
@@ -869,6 +1038,323 @@ function downsampleCurve(curve, maxPoints) {
   return out;
 }
 
+const RENEWAL_EXCLUDE_FIELDS = new Set(["renewalCount", "currentCycle", "hasRenewed", "renewed"]);
+
+/** Associações com renovação (hasRenewed) entre clientes com ciclo ≥ 1. */
+export function analyzeRenewalAssociations(clients, minSample = MIN_GROUP) {
+  const eligible = (clients || []).filter((c) => c.renewedValid);
+  const renewed = eligible.filter((c) => c.hasRenewed);
+  const notRenewed = eligible.filter((c) => !c.hasRenewed);
+  const numeric = [];
+  const categorical = [];
+
+  for (const def of NUMERIC_VARS) {
+    if (RENEWAL_EXCLUDE_FIELDS.has(def.field) || RENEWAL_EXCLUDE_FIELDS.has(def.id)) continue;
+    if (def.field === "stayDays") continue;
+    const xs = [];
+    const ys = [];
+    for (const c of eligible) {
+      const v = c[def.field];
+      if (v == null || !Number.isFinite(Number(v))) continue;
+      if (def.requireNpsPredictive && !c.npsPredictiveOk) continue;
+      xs.push(Number(v));
+      ys.push(c.hasRenewed ? 1 : 0);
+    }
+    const pb = pointBiserial(xs, ys);
+    const n1 = ys.filter((y) => y === 1).length;
+    const n0 = ys.length - n1;
+    const descriptiveOk = n1 >= MIN_DESCRIPTIVE && n0 >= MIN_DESCRIPTIVE;
+    numeric.push({
+      id: def.id,
+      label: def.label,
+      type: "numeric",
+      measure: "point_biserial",
+      association: pb.r,
+      associationAbs: pb.r != null ? Math.abs(pb.r) : null,
+      strength: associationStrength(pb.r, "r"),
+      n: pb.n,
+      nRenewed: n1,
+      nNotRenewed: n0,
+      meanRenewed: pb.mean1 ?? null,
+      meanNotRenewed: pb.mean0 ?? null,
+      status: !descriptiveOk ? "small_sample" : (pb.warning || "available"),
+      warning: pb.warning,
+      coverage: coveragePct(xs.length, eligible.length),
+    });
+  }
+
+  for (const def of CATEGORICAL_VARS) {
+    if (RENEWAL_EXCLUDE_FIELDS.has(def.field) || RENEWAL_EXCLUDE_FIELDS.has(def.id)) continue;
+    const toLabel = (c) => {
+      const v = c[def.field];
+      if (def.binary) return v ? "Sim" : "Não";
+      if (def.id === "npsClass") {
+        if (v === "promoter") return "Promotores";
+        if (v === "passive") return "Neutros";
+        if (v === "detractor") return "Detratores";
+      }
+      return v == null || v === "" ? "Não informado" : String(v);
+    };
+    const pool = def.requireNpsPredictive
+      ? eligible.filter((c) => c.npsPredictiveOk && c.hasNps)
+      : eligible;
+    const aLabs = pool.filter((c) => !c.hasRenewed).map(toLabel);
+    const rLabs = pool.filter((c) => c.hasRenewed).map(toLabel);
+    const { table, labels } = buildContingencyFromGroups(aLabs, rLabs);
+    let chi = { cramersV: null, pValue: null, warning: "empty" };
+    if (table) chi = chiSquareIndependence(table);
+    categorical.push({
+      id: def.id,
+      label: def.label,
+      type: "categorical",
+      measure: "cramers_v",
+      association: chi.cramersV,
+      associationAbs: chi.cramersV,
+      strength: associationStrength(chi.cramersV, "cramers_v"),
+      pValue: chi.pValue,
+      labels,
+      n: chi.n ?? pool.length,
+      nRenewed: rLabs.length,
+      nNotRenewed: aLabs.length,
+      status: aLabs.length < MIN_DESCRIPTIVE || rLabs.length < MIN_DESCRIPTIVE
+        ? "small_sample"
+        : (chi.warning || "available"),
+      warning: chi.warning,
+      coverage: coveragePct(pool.length, eligible.length),
+    });
+  }
+
+  numeric.sort((a, b) => (b.associationAbs || 0) - (a.associationAbs || 0));
+  categorical.sort((a, b) => (b.associationAbs || 0) - (a.associationAbs || 0));
+  return {
+    eligible: eligible.length,
+    renewed: renewed.length,
+    notRenewed: notRenewed.length,
+    sampleSmall: renewed.length < minSample || notRenewed.length < minSample,
+    numeric,
+    categorical,
+  };
+}
+
+/** Medianas renovados vs não renovados (ciclo ≥ 1). */
+export function compareRenewedVsNot(clients, minSample = MIN_GROUP) {
+  const eligible = (clients || []).filter((c) => c.renewedValid);
+  const renewed = eligible.filter((c) => c.hasRenewed);
+  const notRenewed = eligible.filter((c) => !c.hasRenewed);
+  const rows = [];
+
+  for (const def of NUMERIC_VARS) {
+    if (RENEWAL_EXCLUDE_FIELDS.has(def.field) || RENEWAL_EXCLUDE_FIELDS.has(def.id)) continue;
+    const rVals = renewed
+      .filter((c) => !def.requireNpsPredictive || c.npsPredictiveOk)
+      .map((c) => c[def.field])
+      .filter((v) => v != null && Number.isFinite(Number(v)))
+      .map(Number);
+    const nVals = notRenewed
+      .filter((c) => !def.requireNpsPredictive || c.npsPredictiveOk)
+      .map((c) => c[def.field])
+      .filter((v) => v != null && Number.isFinite(Number(v)))
+      .map(Number);
+    const medR = median(rVals);
+    const medN = median(nVals);
+    const descriptiveOk = rVals.length >= MIN_DESCRIPTIVE && nVals.length >= MIN_DESCRIPTIVE;
+    const mw = mannWhitney(nVals, rVals);
+    let diffAbs = null;
+    if (medR != null && medN != null) diffAbs = round3(medR - medN);
+    rows.push({
+      id: def.id,
+      label: def.label,
+      medianRenewed: round3(medR),
+      medianNotRenewed: round3(medN),
+      differenceAbs: diffAbs,
+      nRenewed: rVals.length,
+      nNotRenewed: nVals.length,
+      pValue: mw.pValue,
+      rankBiserial: mw.rankBiserial,
+      status: descriptiveOk ? "available" : "small_sample",
+      sampleSmall: rVals.length < minSample || nVals.length < minSample,
+    });
+  }
+  return rows;
+}
+
+/** Grupos NPS: promotores / neutros / detratores. */
+export function buildNpsGroupsComparison(clients) {
+  const withNps = (clients || []).filter((c) => c.hasNps && c.npsClass);
+  const keys = [
+    { key: "promoter", label: "Promotores" },
+    { key: "passive", label: "Neutros" },
+    { key: "detractor", label: "Detratores" },
+  ];
+  return keys.map(({ key, label }) => {
+    const g = withNps.filter((c) => c.npsClass === key);
+    const cancelled = g.filter((c) => c.isCancelled).length;
+    const renewed = g.filter((c) => c.hasRenewed).length;
+    const numericMedians = {};
+    for (const def of [
+      { id: "stayDays", field: "stayDays" },
+      { id: "meetingCount", field: "meetingCount" },
+      { id: "mechanismCount", field: "mechanismCount" },
+      { id: "monthlyIncome", field: "monthlyIncome" },
+      { id: "implementationPercent", field: "implementationPercent" },
+      { id: "npsScore", field: "npsScore" },
+    ]) {
+      numericMedians[def.id] = round3(
+        median(g.map((c) => c[def.field]).filter((v) => v != null && Number.isFinite(Number(v))).map(Number)),
+      );
+    }
+    return {
+      class: key,
+      label,
+      n: g.length,
+      cancelled,
+      cancelledPct: pct(cancelled, g.length),
+      renewed,
+      renewedPct: pct(renewed, g.length),
+      medians: numericMedians,
+      meanStayDays: round3(mean(g.map((c) => c.stayDays).filter((n) => n != null && Number.isFinite(n)))),
+      meanMeetings: round3(mean(g.map((c) => c.meetingCount).filter((n) => n != null && Number.isFinite(n)))),
+      sampleSmall: g.length < MIN_DESCRIPTIVE,
+    };
+  });
+}
+
+/** Spearman: permanência × preditores numéricos (não-cancelados = censurados). */
+export function analyzeTenureCorrelations(clients) {
+  const pool = (clients || []).filter((c) => c.stayDays != null && Number.isFinite(c.stayDays));
+  const eventCount = pool.filter((c) => c.isCancelled).length;
+  const censoredCount = pool.length - eventCount;
+  const rows = [];
+
+  for (const def of NUMERIC_VARS) {
+    if (def.field === "stayDays" || def.id === "stayDays") continue;
+    const xs = [];
+    const ys = [];
+    for (const c of pool) {
+      const v = c[def.field];
+      if (v == null || !Number.isFinite(Number(v))) continue;
+      if (def.requireNpsPredictive && !c.npsPredictiveOk) continue;
+      xs.push(c.stayDays);
+      ys.push(Number(v));
+    }
+    const sp = spearman(xs, ys);
+    rows.push({
+      id: def.id,
+      label: def.label,
+      rho: sp.rho,
+      n: sp.n,
+      warning: sp.warning,
+      strength: associationStrength(sp.rho, "r"),
+      eventCount,
+      censoredCount,
+      censored: true,
+      note: "Permanência de não-cancelados é tempo observado (censura à direita).",
+      coverage: coveragePct(xs.length, pool.length),
+    });
+  }
+  rows.sort((a, b) => Math.abs(b.rho || 0) - Math.abs(a.rho || 0));
+  return rows;
+}
+
+/** Buckets de permanência. */
+export function buildTenureBuckets(clients) {
+  const defs = [
+    { id: "le90", label: "≤ 90 dias", min: 0, max: 90 },
+    { id: "91_180", label: "91–180 dias", min: 91, max: 180 },
+    { id: "181_365", label: "181–365 dias", min: 181, max: 365 },
+    { id: "366_730", label: "366–730 dias", min: 366, max: 730 },
+    { id: "gt730", label: "> 730 dias", min: 731, max: Infinity },
+  ];
+  return defs.map((b) => {
+    const g = (clients || []).filter((c) => {
+      const d = c.stayDays;
+      return d != null && Number.isFinite(d) && d >= b.min && d <= b.max;
+    });
+    const cancelled = g.filter((c) => c.isCancelled).length;
+    const renewed = g.filter((c) => c.hasRenewed).length;
+    const withMeeting = g.filter((c) => c.hasMeeting).length;
+    const npsScores = g
+      .filter((c) => c.hasNps && c.npsScore != null && Number.isFinite(c.npsScore))
+      .map((c) => c.npsScore);
+    return {
+      id: b.id,
+      label: b.label,
+      n: g.length,
+      cancelled,
+      cancelledPct: pct(cancelled, g.length),
+      renewed,
+      renewedPct: pct(renewed, g.length),
+      meanNps: round3(mean(npsScores)),
+      hasMeetingPct: pct(withMeeting, g.length),
+    };
+  });
+}
+
+/** Correlações NPS (score) × variáveis numéricas — só npsPredictiveOk. */
+export function buildNpsCorrelations(clients) {
+  const pool = (clients || []).filter((c) => c.npsPredictiveOk && c.hasNps && c.npsScore != null);
+  const rows = [];
+  for (const def of NUMERIC_VARS) {
+    if (def.field === "npsScore" || def.id === "npsScore") continue;
+    const xs = [];
+    const ys = [];
+    for (const c of pool) {
+      const v = c[def.field];
+      if (v == null || !Number.isFinite(Number(v))) continue;
+      xs.push(c.npsScore);
+      ys.push(Number(v));
+    }
+    const sp = spearman(xs, ys);
+    rows.push({
+      id: def.id,
+      label: def.label,
+      rho: sp.rho,
+      n: sp.n,
+      warning: sp.warning,
+      strength: associationStrength(sp.rho, "r"),
+      coverage: coveragePct(xs.length, pool.length),
+    });
+  }
+  rows.sort((a, b) => Math.abs(b.rho || 0) - Math.abs(a.rho || 0));
+  return rows;
+}
+
+/**
+ * Junta NPS mais recente em TODOS os clientes da população.
+ * npsPredictiveOk = false quando resposta é posterior à data de cancelamento.
+ */
+export function joinLatestNpsOntoClients(clients, npsRows) {
+  const latest = latestNpsByClient(npsRows);
+  const byClient = new Map(latest.map((r) => [String(r.clientId), r]));
+  let excludedPostCancel = 0;
+  let joined = 0;
+  for (const c of clients || []) {
+    const nps = byClient.get(String(c.clientId));
+    if (!nps) {
+      c.npsScore = null;
+      c.npsClass = null;
+      c.npsSubmittedAt = null;
+      c.hasNps = false;
+      c.npsPredictiveOk = false;
+      continue;
+    }
+    joined += 1;
+    const cancelAt = parseDate(c.cancellationDate);
+    const submitted = parseDate(nps.submittedAt);
+    let predictiveOk = true;
+    if (c.isCancelled && cancelAt && submitted && submitted > cancelAt) {
+      predictiveOk = false;
+      excludedPostCancel += 1;
+    }
+    c.npsScore = nps.score;
+    c.npsClass = classifyNpsScore(nps.score);
+    c.npsSubmittedAt = nps.submittedAt;
+    c.hasNps = true;
+    c.npsPredictiveOk = predictiveOk;
+  }
+  return { joined, excludedPostCancel, uniqueNpsClients: latest.length };
+}
+
 async function fetchNpsResponsesForCrosses() {
   const pageSize = 1000;
   let offset = 0;
@@ -877,8 +1363,8 @@ async function fetchNpsResponsesForCrosses() {
   const base = process.env.DATA_SUPABASE_URL;
   while (true) {
     const url = new URL("/rest/v1/nps_responses", base);
-    url.searchParams.set("select", "id,client_id,score,submitted_at,tipo_de_forms");
-    url.searchParams.set("order", "submitted_at.desc");
+    url.searchParams.set("select", "id,client_id,score,submitted_at,created_at,tipo_de_forms");
+    url.searchParams.set("order", "submitted_at.desc,created_at.desc");
     const response = await fetch(url, {
       headers: {
         apikey: key,
@@ -899,33 +1385,19 @@ async function fetchNpsResponsesForCrosses() {
 
 /**
  * NPS cruzamentos — exclui respostas após cancelamento para análises preditivas.
+ * Espera clientes já enriquecidos por joinLatestNpsOntoClients (ou faz join se npsRows passado).
  */
 export function buildNpsAnalysis(clients, npsRows, { minSample = MIN_GROUP } = {}) {
-  const latest = latestNpsByClient(npsRows);
-  const byClient = new Map(latest.map((r) => [r.clientId, r]));
-  const enriched = [];
+  let working = clients || [];
   let excludedPostCancel = 0;
-  let missingClient = 0;
-
-  for (const c of clients || []) {
-    const nps = byClient.get(String(c.clientId));
-    if (!nps) continue;
-    const cancelAt = parseDate(c.cancellationDate);
-    const submitted = parseDate(nps.submittedAt);
-    let predictiveOk = true;
-    if (c.isCancelled && cancelAt && submitted && submitted > cancelAt) {
-      predictiveOk = false;
-      excludedPostCancel += 1;
-    }
-    enriched.push({
-      ...c,
-      npsScore: nps.score,
-      npsClass: classifyNpsScore(nps.score),
-      npsSubmittedAt: nps.submittedAt,
-      npsPredictiveOk: predictiveOk,
-    });
+  if (npsRows) {
+    const joinMeta = joinLatestNpsOntoClients(working, npsRows);
+    excludedPostCancel = joinMeta.excludedPostCancel;
+  } else {
+    excludedPostCancel = working.filter((c) => c.hasNps && !c.npsPredictiveOk).length;
   }
 
+  const enriched = working.filter((c) => c.hasNps);
   const predictive = enriched.filter((c) => c.npsPredictiveOk);
   const scoresPred = predictive.map((c) => c.npsScore);
   const labelsPred = predictive.map((c) => (c.isCancelled ? 1 : 0));
@@ -938,27 +1410,10 @@ export function buildNpsAnalysis(clients, npsRows, { minSample = MIN_GROUP } = {
   const cancelledScores = predictive.filter((c) => c.isCancelled).map((c) => c.npsScore);
   const mw = mannWhitney(activeScores, cancelledScores);
 
-  const classGroups = { promoter: [], passive: [], detractor: [] };
-  for (const c of predictive) {
-    if (c.npsClass && classGroups[c.npsClass]) classGroups[c.npsClass].push(c);
-  }
-  const classComparison = ["promoter", "passive", "detractor"].map((key) => {
-    const g = classGroups[key];
-    const cancelled = g.filter((c) => c.isCancelled).length;
-    return {
-      class: key,
-      label: key === "promoter" ? "Promotores" : key === "passive" ? "Neutros" : "Detratores",
-      n: g.length,
-      cancelled,
-      cancelledPct: pct(cancelled, g.length),
-      meanStayDays: mean(g.map((c) => c.stayDays).filter((n) => n != null && Number.isFinite(n))),
-      meanMeetings: mean(g.map((c) => c.meetingCount).filter((n) => n != null && Number.isFinite(n))),
-      sampleSmall: g.length < minSample,
-    };
-  });
+  const classComparison = buildNpsGroupsComparison(predictive);
 
-  const promo = classGroups.promoter;
-  const detr = classGroups.detractor;
+  const promo = predictive.filter((c) => c.npsClass === "promoter");
+  const detr = predictive.filter((c) => c.npsClass === "detractor");
   const table = [
     [promo.filter((c) => !c.isCancelled).length, promo.filter((c) => c.isCancelled).length],
     [detr.filter((c) => !c.isCancelled).length, detr.filter((c) => c.isCancelled).length],
@@ -967,7 +1422,7 @@ export function buildNpsAnalysis(clients, npsRows, { minSample = MIN_GROUP } = {
   const chi = chiSquareIndependence(table);
 
   const breakdown = computeNpsBreakdown(predictive.map((c) => c.npsScore));
-  const coverage = pct(predictive.length, (clients || []).length);
+  const coverage = coveragePct(predictive.length, (clients || []).length);
 
   const stayVals = predictive.map((c) => c.stayDays).filter((n) => n != null && Number.isFinite(n));
   const stayMedian = median(stayVals);
@@ -992,7 +1447,7 @@ export function buildNpsAnalysis(clients, npsRows, { minSample = MIN_GROUP } = {
     responsesJoined: enriched.length,
     responsesPredictive: predictive.length,
     excludedPostCancel,
-    missingClient,
+    missingClient: 0,
     portfolioCoverage: coverage,
     insufficientCoverage: (coverage || 0) < NPS_MIN_COVERAGE_PCT,
     overall: breakdown,
@@ -1044,9 +1499,14 @@ function parseFiltersFromRequest(request) {
       status: get("status") || "active_cancelled",
       segment: get("segment") || "all",
       engineer: get("engineer") || "all",
+      advisor: get("advisor") || "all",
       hasFinancial: get("hasFinancial") || "all",
       hasMeeting: get("hasMeeting") || "all",
       hasMechanism: get("hasMechanism") || "all",
+      hasNps: get("hasNps") || "all",
+      renewed: get("renewed") || "all",
+      currentCycle: get("currentCycle") || "all",
+      npsClass: get("npsClass") || "all",
       incomeBand: get("incomeBand") || "all",
       liquidityBand: get("liquidityBand") || "all",
       stayBand: get("stayBand") || "all",
@@ -1055,6 +1515,7 @@ function parseFiltersFromRequest(request) {
       cancelFrom: get("cancelFrom") || null,
       cancelTo: get("cancelTo") || null,
       minSample: Number(get("minSample") || MIN_GROUP) || MIN_GROUP,
+      minCoverage: get("minCoverage") != null ? Number(get("minCoverage")) : null,
       includeFrozenSeparate: get("includeFrozenSeparate") === "1",
     };
   } catch {
@@ -1085,7 +1546,19 @@ export async function computeStatisticalCrossesPayload(options = {}) {
   const built = buildAnalyticalPopulation(general, meetings, mechanisms, now);
   let clients = built.clients;
 
-  // Default comparison universe: ativos + cancelados (congelados fora, a menos que filtro peça)
+  // Join latest NPS onto ALL clients before filters that depend on NPS
+  const npsJoin = joinLatestNpsOntoClients(clients, npsRows);
+
+  // Universo do card de renovação (= dashboard Renovações): não aplicar o filtro
+  // padrão active_cancelled. Congelados e “marcados sem confirmação” entram no card.
+  const renewalStatus =
+    !filters.status || filters.status === "active_cancelled" ? "all" : filters.status;
+  const renewalUniverse = applyPopulationFilters(built.clients, {
+    ...filters,
+    status: renewalStatus,
+  }, now);
+
+  // Universo analítico (churn / sobrevivência / ativos vs cancelados)
   const includeFrozen = Boolean(filters.includeFrozenSeparate);
   if (!filters.status || filters.status === "active_cancelled") {
     clients = clients.filter((c) => c.isActive || c.isCancelled || (includeFrozen && c.isFrozen));
@@ -1096,22 +1569,33 @@ export async function computeStatisticalCrossesPayload(options = {}) {
     status: filters.status === "active_cancelled" ? "all" : filters.status,
   }, now);
 
-  // If status was active_cancelled, re-apply after other filters
   if (!filters.status || filters.status === "active_cancelled") {
     clients = clients.filter((c) => c.isActive || c.isCancelled || (includeFrozen && c.isFrozen));
   }
 
+  const minCoverageFilter = filters.minCoverage != null && Number.isFinite(Number(filters.minCoverage))
+    ? Number(filters.minCoverage)
+    : null;
+
   const analysis = analyzePopulation(clients, {
     minSample: Number(filters.minSample) || MIN_GROUP,
     includeFrozenSeparate: includeFrozen,
+    minCoverage: minCoverageFilter,
   });
+
+  const renewalAssociations = analyzeRenewalAssociations(renewalUniverse, Number(filters.minSample) || MIN_GROUP);
+  const renewedVsNotRenewed = compareRenewedVsNot(renewalUniverse, Number(filters.minSample) || MIN_GROUP);
+  const npsGroups = buildNpsGroupsComparison(clients);
+  const tenureCorrelations = analyzeTenureCorrelations(clients);
+  const tenureBuckets = buildTenureBuckets(clients);
+  const npsCorrelations = buildNpsCorrelations(clients);
 
   const warnings = [
     {
       code: "methodology",
       severity: "info",
       message:
-        "Associações estatísticas não demonstram causalidade. Amostras pequenas e dados ausentes afetam a estabilidade.",
+        "Associações estatísticas descrevem coocorrência no recorte; amostras pequenas e dados ausentes afetam a estabilidade.",
     },
     ...built.warnings.map((w) => ({ ...w, severity: "warning" })),
   ];
@@ -1121,9 +1605,6 @@ export async function computeStatisticalCrossesPayload(options = {}) {
       severity: "warning",
       message: "Grupos ativos/cancelados abaixo da amostra mínima recomendada — resultados instáveis.",
     });
-  }
-  if (analysis.associations.some((a) => a.strength === "forte") === false && analysis.associations.length) {
-    // noop
   }
   const highMissing = analysis.quality.filter((q) => (q.missingPercent || 0) >= 40);
   if (highMissing.length) {
@@ -1136,14 +1617,40 @@ export async function computeStatisticalCrossesPayload(options = {}) {
   }
 
   const cancelled = analysis.population?.cancelled || 0;
+  const cancelledWithDate = analysis.population?.cancelledWithDate || 0;
+  const cancelledWithoutDate = analysis.population?.cancelledWithoutDate || 0;
   const censored = (analysis.population?.active || 0) + (analysis.population?.frozen || 0);
-  const evaluatedVars = (analysis.associations?.length || 0) + (analysis.predictivePower?.length || 0);
+  const renewedClients = renewalUniverse.filter((c) => c.hasRenewed).length;
+  const cycle1Clients = renewalUniverse.filter((c) => c.currentCycle === 1).length;
+  const totalRenewals = renewalUniverse.reduce((a, c) => a + (c.renewalCount || 0), 0);
+  const validNpsResponses = clients.filter((c) => c.npsPredictiveOk).length;
+  const evaluatedVars = analysis.associations?.length || 0;
   const coverages = (analysis.quality || [])
     .map((q) => (q.coveragePercent != null ? q.coveragePercent : (100 - (q.missingPercent || 0))))
     .filter((n) => Number.isFinite(n));
   const averageCoverage = coverages.length
     ? Math.round((coverages.reduce((a, b) => a + b, 0) / coverages.length) * 10) / 10
     : null;
+
+  // Auditoria: renovados no universo do card vs excluídos pelo recorte ativo/cancelado
+  const statsRenewedIds = new Set(clients.filter((c) => c.hasRenewed).map((c) => String(c.clientId)));
+  const renewalExcludedFromStats = renewalUniverse
+    .filter((c) => c.hasRenewed && !statsRenewedIds.has(String(c.clientId)))
+    .map((c) => ({
+      clientId: c.clientId,
+      clientCode: c.clientCode,
+      clientName: c.clientName,
+      currentCycle: c.currentCycle,
+      analyticalStatus: c.analyticalStatus || c.status,
+      reason: c.isFrozen
+        ? "Congelado (fora do filtro padrão ativos+cancelados)"
+        : "Status fora de ativos/cancelados efetivados (ex.: marcado sem confirmação)",
+    }));
+  const exclusionReasons = {};
+  for (const row of renewalExcludedFromStats) {
+    const key = row.reason;
+    exclusionReasons[key] = (exclusionReasons[key] || 0) + 1;
+  }
 
   if (cancelled < 30) {
     warnings.push({
@@ -1155,9 +1662,18 @@ export async function computeStatisticalCrossesPayload(options = {}) {
     });
   }
 
-  const npsAnalysis = buildNpsAnalysis(clients, npsRows, {
+  // Already joined — pass null to avoid double-join
+  const npsAnalysis = buildNpsAnalysis(clients, null, {
     minSample: Number(filters.minSample) || MIN_GROUP,
   });
+  if (npsJoin.excludedPostCancel) {
+    warnings.push({
+      code: "nps_post_cancel",
+      severity: "info",
+      message: `${npsJoin.excludedPostCancel} NPS pós-cancelamento marcado(s) como não preditivo(s).`,
+      count: npsJoin.excludedPostCancel,
+    });
+  }
   if (npsAnalysis.warnings?.length) {
     for (const msg of npsAnalysis.warnings) {
       warnings.push({ code: "nps_caveat", severity: "warning", message: msg });
@@ -1172,7 +1688,7 @@ export async function computeStatisticalCrossesPayload(options = {}) {
       available: true,
       source: "BASE QV",
       coverage: averageCoverage,
-      reason: "Cancelamento confirmado (churn_efetivado_at ∨ distrato_assinado_at).",
+      reason: "Cancelamento analítico oficial (isEffectiveCancelledStatus / isConfirmedCancelledStatus).",
     },
     {
       id: "active_vs_cancelled",
@@ -1212,10 +1728,10 @@ export async function computeStatisticalCrossesPayload(options = {}) {
     {
       id: "renewal",
       label: "Associação com renovação",
-      status: "unavailable",
-      available: false,
-      source: "BASE QV",
-      reason: "Sem população elegível / evento de renovação.",
+      status: renewalAssociations.eligible > 0 ? "available" : "unavailable",
+      available: renewalAssociations.eligible > 0,
+      source: "BASE QV · clients.ciclo",
+      reason: "Renovação: currentCycle > 1; renewalCount = max(ciclo−1, 0).",
     },
     {
       id: "stay_qv",
@@ -1251,6 +1767,17 @@ export async function computeStatisticalCrossesPayload(options = {}) {
     },
   ];
 
+  const cutoffDate = civilDateInSaoPaulo(now);
+  const observationStart = clients.reduce((min, c) => {
+    const day = calendarDateFromValue(c.acquisitionDate || c.hireDate || c.contractDate);
+    if (!day) return min;
+    return !min || day < min ? day : min;
+  }, null);
+  const observationEnd = cutoffDate;
+
+  const univariatePredictivePower = analysis.univariatePredictivePower || analysis.predictivePower || [];
+  const predictivePowerLegacy = univariatePredictivePower.filter((p) => p.auc != null);
+
   return {
     generatedAt: now.toISOString(),
     source: "BASE QV (general-data + meetings + mechanisms + nps_responses)",
@@ -1259,18 +1786,24 @@ export async function computeStatisticalCrossesPayload(options = {}) {
     filters,
     summary: {
       analyzedClients: analysis.population?.total || clients.length,
+      activeClients: analysis.population?.active || 0,
       confirmedCancellations: cancelled,
+      cancelledWithDate,
+      cancelledWithoutDate,
+      renewedClients,
+      cycle1Clients,
+      totalRenewals,
+      validNpsResponses,
       censoredClients: censored,
       evaluatedVariables: evaluatedVars,
       averageCoverage,
       observationPeriod: {
-        from: clients.reduce((min, c) => {
-          const d = parseDate(c.acquisitionDate || c.hireDate);
-          if (!d) return min;
-          return !min || d < min ? d : min;
-        }, null)?.toISOString?.() || null,
-        to: now.toISOString(),
+        from: observationStart,
+        to: observationEnd,
+        timezone: PORTAL_TZ,
       },
+      cutoffDate,
+      timezone: PORTAL_TZ,
       topAssociationLabel: analysis.associations?.[0]?.label || null,
       topAssociationAbs: analysis.associations?.[0]?.absMeasure ?? analysis.associations?.[0]?.abs ?? null,
       topAssociationStrength: analysis.associations?.[0]?.strength || null,
@@ -1279,47 +1812,109 @@ export async function computeStatisticalCrossesPayload(options = {}) {
       npsIndex: npsAnalysis.overall?.nps ?? null,
       npsPortfolioCoverage: npsAnalysis.portfolioCoverage ?? null,
     },
+    population: {
+      ...analysis.population,
+      renewalUniverse: renewalUniverse.length,
+      renewedInCard: renewedClients,
+      renewedInStatsRecorte: clients.filter((c) => c.hasRenewed).length,
+    },
+    sampleMeta: {
+      churnComparison: {
+        eligibleClients: clients.length,
+        validClients: (analysis.population?.active || 0) + (analysis.population?.cancelled || 0),
+        excludedClients: Math.max(0, built.clients.length - clients.length),
+        coverage: clients.length ? round3((clients.length / Math.max(built.clients.length, 1)) * 100) : null,
+      },
+      renewalCard: {
+        eligibleClients: renewalUniverse.length,
+        validClients: renewedClients + cycle1Clients,
+        excludedClients: Math.max(0, built.clients.length - renewalUniverse.length),
+        coverage: renewalUniverse.length
+          ? round3(((renewedClients + cycle1Clients) / Math.max(renewalUniverse.length, 1)) * 100)
+          : null,
+        renewedClients,
+        cycle1Clients,
+        totalRenewals,
+      },
+      renewalAnalysis: {
+        eligibleClients: renewalAssociations.eligible,
+        renewed: renewalAssociations.renewed,
+        notRenewed: renewalAssociations.notRenewed,
+        excludedClients: Math.max(0, renewalUniverse.length - (renewalAssociations.eligible || 0)),
+        coverage: renewalUniverse.length
+          ? round3(((renewalAssociations.eligible || 0) / Math.max(renewalUniverse.length, 1)) * 100)
+          : null,
+      },
+    },
+    renewalParityAudit: {
+      renewedInRenewalsUniverse: renewedClients,
+      renewedInActiveCancelledRecorte: clients.filter((c) => c.hasRenewed).length,
+      excludedCount: renewalExcludedFromStats.length,
+      exclusionReasons,
+      excludedClients: renewalExcludedFromStats,
+      note: "Card de renovados usa o mesmo universo do dashboard Renovações (ciclo>1). O recorte ativo/cancelados exclui congelados e marcados sem confirmação das análises de churn.",
+    },
+    activeVsCancelled: analysis.activeVsCancelled || analysis.comparisons?.filter((r) => r.type === "numeric") || [],
+    churnAssociations: analysis.churnAssociations || {
+      numeric: (analysis.associations || []).filter((a) => a.type === "numeric"),
+      categorical: (analysis.associations || []).filter((a) => a.type === "categorical"),
+    },
+    univariatePredictivePower,
+    npsCorrelations,
+    npsGroups,
+    renewalAssociations: {
+      numeric: renewalAssociations.numeric,
+      categorical: renewalAssociations.categorical,
+      eligible: renewalAssociations.eligible,
+      renewed: renewalAssociations.renewed,
+      notRenewed: renewalAssociations.notRenewed,
+      sampleSmall: renewalAssociations.sampleSmall,
+    },
+    renewedVsNotRenewed,
+    tenureCorrelations,
+    tenureBuckets,
+    survival: analysis.survival,
+    excludedVariables: analysis.excludedVariables,
+    qualityWarnings: warnings,
+    // LEGACY aliases for existing UI/chatbot:
+    associations: analysis.associations,
+    comparisons: analysis.comparisons,
+    predictivePower: predictivePowerLegacy,
     npsAnalysis: npsAnalysis.available ? npsAnalysis : null,
+    filterOptions: {
+      segments: [...new Set(built.clients.map((c) => c.segment).filter(Boolean))].sort((a, b) => a.localeCompare(b, "pt-BR")),
+      engineers: [...new Set(built.clients.map((c) => c.engineer).filter((e) => e && e !== "Não informado"))].sort((a, b) => a.localeCompare(b, "pt-BR")),
+      advisors: [...new Set(built.clients.map((c) => c.advisor).filter((e) => e && e !== "Não informado"))].sort((a, b) => a.localeCompare(b, "pt-BR")),
+      incomeBands: [...new Set(built.clients.map((c) => c.incomeBand).filter(Boolean))],
+      liquidityBands: [...new Set(built.clients.map((c) => c.liquidityBand).filter(Boolean))],
+      stayBands: [...new Set(built.clients.map((c) => c.stayBand).filter(Boolean))],
+      npsClasses: ["promoter", "passive", "detractor"],
+      cycles: [...new Set(built.clients.map((c) => c.currentCycle).filter((n) => n != null && Number.isFinite(n)))].sort((a, b) => a - b),
+    },
+    metadata: {
+      source: "BASE QV",
+      cancellationRule: "isEffectiveCancelledStatus / isConfirmedCancelledStatus (analytical-cancellation via general-data)",
+      renewalRule: "currentCycle > 1 ⇒ renovado; renewalCount = max(ciclo−1, 0); ciclo ≥ 1 válido",
+      renewalHelper: "netlify/functions/_shared/client-cycle-renewal.mjs",
+      npsRule: "última resposta válida por cliente; preditivo exclui NPS após cancellationDate",
+      cutoffDate,
+      timezone: PORTAL_TZ,
+      filtersApplied: filters,
+      minSample: Number(filters.minSample) || MIN_GROUP,
+      minCoverage: minCoverageFilter ?? 20,
+      minDescriptive: MIN_DESCRIPTIVE,
+      minInference: MIN_GROUP,
+      population: analysis.population,
+    },
     metricAvailability,
     groupDifferences: analysis.comparisons || [],
-    numericAssociations: (analysis.associations || []).filter((a) => a.type === "numeric" || a.measure === "point-biserial"),
+    numericAssociations: (analysis.associations || []).filter((a) => a.type === "numeric" || a.measure === "point-biserial" || a.measure === "point_biserial"),
     categoricalAssociations: (analysis.associations || []).filter((a) => a.type === "categorical" || a.measure === "cramers-v" || a.measure === "cramers_v"),
-    univariateAuc: analysis.predictivePower || [],
+    univariateAuc: predictivePowerLegacy,
     segmentAnalysis: (analysis.comparisons || []).filter((c) => /segment/i.test(c.id || c.label || "")),
     meetingAnalysis: (analysis.comparisons || []).filter((c) => /meeting|reuniao|reunião|noshow|no-show|remarc/i.test(`${c.id} ${c.label}`)),
     financialUpdateAnalysis: (analysis.comparisons || []).filter((c) => /financ|diagnost|renda|aporte|liquidez|patrimon/i.test(`${c.id} ${c.label}`)),
-    qualityWarnings: warnings,
-    metadata: {
-      minSample: Number(filters.minSample) || MIN_DESCRIPTIVE,
-      minCoverage: Number(filters.minCoverage) || 20,
-      minDescriptive: MIN_DESCRIPTIVE,
-      minInference: MIN_GROUP,
-      population: analysis.population || {
-        totalClients: clients.length,
-        activeClients: clients.filter((c) => c.isActive).length,
-        frozenClients: clients.filter((c) => c.isFrozen).length,
-        confirmedCancelledClients: cancelled,
-        activeUsedInComparison: clients.filter((c) => c.isActive).length,
-        cancelledUsedInComparison: cancelled,
-      },
-    },
-    methodology: {
-      churn: "analyticalStatus === Cancelado (mesma regra Dados Gerais / Cancelamento: data consolidada força cancelado)",
-      comparison: "Ativos vs Cancelados; congelados fora da comparação principal por padrão",
-      associationNumeric: "point-biserial",
-      associationCategorical: "Cramér’s V (+ Fisher 2×2 quando aplicável)",
-      comparisonTestNumeric: "Mann–Whitney U + rank-biserial",
-      auc: "logística univariada + AUC com validação cruzada estratificada",
-      leakage:
-        "Permanência, motivo e data de cancelamento excluídos do AUC. Encoding categórico multi-nível documentado quando usado.",
-      survival: "Kaplan–Meier; evento=cancelamento; ativos/congelados censurados na data de geração",
-      associationStrengthBands: {
-        r: "|r|<0.1 muito fraca; <0.3 fraca; <0.5 moderada; ≥0.5 forte",
-        cramers_v: "V<0.1 muito fraca; <0.2 fraca; <0.3 moderada; ≥0.3 forte",
-      },
-      causality: "Associação ≠ causalidade. Capacidade discriminativa ≠ previsão causal.",
-    },
-    population: analysis.population,
+    quality: analysis.quality,
     variables: [...NUMERIC_VARS, ...CATEGORICAL_VARS].map((v) => ({
       id: v.id,
       label: v.label,
@@ -1327,38 +1922,53 @@ export async function computeStatisticalCrossesPayload(options = {}) {
       source: v.source,
       predictiveEligible: Boolean(v.predictive),
     })),
-    comparisons: analysis.comparisons,
-    associations: analysis.associations,
-    predictivePower: analysis.predictivePower,
-    survival: analysis.survival,
-    quality: analysis.quality,
-    excludedVariables: analysis.excludedVariables,
-    filterOptions: {
-      segments: [...new Set(built.clients.map((c) => c.segment).filter(Boolean))].sort((a, b) => a.localeCompare(b, "pt-BR")),
-      engineers: [...new Set(built.clients.map((c) => c.engineer).filter((e) => e && e !== "Não informado"))].sort((a, b) => a.localeCompare(b, "pt-BR")),
-      incomeBands: [...new Set(built.clients.map((c) => c.incomeBand).filter(Boolean))],
-      liquidityBands: [...new Set(built.clients.map((c) => c.liquidityBand).filter(Boolean))],
-      stayBands: [...new Set(built.clients.map((c) => c.stayBand).filter(Boolean))],
-    },
-    // Amostra leve para drawer / auditoria (sem PII excessivo além do já usado no portal)
+    // Amostra leve para drawer / auditoria
     clients: clients.map((c) => ({
       clientId: c.clientId,
       clientName: c.clientName,
       statusAnalytic: c.statusAnalytic,
+      analyticalStatus: c.analyticalStatus,
       isCancelled: c.isCancelled,
       segment: c.segment,
       engineer: c.engineer,
+      advisor: c.advisor,
+      currentCycle: c.currentCycle,
+      renewalCount: c.renewalCount,
+      hasRenewed: c.hasRenewed,
       stayDays: c.stayDays,
       meetingCount: c.meetingCount,
       mechanismCount: c.mechanismCount,
       implementedMechanismCount: c.implementedMechanismCount,
       monthlyIncome: c.monthlyIncome,
+      paidPropertiesValue: c.paidPropertiesValue,
       hasFinancialData: c.hasFinancialData,
+      npsScore: c.npsScore,
+      npsClass: c.npsClass,
+      hasNps: c.hasNps,
+      npsPredictiveOk: c.npsPredictiveOk,
       survivalTime: c.survivalTime,
       survivalEvent: c.survivalEvent,
       survivalValid: c.survivalValid,
     })),
     warnings,
+    methodology: {
+      churn: "analyticalStatus cancelado via isEffectiveCancelledStatus (mesma regra Dados Gerais)",
+      comparison: "Ativos vs Cancelados; congelados fora da comparação principal por padrão",
+      associationNumeric: "point-biserial",
+      associationCategorical: "Cramér’s V (+ Fisher 2×2 quando aplicável)",
+      comparisonTestNumeric: "Mann–Whitney U + rank-biserial",
+      auc: "logística univariada + AUC com validação cruzada estratificada",
+      renewal: "clients.ciclo; renovado se ciclo > 1; exclui renewalCount/currentCycle como explicativas de hasRenewed",
+      tenure: "Spearman stayDays × preditores; não-cancelados censurados",
+      leakage:
+        "Permanência, motivo, offboarding e metadados de cancelamento excluídos do AUC. Encoding categórico multi-nível documentado quando usado.",
+      survival: "Kaplan–Meier; evento=cancelamento; ativos/congelados censurados na data de geração",
+      associationStrengthBands: {
+        r: "|r|<0.1 muito fraca; <0.3 fraca; <0.5 moderada; ≥0.5 forte",
+        cramers_v: "V<0.1 muito fraca; <0.2 fraca; <0.3 moderada; ≥0.3 forte",
+      },
+      note: "Associações descrevem coocorrência no recorte analítico; não substituem desenho experimental.",
+    },
   };
 }
 
@@ -1388,6 +1998,7 @@ export default async function handler(request) {
   try {
     const started = Date.now();
     const filters = parseFiltersFromRequest(request);
+    console.error(`[statistical-crosses] start filters=${JSON.stringify(filters || {})}`);
     const payload = await computeStatisticalCrossesPayload({ filters });
     console.error(
       `[statistical-crosses] status=200 ms=${Date.now() - started} ` +
@@ -1395,7 +2006,7 @@ export default async function handler(request) {
     );
     return Response.json(payload, { headers: { "Cache-Control": "no-store" } });
   } catch (error) {
-    console.error("[statistical-crosses]", error?.message || error);
+    console.error("[statistical-crosses] status=500", error?.message || error);
     return Response.json(
       { error: "Não foi possível consolidar os cruzamentos estatísticos", code: "data_query_failed" },
       { status: 500, headers: { "Cache-Control": "no-store" } },

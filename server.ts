@@ -46,7 +46,14 @@ const cancellationsHandler = (await import("./netlify/functions/cancellations.mj
 const satisfactionHandler = (await import("./netlify/functions/satisfaction.mjs")).default;
 const epPerformanceHandler = (await import("./netlify/functions/ep-performance.mjs")).default;
 const pharusEpMeetingsHandler = (await import("./netlify/functions/pharus-ep-meetings.mjs")).default;
-const statisticalCrossesHandler = (await import("./netlify/functions/statistical-crosses.mjs")).default;
+/** Lazy: Cruzamentos Estatísticos não deve bloquear o boot do servidor/portal. */
+let statisticalCrossesHandlerPromise: Promise<any> | null = null;
+function getStatisticalCrossesHandler() {
+  if (!statisticalCrossesHandlerPromise) {
+    statisticalCrossesHandlerPromise = import("./netlify/functions/statistical-crosses.mjs").then((m) => m.default);
+  }
+  return statisticalCrossesHandlerPromise;
+}
 const assistantHandler = (await import("./netlify/functions/assistant.mjs")).default;
 const assistantDataHandler = (await import("./netlify/functions/assistant-data.mjs")).default;
 const qualityHandler = (await import("./netlify/functions/quality.mjs")).default;
@@ -239,7 +246,10 @@ const server = Bun.serve({
     if (url.pathname === "/api/satisfaction") return satisfactionHandler(request);
     if (url.pathname === "/api/ep-performance") return epPerformanceHandler(request);
     if (url.pathname === "/api/pharus-ep-meetings") return pharusEpMeetingsHandler(request);
-    if (url.pathname === "/api/statistical-crosses") return statisticalCrossesHandler(request);
+    if (url.pathname === "/api/statistical-crosses") {
+      const handler = await getStatisticalCrossesHandler();
+      return handler(request);
+    }
     if (url.pathname === "/api/assistant") return assistantHandler(request);
     if (url.pathname === "/api/assistant-data") return assistantDataHandler(request);
     if (url.pathname.startsWith("/js/")) {

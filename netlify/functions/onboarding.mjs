@@ -1,4 +1,5 @@
 import { getPharusSupabaseClient } from "./_shared/env.mjs";
+import { fetchPharusDemoIdentities, filterPharusDemoRows } from "./_shared/pharus-demo-filter.mjs";
 import {
   applyFirstMeetingFallbackToClientRows,
   loadAirtableFirstMeetingIndex,
@@ -370,7 +371,9 @@ async function buildPayload() {
   if (airtableIndex?.reason && !airtableIndex.available) {
     warnings.push(`airtable_fallback: ${airtableIndex.reason}`);
   }
-  const pharusEvents = await fetchPharusMetricEvents(warnings);
+  const pharusEventsRaw = await fetchPharusMetricEvents(warnings);
+  const pharusDemoIdentities = await fetchPharusDemoIdentities(warnings);
+  const pharusEvents = filterPharusDemoRows(pharusEventsRaw, pharusDemoIdentities, ["user_id", "userId", "client_id", "distinct_id", "profile_id", "person_id"]);
   const pharusOnboarding = summarizePharusOnboardingEvents(pharusEvents);
 
   const meetingsByClient = byClient(Array.isArray(sourceResults.client_meetings) ? sourceResults.client_meetings : []);

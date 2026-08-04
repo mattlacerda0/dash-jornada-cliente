@@ -1,5 +1,6 @@
 import { getPharusEnv, getPharusSupabaseClient } from "./_shared/env.mjs";
 import { requireCorporateAuth } from "./_shared/auth.mjs";
+import { isPharusDemoEmail } from "./_shared/pharus-demo-filter.mjs";
 
 const ACCESS_EVENT_TOKENS = [
   "login_succeeded",
@@ -403,11 +404,19 @@ export default async function handler(request) {
       .filter(([, user]) => isCorporateEmail(user.email))
       .map(([userId]) => userId),
   );
-  const eligibleEvents = pharusEvents.filter((event) => !corporateUserIds.has(eventClientId(event)));
+  const demoUserIds = new Set(
+    [...authUsersById.entries()]
+      .filter(([, user]) => isPharusDemoEmail(user.email))
+      .map(([userId]) => userId),
+  );
+  const eligibleEvents = pharusEvents.filter((event) => {
+    const userId = eventClientId(event);
+    return !corporateUserIds.has(userId) && !demoUserIds.has(userId);
+  });
   const accessEventCount = eligibleEvents.filter((event) => isAccessEvent(eventName(event))).length;
   const loginEventCount = eligibleEvents.filter((event) => isLoginEvent(eventName(event))).length;
   const clients = buildClientUsage(eligibleEvents, personalInfoByUser, authUsersById)
-    .filter((client) => !isCorporateEmail(client.email));
+    .filter((client) => !isCorporateEmail(client.email) && !isPharusDemoEmail(client.email));
   const total = clients.length;
   const withLogin = clients.filter((c) => c.realizedLogin).length;
   const totalLogins = clients.reduce((sum, c) => sum + c.totalLogins, 0);
@@ -436,6 +445,7 @@ export default async function handler(request) {
     appPharusAccessEvents: accessEventCount,
     appPharusLoginEvents: loginEventCount,
     excludedCorporateUsers: corporateUserIds.size,
+    excludedDemoUsers: demoUserIds.size,
   };
   return Response.json(
     {
@@ -457,6 +467,7 @@ export default async function handler(request) {
             namedUsers: clients.filter((client) => client.userName && client.userName !== client.userId).length,
             emailedUsers: clients.filter((client) => client.email && client.email !== "Sem e-mail").length,
             excludedCorporateUsers: corporateUserIds.size,
+            excludedDemoUsers: demoUserIds.size,
             note: "Fonte única da aba: eventos de acesso/login em metrics.events, excluindo e-mails @quartavia.com.br.",
           },
         ],

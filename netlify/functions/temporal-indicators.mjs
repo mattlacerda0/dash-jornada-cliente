@@ -5,6 +5,7 @@ import {
   buildAnalyticalCancellationMap,
   resolveAnalyticalStatusFromMaps,
 } from "./_shared/analytical-cancellation.mjs";
+import { fetchPharusDemoIdentities, filterPharusDemoRows, isPharusDemoEmail } from "./_shared/pharus-demo-filter.mjs";
 
 const CLIENT_SELECT = "id,codigo,name,status,engenheiro_patrimonial,data_inicio_ciclo,created_at,data_churn";
 const CANCEL_SELECT = ANALYTICAL_CANCEL_SELECT;
@@ -496,6 +497,81 @@ function buildPreCancellationAnalysis(rows, subjects) {
   };
 }
 
+function buildActiveRiskAnalysis(rows, subjects, months) {
+  const latestMonths = months.slice(-6);
+  const currentMonth = latestMonths.at(-1);
+  const previousThree = latestMonths.slice(-4, -1);
+  const lastTwo = latestMonths.slice(-2);
+  const lastThree = latestMonths.slice(-3);
+  const definitions = [
+    { key: "login_drop", label: "Queda de logins", description: "Logins do mês atual 50% ou mais abaixo da média dos três meses anteriores." },
+    { key: "no_meeting_60", label: "Sem reunião em 60 dias", description: "Nenhuma reunião nos dois meses mais recentes." },
+    { key: "no_implementation_90", label: "Sem implementação em 90 dias", description: "Nenhuma implementação nos três meses mais recentes." },
+    { key: "no_financial_60", label: "Sem atualização financeira em 60 dias", description: "Nenhuma atualização financeira nos dois meses mais recentes." },
+    { key: "nps_detractor", label: "NPS detrator recente", description: "Último NPS conhecido nos três meses mais recentes entre 0 e 6." },
+    { key: "inactive_30", label: "30+ dias sem atividade", description: "Mês mais recente com 30 dias ou mais sem atividade conhecida." },
+  ];
+  const counts = new Map(definitions.map((item) => [item.key, 0]));
+  const rowsBySubject = new Map();
+  for (const row of rows) {
+    if (!latestMonths.includes(row.month)) continue;
+    if (!rowsBySubject.has(row.subjectId)) rowsBySubject.set(row.subjectId, []);
+    rowsBySubject.get(row.subjectId).push(row);
+  }
+  const details = [];
+  const activeSubjects = [...subjects.values()].filter((subject) => {
+    const status = normalizeToken(subject.status);
+    return !subject.cancellationDate && status === "ativo";
+  });
+  for (const subject of activeSubjects) {
+    const subjectRows = rowsBySubject.get(subject.subjectId) || [];
+    const byMonth = new Map(subjectRows.map((row) => [row.month, row]));
+    const current = byMonth.get(currentMonth) || {};
+    const baselineLogins = average(previousThree.map((month) => Number(byMonth.get(month)?.logins || 0))) || 0;
+    const currentLogins = Number(current.logins || 0);
+    const recentNps = lastThree
+      .map((month) => byMonth.get(month))
+      .filter((row) => row?.npsAverage != null)
+      .sort((a, b) => String(b.month).localeCompare(String(a.month)))[0];
+    const keys = [];
+    if (baselineLogins > 0 && currentLogins <= baselineLogins * 0.5) keys.push("login_drop");
+    if (sumRows(lastTwo.map((month) => byMonth.get(month)).filter(Boolean), "meetings") === 0) keys.push("no_meeting_60");
+    if (sumRows(lastThree.map((month) => byMonth.get(month)).filter(Boolean), "implementations") === 0) keys.push("no_implementation_90");
+    if (sumRows(lastTwo.map((month) => byMonth.get(month)).filter(Boolean), "financialUpdates") === 0) keys.push("no_financial_60");
+    if (recentNps && recentNps.npsAverage <= 6) keys.push("nps_detractor");
+    if (Number(current.daysWithoutActivity || 0) >= 30) keys.push("inactive_30");
+    for (const key of keys) counts.set(key, (counts.get(key) || 0) + 1);
+    if (!keys.length) continue;
+    details.push({
+      subjectId: subject.subjectId,
+      clientId: subject.clientId,
+      code: subject.code,
+      name: subject.name,
+      email: subject.email,
+      engineer: subject.engineer,
+      status: subject.status,
+      signalCount: keys.length,
+      signals: keys.map((key) => definitions.find((item) => item.key === key)?.label || key),
+      lastActivityAt: subject.lastActivityAt || null,
+      daysWithoutActivity: current.daysWithoutActivity ?? null,
+      currentMonthLogins: currentLogins,
+    });
+  }
+  details.sort((a, b) => b.signalCount - a.signalCount || String(a.name).localeCompare(String(b.name), "pt-BR"));
+  const signals = definitions
+    .map((item) => ({ ...item, count: counts.get(item.key) || 0, percent: pct(counts.get(item.key) || 0, activeSubjects.length) }))
+    .sort((a, b) => b.count - a.count || a.label.localeCompare(b.label, "pt-BR"));
+  return {
+    analyzedActiveClients: activeSubjects.length,
+    clientsWithSignals: details.length,
+    clientsWithSignalsPercent: pct(details.length, activeSubjects.length),
+    averageSignalsPerClient: details.length ? Math.round((details.reduce((sum, row) => sum + row.signalCount, 0) / details.length) * 10) / 10 : 0,
+    topSignal: signals[0] || null,
+    signals,
+    clients: details,
+  };
+}
+
 export async function computeTemporalIndicatorsPayload() {
   const configError = dataConfigurationError();
   if (configError) {
@@ -553,7 +629,11 @@ export async function computeTemporalIndicatorsPayload() {
     });
   }
 
-  const pharusProfiles = buildPharusProfileMap(pharusPersonalRows, pharusAuthRows);
+  const pharusDemoIdentities = await fetchPharusDemoIdentities(warnings);
+  const eligiblePharusEvents = filterPharusDemoRows(pharusEvents, pharusDemoIdentities, ["user_id", "userId", "client_id", "distinct_id", "profile_id", "person_id"]);
+  const eligiblePharusPersonalRows = filterPharusDemoRows(pharusPersonalRows, pharusDemoIdentities);
+  const eligiblePharusAuthRows = (pharusAuthRows || []).filter((row) => !isPharusDemoEmail(row?.email));
+  const pharusProfiles = buildPharusProfileMap(eligiblePharusPersonalRows, eligiblePharusAuthRows);
   const attendanceByUri = new Map();
   for (const row of attendanceRows) {
     const uri = blankToNull(row.calendly_event_uri);
@@ -561,7 +641,7 @@ export async function computeTemporalIndicatorsPayload() {
     attendanceByUri.set(String(uri), normalizeMeetingStatus(row.status));
   }
 
-  for (const event of pharusEvents) {
+  for (const event of eligiblePharusEvents) {
     if (!LOGIN_EVENTS.includes(eventName(event))) continue;
     const id = eventSubjectId(event);
     const date = eventDate(event);
@@ -702,10 +782,11 @@ export async function computeTemporalIndicatorsPayload() {
   const lastMonth = monthly[monthly.length - 1] || {};
   const highRisk = rows.filter((row) => row.monthsToCancellation != null && row.monthsToCancellation >= 0 && row.monthsToCancellation <= 3 && (row.daysWithoutActivity || 0) >= 30).length;
   const preCancellation = buildPreCancellationAnalysis(rows, subjects);
+  const activeRisk = buildActiveRiskAnalysis(rows, subjects, months);
   const summary = {
     totalSubjects: subjects.size,
     baseClients: clients.length,
-    appPharusUsers: new Set(pharusEvents.map(eventSubjectId).filter(Boolean)).size,
+    appPharusUsers: new Set(eligiblePharusEvents.map(eventSubjectId).filter(Boolean)).size,
     months: months.length,
     activeMonthlyRows: activeRows.length,
     totalLogins: monthly.reduce((sum, row) => sum + row.logins, 0),
@@ -717,11 +798,13 @@ export async function computeTemporalIndicatorsPayload() {
     cancellationWindowInactiveRows: highRisk,
     preCancellationClientsWithSignals: preCancellation.clientsWithSignals,
     preCancellationClientsWithSignalsPercent: preCancellation.clientsWithSignalsPercent,
+    activeClientsWithSignals: activeRisk.clientsWithSignals,
+    activeClientsWithSignalsPercent: activeRisk.clientsWithSignalsPercent,
   };
 
   const indicators = [
     { indicator: "Sinais antes do cancelamento", viability: "Sim", metric: "Compara 0-30, 31-60 e 61-90 dias antes do cancelamento contra baseline de 91-180 dias e identifica queda de atividade, ausencia de reunioes/implementacoes/atualizacoes, NPS detrator e 30+ dias sem atividade.", coverage: { value: preCancellation.clientsWithSignals, total: preCancellation.analyzedCancelledClients, percent: preCancellation.clientsWithSignalsPercent }, base: "App Pharus + BASE QV" },
-    { indicator: "Logins", viability: "Sim", metric: "count(*) por user_id e mês em App Pharus metrics.events, event_name login_succeeded/login_success.", coverage: { value: summary.totalLogins, total: pharusEvents.length, percent: pct(summary.totalLogins, pharusEvents.length) }, base: "App Pharus" },
+    { indicator: "Logins", viability: "Sim", metric: "count(*) por user_id e mês em App Pharus metrics.events, event_name login_succeeded/login_success; e-mails @demo.com excluídos.", coverage: { value: summary.totalLogins, total: eligiblePharusEvents.length, percent: pct(summary.totalLogins, eligiblePharusEvents.length) }, base: "App Pharus" },
     { indicator: "Reuniões", viability: "Sim", metric: "count(distinct reunião deduplicada) por client_id e mês em client_meetings/manual_meetings; canceladas excluídas quando status disponível.", coverage: { value: summary.totalMeetings, total: clientMeetings.length + manualMeetings.length, percent: pct(summary.totalMeetings, clientMeetings.length + manualMeetings.length) }, base: "BASE QV" },
     { indicator: "Implementações", viability: "Sim", metric: "count(*) por client_id e mês usando client_mecanismos.implemented_at ou status concluído com created_at.", coverage: { value: summary.totalImplementations, total: mechanisms.length, percent: pct(summary.totalImplementations, mechanisms.length) }, base: "BASE QV" },
     { indicator: "Atualizações financeiras", viability: "Sim", metric: "count(*) por client_id e mês usando client_financial_data.updated_at; fallback created_at.", coverage: { value: summary.totalFinancialUpdates, total: financialRows.length, percent: pct(summary.totalFinancialUpdates, financialRows.length) }, base: "BASE QV" },
@@ -737,12 +820,13 @@ export async function computeTemporalIndicatorsPayload() {
     summary,
     monthly,
     preCancellation,
+    activeRisk,
     clients: rows,
     indicators,
     sources: {
       warnings,
       databases: [
-        { source: "App Pharus", schema: "metrics", table: "events", rows: pharusEvents.length },
+        { source: "App Pharus", schema: "metrics", table: "events", rows: eligiblePharusEvents.length, excludedDemoUsers: pharusDemoIdentities.userIds.size },
         { source: "BASE QV", schema: "public", table: "client_meetings/manual_meetings", rows: clientMeetings.length + manualMeetings.length },
         { source: "BASE QV", schema: "public", table: "client_mecanismos", rows: mechanisms.length },
         { source: "BASE QV", schema: "public", table: "client_financial_data", rows: financialRows.length },

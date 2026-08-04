@@ -27,6 +27,10 @@ let authListenerBound = false;
 let uiBound = false;
 let bootOptions = {};
 let portalShownOnce = false;
+let sessionExpiryHandled = false;
+let sessionExpiryPromise = null;
+let lastNotifiedAccessToken = null;
+let refreshSessionPromise = null;
 
 const els = {};
 const isDev =
@@ -322,13 +326,75 @@ async function applySession(nextSession) {
     await rejectInvalidDomainSession();
     return { ok: false, reason: 'unauthorizedDomain' };
   }
+  sessionExpiryHandled = false;
   renderPortal();
   return { ok: true };
 }
 
 function notifyAuthenticated() {
   if (!isAuthenticated()) return;
+  if (lastNotifiedAccessToken === session.access_token) return;
+  lastNotifiedAccessToken = session.access_token;
   bootOptions.onAuthenticated?.();
+}
+
+async function expireSession(message = SESSION_EXPIRED_MESSAGE) {
+  if (sessionExpiryPromise) return sessionExpiryPromise;
+  if (sessionExpiryHandled) return;
+
+  sessionExpiryHandled = true;
+  lastNotifiedAccessToken = null;
+  session = null;
+  sessionExpiryPromise = (async () => {
+    try {
+      await authSupabase?.auth.signOut({ scope: 'local' });
+    } catch {
+      /* A limpeza visual e local ainda deve acontecer se o Auth estiver indisponível. */
+    }
+    renderLoginPage(message);
+    bootOptions.onSignedOut?.();
+  })();
+
+  try {
+    await sessionExpiryPromise;
+  } finally {
+    sessionExpiryPromise = null;
+  }
+}
+
+async function verifyStoredSession(candidate) {
+  if (!candidate?.access_token) return null;
+
+  const verify = await authSupabase.auth.getUser(candidate.access_token);
+  if (!verify.error && verify.data?.user) {
+    return { ...candidate, user: verify.data.user };
+  }
+
+  const refreshed = await authSupabase.auth.refreshSession();
+  if (!refreshed.error && refreshed.data?.session?.access_token) {
+    const refreshedSession = refreshed.data.session;
+    const refreshedUser = await authSupabase.auth.getUser(refreshedSession.access_token);
+    if (!refreshedUser.error && refreshedUser.data?.user) {
+      return { ...refreshedSession, user: refreshedUser.data.user };
+    }
+  }
+
+  debugAuth({
+    phase: 'verifyStoredSession failed',
+    verifyError: verify.error?.message || null,
+    refreshError: refreshed.error?.message || null,
+  });
+  await expireSession();
+  return null;
+}
+
+async function refreshSessionOnce() {
+  if (!refreshSessionPromise) {
+    refreshSessionPromise = authSupabase.auth.refreshSession().finally(() => {
+      refreshSessionPromise = null;
+    });
+  }
+  return refreshSessionPromise;
 }
 
 /**
@@ -355,8 +421,7 @@ export async function authenticatedFetch(url, options = {}) {
     if (session && !isQuartaviaEmail(session.user?.email)) {
       await rejectInvalidDomainSession();
     } else {
-      renderLoginPage(SESSION_EXPIRED_MESSAGE);
-      bootOptions.onSignedOut?.();
+      await expireSession();
     }
     const err = new Error('AUTH_REQUIRED');
     err.code = 'AUTH_REQUIRED';
@@ -370,7 +435,7 @@ export async function authenticatedFetch(url, options = {}) {
   let response = await doFetch(session.access_token);
 
   if (response.status === 401) {
-    const { data, error } = await authSupabase.auth.refreshSession();
+    const { data, error } = await refreshSessionOnce();
     if (!error && data?.session?.access_token) {
       session = data.session;
       response = await doFetch(data.session.access_token);
@@ -379,14 +444,7 @@ export async function authenticatedFetch(url, options = {}) {
 
   if (response.status === 401) {
     console.error('[auth] API 401');
-    try {
-      await authSupabase.auth.signOut();
-    } catch {
-      /* ignore */
-    }
-    session = null;
-    renderLoginPage(SESSION_EXPIRED_MESSAGE);
-    bootOptions.onSignedOut?.();
+    await expireSession();
     const err = new Error('AUTH_REQUIRED');
     err.code = 'AUTH_REQUIRED';
     throw err;
@@ -473,6 +531,8 @@ export async function signOut() {
     /* ignore */
   }
   session = null;
+  sessionExpiryHandled = false;
+  lastNotifiedAccessToken = null;
   portalShownOnce = false;
   renderLoginPage('');
   bootOptions.onSignedOut?.();
@@ -497,8 +557,13 @@ function bindAuthListener() {
   authSupabase.auth.onAuthStateChange(async (event, nextSession) => {
     debugAuth({ event });
 
+    // O boot valida INITIAL_SESSION no servidor antes de liberar o portal.
+    if (event === 'INITIAL_SESSION') return;
+
     if (event === 'SIGNED_OUT') {
       session = null;
+      lastNotifiedAccessToken = null;
+      if (sessionExpiryHandled) return;
       if (authState !== 'unauthorizedDomain') {
         renderLoginPage('');
       }
@@ -516,6 +581,7 @@ function bindAuthListener() {
         if (event === 'INITIAL_SESSION') renderLoginPage('');
         return;
       }
+      sessionExpiryHandled = false;
       const applied = await applySession(nextSession);
       if (applied.ok) notifyAuthenticated();
     }
@@ -558,7 +624,13 @@ export async function bootAuth(options = {}) {
       return;
     }
 
-    const applied = await applySession(data.session);
+    const verifiedSession = await verifyStoredSession(data.session);
+    if (!verifiedSession) {
+      if (!data.session && !callbackError) renderLoginPage('');
+      return;
+    }
+
+    const applied = await applySession(verifiedSession);
     if (applied.ok) notifyAuthenticated();
   } catch (err) {
     console.error('[auth] boot failed:', err);

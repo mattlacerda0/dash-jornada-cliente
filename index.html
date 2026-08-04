@@ -16,7 +16,7 @@
     .layout{display:grid;grid-template-columns:238px minmax(0,1fr);min-height:calc(100vh - 64px)}
     .sidebar{border-right:1px solid var(--color-border);padding:24px 16px;background:#111}
     .sidebar-label,.eyebrow{font-size:11px;letter-spacing:.11em;text-transform:uppercase;color:var(--color-text-subtle);font-weight:700}
-    .nav{display:grid;gap:6px;margin-top:12px}.nav button{display:flex;align-items:center;gap:10px;width:100%;border:0;background:transparent;color:var(--color-text-muted);padding:10px 12px;border-radius:var(--radius-md);text-align:left;cursor:pointer}.nav button:hover{background:var(--color-surface-2);color:var(--color-text)}.nav button.active{background:var(--color-primary-soft);color:#ffab6f}.nav button[disabled]{opacity:.42;cursor:not-allowed}.nav-icon{width:18px;height:18px;flex:0 0 18px;display:inline-flex;align-items:center;justify-content:center;color:currentColor}.nav-icon svg{width:100%;height:100%;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.soon{margin-left:auto;font-size:9px;text-transform:uppercase;color:var(--color-text-subtle)}
+    .nav{display:grid;gap:6px;margin-top:12px}.nav button{display:flex;align-items:center;gap:10px;width:100%;border:0;background:transparent;color:var(--color-text-muted);padding:10px 12px;border-radius:var(--radius-md);text-align:left;cursor:pointer}.nav button:hover{background:var(--color-surface-2);color:var(--color-text)}.nav button.active{background:var(--color-primary-soft);color:#ffab6f}.nav button[disabled]{opacity:.42;cursor:not-allowed}.nav button.nav-disabled{opacity:.55;cursor:not-allowed}.nav button.nav-disabled:hover{background:transparent;color:var(--color-text-muted)}.nav button.nav-disabled .help{margin-left:auto;opacity:1}.nav-icon{width:18px;height:18px;flex:0 0 18px;display:inline-flex;align-items:center;justify-content:center;color:currentColor}.nav-icon svg{width:100%;height:100%;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.soon{margin-left:auto;font-size:9px;text-transform:uppercase;color:var(--color-text-subtle)}
     main{min-width:0;padding:32px}.container{max-width:1450px;margin:0 auto}.view{display:none}.view.active{display:block}
     .page-header{display:flex;justify-content:space-between;gap:24px;align-items:flex-start}.page-header h1{font-size:30px;line-height:1.2;margin:5px 0 8px}.page-header p{margin:0;color:var(--color-text-muted);max-width:720px}
     .status{font-size:12px;color:var(--color-text-muted);text-align:right}.status b{display:block;font-weight:600;margin-bottom:3px}
@@ -701,6 +701,7 @@
     .empty{display:none;padding:42px;text-align:center;color:var(--color-text-muted)}
     .pagination{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:14px;flex-wrap:wrap}.pagination .btn{height:34px;padding:0 12px}
     .truncate{max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .signal-tags{display:flex;flex-wrap:wrap;gap:6px;min-width:260px}.signal-tag{display:inline-flex;align-items:center;padding:4px 7px;border:1px solid rgba(244,121,32,.35);border-radius:4px;background:rgba(244,121,32,.09);color:#ffd2b2;font-size:10px;line-height:1.25;white-space:nowrap}
     .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.62);display:none;align-items:stretch;justify-content:flex-end;z-index:40}
     .modal-backdrop.open{display:flex}.drawer{width:min(440px,100%);background:#141414;border-left:1px solid var(--color-border);padding:24px;overflow:auto}
     .drawer h2{margin:0 0 6px;font-size:20px}.drawer .sub{color:var(--color-text-muted);font-size:12px;margin-bottom:18px}
@@ -1069,6 +1070,49 @@
       #view-statistical-crosses .association-metrics strong{display:inline}
       #view-statistical-crosses .association-metrics span::before{content:" · "}
     }
+    #view-exploration{overflow-x:hidden;min-width:0}
+    #view-exploration .exploration-kpis{grid-template-columns:repeat(4,minmax(0,1fr));margin-bottom:16px}
+    #view-exploration .exploration-kpis .metric:first-child{border-color:rgba(244,121,32,.58)}
+    #view-exploration .exploration-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+    #view-exploration .exploration-grid > *{min-width:0}
+    #view-exploration .exploration-span-all{grid-column:1/-1}
+    #view-exploration .exploration-list{display:grid;gap:12px;margin-top:14px}
+    #view-exploration .exploration-row{display:grid;grid-template-columns:minmax(120px,1.15fr) minmax(110px,1fr) auto;gap:10px;align-items:center}
+    #view-exploration .exploration-row-label{font-size:12px;line-height:1.35;overflow-wrap:anywhere}
+    #view-exploration .exploration-row-label strong{display:block;font:inherit;color:var(--color-text)}
+    #view-exploration .exploration-direction{display:inline-flex;align-items:center;gap:4px;margin-top:4px;font-size:10px;font-weight:700;color:var(--color-text-muted)}
+    #view-exploration .exploration-direction.is-positive{color:var(--color-success)}
+    #view-exploration .exploration-direction.is-risk{color:var(--color-danger)}
+    #view-exploration .exploration-direction.is-warning{color:var(--color-warning)}
+    #view-exploration .exploration-direction.is-neutral{color:var(--color-text-muted)}
+    #view-exploration .exploration-guide{display:flex;flex-wrap:wrap;gap:6px 12px;margin:10px 0 2px;padding:8px 10px;border:1px solid var(--color-border);border-radius:6px;background:rgba(255,255,255,.025);font-size:10px;line-height:1.4;color:var(--color-text-muted)}
+    #view-exploration .exploration-guide strong{color:var(--color-text);font-weight:700}
+    #view-exploration .exploration-track{height:9px;background:var(--color-surface-2);border:1px solid var(--color-border);border-radius:999px;overflow:hidden}
+    #view-exploration .exploration-track span{display:block;height:100%;border-radius:inherit;background:var(--color-primary)}
+    #view-exploration .exploration-value{min-width:82px;text-align:right;font-size:11px;color:var(--color-text-muted)}
+    #view-exploration .exploration-value strong{display:block;color:var(--color-text);font-size:12px}
+    #view-exploration .exploration-confidence{display:inline-flex;align-items:center;min-height:22px;padding:2px 8px;border-radius:999px;font-size:10px;font-weight:700;text-transform:uppercase}
+    #view-exploration .exploration-confidence.high{color:var(--color-success);background:var(--color-success-soft)}
+    #view-exploration .exploration-confidence.medium{color:var(--color-warning);background:var(--color-warning-soft)}
+    #view-exploration .exploration-confidence.low{color:var(--color-danger);background:var(--color-danger-soft)}
+    #view-exploration .exploration-method{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:12px}
+    #view-exploration .exploration-method div{padding:12px;border:1px solid var(--color-border);border-radius:var(--radius-md);background:var(--color-surface-2)}
+    #view-exploration .exploration-method strong{display:block;margin-bottom:4px;font-size:12px}
+    #view-exploration .exploration-method span{font-size:11px;line-height:1.45;color:var(--color-text-muted)}
+    #view-exploration .table-wrap{max-width:100%;overflow-x:auto}
+    #view-exploration table{min-width:900px}
+    #view-exploration td{font-size:12px;vertical-align:top}
+    #view-exploration .exploration-note{font-size:11px;line-height:1.45;color:var(--color-text-muted)}
+    @media(max-width:1100px){
+      #view-exploration .exploration-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+      #view-exploration .exploration-grid{grid-template-columns:1fr}
+      #view-exploration .exploration-span-all{grid-column:auto}
+    }
+    @media(max-width:680px){
+      #view-exploration .exploration-kpis,#view-exploration .exploration-method{grid-template-columns:1fr}
+      #view-exploration .exploration-row{grid-template-columns:1fr;gap:6px}
+      #view-exploration .exploration-value{text-align:left}
+    }
     #view-ep{overflow-x:hidden;min-width:0}
     #view-ep .filters.financial .ep-ms-wrap{grid-column:span 1;min-width:0;position:relative;z-index:5}
     #view-ep .filters.financial .ep-ms-wrap.is-open{z-index:30}
@@ -1217,9 +1261,9 @@
       #view-ep .ep-nps-value .ep-nps-score{display:block;margin-bottom:2px}
       #view-ep .ep-nps-value .ep-nps-meta{display:block}
     }
-    #view-ep details.metric-avail-details,#view-statistical-crosses details.metric-avail-details{margin:18px 0;padding:12px 16px;border:1px solid var(--color-border);border-radius:8px;background:rgba(26,26,26,.55)}
-    #view-ep details.metric-avail-details summary,#view-statistical-crosses details.metric-avail-details summary{cursor:pointer;font-weight:600;font-size:14px;color:var(--color-text);list-style:revert;margin-bottom:8px}
-    #view-ep details.metric-avail-details[hidden],#view-statistical-crosses details.metric-avail-details[hidden]{display:none}
+    #view-ep details.metric-avail-details,#view-statistical-crosses details.metric-avail-details,#view-exploration details.metric-avail-details{margin:18px 0;padding:12px 16px;border:1px solid var(--color-border);border-radius:8px;background:rgba(26,26,26,.55)}
+    #view-ep details.metric-avail-details summary,#view-statistical-crosses details.metric-avail-details summary,#view-exploration details.metric-avail-details summary{cursor:pointer;font-weight:600;font-size:14px;color:var(--color-text);list-style:revert;margin-bottom:8px}
+    #view-ep details.metric-avail-details[hidden],#view-statistical-crosses details.metric-avail-details[hidden],#view-exploration details.metric-avail-details[hidden]{display:none}
     @media(max-width:1100px){#view-ep .summary.kpis-ep-primary,#view-statistical-crosses .summary.kpis-sc-primary{grid-template-columns:repeat(2,1fr)}}
     @media(max-width:1100px){
       #view-ep .ep-group-row{grid-template-columns:minmax(100px,24%) minmax(0,1fr)}
@@ -1301,7 +1345,7 @@
         <button type="button" data-nav="mechanisms"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9c.3.6.9 1 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z"/></svg></span>Implementação de mecanismos</button>
         <button type="button" data-nav="platform"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="12" rx="2"/><path d="M8 20h8"/><path d="M12 16v4"/><rect x="15" y="10" width="6" height="10" rx="1.5"/></svg></span>Uso da Plataforma</button>
         <button type="button" data-nav="financial"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M16 8h-5a2.5 2.5 0 0 0 0 5h2a2.5 2.5 0 0 1 0 5H8"/><path d="M12 6v2"/><path d="M12 16v2"/></svg></span>Atualização Financeira</button>
-        <button type="button" data-nav="engagement"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"/><path d="M8 9h8"/><path d="M8 13h5"/></svg></span>Engajamento</button>
+        <button type="button" class="nav-disabled" data-nav="engagement" aria-disabled="true"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"/><path d="M8 9h8"/><path d="M8 13h5"/></svg></span>Engajamento <span class="help" tabindex="0" data-tip="Tela indisponível: as fontes atuais não têm dados suficientes e confiáveis para calcular os indicadores de engajamento.">?</span></button>
         <button type="button" data-nav="support"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 14v-3a9 9 0 0 1 18 0v3"/><path d="M21 16v2a2 2 0 0 1-2 2h-1"/><path d="M3 14a2 2 0 0 0 2 2h1v-4H5a2 2 0 0 0-2 2Z"/><path d="M21 14a2 2 0 0 1-2 2h-1v-4h1a2 2 0 0 1 2 2Z"/><path d="M9 18h4a2 2 0 0 1 2 2v0a2 2 0 0 1-2 2h-1"/></svg></span>Atendimento</button>
         <button type="button" data-nav="satisfaction"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 2 2.9 6 6.6.9-4.8 4.7 1.1 6.6L12 17.1l-5.8 3.1 1.1-6.6-4.8-4.7 6.6-.9z"/></svg></span>Pesquisa de Satisfação</button>
         <button type="button" data-nav="cancellations"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="m17 8 5 5"/><path d="m22 8-5 5"/></svg></span>Cancelamento (clientes cancelados)</button>
@@ -2692,7 +2736,12 @@
 
           <div class="section-head"><div><h2>Evolução mensal agregada</h2><p>Contagens mensais calculadas pelas mesmas regras das abas originais.</p></div></div>
           <section class="charts">
-            <article class="chart-card" style="grid-column:1/-1"><h3>Atividades por mês</h3><p>Logins, reuniões, implementações, atualizações financeiras e NPS</p><div id="tMonthlyChart"></div></article>
+            <article class="chart-card" style="grid-column:1/-1">
+              <div class="month-chart-head"><div><h3>Atividades por mês</h3><p>Logins, reuniões, implementações, atualizações financeiras e NPS</p></div>
+                <div class="seg" id="tMonthRangeSeg" role="group" aria-label="Período do gráfico mensal"><button type="button" data-t-month-range="6" class="active">Últimos 6 meses</button><button type="button" data-t-month-range="12">Últimos 12 meses</button></div>
+              </div>
+              <div id="tMonthlyChart"></div>
+            </article>
             <article class="chart-card"><h3>Dias sem atividade</h3><p>Média mensal por cliente/usuário com atividade conhecida</p><div id="tInactivityChart"></div></article>
             <article class="chart-card"><h3>Risco pré-cancelamento</h3><p>Clientes com 30+ dias sem atividade nos 3 meses antes do cancelamento</p><div id="tRiskChart"></div></article>
           </section>
@@ -2703,56 +2752,31 @@
             <article class="chart-card"><h3>Ranking de sinais</h3><p>Ocorrência entre clientes cancelados analisáveis</p><div id="tPreCancelSignals"></div></article>
             <article class="chart-card"><h3>Janelas pré-cancelamento</h3><p>Atividades agregadas por distância até o cancelamento</p><div id="tPreCancelWindows"></div></article>
           </section>
-          <section class="table-panel">
-            <div class="section-head" style="margin:0">
-              <div><h2>Clientes com mudança de comportamento</h2><p>Clientes cancelados com ao menos um sinal identificado antes do cancelamento.</p></div>
-              <span class="counter" id="tPreCancelCounter"></span>
-            </div>
-            <div class="table-wrap">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Cliente</th>
-                    <th>Cancelamento</th>
-                    <th class="num">Sinais</th>
-                    <th>Principais sinais</th>
-                    <th class="num">Logins 0-30d</th>
-                    <th class="num">Baseline logins</th>
-                    <th class="num">Dias sem atividade</th>
-                  </tr>
-                </thead>
-                <tbody id="tPreCancelRows"></tbody>
-              </table>
-            </div>
-            <div class="empty" id="tPreCancelEmpty">Nenhum sinal pré-cancelamento encontrado.</div>
+          <div class="section-head"><div><h2>Clientes ativos com sinais de possível cancelamento</h2><p>Regras de mudança de comportamento aplicadas somente a clientes atualmente ativos.</p></div><div class="section-head-actions"><span class="export-host" id="tExportHost"></span><span class="counter" id="tActiveRiskCounter"></span></div></div>
+          <section class="summary" id="tActiveRiskKpis" style="margin-bottom:16px"></section>
+          <section class="charts">
+            <article class="chart-card"><h3>Sinais nos clientes ativos</h3><p>Contagem distinta de clientes por sinal detectado</p><div id="tActiveRiskSignals"></div></article>
+            <article class="chart-card"><h3>Clientes por quantidade de sinais</h3><p>Cada cliente ativo é contado uma única vez em sua faixa</p><div id="tActiveRiskIntensity"></div></article>
           </section>
-
-          <section class="table-panel">
-            <div class="section-head" style="margin:0">
-              <div><h2>Detalhamento cliente + mês</h2><p>Use para investigar quedas de atividade antes do cancelamento.</p></div>
-              <span class="counter" id="tCounter"></span>
-            </div>
+          <section class="table-panel" id="tActiveRiskTablePanel">
+            <div class="section-head"><div><h3>Clientes ativos com sinais detectados</h3><p>Detalhamento das evidências de possível cancelamento identificadas para cada cliente.</p></div></div>
             <div class="table-wrap">
-              <table>
-                <thead>
-                  <tr>
-                    <th data-tsort="name">Cliente / usuário</th>
-                    <th data-tsort="month">Mês</th>
-                    <th data-tsort="source">Fonte</th>
-                    <th data-tsort="logins" class="num">Logins</th>
-                    <th data-tsort="meetings" class="num">Reuniões</th>
-                    <th data-tsort="implementations" class="num">Implementações</th>
-                    <th data-tsort="financialUpdates" class="num">Atual. financeiras</th>
-                    <th data-tsort="npsResponses" class="num">NPS</th>
-                    <th data-tsort="patrimony" class="num">Patrimônio</th>
-                    <th data-tsort="daysWithoutActivity" class="num">Dias sem atividade</th>
-                  </tr>
-                </thead>
-                <tbody id="tRows"></tbody>
+              <table data-export-covered="1">
+                <thead><tr>
+                  <th data-t-active-sort="name">Cliente</th>
+                  <th data-t-active-sort="code">Código</th>
+                  <th data-t-active-sort="engineer">Engenheiro Patrimonial</th>
+                  <th class="num" data-t-active-sort="signalCount">Quantidade de sinais</th>
+                  <th data-t-active-sort="signals">Sinais detectados</th>
+                  <th class="num" data-t-active-sort="daysWithoutActivity">Dias sem atividade</th>
+                  <th class="num" data-t-active-sort="currentMonthLogins">Logins no mês</th>
+                  <th data-t-active-sort="lastActivityAt">Última atividade</th>
+                </tr></thead>
+                <tbody id="tActiveRiskRows"></tbody>
               </table>
             </div>
-            <div class="empty" id="tEmpty">Nenhum registro mensal encontrado para os filtros selecionados.</div>
-            <div class="pagination"><div id="tPageInfo"></div><div><button class="btn" id="tPrev" type="button">Anterior</button><button class="btn" id="tNext" type="button">Próxima</button></div></div>
+            <div class="empty" id="tActiveRiskEmpty">Nenhum cliente ativo com sinal encontrado para os filtros aplicados.</div>
+            <div class="pagination"><div id="tActiveRiskPageInfo"></div><div><button class="btn" id="tActiveRiskPrev" type="button">Anterior</button><button class="btn" id="tActiveRiskNext" type="button">Próxima</button></div></div>
           </section>
         </div>
       </section>
@@ -2915,14 +2939,49 @@
         <div class="container">
           <header class="page-header">
             <div>
-              <div class="eyebrow">Análise preditiva</div>
+              <div class="eyebrow">BASE QV · Análise exploratória</div>
               <h1>Descobertas exploratórias</h1>
-              <p>Espaço reservado para ranking de variáveis, combinações de risco e fatores de alta performance.</p>
+              <p>Associações, poder discriminativo e combinações de sinais para cancelamento, NPS e renovação.</p>
+            </div>
+            <div class="status-actions">
+              <div class="status"><b id="exStatus" style="color:var(--color-warning)">● Aguardando atualização</b><span id="exUpdated">Resultados descritivos, não causais</span></div>
+              <button class="btn" id="exRefresh" type="button">Atualizar</button>
             </div>
           </header>
-          <section class="summary">
-            <article class="metric"><div class="metric-label">Status</div><div class="metric-value">Sem dado</div><div class="metric-note">Tela aguardando definição do modelo exploratório</div></article>
+
+          <aside class="portal-alert portal-alert--warning" id="exMethodAlert" role="status">
+            <div class="portal-alert__icon" aria-hidden="true">!</div>
+            <div class="portal-alert__content"><strong>Leitura responsável</strong><p>AUC e correlação medem separação e associação, não causalidade. Variáveis com baixa cobertura ou risco temporal não devem entrar no Health Score sem validação adicional.</p></div>
+          </aside>
+
+          <section class="summary exploration-kpis" id="exKpis"></section>
+
+          <div class="section-head"><div><h2>Variáveis com maior associação</h2><p>Magnitude estatística observada em cada desfecho, acompanhada da cobertura.</p></div></div>
+          <section class="exploration-grid">
+            <article class="chart-card"><h3>Cancelamento <span class="help" tabindex="0" data-tip="Numéricas usam correlação ponto-bisserial; categóricas usam V de Cramér. A magnitude não representa causalidade.">?</span></h3><p>Ativos versus cancelamentos efetivados</p><div class="exploration-guide"><span><strong>Maior/Menor risco</strong> direção observada</span><span><strong>|valor| &lt; 0,10</strong> sem impacto relevante</span><span><strong>Cobertura &lt; 20%</strong> dados insuficientes</span></div><div id="exChurnAssociations"></div></article>
+            <article class="chart-card"><h3>NPS <span class="help" tabindex="0" data-tip="Correlação de Spearman com a última resposta NPS válida por cliente. Respostas posteriores ao cancelamento são excluídas da leitura preditiva.">?</span></h3><p>Somente relações com amostra mínima</p><div class="exploration-guide"><span><strong>Maior/Menor NPS</strong> direção observada</span><span><strong>|valor| &lt; 0,10</strong> sem impacto relevante</span><span><strong>Cobertura &lt; 20%</strong> dados insuficientes</span></div><div id="exNpsAssociations"></div></article>
+            <article class="chart-card"><h3>Renovação <span class="help" tabindex="0" data-tip="Renovado é o proxy clients.ciclo maior que 1. Não representa um evento contratual de renovação observado.">?</span></h3><p>Renovado significa ciclo atual maior que 1</p><div class="exploration-guide"><span><strong>Maior/Menor renovação</strong> direção observada</span><span><strong>|valor| &lt; 0,10</strong> sem impacto relevante</span><span><strong>Cobertura &lt; 20%</strong> dados insuficientes</span></div><div id="exRenewalAssociations"></div></article>
           </section>
+
+          <div class="section-head"><div><h2>Ranking preditivo individual</h2><p>Top 20 variáveis ordenadas pela AUC ajustada; cobertura e confiabilidade impedem que resultados frágeis pareçam conclusivos.</p></div><span class="export-host" id="exRankingExportHost"></span></div>
+          <section class="table-panel">
+            <div class="table-wrap"><table><thead><tr><th>#</th><th>Variável</th><th class="num">AUC</th><th class="num">Associação</th><th>Direção</th><th class="num">Cobertura</th><th>Confiabilidade</th><th>Leitura</th></tr></thead><tbody id="exRankingRows"></tbody></table></div>
+            <div class="empty" id="exRankingEmpty">Sem variáveis elegíveis.</div>
+          </section>
+
+          <div class="section-head"><div><h2>Combinações de sinais</h2><p>Regras com suporte mínimo de 30 clientes, comparadas à taxa-base de cancelamento.</p></div><span class="export-host" id="exRulesExportHost"></span></div>
+          <section class="exploration-grid">
+            <article class="chart-card exploration-span-all"><h3>Fatores associados a maior cancelamento</h3><p>Lift = taxa de cancelamento da regra dividida pela taxa-base da carteira.</p><div class="table-wrap"><table><thead><tr><th>Combinação</th><th class="num">Clientes</th><th class="num">Cancelados</th><th class="num">Taxa</th><th class="num">Lift</th><th>Ressalva</th></tr></thead><tbody id="exRiskRuleRows"></tbody></table></div><div class="empty" id="exRiskRulesEmpty">Nenhuma combinação com suporte suficiente.</div></article>
+          </section>
+
+          <div class="section-head"><div><h2>Clientes de alta performance</h2><p>Definição exploratória: cliente promotor no NPS e renovado pelo proxy ciclo &gt; 1.</p></div></div>
+          <section class="exploration-grid">
+            <article class="chart-card"><h3>Renovação por classe NPS</h3><p>Taxa de renovação dentro de cada classificação</p><div id="exHighPerformance"></div></article>
+            <article class="chart-card"><h3>Conclusão atual</h3><p>Força da evidência multivariada</p><div id="exHighConclusion"></div></article>
+            <article class="chart-card"><h3>Critério de publicação</h3><p>O que falta para um modelo operacional</p><div class="exploration-method"><div><strong>Janela temporal</strong><span>Preditores anteriores ao desfecho.</span></div><div><strong>Validação</strong><span>Teste fora da amostra por período.</span></div><div><strong>Estabilidade</strong><span>Importância consistente entre modelos.</span></div></div></article>
+          </section>
+
+          <details class="metric-avail-details"><summary>Metodologia e limitações</summary><div id="exMethodology"></div></details>
         </div>
       </section>
 
@@ -4137,6 +4196,35 @@ ${dataRows}
     function portalChartTitleTip(title, tip) {
       return `${escapeHtml(title)} ${portalMetricTip(tip, 'Sobre o gráfico')}`;
     }
+    function applyAutomaticRuleTooltips(root = document) {
+      root.querySelectorAll?.('.metric .metric-label').forEach((label) => {
+        if (label.querySelector('.help') || label.dataset.autoTip) return;
+        label.dataset.autoTip = '1';
+        const card = label.closest('.metric');
+        const note = card?.querySelector('.metric-note')?.textContent?.trim();
+        const help = document.createElement('span');
+        help.className = 'help'; help.tabIndex = 0; help.textContent = '?';
+        help.dataset.tip = `Regra: ${note || label.textContent.trim()}. O valor é recalculado conforme os filtros da tela quando aplicável.`;
+        label.appendChild(help);
+      });
+      root.querySelectorAll?.('.chart-card h3').forEach((title) => {
+        if (title.querySelector('.help') || title.dataset.autoTip) return;
+        title.dataset.autoTip = '1';
+        const description = title.closest('.chart-card')?.querySelector('p')?.textContent?.trim();
+        const help = document.createElement('span');
+        help.className = 'help'; help.tabIndex = 0; help.textContent = '?';
+        help.dataset.tip = `Regra: ${description || title.textContent.trim()}. O gráfico respeita os filtros da tela quando aplicável.`;
+        title.appendChild(document.createTextNode(' '));
+        title.appendChild(help);
+      });
+    }
+    const automaticTooltipObserver = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => mutation.addedNodes.forEach((node) => {
+        if (node.nodeType === 1) applyAutomaticRuleTooltips(node.matches?.('.metric,.chart-card') ? node.parentElement : node);
+      }));
+    });
+    automaticTooltipObserver.observe(document.body, { childList: true, subtree: true });
+    applyAutomaticRuleTooltips();
 
     /** Remonta avisos da página a partir do payload já carregado (após troca de aba). */
     function remountPortalAlertsForPage(nav) {
@@ -4271,6 +4359,7 @@ ${dataRows}
     };
     document.querySelectorAll('[data-nav]').forEach(btn => btn.addEventListener('click', () => {
       if (!isPortalAuthenticated()) return;
+      if (btn.getAttribute('aria-disabled') === 'true') return;
       // Nova visualização: avisos fechados voltam a poder aparecer.
       clearPortalViewDismissedAlerts();
       document.querySelectorAll('[data-nav]').forEach(b => b.classList.toggle('active', b === btn));
@@ -4316,6 +4405,7 @@ ${dataRows}
       if (btn.dataset.nav === 'performance' && !performanceState.payload) loadPerformance();
       if (btn.dataset.nav === 'ep' && !epState.payload) loadEpPerformance();
       if (btn.dataset.nav === 'statistical-crosses' && !scState.payload) loadStatisticalCrosses();
+      if (btn.dataset.nav === 'exploration' && !explorationState.payload) loadExploration();
       if (btn.dataset.nav === 'quality' && !qualityData.length) loadQuality();
       remountPortalAlertsForPage(btn.dataset.nav);
     }));
@@ -4327,7 +4417,7 @@ ${dataRows}
     })[window.__portalCurrentPage] || window.__portalCurrentPage;
 
     (function portalHashNav(){
-      const map = { ep:'ep', 'performance-ep':'ep', 'statistical-crosses':'statistical-crosses', sc:'statistical-crosses' };
+      const map = { ep:'ep', 'performance-ep':'ep', 'statistical-crosses':'statistical-crosses', sc:'statistical-crosses', exploration:'exploration', discoveries:'exploration' };
       const apply = () => {
         const key = map[(location.hash||'').replace(/^#/, '')];
         if (!key) return;
@@ -4338,7 +4428,7 @@ ${dataRows}
       setTimeout(apply, 0);
       document.querySelectorAll('[data-nav]').forEach(btn => btn.addEventListener('click', () => {
         const id = btn.dataset.nav;
-        if (id === 'ep' || id === 'statistical-crosses') {
+        if (id === 'ep' || id === 'statistical-crosses' || id === 'exploration') {
           const next = '#'+id;
           if (location.hash !== next) history.replaceState(null, '', next);
         }
@@ -4348,7 +4438,7 @@ ${dataRows}
     window.__portalCurrentPageCanonical = ({
       general: 'general', journey: 'journey', plan: 'patrimonial_plan', meetings: 'meetings',
       mechanisms: 'mechanisms', financial: 'financial_updates', platform: 'platform_usage',
-      support: 'support', cancellations: 'cancellations', ep: 'ep_performance', 'statistical-crosses': 'statistical_crosses', quality: 'quality',
+      support: 'support', cancellations: 'cancellations', ep: 'ep_performance', 'statistical-crosses': 'statistical_crosses', exploration: 'exploration', quality: 'quality',
     })[window.__portalCurrentPage] || window.__portalCurrentPage;
 
     /* -------- Performance do EP -------- */
@@ -6044,6 +6134,222 @@ ${dataRows}
       scFilters[k]?.addEventListener('change', () => loadStatisticalCrosses());
     });
 
+    /* -------- Descobertas Exploratórias -------- */
+    const explorationState = { payload: null, ranking: [], rules: [], loading: false, requestId: 0 };
+
+    function exFinite(value) { return value != null && Number.isFinite(Number(value)); }
+    function exPct(value, digits = 1) {
+      return exFinite(value) ? `${Number(value).toLocaleString('pt-BR', { maximumFractionDigits: digits })}%` : '—';
+    }
+    function exAssocValue(row) {
+      const value = row?.association ?? row?.rho ?? row?.associationAbs ?? row?.absMeasure;
+      return exFinite(value) ? Number(value) : null;
+    }
+    function exCoverage(row) {
+      const value = row?.coveragePercent ?? row?.coverage;
+      return exFinite(value) ? Number(value) : null;
+    }
+    function exConfidence(auc, coverage) {
+      const a = Number(auc || 0);
+      const c = Number(coverage || 0);
+      if (a >= .70 && c >= 60) return { key: 'high', label: 'Alta' };
+      if (a >= .65 && c >= 30) return { key: 'medium', label: 'Média' };
+      return { key: 'low', label: 'Baixa' };
+    }
+    function exConfidenceBadge(confidence) {
+      return `<span class="exploration-confidence ${confidence.key}">${confidence.label}</span>`;
+    }
+    function exAssociationRows(rows, { minN = 30, limit = 6, exclude = [] } = {}) {
+      return (rows || [])
+        .filter((row) => !exclude.includes(row.id) && exAssocValue(row) != null && Number(row.n ?? row.sample ?? minN) >= minN)
+        .sort((a, b) => Math.abs(exAssocValue(b)) - Math.abs(exAssocValue(a)))
+        .slice(0, limit);
+    }
+    function exAssociationDirection(row, outcome) {
+      const value = exAssocValue(row);
+      const coverage = exCoverage(row);
+      const sample = Number(row?.n ?? row?.sample ?? 0);
+      const status = String(row?.status || '').toLowerCase();
+      const categorical = row?.type === 'categorical' || String(row?.measure || '').toLowerCase().includes('cramer');
+      if (value == null || sample < 30 || coverage == null || coverage < 20 || status.includes('small_sample') || status.includes('low_coverage')) {
+        return { label: 'Dados insuficientes', className: 'is-warning' };
+      }
+      if (categorical) return { label: 'Impacto depende do grupo', className: 'is-neutral' };
+      if (Math.abs(value) < .10) return { label: 'Sem impacto relevante', className: 'is-neutral' };
+      if (outcome === 'churn') {
+        return value > 0
+          ? { label: 'Maior risco', className: 'is-risk' }
+          : { label: 'Menor risco', className: 'is-positive' };
+      }
+      if (outcome === 'nps') {
+        return value > 0
+          ? { label: 'Maior NPS', className: 'is-positive' }
+          : { label: 'Menor NPS', className: 'is-risk' };
+      }
+      return value > 0
+        ? { label: 'Maior renovação', className: 'is-positive' }
+        : { label: 'Menor renovação', className: 'is-risk' };
+    }
+    function exRenderAssociationList(rows, outcome) {
+      if (!rows.length) return '<div class="empty" style="display:block">Sem associação com amostra suficiente.</div>';
+      const max = Math.max(...rows.map((row) => Math.abs(exAssocValue(row))), .001);
+      return `<div class="exploration-list">${rows.map((row) => {
+        const value = exAssocValue(row);
+        const coverage = exCoverage(row);
+        const direction = exAssociationDirection(row, outcome);
+        return `<div class="exploration-row">
+          <div class="exploration-row-label"><strong>${escapeHtml(row.label || row.id || '—')}</strong><span class="exploration-direction ${direction.className}">${escapeHtml(direction.label)}</span></div>
+          <div class="exploration-track"><span style="width:${Math.max(2, Math.abs(value) / max * 100)}%"></span></div>
+          <div class="exploration-value"><strong>${value.toFixed(3).replace('.', ',')}</strong><span>${coverage == null ? 'cobertura —' : `${exPct(coverage)} cobertura`}</span></div>
+        </div>`;
+      }).join('')}</div>`;
+    }
+    function exCombinations(items, size, start = 0, current = [], output = []) {
+      if (current.length === size) { output.push([...current]); return output; }
+      for (let i = start; i < items.length; i += 1) exCombinations(items, size, i + 1, [...current, items[i]], output);
+      return output;
+    }
+    function exBuildRiskRules(clients) {
+      const pool = (clients || []).filter((client) => typeof client.isCancelled === 'boolean');
+      const cancelled = pool.filter((client) => client.isCancelled).length;
+      const baseline = pool.length ? cancelled / pool.length : 0;
+      const signals = [
+        { label: 'Sem reunião', test: (c) => Number(c.meetingCount || 0) === 0, caveat: '' },
+        { label: 'Sem mecanismo registrado', test: (c) => Number(c.mechanismCount || 0) === 0, caveat: 'Ausência pode refletir cobertura da integração.' },
+        { label: 'Sem implementação registrada', test: (c) => Number(c.implementedMechanismCount || 0) === 0, caveat: 'Ausência pode refletir cobertura da integração.' },
+        { label: 'Sem diagnóstico financeiro', test: (c) => !c.hasFinancialData, caveat: '' },
+        { label: 'Ciclo 1', test: (c) => Number(c.currentCycle) === 1, caveat: 'Pode refletir cliente ainda sem tempo de renovar.' },
+        { label: 'NPS detrator', test: (c) => c.npsClass === 'detractor', caveat: 'Cobertura NPS baixa.' }
+      ];
+      return [...exCombinations(signals, 2), ...exCombinations(signals, 3)]
+        .map((parts) => {
+          const selected = pool.filter((client) => parts.every((part) => part.test(client)));
+          const positives = selected.filter((client) => client.isCancelled).length;
+          const rate = selected.length ? positives / selected.length : 0;
+          return {
+            label: parts.map((part) => part.label).join(' + '),
+            clients: selected.length,
+            cancelled: positives,
+            ratePct: rate * 100,
+            lift: baseline ? rate / baseline : null,
+            caveat: [...new Set(parts.map((part) => part.caveat).filter(Boolean))].join(' ')
+          };
+        })
+        .filter((rule) => rule.clients >= 30 && rule.lift > 1)
+        .sort((a, b) => b.lift - a.lift || b.clients - a.clients)
+        .filter((rule, index, all) => all.findIndex((candidate) => candidate.clients === rule.clients && candidate.cancelled === rule.cancelled) === index)
+        .slice(0, 8);
+    }
+    function exRankingReading(row, confidence) {
+      const coverage = exCoverage(row);
+      if (confidence.key === 'low' && coverage < 20) return 'AUC indicativa; cobertura insuficiente para decisão.';
+      if (row.id === 'daysSinceLastMeeting') return 'Boa separação, mas exige corte temporal anterior ao desfecho.';
+      if (row.id === 'daysToFirstMeeting') return 'Sinal relevante; validar a regra de primeira reunião e o recorte temporal.';
+      if (confidence.key === 'high') return 'Candidato para modelo multivariado e validação temporal.';
+      return 'Manter como variável candidata, com monitoramento de estabilidade.';
+    }
+    function renderExploration() {
+      const payload = explorationState.payload;
+      if (!payload) return;
+      const summary = payload.summary || {};
+      const sample = payload.sampleMeta || {};
+      const analyzed = Number(summary.analyzedClients || 0);
+      const cancelled = Number(summary.confirmedCancellations || 0);
+      const churnRate = analyzed ? cancelled / analyzed * 100 : null;
+      const renewalValid = Number(sample.renewalAnalysis?.eligibleClients || 0);
+      const renewed = Number(sample.renewalAnalysis?.renewed || summary.renewedClients || 0);
+      const npsCoverage = Number(summary.npsPortfolioCoverage || 0);
+
+      setOrHtml('#exKpis', `
+        <article class="metric"><div class="metric-label">Clientes analisados ${portalMetricTip('Uma linha por cliente no recorte de ativos e cancelados efetivados.', 'Clientes analisados')}</div><div class="metric-value">${fmt.format(analyzed)}</div><div class="metric-note">${fmt.format(cancelled)} cancelados · taxa-base ${exPct(churnRate)}</div></article>
+        <article class="metric"><div class="metric-label">Melhor AUC individual ${portalMetricTip('Área sob a curva ROC. Mede a capacidade de ordenar um cancelado acima de um ativo quanto ao risco; não é percentual de acerto.', 'AUC')}</div><div class="metric-value">${scNum(payload.univariatePredictivePower?.[0]?.aucAdjusted ?? payload.univariatePredictivePower?.[0]?.auc, 3)}</div><div class="metric-note">${escapeHtml(payload.univariatePredictivePower?.[0]?.label || 'Sem variável elegível')}</div></article>
+        <article class="metric"><div class="metric-label">Cobertura NPS ${portalMetricTip('Percentual da população com NPS válido anterior ao cancelamento, quando aplicável.', 'Cobertura NPS')}</div><div class="metric-value">${exPct(npsCoverage)}</div><div class="metric-note">${fmt.format(summary.validNpsResponses || 0)} respostas válidas · baixa cobertura</div></article>
+        <article class="metric"><div class="metric-label">Renovados no universo válido ${portalMetricTip('Proxy de renovação: clients.ciclo maior que 1.', 'Renovação')}</div><div class="metric-value">${fmt.format(renewed)}</div><div class="metric-note">${renewalValid ? exPct(renewed / renewalValid * 100) : '—'} de ${fmt.format(renewalValid)} clientes</div></article>`);
+
+      const churnRows = exAssociationRows(payload.associations || [], { exclude: ['stayDays'] });
+      const npsRows = exAssociationRows(payload.npsCorrelations || [], { minN: 30 });
+      const renewalRows = exAssociationRows([...(payload.renewalAssociations?.numeric || []), ...(payload.renewalAssociations?.categorical || [])]);
+      setOrHtml('#exChurnAssociations', exRenderAssociationList(churnRows, 'churn'));
+      setOrHtml('#exNpsAssociations', exRenderAssociationList(npsRows, 'nps'));
+      setOrHtml('#exRenewalAssociations', exRenderAssociationList(renewalRows, 'renewal'));
+
+      const associations = new Map((payload.associations || []).map((row) => [row.id, row]));
+      explorationState.ranking = (payload.univariatePredictivePower || payload.predictivePower || [])
+        .filter((row) => exFinite(row.aucAdjusted ?? row.auc))
+        .sort((a, b) => Number(b.aucAdjusted ?? b.auc) - Number(a.aucAdjusted ?? a.auc))
+        .slice(0, 20)
+        .map((row, index) => {
+          const auc = Number(row.aucAdjusted ?? row.auc);
+          const coverage = exCoverage(row) ?? 0;
+          const confidence = exConfidence(auc, coverage);
+          return { ...row, rank: index + 1, aucValue: auc, associationRow: associations.get(row.id), confidence, reading: exRankingReading(row, confidence) };
+        });
+      setOrHtml('#exRankingRows', explorationState.ranking.map((row) => {
+        const assoc = exAssocValue(row.associationRow);
+        const coverage = exCoverage(row);
+        const direction = row.direction === 'negative' ? 'Menor valor associado a maior risco' : row.direction === 'positive' ? 'Maior valor associado a maior risco' : 'Direção não definida';
+        return `<tr><td class="num">${row.rank}</td><td><strong>${escapeHtml(row.label || row.id || '—')}</strong></td><td class="num">${scNum(row.aucValue, 3)}</td><td class="num">${assoc == null ? '—' : scNum(assoc, 3)}</td><td>${escapeHtml(direction)}</td><td class="num">${exPct(coverage)}</td><td>${exConfidenceBadge(row.confidence)}</td><td class="exploration-note">${escapeHtml(row.reading)}</td></tr>`;
+      }).join(''));
+      const rankEmpty = document.querySelector('#exRankingEmpty');
+      if (rankEmpty) rankEmpty.style.display = explorationState.ranking.length ? 'none' : 'block';
+
+      explorationState.rules = exBuildRiskRules(payload.clients || []);
+      setOrHtml('#exRiskRuleRows', explorationState.rules.map((rule) => `<tr><td><strong>${escapeHtml(rule.label)}</strong></td><td class="num">${fmt.format(rule.clients)}</td><td class="num">${fmt.format(rule.cancelled)}</td><td class="num">${exPct(rule.ratePct)}</td><td class="num"><strong>${scNum(rule.lift, 2)}x</strong></td><td class="exploration-note">${escapeHtml(rule.caveat || 'Associação descritiva; validar em janela temporal.')}</td></tr>`).join(''));
+      const rulesEmpty = document.querySelector('#exRiskRulesEmpty');
+      if (rulesEmpty) rulesEmpty.style.display = explorationState.rules.length ? 'none' : 'block';
+
+      const npsGroups = payload.npsGroups || [];
+      const maxRenewal = Math.max(...npsGroups.map((group) => Number(group.renewedPct || 0)), 1);
+      setOrHtml('#exHighPerformance', npsGroups.length ? `<div class="exploration-list">${npsGroups.map((group) => `<div class="exploration-row"><div class="exploration-row-label">${escapeHtml(group.label || group.class || '—')} · ${fmt.format(group.n || 0)} clientes</div><div class="exploration-track"><span style="width:${Number(group.renewedPct || 0) / maxRenewal * 100}%"></span></div><div class="exploration-value"><strong>${exPct(group.renewedPct)}</strong><span>${fmt.format(group.renewed || 0)} renovados</span></div></div>`).join('')}</div>` : '<div class="empty" style="display:block">Sem NPS suficiente.</div>');
+      const promoters = npsGroups.find((group) => group.class === 'promoter');
+      const detractors = npsGroups.find((group) => group.class === 'detractor');
+      setOrHtml('#exHighConclusion', `<div class="portal-alert portal-alert--${npsCoverage < 20 ? 'warning' : 'info'}" role="status"><div class="portal-alert__content"><strong>${npsCoverage < 20 ? 'Evidência ainda insuficiente' : 'Evidência indicativa'}</strong><p>${promoters ? `Promotores renovaram em ${exPct(promoters.renewedPct)}` : 'Sem taxa de promotores'}${detractors ? `, contra ${exPct(detractors.renewedPct)} entre detratores` : ''}. Nenhuma combinação adicional deve ser classificada como perfil de alta performance enquanto a cobertura NPS permanecer em ${exPct(npsCoverage)}.</p></div></div>`);
+      setOrHtml('#exMethodology', `<div class="exploration-method"><div><strong>Cancelamento</strong><span>Regra consolidada: churn efetivado, distrato assinado ou data_churn. Permanência e campos posteriores ao cancelamento ficam fora do ranking.</span></div><div><strong>NPS</strong><span>Última resposta válida por cliente. Associação de Spearman; respostas posteriores ao cancelamento não entram na leitura preditiva.</span></div><div><strong>Renovação</strong><span>Proxy clients.ciclo &gt; 1. A interpretação deve ser descritiva até existir evento contratual de renovação.</span></div></div><p class="exploration-note">Próxima etapa metodológica: regressão logística regularizada e árvore com validação temporal, importância por permutação e correção de múltiplos testes. Os resultados atuais são univariados e exploratórios.</p>`);
+    }
+
+    async function loadExploration(force = false) {
+      if (!isPortalAuthenticated() || explorationState.loading) return;
+      if (!force && scState.payload) {
+        explorationState.payload = scState.payload;
+        renderExploration();
+        const status = document.querySelector('#exStatus');
+        const updated = document.querySelector('#exUpdated');
+        if (status) { status.textContent = '● Base conectada'; status.style.color = 'var(--color-success)'; }
+        if (updated) updated.textContent = scState.payload.generatedAt ? `Atualizado em ${new Date(scState.payload.generatedAt).toLocaleString('pt-BR')}` : 'Dados carregados';
+        return;
+      }
+      explorationState.loading = true;
+      const requestId = ++explorationState.requestId;
+      const refresh = document.querySelector('#exRefresh');
+      const status = document.querySelector('#exStatus');
+      const updated = document.querySelector('#exUpdated');
+      if (refresh) { refresh.disabled = true; refresh.textContent = 'Atualizando…'; }
+      if (status) { status.textContent = '● Atualizando análises'; status.style.color = 'var(--color-warning)'; }
+      if (updated) updated.textContent = 'Calculando associações e regras…';
+      try {
+        const response = await apiFetch(`/api/statistical-crosses?t=${Date.now()}`, { cache: 'no-store' });
+        const payload = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(friendlyApiError(response.status, payload));
+        if (requestId !== explorationState.requestId) return;
+        explorationState.payload = payload;
+        scState.payload = payload;
+        renderExploration();
+        if (status) { status.textContent = '● Base conectada'; status.style.color = 'var(--color-success)'; }
+        if (updated) updated.textContent = payload.generatedAt ? `Atualizado em ${new Date(payload.generatedAt).toLocaleString('pt-BR')}` : 'Dados carregados';
+      } catch (error) {
+        if (requestId !== explorationState.requestId || error?.code === 'AUTH_REQUIRED') return;
+        if (status) { status.textContent = '● Falha na atualização'; status.style.color = 'var(--color-danger)'; }
+        if (updated) updated.textContent = error.message || 'Não foi possível carregar as descobertas.';
+        ['#exChurnAssociations', '#exNpsAssociations', '#exRenewalAssociations'].forEach((selector) => setOrHtml(selector, `<div class="empty" style="display:block">${escapeHtml(error.message || 'Falha na atualização')}</div>`));
+      } finally {
+        if (requestId === explorationState.requestId) {
+          explorationState.loading = false;
+          if (refresh) { refresh.disabled = false; refresh.textContent = 'Atualizar'; }
+        }
+      }
+    }
+    document.querySelector('#exRefresh')?.addEventListener('click', () => loadExploration(true));
+
 
     /* -------- Quality (existing behavior + descriptions) -------- */
     let qualityData = [];
@@ -6091,16 +6397,22 @@ ${dataRows}
     function renderQualityMatrices() {
       const journeySummary = onboardingState.payload?.summary || {};
       const planSummary = planState.payload?.summary || {};
+      const generalRows = generalState.payload ? filteredClients() : [];
+      const meetingRows = meetingsState.payload ? applyMeetingFilters() : [];
+      const coverageOf = (rows, predicate) => {
+        const count = rows.filter(predicate).length;
+        return fixedCoverage(count, rows.length, rows.length ? count / rows.length * 100 : 0);
+      };
       const supportRows = supportState.payload ? filteredSupportTickets() : [];
       const supportSummary = supportRows.length ? computeSupportSummary(supportRows) : {};
       renderViabilityMatrix(document.querySelector('#qGeneralMatrix'), [
-        { indicator: 'ID do cliente', viability: 'Sim', metric: 'clients.id', coverage: fixedCoverage(0, 0, 0), base: 'BASE QV' },
-        { indicator: 'Data de contratação', viability: 'Sim', metric: 'vw_info_cliente.data_assinatura_contrato; fallback clients.data_inicio_ciclo/created_at', coverage: fixedCoverage(0, 0, 0), base: 'BASE QV' },
-        { indicator: 'Data de cancelamento', viability: 'Sim', metric: 'cancellations.churn_efetivado_at; fallback clients.data_churn', coverage: fixedCoverage(0, 0, 0), base: 'BASE QV' },
-        { indicator: 'Tempo de permanência', viability: 'Sim', metric: 'Data de cancelamento ou data atual - data de contratação/criação', coverage: fixedCoverage(0, 0, 0), base: 'BASE QV' },
-        { indicator: 'Status atual', viability: 'Sim', metric: 'clients.status normalizado com cancelamentos', coverage: fixedCoverage(0, 0, 0), base: 'BASE QV' },
-        { indicator: 'Segmento do cliente', viability: 'Sim', metric: 'clients.segmentacao normalizada', coverage: fixedCoverage(0, 0, 0), base: 'BASE QV' },
-        { indicator: 'Engenheiro Patrimonial responsável', viability: 'Sim', metric: 'clients.engenheiro_patrimonial', coverage: fixedCoverage(0, 0, 0), base: 'BASE QV' },
+        { indicator: 'ID do cliente', viability: 'Sim', metric: 'clients.id', coverage: coverageOf(generalRows, row => Boolean(row.clientId)), base: 'BASE QV' },
+        { indicator: 'Data de contratação', viability: 'Sim', metric: 'vw_info_cliente.data_assinatura_contrato; fallback clients.data_inicio_ciclo/created_at', coverage: coverageOf(generalRows, row => Boolean(row.contractDate)), base: 'BASE QV' },
+        { indicator: 'Data de cancelamento', viability: 'Sim', metric: 'cancellations.churn_efetivado_at; fallback clients.data_churn', coverage: coverageOf(generalRows, row => Boolean(row.cancellationDate)), base: 'BASE QV' },
+        { indicator: 'Tempo de permanência', viability: 'Sim', metric: 'Data de cancelamento ou data atual - data de contratação/criação', coverage: coverageOf(generalRows, row => row.stayDays != null), base: 'BASE QV' },
+        { indicator: 'Status atual', viability: 'Sim', metric: 'clients.status normalizado com cancelamentos', coverage: coverageOf(generalRows, row => Boolean(row.clientStatus || row.status)), base: 'BASE QV' },
+        { indicator: 'Segmento do cliente', viability: 'Sim', metric: 'clients.segmentacao normalizada', coverage: coverageOf(generalRows, row => Boolean(row.segment)), base: 'BASE QV' },
+        { indicator: 'Engenheiro Patrimonial responsável', viability: 'Sim', metric: 'clients.engenheiro_patrimonial', coverage: coverageOf(generalRows, row => Boolean(row.engineer)), base: 'BASE QV' },
         { indicator: 'Perfil financeiro', viability: 'Sim', metric: 'client_financial_data por client_id', coverage: fixedCoverage(0, 0, 0), base: 'BASE QV' },
         { indicator: 'Última renda mensal', viability: 'Sim', metric: 'client_financial_data.ultima_renda_mensal', coverage: fixedCoverage(0, 0, 0), base: 'BASE QV' },
         { indicator: 'Último aporte', viability: 'Sim', metric: 'client_financial_data.ultimo_aporte', coverage: fixedCoverage(0, 0, 0), base: 'BASE QV' },
@@ -6128,14 +6440,14 @@ ${dataRows}
         { indicator: 'Clientes registrados por fonte', viability: 'Sim', metric: 'Contagem distinta de clients.id na BASE QV', coverage: fixedCoverage(planSummary.totalClients, planSummary.totalClients, planSummary.totalClients ? 100 : 0), base: 'BASE QV' },
       ]);
       renderViabilityMatrix(document.querySelector('#qMeetingsMatrix'), [
-        { indicator: 'Quantidade total de reuniões', viability: 'Sim', metric: 'client_meetings + manual_meetings por cliente', coverage: fixedCoverage(0, 0, 0), base: 'BASE QV' },
-        { indicator: 'Média de reuniões por mês', viability: 'Sim', metric: 'Total de reuniões / meses desde início', coverage: fixedCoverage(0, 0, 0), base: 'BASE QV' },
-        { indicator: 'Dias desde a última reunião', viability: 'Sim', metric: 'Data atual - última reunião', coverage: fixedCoverage(0, 0, 0), base: 'BASE QV' },
-        { indicator: 'Intervalo médio entre reuniões', viability: 'Sim', metric: 'Média dos intervalos entre reuniões do mesmo cliente', coverage: fixedCoverage(0, 0, 0), base: 'BASE QV' },
-        { indicator: 'Quantidade de faltas do cliente', viability: 'Parcial', metric: 'meeting_attendance/no-show quando disponível', coverage: fixedCoverage(0, 0, 0), base: 'BASE QV' },
-        { indicator: 'Quantidade de remarcações', viability: 'Parcial', metric: 'Registros remarcados em meeting_attendance/client_meetings quando disponível', coverage: fixedCoverage(0, 0, 0), base: 'BASE QV' },
-        { indicator: 'Quantidade de reuniões canceladas', viability: 'Parcial', metric: 'Status/campo de cancelamento nas fontes de reunião quando disponível', coverage: fixedCoverage(0, 0, 0), base: 'BASE QV' },
-        { indicator: 'Cliente realizou primeira reunião? (Sim/Não)', viability: 'Sim', metric: 'Existe ao menos uma reunião realizada/válida por cliente', coverage: fixedCoverage(0, 0, 0), base: 'BASE QV' },
+        { indicator: 'Quantidade total de reuniões', viability: 'Sim', metric: 'client_meetings + manual_meetings por cliente', coverage: coverageOf(meetingRows, row => (row.totalMeetings || 0) > 0), base: 'BASE QV' },
+        { indicator: 'Média de reuniões por mês', viability: 'Sim', metric: 'Total de reuniões / meses desde início', coverage: coverageOf(meetingRows, row => row.meetingsPerMonth != null), base: 'BASE QV' },
+        { indicator: 'Dias desde a última reunião', viability: 'Sim', metric: 'Data atual - última reunião', coverage: coverageOf(meetingRows, row => row.daysSinceLastMeeting != null), base: 'BASE QV' },
+        { indicator: 'Intervalo médio entre reuniões', viability: 'Sim', metric: 'Média dos intervalos entre reuniões do mesmo cliente', coverage: coverageOf(meetingRows, row => row.averageIntervalDays != null), base: 'BASE QV' },
+        { indicator: 'Quantidade de faltas do cliente', viability: 'Parcial', metric: 'meeting_attendance/no-show quando disponível', coverage: coverageOf(meetingRows, row => row.absences != null), base: 'BASE QV' },
+        { indicator: 'Quantidade de remarcações', viability: 'Parcial', metric: 'Registros remarcados em meeting_attendance/client_meetings quando disponível', coverage: coverageOf(meetingRows, row => row.reschedules != null), base: 'BASE QV' },
+        { indicator: 'Quantidade de reuniões canceladas', viability: 'Parcial', metric: 'Status/campo de cancelamento nas fontes de reunião quando disponível', coverage: coverageOf(meetingRows, row => row.cancelledMeetings != null), base: 'BASE QV' },
+        { indicator: 'Cliente realizou primeira reunião? (Sim/Não)', viability: 'Sim', metric: 'Existe ao menos uma reunião realizada/válida por cliente', coverage: coverageOf(meetingRows, row => row.firstMeetingCompleted != null), base: 'BASE QV' },
       ]);
       renderViabilityMatrix(document.querySelector('#qMechanismsMatrix'), [
         { indicator: 'Quantidade total de mecanismos disponíveis para o cliente', viability: 'Sim', metric: 'count(distinct client_id, mecanismo_id) em client_mecanismos após dedupe', coverage: fixedCoverage(mechanismsState.payload?.summary?.availableMechanisms, mechanismsState.payload?.summary?.availableMechanisms, mechanismsState.payload?.summary?.availableMechanisms ? 100 : 0), base: 'BASE QV' },
@@ -7029,11 +7341,11 @@ ${dataRows}
         <article class="metric"><div class="metric-label">Cancelados confirmados</div><div class="metric-value">${fmt.format(summary.cancelledClients)}</div><div class="metric-note">Churn efetivado ou distrato assinado</div></article>
         <article class="metric"><div class="metric-label">Cancelados sem data confirmada</div><div class="metric-value">${fmt.format(summary.cancelledWithoutConfirmedDate || 0)}</div><div class="metric-note">Não é possível identificar quando o cancelamento foi efetivado.</div></article>
         <article class="metric"><div class="metric-label">Clientes não ativos <span class="help" title="${escapeHtml('Inclui clientes congelados e clientes marcados como cancelados cuja data efetiva não pôde ser confirmada. ' + nonActiveCompositionTip(summary.nonActiveComposition))}">?</span></div><div class="metric-value">${fmt.format(summary.nonActiveClients || 0)}</div><div class="metric-note">Clientes fora da carteira ativa, sem cancelamento com data confirmada.</div></article>
-        <article class="metric"><div class="metric-label">Permanência típica <span class="help" title="${escapeHtml(daysStatsTooltip(summary.stayDaysStats, summary))}">?</span></div><div class="metric-value">${summary.typicalStayDays == null ? '—' : fmt.format(Math.round(summary.typicalStayDays)) + ' d'}</div><div class="metric-note">Mediana de ${fmt.format(summary.stayCalculatedClients || 0)} clientes com datas válidas</div></article>`;
+        <article class="metric"><div class="metric-label">Permanência média <span class="help" title="${escapeHtml(daysStatsTooltip(summary.stayDaysStats, summary))}">?</span></div><div class="metric-value">${summary.typicalStayDays == null ? '—' : fmt.format(Math.round(summary.typicalStayDays)) + ' d'}</div><div class="metric-note">Mediana de ${fmt.format(summary.stayCalculatedClients || 0)} clientes com datas válidas</div></article>`;
       document.querySelector('#gKpis2').innerHTML = `
-        <article class="metric"><div class="metric-label">Reserva de liquidez típica <span class="help" title="${escapeHtml(moneyStatsTooltip(summary.liquidityReserveStats))}">?</span></div><div class="metric-value" style="font-size:22px">${moneyAvg(summary.typicalLiquidityReserve)}</div><div class="metric-note">Mediana de ${fmt.format(summary.liquidityReserveFilledCount || 0)} clientes</div></article>
-        <article class="metric"><div class="metric-label">Último aporte típico <span class="help" title="${escapeHtml(moneyStatsTooltip(summary.lastContributionStats))}">?</span></div><div class="metric-value" style="font-size:22px">${moneyAvg(summary.typicalLastContribution)}</div><div class="metric-note">Mediana de ${fmt.format(summary.lastContributionFilledCount || 0)} clientes</div></article>
-        <article class="metric"><div class="metric-label">Renda mensal típica <span class="help" title="${escapeHtml(moneyStatsTooltip(summary.monthlyIncomeStats))}">?</span></div><div class="metric-value" style="font-size:22px">${moneyAvg(summary.typicalMonthlyIncome)}</div><div class="metric-note">Mediana de ${fmt.format(summary.monthlyIncomeFilledCount || 0)} clientes</div></article>
+        <article class="metric"><div class="metric-label">Reserva de liquidez média <span class="help" title="${escapeHtml(moneyStatsTooltip(summary.liquidityReserveStats))}">?</span></div><div class="metric-value" style="font-size:22px">${moneyAvg(summary.typicalLiquidityReserve)}</div><div class="metric-note">Mediana de ${fmt.format(summary.liquidityReserveFilledCount || 0)} clientes</div></article>
+        <article class="metric"><div class="metric-label">Último aporte médio <span class="help" title="${escapeHtml(moneyStatsTooltip(summary.lastContributionStats))}">?</span></div><div class="metric-value" style="font-size:22px">${moneyAvg(summary.typicalLastContribution)}</div><div class="metric-note">Mediana de ${fmt.format(summary.lastContributionFilledCount || 0)} clientes</div></article>
+        <article class="metric"><div class="metric-label">Renda mensal média <span class="help" title="${escapeHtml(moneyStatsTooltip(summary.monthlyIncomeStats))}">?</span></div><div class="metric-value" style="font-size:22px">${moneyAvg(summary.typicalMonthlyIncome)}</div><div class="metric-note">Mediana de ${fmt.format(summary.monthlyIncomeFilledCount || 0)} clientes</div></article>
         <article class="metric highlight"><div class="metric-label">Clientes com diagnóstico financeiro</div><div class="metric-value">${fmt.format(summary.clientsWithFinancialProfile || 0)}</div><div class="metric-note">${pct(summary.financialProfilePercent || 0)} da carteira</div></article>`;
 
       const cancelledNoDateNote = document.querySelector('#gCancelledNoDateNote');
@@ -8089,14 +8401,14 @@ ${dataRows}
         .sort((a, b) => b.count - a.count || a.label.localeCompare(b.label, 'pt-BR'));
     }
 
-    function renderMeetingTypesChart() {
+    function renderMeetingTypesChart(filteredMeetings = []) {
       const el = document.querySelector('#mChartTypes');
       if (!el) return;
       const csv = meetingsState.payload?.meetingTypesFromCsv;
       const mode = meetingsState.typeMode === 'raw' ? 'raw' : 'family';
-      const all = mode === 'raw'
-        ? (csv?.byRaw || [])
-        : (csv?.byFamily || []);
+      const all = hasActiveMeetingFilters()
+        ? calculateMeetingTypeDistribution(filteredMeetings)
+        : (mode === 'raw' ? (csv?.byRaw || []) : (csv?.byFamily || []));
       if (!csv?.available && !all.length) {
         el.innerHTML = '<div class="empty" style="display:block">CSV de tipos de reunião indisponível</div>';
         return;
@@ -8106,7 +8418,7 @@ ${dataRows}
       const max = Math.max(...list.map((i) => i.count), 1);
       el.innerHTML = list.map((i) => {
         const width = Math.max(0, Math.min(100, (i.count / max) * 100));
-        const tip = `${i.label}: ${fmt.format(i.count)} · ${pct(i.percent)} · Fonte: CSV de tipos de reunião`;
+        const tip = `${i.label}: ${fmt.format(i.count)} · ${pct(i.percent)} · Fonte: ${hasActiveMeetingFilters() ? 'reuniões filtradas' : 'CSV de tipos de reunião'}`;
         return `<div class="meeting-type-row" tabindex="0" data-tip-text="${escapeHtml(tip)}">
           <div class="meeting-type-tip" role="tooltip">${escapeHtml(tip)}</div>
           <div class="meeting-type-label" title="${escapeHtml(i.label)}">${escapeHtml(i.label)}</div>
@@ -8222,7 +8534,7 @@ ${dataRows}
         ? meetingsState.payload.metadata.noShowFrequencyUniverse
         : data.length;
       renderMonthChart(meetings);
-      renderMeetingTypesChart();
+      renderMeetingTypesChart(meetings);
       document.querySelector('#mChartStatus').innerHTML = donut(dist.attendanceStatus || []);
       document.querySelector('#mChartFreq').innerHTML = hBars(dist.meetingFrequency || []);
       document.querySelector('#mChartDays').innerHTML = hBars(dist.daysSinceLastMeeting || []);
@@ -9135,7 +9447,7 @@ ${dataRows}
         <article class="metric kpi-primary"><div class="metric-label">Percentual implementado <span class="help" tabindex="0" data-tip="Calculado dividindo os vínculos concluídos pelos vínculos únicos entre cliente e mecanismo.">?</span></div><div class="metric-value">${summary.implementationPercent == null ? '—' : pct(summary.implementationPercent)}</div><div class="metric-note">${fmt.format(summary.implementedMechanisms)} implementados de ${fmt.format(summary.availableMechanisms)} vínculos previstos.</div></article>`;
 
       document.querySelector('#kKpisTime').innerHTML = `
-        <article class="metric kpi-primary"><div class="metric-label">Tempo típico até a primeira implementação <span class="help" tabindex="0" data-tip="Mostra o tempo entre a contratação do cliente e a primeira implementação concluída. A mediana é exibida como valor principal por sofrer menos influência de casos muito longos.">?</span></div><div class="metric-value">${summary.typicalDaysToFirstImplementation == null ? '—' : fmt.format(summary.typicalDaysToFirstImplementation) + ' d'}</div><div class="metric-note">Mediana entre contratação e primeira conclusão.<br>Média: ${avgNote} dias.</div></article>
+        <article class="metric kpi-primary"><div class="metric-label">Tempo médio até a primeira implementação <span class="help" tabindex="0" data-tip="Mostra o tempo entre a contratação do cliente e a primeira implementação concluída. A mediana é exibida como valor principal por sofrer menos influência de casos muito longos.">?</span></div><div class="metric-value">${summary.typicalDaysToFirstImplementation == null ? '—' : fmt.format(summary.typicalDaysToFirstImplementation) + ' d'}</div><div class="metric-note">Mediana entre contratação e primeira conclusão.<br>Média: ${avgNote} dias.</div></article>
         <article class="metric kpi-secondary"><div class="metric-label">Clientes com implementação recente <span class="help" tabindex="0" data-tip="Cada cliente é contado uma única vez, mesmo que tenha concluído mais de um mecanismo no período.">?</span></div><div class="metric-value">${fmt.format(summary.clientsWithRecentImplementation)}</div><div class="metric-note">Clientes com pelo menos uma conclusão nos últimos 30 dias.</div></article>`;
 
       const unusedBox = document.querySelector('#kUnusedTypes');
@@ -9411,29 +9723,34 @@ ${dataRows}
       }
 
       const s = payload.summary || {};
+      const filteredCatalogRows = filteredPharusCatalog();
+      const filteredLinkRows = filteredPharusLinks();
+      const catalogFilterActive = Object.values(phFilters).some((el) => el && el.value && el.value !== 'all' && el.value !== '');
+      const linkFilterActive = Object.values(phLinkFilters).some((el) => el && el.value && el.value !== 'all' && el.value !== '');
+      const visibleCatalog = catalogFilterActive ? filteredCatalogRows : (payload.catalogRows || payload.catalog || []);
+      const visibleLinks = linkFilterActive ? filteredLinkRows : (payload.rows || []);
+      const visibleUsers = new Set(visibleLinks.map((row) => row.userId).filter(Boolean));
+      const visibleLinkedTypes = new Set(visibleLinks.map((row) => row.mechanismId).filter(Boolean));
       if (kpis) {
         kpis.innerHTML = `
-          <article class="metric kpi-primary"><div class="metric-label">Usuários com mecanismos <span class="help" tabindex="0" data-tip="Usuários distintos (user_id) com pelo menos um vínculo no App Pharus.">?</span></div><div class="metric-value">${fmt.format(s.usersWithMechanisms || s.usersWithSuggestion || s.usersWithSuggestions || 0)}</div><div class="metric-note">Unidade: usuários · App Pharus</div></article>
-          <article class="metric kpi-secondary"><div class="metric-label">Mecanismos no App Pharus</div><div class="metric-value">${fmt.format(s.catalogMechanisms || 0)}</div><div class="metric-note">Catálogo em core.mechanisms</div></article>
-          <article class="metric kpi-secondary"><div class="metric-label">Motores disponíveis</div><div class="metric-value">${fmt.format(s.engines || 0)}</div><div class="metric-note">data.engine distintos</div></article>
-          <article class="metric kpi-secondary"><div class="metric-label">Categorias principais</div><div class="metric-value">${fmt.format(s.categories || 0)}</div><div class="metric-note">data.category distintos</div></article>
-          <article class="metric kpi-secondary"><div class="metric-label">Mecanismos vinculados</div><div class="metric-value">${fmt.format(s.linkedMechanisms || s.suggestions || s.totalSuggestions || 0)}</div><div class="metric-note">Vínculos únicos user + mecanismo</div></article>
-          <article class="metric kpi-secondary"><div class="metric-label">Tipos de mecanismos vinculados</div><div class="metric-value">${fmt.format(s.linkedMechanismTypes || s.suggestedMechanismTypes || s.distinctSuggestedTypes || 0)}</div><div class="metric-note">mechanism_id distintos</div></article>`;
+          <article class="metric kpi-primary"><div class="metric-label">Usuários com mecanismos <span class="help" tabindex="0" data-tip="Usuários distintos (user_id) com pelo menos um vínculo no App Pharus.">?</span></div><div class="metric-value">${fmt.format(linkFilterActive ? visibleUsers.size : (s.usersWithMechanisms || s.usersWithSuggestion || s.usersWithSuggestions || 0))}</div><div class="metric-note">Unidade: usuários · App Pharus</div></article>
+          <article class="metric kpi-secondary"><div class="metric-label">Mecanismos no App Pharus</div><div class="metric-value">${fmt.format(catalogFilterActive ? visibleCatalog.length : (s.catalogMechanisms || 0))}</div><div class="metric-note">Catálogo em core.mechanisms</div></article>
+          <article class="metric kpi-secondary"><div class="metric-label">Motores disponíveis</div><div class="metric-value">${fmt.format(new Set(visibleCatalog.map((row) => row.engine).filter(Boolean)).size)}</div><div class="metric-note">data.engine distintos</div></article>
+          <article class="metric kpi-secondary"><div class="metric-label">Categorias principais</div><div class="metric-value">${fmt.format(new Set(visibleCatalog.map((row) => row.category).filter(Boolean)).size)}</div><div class="metric-note">data.category distintos</div></article>
+          <article class="metric kpi-secondary"><div class="metric-label">Mecanismos vinculados</div><div class="metric-value">${fmt.format(linkFilterActive ? visibleLinks.length : (s.linkedMechanisms || s.suggestions || s.totalSuggestions || 0))}</div><div class="metric-note">Vínculos únicos user + mecanismo</div></article>
+          <article class="metric kpi-secondary"><div class="metric-label">Tipos de mecanismos vinculados</div><div class="metric-value">${fmt.format(linkFilterActive ? visibleLinkedTypes.size : (s.linkedMechanismTypes || s.suggestedMechanismTypes || s.distinctSuggestedTypes || 0))}</div><div class="metric-note">mechanism_id distintos</div></article>`;
       }
 
-      const catalogTotal = s.catalogMechanisms || 1;
-      const byEngine = (payload.catalogByEngine || payload.distributions?.catalogByEngine || []).map((i) => ({
-        ...i,
-        percent: i.percent ?? (catalogTotal ? Math.round((i.count / catalogTotal) * 1000) / 10 : 0)
-      }));
-      const byCategory = payload.catalogByCategory || payload.distributions?.catalogByCategory || [];
-      const byRisk = payload.catalogByRisk || payload.distributions?.catalogByRisk || [];
-      const bySuggested = (payload.suggestionsByMechanism || payload.byMechanism || []).map((i) => ({
-        label: i.label || i.name,
-        count: i.users ?? i.count ?? 0,
-        percent: i.percent ?? 0
-      }));
-      const byMechPerUser = payload.mechanismsPerUser || payload.distributions?.mechanismsPerUser || [];
+      const makeDist = (rows, key) => {
+        const map = new Map(); rows.forEach((row) => map.set(row[key] || 'Não informado', (map.get(row[key] || 'Não informado') || 0) + 1));
+        return [...map].map(([label, count]) => ({ label, count, percent: rows.length ? count / rows.length * 100 : 0 })).sort((a,b) => b.count-a.count);
+      };
+      const byEngine = makeDist(visibleCatalog, 'engine');
+      const byCategory = makeDist(visibleCatalog, 'category');
+      const byRisk = makeDist(visibleCatalog, 'risk');
+      const bySuggested = makeDist(visibleLinks, 'mechanismName');
+      const perUser = new Map(); visibleLinks.forEach((row) => perUser.set(row.userId, (perUser.get(row.userId) || 0) + 1));
+      const byMechPerUser = makeDist([...perUser.values()].map((count) => ({ band: count >= 5 ? '5 ou mais' : String(count) })), 'band');
       const phMechPerUserEl = document.querySelector('#phChartMechPerUser');
       if (phMechPerUserEl) phMechPerUserEl.innerHTML = hBars(byMechPerUser);
       document.querySelector('#phChartEngine').innerHTML = hBars(byEngine);
@@ -10213,7 +10530,8 @@ ${dataRows}
     /* -------- Indicadores Temporais -------- */
     const temporalState = {
       payload: null, page: 1, pageSize: 25, sortKey: 'month', sortDir: 'desc',
-      loading: false, requestId: 0
+      activeSortKey: 'signalCount', activeSortDir: 'desc',
+      loading: false, requestId: 0, monthRange: 6
     };
     const tFilters = {
       search: document.querySelector('#tSearch'),
@@ -10331,7 +10649,6 @@ ${dataRows}
     }
     function renderTemporalPreCancellation(pre = {}) {
       const signals = pre.signals || [];
-      const clients = pre.clients || [];
       document.querySelector('#tPreCancelKpis').innerHTML = `
         <article class="metric highlight"><div class="metric-label">Cancelados analisáveis</div><div class="metric-value">${fmt.format(pre.analyzedCancelledClients || 0)}</div><div class="metric-note">Clientes com data de cancelamento</div></article>
         <article class="metric"><div class="metric-label">Com sinais detectados</div><div class="metric-value">${fmt.format(pre.clientsWithSignals || 0)}</div><div class="metric-note">${pct(pre.clientsWithSignalsPercent || 0)} dos cancelados analisáveis</div></article>
@@ -10342,35 +10659,86 @@ ${dataRows}
         ? hBars(sortedSignals.map(signal => ({ label: signal.label, count: signal.count || 0, percent: signal.percent || 0 })))
         : '<div class="empty" style="display:block">Sem sinais calculados.</div>';
       document.querySelector('#tPreCancelWindows').innerHTML = temporalPreCancelWindowBars(pre.windowSummary || []);
-      const topClients = clients.slice(0, 20);
-      document.querySelector('#tPreCancelRows').innerHTML = topClients.map(client => `<tr>
-        <td class="truncate" title="${escapeHtml(client.name || client.clientId)}">${escapeHtml(client.name || client.clientId)}<div class="sub">${escapeHtml(client.email || client.code || client.clientId || '')}</div></td>
-        <td>${dateBR(client.cancellationDate)}</td>
-        <td class="num">${fmt.format(client.signalCount || 0)}</td>
-        <td>${escapeHtml((client.signals || []).join(', ') || 'Sem dado')}</td>
-        <td class="num">${fmt.format(client.last30?.logins || 0)}</td>
-        <td class="num">${client.baseline?.loginsAvg == null ? 'Sem dado' : fmt.format(client.baseline.loginsAvg)}</td>
-        <td class="num">${client.last30?.daysWithoutActivity == null ? 'Sem dado' : fmt.format(client.last30.daysWithoutActivity) + ' d'}</td>
+    }
+    function renderTemporalActiveRisk(active = {}) {
+      const clients = active.clients || [];
+      const signals = active.signals || [];
+      document.querySelector('#tActiveRiskKpis').innerHTML = `
+        <article class="metric highlight"><div class="metric-label">Ativos analisados</div><div class="metric-value">${fmt.format(active.analyzedActiveClients || 0)}</div><div class="metric-note">Status analítico Ativo e sem cancelamento efetivado</div></article>
+        <article class="metric"><div class="metric-label">Ativos com sinais</div><div class="metric-value">${fmt.format(active.clientsWithSignals || 0)}</div><div class="metric-note">${pct(active.clientsWithSignalsPercent || 0)} dos ativos analisados</div></article>
+        <article class="metric"><div class="metric-label">Média de sinais</div><div class="metric-value">${fmt.format(active.averageSignalsPerClient || 0)}</div><div class="metric-note">Entre clientes ativos com sinal</div></article>
+        <article class="metric"><div class="metric-label">Sinal mais frequente</div><div class="metric-value text-kpi">${escapeHtml(active.topSignal?.label || 'Sem dado')}</div><div class="metric-note">${fmt.format(active.topSignal?.count || 0)} clientes distintos</div></article>`;
+      document.querySelector('#tActiveRiskSignals').innerHTML = signals.length
+        ? hBars(signals.map(signal => ({ label: signal.label, count: signal.count || 0, percent: signal.percent || 0 })))
+        : '<div class="empty" style="display:block">Nenhum sinal encontrado nos clientes ativos.</div>';
+      const buckets = new Map();
+      clients.forEach(client => {
+        const label = client.signalCount >= 4 ? '4 ou mais sinais' : `${client.signalCount} ${client.signalCount === 1 ? 'sinal' : 'sinais'}`;
+        buckets.set(label, (buckets.get(label) || 0) + 1);
+      });
+      const order = ['1 sinal', '2 sinais', '3 sinais', '4 ou mais sinais'];
+      const intensity = order.map(label => ({ label, count: buckets.get(label) || 0, percent: clients.length ? ((buckets.get(label) || 0) / clients.length) * 100 : 0 }));
+      document.querySelector('#tActiveRiskIntensity').innerHTML = clients.length ? hBars(intensity) : '<div class="empty" style="display:block">Sem clientes ativos com sinais.</div>';
+      document.querySelector('#tActiveRiskCounter').textContent = `${fmt.format(clients.length)} clientes ativos com sinais`;
+      const descriptions = new Map(signals.map(signal => [signal.label, signal.description || signal.label]));
+      const sortedClients = portalSortRows(clients, temporalState.activeSortKey, temporalState.activeSortDir, (row, key) => key === 'signals' ? (row.signals || []).join(', ') : row[key]);
+      const totalPages = Math.max(1, Math.ceil(sortedClients.length / temporalState.pageSize));
+      temporalState.page = Math.min(Math.max(1, temporalState.page), totalPages);
+      const pageRows = sortedClients.slice((temporalState.page - 1) * temporalState.pageSize, temporalState.page * temporalState.pageSize);
+      document.querySelector('#tActiveRiskRows').innerHTML = pageRows.map(client => `<tr>
+        <td><strong>${escapeHtml(client.name || 'Não informado')}</strong><div class="field-used">${escapeHtml(client.email || '')}</div></td>
+        <td>${escapeHtml(client.code || '—')}</td>
+        <td>${escapeHtml(client.engineer || 'Não informado')}</td>
+        <td class="num"><strong>${fmt.format(client.signalCount || 0)}</strong></td>
+        <td><div class="signal-tags">${(client.signals || []).map(signal => `<span class="signal-tag" title="${escapeHtml(descriptions.get(signal) || signal)}">${escapeHtml(signal)}</span>`).join('')}</div></td>
+        <td class="num">${client.daysWithoutActivity == null ? 'Sem dado' : fmt.format(client.daysWithoutActivity) + ' d'}</td>
+        <td class="num">${fmt.format(client.currentMonthLogins || 0)}</td>
+        <td>${client.lastActivityAt ? dateBR(client.lastActivityAt) : 'Sem dado'}</td>
       </tr>`).join('');
-      document.querySelector('#tPreCancelCounter').textContent = `${fmt.format(topClients.length)} de ${fmt.format(clients.length)} clientes`;
-      document.querySelector('#tPreCancelEmpty').style.display = topClients.length ? 'none' : 'block';
+      document.querySelector('#tActiveRiskEmpty').style.display = sortedClients.length ? 'none' : 'block';
+      document.querySelector('#tActiveRiskPageInfo').textContent = sortedClients.length ? `Página ${temporalState.page} de ${totalPages} · ${fmt.format(sortedClients.length)} clientes` : '0 clientes';
+      document.querySelector('#tActiveRiskPrev').disabled = temporalState.page <= 1;
+      document.querySelector('#tActiveRiskNext').disabled = temporalState.page >= totalPages;
     }
     function renderTemporal() {
       if (!temporalState.payload) return;
       const payload = temporalState.payload;
       const summary = payload.summary || {};
       const rows = filteredTemporalRows();
+      const subjectIds = new Set(rows.map((row) => row.subjectId || row.clientId).filter(Boolean));
+      const baseIds = new Set(rows.filter((row) => row.source === 'BASE QV').map((row) => row.subjectId || row.clientId).filter(Boolean));
+      const pharusIds = new Set(rows.filter((row) => row.source === 'App Pharus').map((row) => row.subjectId || row.clientId).filter(Boolean));
+      const derived = {
+        totalSubjects: subjectIds.size,
+        baseClients: baseIds.size,
+        appPharusUsers: pharusIds.size,
+        totalLogins: rows.reduce((sum, row) => sum + (row.logins || 0), 0),
+        totalMeetings: rows.reduce((sum, row) => sum + (row.meetings || 0), 0),
+        totalImplementations: rows.reduce((sum, row) => sum + (row.implementations || 0), 0),
+        totalFinancialUpdates: rows.reduce((sum, row) => sum + (row.financialUpdates || 0), 0),
+        totalNpsResponses: rows.reduce((sum, row) => sum + (row.npsResponses || 0), 0),
+      };
+      const latestVisibleMonth = rows.map((row) => row.month).sort().at(-1);
+      const latestInactivity = rows.filter((row) => row.month === latestVisibleMonth && row.daysWithoutActivity != null).map((row) => row.daysWithoutActivity);
+      derived.lastMonthDaysWithoutActivity = latestInactivity.length ? latestInactivity.reduce((a,b) => a+b,0) / latestInactivity.length : null;
       document.querySelector('#tKpis').innerHTML = `
-        <article class="metric highlight"><div class="metric-label">Clientes/usuários</div><div class="metric-value">${fmt.format(summary.totalSubjects || 0)}</div><div class="metric-note">${fmt.format(summary.baseClients || 0)} BASE QV · ${fmt.format(summary.appPharusUsers || 0)} App Pharus</div></article>
-        <article class="metric"><div class="metric-label">Logins</div><div class="metric-value">${fmt.format(summary.totalLogins || 0)}</div><div class="metric-note">App Pharus metrics.events</div></article>
-        <article class="metric"><div class="metric-label">Reuniões</div><div class="metric-value">${fmt.format(summary.totalMeetings || 0)}</div><div class="metric-note">BASE QV deduplicada</div></article>
-        <article class="metric"><div class="metric-label">Implementações</div><div class="metric-value">${fmt.format(summary.totalImplementations || 0)}</div><div class="metric-note">client_mecanismos</div></article>
-        <article class="metric"><div class="metric-label">Atualizações financeiras</div><div class="metric-value">${fmt.format(summary.totalFinancialUpdates || 0)}</div><div class="metric-note">updated_at ou created_at</div></article>
-        <article class="metric"><div class="metric-label">NPS</div><div class="metric-value">${fmt.format(summary.totalNpsResponses || 0)}</div><div class="metric-note">nps_responses</div></article>
+        <article class="metric highlight"><div class="metric-label">Clientes/usuários</div><div class="metric-value">${fmt.format(derived.totalSubjects)}</div><div class="metric-note">${fmt.format(derived.baseClients)} BASE QV · ${fmt.format(derived.appPharusUsers)} App Pharus</div></article>
+        <article class="metric"><div class="metric-label">Logins</div><div class="metric-value">${fmt.format(derived.totalLogins)}</div><div class="metric-note">App Pharus metrics.events</div></article>
+        <article class="metric"><div class="metric-label">Reuniões</div><div class="metric-value">${fmt.format(derived.totalMeetings)}</div><div class="metric-note">BASE QV deduplicada</div></article>
+        <article class="metric"><div class="metric-label">Implementações</div><div class="metric-value">${fmt.format(derived.totalImplementations)}</div><div class="metric-note">client_mecanismos</div></article>
+        <article class="metric"><div class="metric-label">Atualizações financeiras</div><div class="metric-value">${fmt.format(derived.totalFinancialUpdates)}</div><div class="metric-note">updated_at ou created_at</div></article>
+        <article class="metric"><div class="metric-label">NPS</div><div class="metric-value">${fmt.format(derived.totalNpsResponses)}</div><div class="metric-note">nps_responses</div></article>
         <article class="metric"><div class="metric-label">Interações</div><div class="metric-value">Sem dado</div><div class="metric-note">Sem fonte confiável</div></article>
-        <article class="metric"><div class="metric-label">Dias sem atividade</div><div class="metric-value">${summary.lastMonthDaysWithoutActivity == null ? 'Sem dado' : fmt.format(Math.round(summary.lastMonthDaysWithoutActivity)) + ' d'}</div><div class="metric-note">Média do mês mais recente</div></article>`;
-      document.querySelector('#tMonthlyChart').innerHTML = temporalMonthlyBars(payload.monthly || []);
-      document.querySelector('#tInactivityChart').innerHTML = hBars((payload.monthly || []).map(row => ({
+        <article class="metric"><div class="metric-label">Dias sem atividade</div><div class="metric-value">${derived.lastMonthDaysWithoutActivity == null ? 'Sem dado' : fmt.format(Math.round(derived.lastMonthDaysWithoutActivity)) + ' d'}</div><div class="metric-note">Média do mês mais recente</div></article>`;
+      const monthKeys = [...new Set(rows.map((row) => row.month))].sort();
+      const filteredMonthly = monthKeys.map((month) => {
+        const monthRows = rows.filter((row) => row.month === month);
+        const inactivity = monthRows.map((row) => row.daysWithoutActivity).filter((value) => value != null);
+        return { month, label: temporalMonthLabel(month), logins: monthRows.reduce((s,r)=>s+(r.logins||0),0), meetings: monthRows.reduce((s,r)=>s+(r.meetings||0),0), implementations: monthRows.reduce((s,r)=>s+(r.implementations||0),0), financialUpdates: monthRows.reduce((s,r)=>s+(r.financialUpdates||0),0), npsResponses: monthRows.reduce((s,r)=>s+(r.npsResponses||0),0), averageDaysWithoutActivity: inactivity.length ? inactivity.reduce((a,b)=>a+b,0)/inactivity.length : null };
+      });
+      const visibleMonths = filteredMonthly.slice(-temporalState.monthRange);
+      document.querySelector('#tMonthlyChart').innerHTML = temporalMonthlyBars(visibleMonths);
+      document.querySelector('#tInactivityChart').innerHTML = hBars(visibleMonths.map(row => ({
         label: row.label,
         count: Math.round(row.averageDaysWithoutActivity || 0),
         percent: row.averageDaysWithoutActivity ? Math.min(100, row.averageDaysWithoutActivity) : 0,
@@ -10382,28 +10750,10 @@ ${dataRows}
         .map(row => ({ label: row.name || row.clientId, count: row.daysWithoutActivity || 0, percent: Math.min(100, row.daysWithoutActivity || 0) }));
       document.querySelector('#tRiskChart').innerHTML = riskRows.length ? hBars(riskRows) : '<div class="empty" style="display:block">Sem clientes no recorte pré-cancelamento.</div>';
       renderTemporalPreCancellation(payload.preCancellation || {});
-      const pages = Math.max(1, Math.ceil(rows.length / temporalState.pageSize));
-      if (temporalState.page > pages) temporalState.page = pages;
-      if (temporalState.page < 1) temporalState.page = 1;
-      const start = (temporalState.page - 1) * temporalState.pageSize;
-      const pageRows = rows.slice(start, start + temporalState.pageSize);
-      document.querySelector('#tRows').innerHTML = pageRows.map(row => `<tr>
-        <td class="truncate" title="${escapeHtml(row.name || row.clientId)}">${escapeHtml(row.name || row.clientId)}<div class="sub">${escapeHtml(row.email || row.code || row.clientId || '')}</div></td>
-        <td>${escapeHtml(temporalMonthLabel(row.month))}</td>
-        <td>${escapeHtml(row.source || 'Não informado')}</td>
-        <td class="num">${fmt.format(row.logins || 0)}</td>
-        <td class="num">${fmt.format(row.meetings || 0)}</td>
-        <td class="num">${fmt.format(row.implementations || 0)}</td>
-        <td class="num">${fmt.format(row.financialUpdates || 0)}</td>
-        <td class="num">${row.npsResponses ? `${fmt.format(row.npsResponses)} · ${temporalMetric(row.npsAverage)}` : '0'}</td>
-        <td class="num">${row.patrimony == null ? 'Sem dado' : moneyAvg(row.patrimony)}</td>
-        <td class="num">${row.daysWithoutActivity == null ? 'Sem dado' : fmt.format(row.daysWithoutActivity) + ' d'}</td>
-      </tr>`).join('');
-      document.querySelector('#tCounter').textContent = `${rows.length} de ${(payload.clients || []).length} linhas mensais`;
-      document.querySelector('#tPageInfo').textContent = `Página ${temporalState.page} de ${pages}`;
-      document.querySelector('#tEmpty').style.display = rows.length ? 'none' : 'block';
-      document.querySelector('#tPrev').disabled = temporalState.page <= 1;
-      document.querySelector('#tNext').disabled = temporalState.page >= pages;
+      const activeSource = payload.activeRisk || {};
+      const activeClients = filteredTemporalActiveClients();
+      const activeSignals = (activeSource.signals || []).map((signal) => ({ ...signal, count: activeClients.filter((client) => (client.signals || []).includes(signal.label)).length, percent: activeClients.length ? activeClients.filter((client) => (client.signals || []).includes(signal.label)).length / activeClients.length * 100 : 0 })).sort((a,b)=>b.count-a.count);
+      renderTemporalActiveRisk({ ...activeSource, clients: activeClients, clientsWithSignals: activeClients.length, clientsWithSignalsPercent: activeSource.analyzedActiveClients ? activeClients.length / activeSource.analyzedActiveClients * 100 : 0, signals: activeSignals, topSignal: activeSignals[0] || null });
     }
     async function loadTemporal() {
       if (!isPortalAuthenticated()) return;
@@ -10434,8 +10784,8 @@ ${dataRows}
         if (error?.code === 'AUTH_REQUIRED' || error?.code === 'AUTH_FORBIDDEN' || error?.message === 'AUTH_REQUIRED') return;
         status.textContent = '● Falha na atualização'; status.style.color = 'var(--color-danger)';
         document.querySelector('#tUpdated').textContent = error.message || friendlyApiError(0, null, true);
-        document.querySelector('#tEmpty').style.display = 'block';
-        document.querySelector('#tEmpty').textContent = 'Não foi possível carregar indicadores temporais.';
+        const chart = document.querySelector('#tMonthlyChart');
+        if (chart) chart.innerHTML = '<div class="empty" style="display:block">Não foi possível carregar indicadores temporais.</div>';
       } finally {
         if (requestId === temporalState.requestId) {
           temporalState.loading = false; refresh.disabled = false; refresh.textContent = 'Atualizar';
@@ -10452,6 +10802,22 @@ ${dataRows}
       renderTemporal();
     });
     document.querySelector('#tRefresh')?.addEventListener('click', loadTemporal);
+    document.querySelector('#tActiveRiskPrev')?.addEventListener('click', () => { temporalState.page -= 1; renderTemporal(); });
+    document.querySelector('#tActiveRiskNext')?.addEventListener('click', () => { temporalState.page += 1; renderTemporal(); });
+    document.querySelectorAll('#view-temporal th[data-t-active-sort]').forEach(th => th.addEventListener('click', () => {
+      const key = th.dataset.tActiveSort;
+      if (temporalState.activeSortKey === key) temporalState.activeSortDir = temporalState.activeSortDir === 'asc' ? 'desc' : 'asc';
+      else { temporalState.activeSortKey = key; temporalState.activeSortDir = ['name', 'code', 'engineer', 'signals', 'lastActivityAt'].includes(key) ? 'asc' : 'desc'; }
+      temporalState.page = 1;
+      renderTemporal();
+    }));
+    document.querySelector('#tMonthRangeSeg')?.addEventListener('click', (event) => {
+      const button = event.target.closest('[data-t-month-range]');
+      if (!button) return;
+      temporalState.monthRange = button.dataset.tMonthRange === '12' ? 12 : 6;
+      document.querySelectorAll('#tMonthRangeSeg [data-t-month-range]').forEach((item) => item.classList.toggle('active', item === button));
+      renderTemporal();
+    });
     document.querySelector('#tPrev')?.addEventListener('click', () => { temporalState.page -= 1; renderTemporal(); });
     document.querySelector('#tNext')?.addEventListener('click', () => { temporalState.page += 1; renderTemporal(); });
     document.querySelectorAll('#view-temporal th[data-tsort]').forEach(th => th.addEventListener('click', () => {
@@ -10723,7 +11089,7 @@ ${dataRows}
         <article class="metric"><div class="metric-label">Clientes com dados financeiros <span class="help" title="Clientes que possuem ao menos um registro de informações financeiras.">?</span></div><div class="metric-value">${fmtSafe(summary.clientsWithFinancialData)}</div><div class="metric-note">${pctSafe(summary.financialDataCoveragePercent)} da carteira</div></article>
         <article class="metric"><div class="metric-label">Clientes com registro alterado após a criação <span class="help" title="Somente registros com updated_at posterior a created_at. A criação inicial não conta.">?</span></div><div class="metric-value">${fmtSafe(summary.clientsWithPostCreationUpdate ?? summary.totalFinancialUpdates)}</div><div class="metric-note">Regra: updated_at &gt; created_at</div></article>
         <article class="metric"><div class="metric-label">Atualizados nos últimos 30 dias <span class="help" title="Clientes com updated_at &gt; created_at e atualização nos últimos 30 dias.">?</span></div><div class="metric-value">${fmtSafe(summary.updatedLast30Days)}</div><div class="metric-note">${pctSafe(summary.updatedLast30DaysPercentOfFinancial)} com dados financeiros</div></article>
-        <article class="metric"><div class="metric-label">Recência típica da atualização <span class="help" title="Mediana de dias desde a última atualização válida (updated_at &gt; created_at). Sem atualização válida = sem valor.">?</span></div><div class="metric-value">${summary.medianDaysSinceUpdate == null ? '—' : fmtSafe(Math.round(summary.medianDaysSinceUpdate)) + ' d'}</div><div class="metric-note">Mediana · média ${summary.averageDaysSinceUpdate == null ? '—' : fmtSafe(Math.round(summary.averageDaysSinceUpdate))} dias</div></article>
+        <article class="metric"><div class="metric-label">Recência média da atualização <span class="help" title="Mediana de dias desde a última atualização válida (updated_at &gt; created_at). Sem atualização válida = sem valor.">?</span></div><div class="metric-value">${summary.medianDaysSinceUpdate == null ? '—' : fmtSafe(Math.round(summary.medianDaysSinceUpdate)) + ' d'}</div><div class="metric-note">Mediana · média ${summary.averageDaysSinceUpdate == null ? '—' : fmtSafe(Math.round(summary.averageDaysSinceUpdate))} dias</div></article>
         <article class="metric"><div class="metric-label">Clientes com dados desatualizados <span class="help" title="Clientes com atualização válida há mais de 90 dias.">?</span></div><div class="metric-value">${fmtSafe(summary.outdatedOver90Days)}</div><div class="metric-note">${pctSafe(summary.outdatedOver90DaysPercent)} com dados financeiros</div></article>`;
 
       const note = document.querySelector('#fHistoryNote');
@@ -12290,7 +12656,7 @@ ${dataRows}
 
       const timing = summary.timing || {};
       const timingItems = [
-        cancelTimingStripItem('Tempo típico em processo', timing.medianDaysInProcess),
+        cancelTimingStripItem('Tempo médio em processo', timing.medianDaysInProcess),
         cancelTimingStripItem('Intenção → pedido', timing.medianIntentionToOrder),
         cancelTimingStripItem('Pedido → efetivação', timing.medianOrderToEffective),
         cancelTimingStripItem('Intenção → efetivação', timing.medianIntentionToEffective),
@@ -13072,7 +13438,7 @@ ${dataRows}
       'Quantos clientes ativos temos?',
       'Quantos clientes cancelaram?',
       'Qual o motivo mais comum de cancelamento?',
-      'Quanto tempo típico os clientes ficam antes de cancelar?',
+      'Quanto tempo médio os clientes ficam antes de cancelar?',
       'Qual é a regra de cliente ativo?',
       'Onde está o dado de renda mensal?',
       'Como é calculada a permanência?',
@@ -13847,6 +14213,26 @@ ${dataRows}
       };
     }
 
+    function getTemporalExportPayload() {
+      const rows = portalSortRows(filteredTemporalActiveClients(), temporalState.activeSortKey, temporalState.activeSortDir, (row, key) => key === 'signals' ? (row.signals || []).join(', ') : row[key]);
+      return {
+        filename: PortalTableExport.exportFilename('indicadores-temporais-clientes-ativos-com-sinais'),
+        sheetName: 'Ativos com sinais',
+        columns: [
+          { key: 'name', label: 'Cliente', value: (r) => r.name || 'Não informado' },
+          { key: 'code', label: 'Código', value: (r) => r.code || '' },
+          { key: 'email', label: 'E-mail', value: (r) => r.email || '' },
+          { key: 'engineer', label: 'EP', value: (r) => r.engineer || 'Não informado' },
+          { key: 'status', label: 'Status', value: (r) => r.status || 'Ativo' },
+          { key: 'signalCount', label: 'Quantidade de sinais', value: (r) => r.signalCount || 0 },
+          { key: 'signals', label: 'Sinais', value: (r) => (r.signals || []).join(', ') },
+          { key: 'daysWithoutActivity', label: 'Dias sem atividade', value: (r) => r.daysWithoutActivity ?? '' },
+          { key: 'currentMonthLogins', label: 'Logins no mês atual', value: (r) => r.currentMonthLogins || 0 }
+        ],
+        rows
+      };
+    }
+
     function getSatisfactionExportPayload() {
       const rows = filteredSatisfactionClients();
       return {
@@ -13901,6 +14287,40 @@ ${dataRows}
           { key: 'implementedPerClient', label: 'Média mecanismos/cliente', value: (r) => r.implementedPerClient ?? '' }
         ],
         rows
+      };
+    }
+
+    function getExplorationRankingExportPayload() {
+      return {
+        filename: PortalTableExport.exportFilename('descobertas-ranking-preditivo'),
+        sheetName: 'Ranking preditivo',
+        columns: [
+          { key: 'rank', label: 'Posição' },
+          { key: 'label', label: 'Variável', value: (r) => r.label || r.id || '—' },
+          { key: 'auc', label: 'AUC ajustada', value: (r) => r.aucValue ?? r.aucAdjusted ?? r.auc ?? '—' },
+          { key: 'association', label: 'Associação', value: (r) => exAssocValue(r.associationRow) ?? '—' },
+          { key: 'direction', label: 'Direção', value: (r) => r.direction || '—' },
+          { key: 'coverage', label: 'Cobertura (%)', value: (r) => exCoverage(r) ?? '—' },
+          { key: 'confidence', label: 'Confiabilidade', value: (r) => r.confidence?.label || '—' },
+          { key: 'reading', label: 'Leitura' }
+        ],
+        rows: explorationState.ranking || []
+      };
+    }
+
+    function getExplorationRulesExportPayload() {
+      return {
+        filename: PortalTableExport.exportFilename('descobertas-combinacoes-risco'),
+        sheetName: 'Combinações de risco',
+        columns: [
+          { key: 'label', label: 'Combinação' },
+          { key: 'clients', label: 'Clientes' },
+          { key: 'cancelled', label: 'Cancelados' },
+          { key: 'ratePct', label: 'Taxa de cancelamento (%)' },
+          { key: 'lift', label: 'Lift' },
+          { key: 'caveat', label: 'Ressalva' }
+        ],
+        rows: explorationState.rules || []
       };
     }
 
@@ -14072,9 +14492,12 @@ ${dataRows}
         ['#cExportHost', getCancellationsExportPayload],
         ['#epExportHost', getEpExportPayload],
         ['#eExportHost', getEngagementExportPayload],
+        ['#tExportHost', getTemporalExportPayload],
         ['#xExportHost', getSatisfactionExportPayload],
         ['#rExportHost', getRenewalExportPayload],
         ['#perfExportHost', getPerfLegacyExportPayload],
+        ['#exRankingExportHost', getExplorationRankingExportPayload],
+        ['#exRulesExportHost', getExplorationRulesExportPayload],
         ['#scDiffExportHost', getScDiffExportPayload],
         ['#scAucExportHost', getScAucExportPayload],
         ['#scNpsGroupsExportHost', getScNpsGroupsExportPayload],
@@ -14085,7 +14508,65 @@ ${dataRows}
       ];
       mounts.forEach(([sel, fn]) => PortalTableExport.mountExportButton(document.querySelector(sel), fn));
     }
+    function getDomTableExportPayload(table) {
+      const headers = [...table.querySelectorAll('thead th')].map((th, index) => ({
+        key: `column_${index + 1}`,
+        label: th.textContent.replace(/\?/g, '').trim() || `Coluna ${index + 1}`,
+      }));
+      const rows = [...table.querySelectorAll('tbody tr')].filter((tr) => tr.offsetParent !== null).map((tr) => {
+        const row = {};
+        [...tr.children].forEach((cell, index) => { row[`column_${index + 1}`] = cell.textContent.replace(/\s+/g, ' ').trim(); });
+        return row;
+      });
+      const view = table.closest('.view')?.id?.replace(/^view-/, '') || 'tabela';
+      const title = table.closest('.table-panel,.chart-card')?.querySelector('h2,h3')?.textContent?.replace(/\?/g, '').trim() || view;
+      return { filename: PortalTableExport.exportFilename(`${view}-${title}`), sheetName: title.slice(0, 31), columns: headers, rows };
+    }
+    function mountMissingTableExports(root = document) {
+      root.querySelectorAll?.('table:not([data-export-covered])').forEach((table) => {
+        const panel = table.closest('.table-panel,.chart-card,.indicator-matrix');
+        const existingHost = panel?.querySelector('.export-host');
+        if (existingHost) {
+          table.dataset.exportCovered = '1';
+          return;
+        }
+        const host = document.createElement('span');
+        host.className = 'export-host auto-export-host';
+        const sectionHead = panel?.querySelector(':scope > .section-head');
+        if (sectionHead) {
+          let actions = sectionHead.querySelector('.section-head-actions');
+          if (!actions) { actions = document.createElement('div'); actions.className = 'section-head-actions'; sectionHead.appendChild(actions); }
+          actions.prepend(host);
+        } else {
+          const wrap = table.closest('.table-wrap');
+          if (wrap) wrap.before(host); else table.before(host);
+        }
+        table.dataset.exportCovered = '1';
+        PortalTableExport.mountExportButton(host, () => getDomTableExportPayload(table));
+      });
+    }
+    function filteredTemporalActiveClients() {
+      const q = (tFilters.search?.value || '').trim().toLowerCase();
+      return (temporalState.payload?.activeRisk?.clients || []).filter((client) => {
+        if (tFilters.source?.value === 'App Pharus') return false;
+        if (!['all', 'none'].includes(tFilters.cancelWindow?.value || 'all')) return false;
+        return !q || `${client.name || ''} ${client.email || ''} ${client.clientId || ''} ${client.code || ''} ${client.engineer || ''} ${(client.signals || []).join(' ')}`.toLowerCase().includes(q);
+      });
+    }
     mountAllTableExports();
+    mountMissingTableExports();
+    let matrixFilterTimer = null;
+    ['input', 'change'].forEach((eventName) => document.addEventListener(eventName, (event) => {
+      if (!event.target.closest?.('.filters')) return;
+      clearTimeout(matrixFilterTimer);
+      matrixFilterTimer = setTimeout(() => renderQualityMatrices(), 80);
+    }));
+    const tableExportObserver = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => mutation.addedNodes.forEach((node) => {
+        if (node.nodeType === 1) mountMissingTableExports(node.matches?.('table') ? node.parentElement : node);
+      }));
+    });
+    tableExportObserver.observe(document.body, { childList: true, subtree: true });
 
     let portalStarted = false;
     let portalRefreshTimer = null;
@@ -14115,6 +14596,7 @@ ${dataRows}
         if (views.satisfaction?.classList.contains('active')) loadSatisfaction();
         if (views.ep?.classList.contains('active')) loadEpPerformance();
         if (views['statistical-crosses']?.classList.contains('active')) loadStatisticalCrosses();
+        if (views.exploration?.classList.contains('active')) loadExploration(true);
         if (views.quality?.classList.contains('active')) loadQuality();
       }, 5 * 60 * 1000);
     }
@@ -14138,6 +14620,7 @@ ${dataRows}
       if (typeof supportState !== 'undefined') supportState.payload = null;
       if (typeof cancellationsState !== 'undefined') cancellationsState.payload = null;
       if (typeof satisfactionState !== 'undefined') satisfactionState.payload = null;
+      if (typeof explorationState !== 'undefined') { explorationState.payload = null; explorationState.ranking = []; explorationState.rules = []; }
       if (typeof resetAssistant === 'function') resetAssistant();
     }
     window.startPortalApp = startPortalApp;

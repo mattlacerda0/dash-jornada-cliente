@@ -13,6 +13,7 @@ import {
   loadPharusUserDirectoryFromCsv,
   mergeUserDirectories,
 } from "./_shared/pharus-user-directory.mjs";
+import { fetchPharusDemoIdentities, filterPharusDemoRows, isPharusDemoEmail } from "./_shared/pharus-demo-filter.mjs";
 
 const PHARUS_PROJECT_ID = "qvtqufdivpbmubooawdm";
 const MECHANISM_SELECT = "id,data,created_at,updated_at";
@@ -427,6 +428,11 @@ export async function computePharusMechanismsPayload() {
 
   // CSV primeiro, live depois → live preenche/sobrescreve campos ausentes no merge.
   const accountsById = mergeUserDirectories(csvDirectory.byId, liveDirectory);
+  const demoIdentities = await fetchPharusDemoIdentities(rawWarnings);
+  for (const [userId, account] of accountsById.entries()) {
+    if (isPharusDemoEmail(account?.email)) demoIdentities.userIds.add(String(userId));
+  }
+  userMechRows = filterPharusDemoRows(userMechRows, demoIdentities);
   if (!csvDirectory.metadata.preRegistrationsCsv.available) {
     rawWarnings.push({
       code: "csv_pre_registrations_missing",

@@ -9,6 +9,7 @@ import {
   getPharusSupabaseClient,
   pharusConfigurationError,
 } from "./_shared/env.mjs";
+import { fetchPharusDemoIdentities, filterPharusDemoRows } from "./_shared/pharus-demo-filter.mjs";
 
 const PHARUS_PROJECT_ID = "qvtqufdivpbmubooawdm";
 
@@ -451,6 +452,10 @@ export async function computePharusEpMeetingsPayload() {
   );
   const directory = buildAdvisorDirectory(snapshotRows, warningCounter);
 
+  const demoWarnings = [];
+  const demoIdentities = await fetchPharusDemoIdentities(demoWarnings);
+  for (const warning of demoWarnings) bumpWarning(warningCounter, warning.code || "demo_filter", warning.message || "Filtro demo parcial");
+  scheduledRows = filterPharusDemoRows(scheduledRows, demoIdentities);
   const { rows: deduped } = dedupeScheduledMeetings(scheduledRows, warningCounter);
 
   const normalized = [];

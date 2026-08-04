@@ -5,6 +5,9 @@
 import { getAuthEnv } from "./env.mjs";
 
 export const CORPORATE_EMAIL_DOMAIN = "quartavia.com.br";
+const AUTH_CACHE_TTL_MS = 30_000;
+const validatedTokens = new Map();
+const validationsInFlight = new Map();
 
 export function isQuartaviaEmail(email) {
   if (typeof email !== "string") return false;
@@ -20,6 +23,48 @@ function jsonError(status, error, code) {
     { error, code },
     { status, headers: { "Cache-Control": "no-store" } },
   );
+}
+
+async function requestAuthUser(authUrl, anonKey, token) {
+  const cached = validatedTokens.get(token);
+  if (cached?.expiresAt > Date.now()) return { user: cached.user };
+  if (cached) validatedTokens.delete(token);
+
+  let pending = validationsInFlight.get(token);
+  if (!pending) {
+    pending = (async () => {
+      try {
+        const response = await fetch(`${authUrl}/auth/v1/user`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            apikey: anonKey,
+          },
+        });
+        if (!response.ok) {
+          return {
+            status: response.status,
+            details: (await response.text().catch(() => "")).slice(0, 240),
+          };
+        }
+        const user = await response.json().catch(() => null);
+        if (!user?.email) return { status: 401, details: "Auth API não retornou usuário." };
+        validatedTokens.set(token, { user, expiresAt: Date.now() + AUTH_CACHE_TTL_MS });
+        return { user };
+      } catch (error) {
+        return {
+          status: 0,
+          details: error instanceof Error ? error.message : String(error),
+        };
+      }
+    })();
+    validationsInFlight.set(token, pending);
+  }
+
+  try {
+    return await pending;
+  } finally {
+    validationsInFlight.delete(token);
+  }
 }
 
 /**
@@ -53,24 +98,19 @@ export async function authenticateRequest(request) {
     };
   }
 
-  let userResponse;
-  try {
-    // Equivalente a authSupabase.auth.getUser(token) via Auth API do projeto Auth.
-    userResponse = await fetch(`${authUrl}/auth/v1/user`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        apikey: anonKey,
-      },
+  const authResult = await requestAuthUser(authUrl, anonKey, token);
+  if (!authResult.user) {
+    console.error("[Auth] Auth API rejeitou token:", {
+      status: authResult.status,
+      project: (() => {
+        try { return new URL(authUrl).hostname.split(".")[0]; } catch { return "invalid"; }
+      })(),
+      details: authResult.details,
     });
-  } catch {
     return { error: jsonError(401, "Sessão inválida ou expirada.", "unauthenticated") };
   }
 
-  if (!userResponse.ok) {
-    return { error: jsonError(401, "Sessão inválida ou expirada.", "unauthenticated") };
-  }
-
-  const user = await userResponse.json().catch(() => null);
+  const user = authResult.user;
   if (!user?.email) {
     return { error: jsonError(401, "Sessão inválida ou expirada.", "unauthenticated") };
   }

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import json
 import os
+import shutil
 import sys
 import unicodedata
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -13,6 +14,26 @@ from urllib.parse import urlencode, urlparse
 from urllib.request import Request, urlopen
 
 ROOT = Path(__file__).resolve().parent
+
+
+def resolve_node_executable():
+    """Localiza o Node sem depender exclusivamente do PATH do processo Python."""
+    configured = (os.environ.get("PORTAL_NODE_BINARY") or os.environ.get("NODE_BINARY") or "").strip()
+    candidates = [
+        Path(configured) if configured else None,
+        Path(shutil.which("node")) if shutil.which("node") else None,
+        Path(sys.executable).resolve().parent.parent / "node" / "bin" / "node.exe",
+        Path.home() / ".cache" / "codex-runtimes" / "codex-primary-runtime" / "dependencies" / "node" / "bin" / "node.exe",
+    ]
+    for candidate in candidates:
+        if candidate and candidate.is_file():
+            return str(candidate)
+    raise RuntimeError(
+        "Node.js não encontrado. Configure PORTAL_NODE_BINARY ou adicione node ao PATH."
+    )
+
+
+NODE_EXECUTABLE = resolve_node_executable()
 
 
 def _parse_env_line(raw: str):
@@ -840,7 +861,7 @@ def general_data_payload():
     env = os.environ.copy()
     env["PORTAL_INTERNAL_DATA_RUN"] = "1"
     result = subprocess.run(
-        ["node", str(ROOT / "run_general_data_api.mjs")],
+        [NODE_EXECUTABLE, str(ROOT / "run_general_data_api.mjs")],
         cwd=ROOT,
         capture_output=True,
         text=True,
@@ -859,7 +880,7 @@ def meetings_payload():
     env = os.environ.copy()
     env["PORTAL_INTERNAL_DATA_RUN"] = "1"
     result = subprocess.run(
-        ["node", str(ROOT / "run_meetings_api.mjs")],
+        [NODE_EXECUTABLE, str(ROOT / "run_meetings_api.mjs")],
         cwd=ROOT,
         capture_output=True,
         text=True,
@@ -878,7 +899,7 @@ def mechanisms_payload():
     env = os.environ.copy()
     env["PORTAL_INTERNAL_DATA_RUN"] = "1"
     result = subprocess.run(
-        ["node", str(ROOT / "run_mechanisms_api.mjs")],
+        [NODE_EXECUTABLE, str(ROOT / "run_mechanisms_api.mjs")],
         cwd=ROOT,
         capture_output=True,
         text=True,
@@ -903,7 +924,7 @@ def pharus_mechanisms_payload():
         "pharus_subprocess_key_len": len(str(env.get("PHARUS_SUPABASE_ANON_KEY") or "").strip()),
     })
     result = subprocess.run(
-        ["node", str(ROOT / "run_pharus_mechanisms_api.mjs")],
+        [NODE_EXECUTABLE, str(ROOT / "run_pharus_mechanisms_api.mjs")],
         cwd=ROOT,
         capture_output=True,
         text=True,
@@ -922,7 +943,7 @@ def financial_updates_payload():
     env = os.environ.copy()
     env["PORTAL_INTERNAL_DATA_RUN"] = "1"
     result = subprocess.run(
-        ["node", str(ROOT / "run_financial_updates_api.mjs")],
+        [NODE_EXECUTABLE, str(ROOT / "run_financial_updates_api.mjs")],
         cwd=ROOT,
         capture_output=True,
         text=True,
@@ -941,7 +962,7 @@ def support_payload():
     env = os.environ.copy()
     env["PORTAL_INTERNAL_DATA_RUN"] = "1"
     result = subprocess.run(
-        ["node", str(ROOT / "run_support_api.mjs")],
+        [NODE_EXECUTABLE, str(ROOT / "run_support_api.mjs")],
         cwd=ROOT,
         capture_output=True,
         text=True,
@@ -960,7 +981,7 @@ def ep_performance_payload():
     env = os.environ.copy()
     env["PORTAL_INTERNAL_DATA_RUN"] = "1"
     result = subprocess.run(
-        ["node", str(ROOT / "run_ep_performance_api.mjs")],
+        [NODE_EXECUTABLE, str(ROOT / "run_ep_performance_api.mjs")],
         cwd=ROOT,
         capture_output=True,
         text=True,
@@ -979,7 +1000,7 @@ def pharus_ep_meetings_payload():
     env = os.environ.copy()
     env["PORTAL_INTERNAL_DATA_RUN"] = "1"
     result = subprocess.run(
-        ["node", str(ROOT / "run_pharus_ep_meetings_api.mjs")],
+        [NODE_EXECUTABLE, str(ROOT / "run_pharus_ep_meetings_api.mjs")],
         cwd=ROOT,
         capture_output=True,
         text=True,
@@ -1000,7 +1021,7 @@ def statistical_crosses_payload(query_string=""):
     if query_string:
         env["PORTAL_REQUEST_QUERY"] = query_string.lstrip("?")
     result = subprocess.run(
-        ["node", str(ROOT / "run_statistical_crosses_api.mjs")],
+        [NODE_EXECUTABLE, str(ROOT / "run_statistical_crosses_api.mjs")],
         cwd=ROOT,
         capture_output=True,
         text=True,
@@ -1020,7 +1041,7 @@ def cancellations_payload():
     env["PORTAL_INTERNAL_DATA_RUN"] = "1"
     started = datetime.now(timezone.utc)
     result = subprocess.run(
-        ["node", str(ROOT / "run_cancellations_api.mjs")],
+        [NODE_EXECUTABLE, str(ROOT / "run_cancellations_api.mjs")],
         cwd=ROOT,
         capture_output=True,
         text=True,
@@ -1045,7 +1066,7 @@ def platform_usage_payload():
     env = os.environ.copy()
     env["PORTAL_INTERNAL_DATA_RUN"] = "1"
     result = subprocess.run(
-        ["node", str(ROOT / "run_platform_usage_api.mjs")],
+        [NODE_EXECUTABLE, str(ROOT / "run_platform_usage_api.mjs")],
         cwd=ROOT,
         capture_output=True,
         text=True,
@@ -1064,7 +1085,7 @@ def onboarding_payload():
     env = os.environ.copy()
     env["PORTAL_INTERNAL_DATA_RUN"] = "1"
     result = subprocess.run(
-        ["node", str(ROOT / "run_onboarding_api.mjs")],
+        [NODE_EXECUTABLE, str(ROOT / "run_onboarding_api.mjs")],
         cwd=ROOT,
         capture_output=True,
         text=True,
@@ -1083,7 +1104,7 @@ def patrimonial_plan_payload():
     env = os.environ.copy()
     env["PORTAL_INTERNAL_DATA_RUN"] = "1"
     result = subprocess.run(
-        ["node", str(ROOT / "run_patrimonial_plan_api.mjs")],
+        [NODE_EXECUTABLE, str(ROOT / "run_patrimonial_plan_api.mjs")],
         cwd=ROOT,
         capture_output=True,
         text=True,
@@ -1107,7 +1128,7 @@ def assistant_payload(email, raw_body):
     env["PORTAL_USER_EMAIL"] = email or ""
     env["PORTAL_ASSISTANT_BODY"] = raw_body if raw_body else "{}"
     result = subprocess.run(
-        ["node", str(ROOT / "run_assistant_api.mjs")],
+        [NODE_EXECUTABLE, str(ROOT / "run_assistant_api.mjs")],
         cwd=ROOT,
         capture_output=True,
         text=True,
@@ -1129,7 +1150,7 @@ def assistant_data_payload(auth_header, raw_body):
     env["PORTAL_ASSISTANT_DATA_AUTH"] = auth_header or ""
     env["PORTAL_ASSISTANT_DATA_BODY"] = raw_body if raw_body else "{}"
     result = subprocess.run(
-        ["node", str(ROOT / "run_assistant_data_api.mjs")],
+        [NODE_EXECUTABLE, str(ROOT / "run_assistant_data_api.mjs")],
         cwd=ROOT,
         capture_output=True,
         text=True,

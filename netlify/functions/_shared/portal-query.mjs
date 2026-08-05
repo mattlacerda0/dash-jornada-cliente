@@ -809,11 +809,11 @@ const JOURNEY_METRICS = {
   average_days_to_first_mechanism: {
     label: "Mediana de dias até o primeiro mecanismo",
     type: "median",
-    definition: "median_days_contract_to_activation_or_implementation",
+    definition: "median_days_contract_to_first_valid_implementation",
     sources: JOURNEY_SOURCES,
     rule:
-      "Mediana na mesma coorte dos quatro prazos entre a data inicial e a primeira client_meetings de Ativação das Engrenagens ou Implementação.",
-    compute: (rows) => medianFinite(comparableJourneyKpiRows(rows).map((r) => r.daysToFirstImplementation)),
+      "Mediana entre a data inicial e a primeira implementação válida em public.client_mecanismos, excluindo diferenças negativas.",
+    compute: (rows) => medianFinite(rows.map((r) => r.daysToFirstImplementation)),
   },
   average_onboarding_days: {
     label: "Mediana de dias de onboarding",

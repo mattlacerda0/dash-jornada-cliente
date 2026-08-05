@@ -1698,7 +1698,7 @@
           <section class="journey-grid" aria-label="Indicadores de prazo e conclusão">
             <article class="chart-card"><h3>Dias até a primeira reunião</h3><p>Quantidade de clientes por faixa de dias</p><div id="jFirstMeetingChart"></div></article>
             <article class="chart-card"><h3>Dias até entrega do plano patrimonial <span class="help" id="jPlanDeliveryHelp" tabindex="0">?</span></h3><p>Contratação → primeira reunião Central de Inteligência</p><div id="jPlanDeliveryChart"></div></article>
-            <article class="chart-card"><h3>Dias até primeiro mecanismo implementado</h3><p>Contratação → primeira Ativação das Engrenagens ou Implementação</p><div id="jFirstImplementationChart"></div></article>
+            <article class="chart-card"><h3>Dias até primeiro mecanismo implementado</h3><p>Contratação → primeira implementação válida em client_mecanismos</p><div id="jFirstImplementationChart"></div></article>
             <article class="chart-card"><h3>Tempo total de onboarding <span class="help" id="jTotalOnboardingHelp" tabindex="0">?</span></h3><p>Contratação → primeiro marco: reunião ou dados financeiros</p><div id="jTotalOnboardingChart"></div></article>
             <article class="chart-card"><h3>Concluiu onboarding</h3><p>Estágio concluído, primeira reunião ou dados financeiros</p><div id="jCompletionChart"></div></article>
           </section>
@@ -8562,7 +8562,7 @@ ${dataRows}
         { indicator: 'Dias entre contratação e primeira reunião', viability: 'Sim', metric: 'Coorte única dos quatro prazos: data inicial → primeira client_meetings.start_time; diferenças negativas e ordem inconsistente excluídas; mediana', coverage: fixedCoverage(journeySummary.firstMeetingCount, journeySummary.totalClients, journeySummary.firstMeetingCoveragePercent), base: 'BASE QV' },
         { indicator: 'Dias entre contratação e entrega do plano patrimonial', viability: 'Parcial', metric: 'Coorte única dos quatro prazos: data inicial → primeira reunião Central de Inteligência; diferenças negativas e ordem inconsistente excluídas; mediana', coverage: fixedCoverage(journeySummary.planDeliveryCount, journeySummary.totalClients, journeySummary.planDeliveryCoveragePercent), base: 'BASE QV' },
         { indicator: 'Dias entre contratação e aprovação do plano', viability: 'Parcial', metric: 'Mesmo proxy da entrega: contratação → primeira reunião Central de Inteligência; não representa aprovação formal', coverage: fixedCoverage(journeySummary.planApprovalCount, journeySummary.totalClients, journeySummary.planApprovalCoveragePercent), base: 'BASE QV' },
-        { indicator: 'Dias entre contratação e primeiro mecanismo implementado', viability: 'Sim', metric: 'Coorte única dos quatro prazos: data inicial → primeira client_meetings com event_name de Ativação das Engrenagens ou Implementação; mediana', coverage: fixedCoverage(journeySummary.firstImplementationCount, journeySummary.totalClients, journeySummary.firstImplementationCoveragePercent), base: 'BASE QV' },
+        { indicator: 'Dias entre contratação e primeiro mecanismo implementado', viability: 'Sim', metric: 'Data inicial → primeira implementação válida em public.client_mecanismos; prioridade implemented_at, implantado_at ou data_implementacao, com fallback updated_at/created_at para status implementado; negativos excluídos; mediana', coverage: fixedCoverage(journeySummary.firstImplementationCount, journeySummary.totalClients, journeySummary.firstImplementationCoveragePercent), base: 'BASE QV' },
         { indicator: 'Tempo total de onboarding', viability: 'Parcial', metric: 'Coorte única dos quatro prazos: data inicial → primeiro marco entre reunião e inclusão financeira; diferenças negativas e ordem inconsistente excluídas; mediana', coverage: fixedCoverage(journeySummary.totalOnboardingCount, journeySummary.totalClients, journeySummary.totalOnboardingCoveragePercent), base: 'BASE QV' },
         { indicator: 'Concluíram Onboarding App Pharus', viability: 'Sim', metric: 'count(distinct client_id/user_id) em metrics.events com event_name = onboarding_step_completed', coverage: fixedCoverage(journeySummary.appPharusCompletedOnboarding, journeySummary.totalClients, journeySummary.totalClients ? (journeySummary.appPharusCompletedOnboarding || 0) / journeySummary.totalClients * 100 : 0), base: 'App Pharus' },
         { indicator: 'Concluiu onboarding (Sim/Não)', viability: 'Sim', metric: 'current_stage_id fora da lista de estágios abertos OU primeira reunião OU registro em public.client_financial_data', coverage: fixedCoverage(journeySummary.completedOnboarding, journeySummary.completionBaseClients, journeySummary.completedPercent), base: 'BASE QV' },
@@ -9902,17 +9902,21 @@ ${dataRows}
       const summary = payload.summary || {};
       const data = filteredOnboardingClients();
       const journeyCohortTooltip = [
-        `Os quatro cartões usam a mesma coorte completa de ${fmt.format(summary.journeyKpiComparableClients || 0)} clientes.`,
-        `Todos precisam ter data inicial, primeiro marco de onboarding, primeira reunião, primeira reunião Central de Inteligência e primeira Ativação das Engrenagens ou Implementação.`,
-        `Medianas na coorte: onboarding ${dayValue(summary.averageTotalOnboardingDays)}, primeira reunião ${dayValue(summary.averageFirstMeetingDays)}, entrega do plano ${dayValue(summary.averagePlanDeliveryDays)} e primeiro mecanismo ${dayValue(summary.averageFirstImplementationDays)}.`,
-        `O onboarding usa o primeiro entre reunião e inclusão financeira. O primeiro mecanismo usa client_meetings.event_name contendo Ativação das Engrenagens ou Implementação.`,
+        `Onboarding, primeira reunião e entrega do plano usam a coorte comparável de ${fmt.format(summary.journeyKpiComparableClients || 0)} clientes.`,
+        `O onboarding usa o primeiro marco entre reunião e inclusão financeira.`,
         `Diferenças negativas e ${fmt.format(summary.journeyKpiOrderingIssues || 0)} registros com ordem temporal inconsistente foram excluídos.`
+      ].join(' ');
+      const firstMechanismTooltip = [
+        `Amostra independente de ${fmt.format(summary.firstImplementationCount || 0)} clientes com implementação válida em public.client_mecanismos.`,
+        `Data inicial: clients.data_inicio_ciclo, com fallback clients.created_at.`,
+        `Data final: primeira implemented_at, implantado_at ou data_implementacao; quando o status indica implementação, usa updated_at e depois created_at como fallback.`,
+        `Diferenças negativas são excluídas. A agregação exibida é a mediana.`
       ].join(' ');
       document.querySelector('#jKpis').innerHTML = `
         <article class="metric highlight"><div class="metric-label">Mediana onboarding total <span class="help" tabindex="0" data-tip="${escapeHtml(journeyCohortTooltip)}">?</span></div><div class="metric-value">${dayValue(summary.averageTotalOnboardingDays)}</div><div class="metric-note">Contratação → 1º marco: reunião ou financeiro</div></article>
         <article class="metric"><div class="metric-label">Mediana até 1ª reunião <span class="help" tabindex="0" data-tip="${escapeHtml(journeyCohortTooltip)}">?</span></div><div class="metric-value">${dayValue(summary.averageFirstMeetingDays)}</div><div class="metric-note">Contratação → primeira reunião</div></article>
         <article class="metric"><div class="metric-label">Mediana até entrega do plano <span class="help" tabindex="0" data-tip="${escapeHtml(journeyCohortTooltip)}">?</span></div><div class="metric-value">${dayValue(summary.averagePlanDeliveryDays)}</div><div class="metric-note">Contratação → 1ª reunião Central de Inteligência</div></article>
-        <article class="metric"><div class="metric-label">Mediana até 1º mecanismo <span class="help" tabindex="0" data-tip="${escapeHtml(journeyCohortTooltip)}">?</span></div><div class="metric-value">${dayValue(summary.averageFirstImplementationDays)}</div><div class="metric-note">Contratação → Ativação das Engrenagens ou Implementação</div></article>
+        <article class="metric"><div class="metric-label">Mediana até 1º mecanismo <span class="help" tabindex="0" data-tip="${escapeHtml(firstMechanismTooltip)}">?</span></div><div class="metric-value">${dayValue(summary.averageFirstImplementationDays)}</div><div class="metric-note">Contratação → primeira implementação válida</div></article>
         <article class="metric highlight"><div class="metric-label">Concluíram onboarding</div><div class="metric-value">${fmt.format(summary.completedOnboarding || 0)}</div><div class="metric-note">${pct(summary.completedPercent || 0)} de ${fmt.format(summary.completionBaseClients || 0)} avaliáveis · estágio, reunião ou financeiro</div></article>
       `;
 

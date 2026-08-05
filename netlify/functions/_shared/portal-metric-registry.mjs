@@ -522,11 +522,11 @@ export const portalMetricRegistry = {
     domain: "journey",
     label: "Mediana de dias até o primeiro mecanismo (Jornada)",
     payloadPath: "summary.averageFirstImplementationDays",
-    sampleSizePath: null,
+    sampleSizePath: "summary.firstImplementationCount",
     unit: "days",
     aggregation: "median",
     definition:
-      "Mediana na coorte única dos quatro prazos até a primeira reunião de Ativação das Engrenagens ou Implementação.",
+      "Mediana entre a data inicial e a primeira implementação válida registrada em public.client_mecanismos; diferenças negativas são excluídas.",
     aliases: [
       "media ate o primeiro mecanismo na jornada",
       "media de onboarding ate o primeiro mecanismo",

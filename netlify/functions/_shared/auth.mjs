@@ -107,6 +107,21 @@ export async function authenticateRequest(request) {
       })(),
       details: authResult.details,
     });
+    if (
+      !authResult.status ||
+      authResult.status === 408 ||
+      authResult.status === 425 ||
+      authResult.status === 429 ||
+      authResult.status >= 500
+    ) {
+      return {
+        error: jsonError(
+          503,
+          "Não foi possível validar a sessão agora. Tente novamente.",
+          "auth_unavailable",
+        ),
+      };
+    }
     return { error: jsonError(401, "Sessão inválida ou expirada.", "unauthenticated") };
   }
 

@@ -194,6 +194,7 @@ function buildCentralPlanRows(clients, meetings) {
       .filter(Boolean)
       .sort((a, b) => a - b);
     const firstCentralMeeting = meetingDates[0] || null;
+    const lastCentralMeeting = meetingDates.at(-1) || null;
     const centralMeetingsCount = clientMeetings.length;
     const revisionsCount = Math.max(0, centralMeetingsCount - 1);
 
@@ -206,8 +207,8 @@ function buildCentralPlanRows(clients, meetings) {
       planDelivered: true,
       planApproved: true,
       deliveredAt: firstCentralMeeting ? firstCentralMeeting.toISOString() : null,
-      approvedAt: firstCentralMeeting ? firstCentralMeeting.toISOString() : null,
-      daysToApproval: daysBetween(contractDate, firstCentralMeeting),
+      approvedAt: lastCentralMeeting ? lastCentralMeeting.toISOString() : null,
+      daysToApproval: daysBetween(contractDate, lastCentralMeeting),
       revisedLater: centralMeetingsCount > 1,
       revisionsCount,
       planRecords: centralMeetingsCount,
@@ -350,7 +351,7 @@ export default async function handler(request) {
         indicators: [
           indicator("Plano entregue", centralMeetings, meetings.length, "Contagem de reuniões em public.client_meetings cujo event_name contém Central de Inteligência."),
           indicator("Plano aprovado", deliveredClients, total, "Proxy: clientes distintos com reunião Central de Inteligência; não representa aprovação formal."),
-          indicator("Dias até aprovação", approvalDaysCount, total, "Proxy: diferença entre contratação e primeira reunião Central de Inteligência; diferenças negativas excluídas."),
+          indicator("Dias até aprovação", approvalDaysCount, total, "Proxy: diferença entre contratação e última reunião Central de Inteligência; diferenças negativas excluídas."),
           indicator("Plano revisado posteriormente", revisedCount, total, "Clientes com mais de uma reunião Central de Inteligência."),
           indicator("Quantidade de revisões", revisionsTotal, total, "Soma por cliente de quantidade de reuniões Central de Inteligência menos um."),
         ],

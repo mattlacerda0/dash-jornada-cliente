@@ -734,24 +734,27 @@ const MEETINGS_ALLOWED_FILTERS = ["engineer", "period", "dateFrom", "dateTo", "a
 /* --------------------------- Domínio journey (onboarding) --------- */
 /*
  * Reutiliza computeOnboardingPayload. Regras confirmadas no código:
- * - daysTo*: contratação (data_inicio_ciclo|created_at) → evento; média aritmética;
- *   valores negativos entram na média (podem gerar média negativa, ex. entrega do plano).
- * - completedOnboarding: estágio atual NÃO está em OPEN_ONBOARDING_STAGE_IDS.
- * - totalOnboardingDays: transições a partir de estágios de início do onboarding.
+ * - daysTo*: contratação (data_inicio_ciclo|created_at) → evento; mediana;
+ *   intervalos negativos são excluídos na construção do payload.
+ * - entrega do plano: primeira reunião Central de Inteligência.
+ * - completedOnboarding: etapa concluída OU primeira reunião OU dados financeiros informados.
+ * - totalOnboardingDays: contratação → primeiro marco entre reunião e inclusão financeira.
  */
 
 const JOURNEY_SOURCES = [
   { schema: SUPABASE, table: "clients", column: "data_inicio_ciclo" },
   { schema: SUPABASE, table: "client_journeys", column: "current_stage_id" },
   { schema: SUPABASE, table: "client_meetings", column: "start_time" },
-  { schema: SUPABASE, table: "client_implementation_meeting_date", column: "meeting_date" },
-  { schema: SUPABASE, table: "client_mecanismos", column: "implemented_at" },
+  { schema: SUPABASE, table: "client_meetings", column: "event_name" },
+  { schema: SUPABASE, table: "client_financial_data", column: "client_id" },
 ];
 
-function avgFinite(values) {
-  const clean = values.filter((v) => v != null && Number.isFinite(v));
+function medianFinite(values) {
+  const clean = values.filter((v) => v != null && Number.isFinite(v)).sort((a, b) => a - b);
   if (!clean.length) return null;
-  return Math.round((clean.reduce((a, b) => a + b, 0) / clean.length) * 100) / 100;
+  const middle = Math.floor(clean.length / 2);
+  const value = clean.length % 2 ? clean[middle] : (clean[middle - 1] + clean[middle]) / 2;
+  return Math.round(value * 100) / 100;
 }
 
 function statusMatchesRaw(rawStatus, analytical) {
@@ -772,49 +775,61 @@ function applyJourneyFilters(rows, f) {
   });
 }
 
+function comparableJourneyKpiRows(rows) {
+  return rows.filter((row) =>
+    row.totalOnboardingDays != null
+    && row.daysToFirstMeeting != null
+    && row.daysToPlanDelivery != null
+    && row.daysToFirstImplementation != null
+    && row.totalOnboardingDays <= row.daysToFirstMeeting
+    && row.totalOnboardingDays <= row.daysToPlanDelivery
+    && row.totalOnboardingDays <= row.daysToFirstImplementation
+  );
+}
+
 const JOURNEY_METRICS = {
   average_days_to_first_meeting: {
-    label: "Média de dias até a primeira reunião",
-    type: "average",
-    definition: "average_days_contract_to_first_meeting",
+    label: "Mediana de dias até a primeira reunião",
+    type: "median",
+    definition: "median_days_contract_to_first_meeting",
     sources: JOURNEY_SOURCES,
     rule:
-      "Diferença em dias entre clients.data_inicio_ciclo (fallback created_at) e a primeira client_meetings.start_time. Usa média aritmética dos clientes com as duas datas. Intervalos negativos entram no cálculo.",
-    compute: (rows) => avgFinite(rows.map((r) => r.daysToFirstMeeting)),
+      "Mediana na coorte única dos quatro prazos entre a data inicial e a primeira client_meetings.start_time.",
+    compute: (rows) => medianFinite(comparableJourneyKpiRows(rows).map((r) => r.daysToFirstMeeting)),
   },
   average_days_to_plan_delivery: {
-    label: "Média de dias até a entrega do plano",
-    type: "average",
-    definition: "average_days_contract_to_plan",
+    label: "Mediana de dias até a entrega do plano",
+    type: "median",
+    definition: "median_days_contract_to_plan_proxy",
     sources: JOURNEY_SOURCES,
     rule:
-      "Diferença em dias entre clients.data_inicio_ciclo e a primeira client_implementation_meeting_date.meeting_date. Média aritmética. Valores negativos (plano antes da contratação) entram no cálculo e podem gerar média negativa.",
-    compute: (rows) => avgFinite(rows.map((r) => r.daysToPlanDelivery)),
+      "Proxy na mesma coorte dos quatro prazos: mediana entre a data inicial e a primeira reunião Central de Inteligência.",
+    compute: (rows) => medianFinite(comparableJourneyKpiRows(rows).map((r) => r.daysToPlanDelivery)),
   },
   average_days_to_first_mechanism: {
-    label: "Média de dias até o primeiro mecanismo",
-    type: "average",
-    definition: "average_days_contract_to_first_mechanism",
+    label: "Mediana de dias até o primeiro mecanismo",
+    type: "median",
+    definition: "median_days_contract_to_activation_or_implementation",
     sources: JOURNEY_SOURCES,
     rule:
-      "Diferença em dias entre clients.data_inicio_ciclo e a primeira client_mecanismos.implemented_at (status implementado/concluído ou com data de implementação). Usa média aritmética dos clientes com as duas datas.",
-    compute: (rows) => avgFinite(rows.map((r) => r.daysToFirstImplementation)),
+      "Mediana na mesma coorte dos quatro prazos entre a data inicial e a primeira client_meetings de Ativação das Engrenagens ou Implementação.",
+    compute: (rows) => medianFinite(comparableJourneyKpiRows(rows).map((r) => r.daysToFirstImplementation)),
   },
   average_onboarding_days: {
-    label: "Média de dias de onboarding",
-    type: "average",
-    definition: "average_total_onboarding_days",
+    label: "Mediana de dias de onboarding",
+    type: "median",
+    definition: "median_total_onboarding_days_proxy",
     sources: JOURNEY_SOURCES,
     rule:
-      "Média da duração das transições de client_journeys a partir dos estágios iniciais de onboarding até a próxima mudança de current_stage_id do mesmo client_id.",
-    compute: (rows) => avgFinite(rows.map((r) => r.totalOnboardingDays)),
+      "Mediana na coorte única dos quatro prazos entre a data inicial e o primeiro marco disponível: primeira reunião ou inclusão financeira.",
+    compute: (rows) => medianFinite(comparableJourneyKpiRows(rows).map((r) => r.totalOnboardingDays)),
   },
   completed_onboarding_clients: {
     label: "Clientes que concluíram onboarding",
     definition: "completed_onboarding",
     sources: JOURNEY_SOURCES,
     rule:
-      "Cliente com registro em client_journeys cujo estágio atual (current_stage_id) é diferente dos estágios abertos de onboarding. Sem jornada: não entra no numerador nem no denominador de cobertura.",
+      "Cliente cujo estágio atual está fora dos estágios abertos de onboarding OU que possui primeira reunião OU registro em public.client_financial_data.",
     compute: (rows) => rows.filter((r) => r.completedOnboarding === true).length,
   },
 };

@@ -520,13 +520,13 @@ export const portalMetricRegistry = {
   /* ---------- JOURNEY (página Jornada — distinto de Mecanismos) ---------- */
   average_days_to_first_mechanism: {
     domain: "journey",
-    label: "Média de dias até o primeiro mecanismo (Jornada)",
+    label: "Mediana de dias até o primeiro mecanismo (Jornada)",
     payloadPath: "summary.averageFirstImplementationDays",
     sampleSizePath: null,
     unit: "days",
-    aggregation: "average",
+    aggregation: "median",
     definition:
-      "Média da página Jornada/onboarding (averageFirstImplementationDays). Diferente do tempo típico da página Mecanismos.",
+      "Mediana na coorte única dos quatro prazos até a primeira reunião de Ativação das Engrenagens ou Implementação.",
     aliases: [
       "media ate o primeiro mecanismo na jornada",
       "media de onboarding ate o primeiro mecanismo",
@@ -538,7 +538,8 @@ export const portalMetricRegistry = {
     payloadPath: "summary.completedOnboarding",
     unit: "clients",
     aggregation: "count",
-    definition: "Clientes cujo estágio atual não está entre os estágios abertos de onboarding.",
+    definition:
+      "Clientes cujo estágio atual não está entre os estágios abertos de onboarding OU que possuem primeira reunião OU registro em public.client_financial_data.",
     aliases: ["concluiram onboarding", "onboarding concluido"],
   },
   clients_with_first_meeting: {

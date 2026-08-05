@@ -264,6 +264,24 @@ function friendlyAuthError(err) {
   return 'Não foi possível entrar com o Google. Tente novamente.';
 }
 
+function isTransientAuthError(err) {
+  const status = Number(err?.status || err?.statusCode || 0);
+  const raw = err instanceof Error ? err.message : String(err || '');
+  const lower = raw.toLowerCase();
+  return (
+    status === 0 ||
+    status === 408 ||
+    status === 425 ||
+    status === 429 ||
+    status >= 500 ||
+    lower.includes('failed to fetch') ||
+    lower.includes('fetch failed') ||
+    lower.includes('network') ||
+    lower.includes('timeout') ||
+    lower.includes('temporarily unavailable')
+  );
+}
+
 function detectAuthCallbackError() {
   const hash = new URLSearchParams(window.location.hash.replace(/^#/, ''));
   const query = new URLSearchParams(window.location.search);
@@ -384,6 +402,11 @@ async function verifyStoredSession(candidate) {
     verifyError: verify.error?.message || null,
     refreshError: refreshed.error?.message || null,
   });
+  if (isTransientAuthError(verify.error) || isTransientAuthError(refreshed.error)) {
+    session = candidate;
+    renderAuthError('Não foi possível validar sua sessão agora. Verifique a conexão e tente novamente.');
+    return null;
+  }
   await expireSession();
   return null;
 }
@@ -414,8 +437,10 @@ export async function authenticatedFetch(url, options = {}) {
   };
 
   const { data: fresh, error: sessionError } = await authSupabase.auth.getSession();
-  if (sessionError) console.error('[auth] getSession', sessionError);
-  session = fresh?.session ?? null;
+  if (sessionError) {
+    console.error('[auth] getSession', sessionError);
+  }
+  session = fresh?.session ?? session ?? null;
 
   if (!session?.access_token || !isQuartaviaEmail(session.user?.email)) {
     if (session && !isQuartaviaEmail(session.user?.email)) {
@@ -433,6 +458,11 @@ export async function authenticatedFetch(url, options = {}) {
   }
 
   let response = await doFetch(session.access_token);
+
+  if (response.status === 503) {
+    const payload = await response.clone().json().catch(() => ({}));
+    if (payload?.code === 'auth_unavailable') return response;
+  }
 
   if (response.status === 401) {
     const { data, error } = await refreshSessionOnce();

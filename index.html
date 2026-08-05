@@ -89,6 +89,7 @@
     .help[data-tip]:hover::after,
     .help[data-tip]:focus-visible::after,
     .help[data-tip].is-open::after{opacity:1}
+    #view-journey .help[data-tip]::after{width:min(380px,80vw)}
     .mech-explainer{margin:0 0 18px;padding:14px 16px;border:1px solid var(--color-border);border-radius:var(--radius-md);background:#242424}
     .mech-explainer p{margin:0;font-size:13px;line-height:1.55;color:var(--color-text-muted)}
     .mech-explainer strong{color:var(--color-text);font-weight:600}
@@ -685,6 +686,10 @@
     .field-used{margin-top:8px;font-size:11px;color:var(--color-text-subtle)}
     .field-used b{font-weight:600;color:var(--color-text-muted)}
     .charts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.chart-card{padding:18px}.chart-card h3{margin:0 0 4px;font-size:15px}.chart-card p{margin:0 0 14px;font-size:12px;color:var(--color-text-muted)}
+    #view-journey .journey-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-auto-rows:minmax(270px,auto);gap:16px;align-items:stretch}
+    #view-journey .journey-grid .chart-card{display:flex;flex-direction:column;min-width:0;min-height:270px;overflow:hidden}
+    #view-journey .journey-grid .chart-card>div{flex:1;min-width:0}
+    @media(max-width:1100px){#view-journey .journey-grid{grid-template-columns:1fr;grid-auto-rows:auto}#view-journey .journey-grid .chart-card{min-height:240px}}
     .hbar{display:grid;grid-template-columns:minmax(158px,42%) minmax(72px,1fr) minmax(108px,118px);gap:12px;align-items:center;margin:11px 0;min-width:0}
     .hbar-label{font-size:12px;color:var(--color-text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.35;min-width:0}
     .hbar-track{height:9px;background:#303030;border-radius:999px;overflow:hidden;min-width:0}
@@ -856,9 +861,9 @@
     .pre-cancel-kpis{grid-template-columns:repeat(4,minmax(0,1fr))}
     .pre-cancel-kpis .metric-value{font-size:clamp(26px,2.2vw,34px);line-height:1.12}
     .pre-cancel-kpis .metric-value.text-kpi{font-size:clamp(20px,1.55vw,28px)}
-    .pre-cancel-layout{display:grid;grid-template-columns:minmax(320px,.82fr) minmax(520px,1.18fr);gap:16px;align-items:start}
+    .pre-cancel-layout{display:grid;grid-template-columns:1fr;gap:16px;align-items:start}
     .pre-cancel-layout .chart-card{min-height:0}
-    .pre-cancel-window-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;min-width:0}
+    .pre-cancel-window-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;min-width:0}
     .pre-cancel-window{border:1px solid rgba(255,255,255,.08);border-radius:10px;background:rgba(255,255,255,.025);padding:12px;display:grid;gap:8px;min-width:0}
     .pre-cancel-window-title{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:13px;font-weight:800;color:var(--color-text)}
     .pre-cancel-window-title span{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--color-text-subtle)}
@@ -895,6 +900,7 @@
     @media(max-width:780px){.acquisition-summary{grid-template-columns:1fr 1fr}.acquisition-chart-grid[data-cols="6"]{min-width:420px}}
     .timeline{display:grid;gap:10px;margin-top:12px}.timeline-item{border:1px solid var(--color-border);border-radius:10px;padding:12px;background:#1a1a1a}.timeline-item .meta{font-size:11px;color:var(--color-text-subtle);margin-top:4px}
     .indicator-matrix{display:grid;gap:12px}.indicator-row{display:grid;grid-template-columns:minmax(210px,1.15fr) 132px minmax(150px,.7fr) minmax(260px,1.55fr) 120px;gap:0;border:1px solid var(--color-border);border-radius:var(--radius-md);overflow:hidden;background:#202020}.indicator-cell{padding:13px 14px;border-right:1px solid var(--color-border);font-size:13px}.indicator-cell:last-child{border-right:0}.indicator-head{background:#2b2f34;color:var(--color-text);font-weight:700;text-transform:uppercase;letter-spacing:.04em}.indicator-status{display:flex;align-items:center;font-weight:700}.indicator-status.sim{background:rgba(66,201,133,.14);color:#c7f5dd}.indicator-status.no{background:rgba(239,107,115,.16);color:#ffb9bd}.indicator-status.base{background:rgba(246,189,75,.13);color:#ffe0a1}.indicator-coverage{font-weight:700;color:var(--color-text)}.indicator-coverage span{display:block;margin-top:2px;color:var(--color-text-muted);font-size:11px;font-weight:500}.viability-stack{grid-template-columns:1fr}
+    @media(max-width:1350px){.pre-cancel-window-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
     @media(max-width:1100px){.cards,.charts,.pre-cancel-layout,#view-renewal .charts.renewal-charts{grid-template-columns:1fr}.summary,.summary.kpis-8,.pre-cancel-kpis,#view-support .summary.kpis-support-6,#view-mechanisms .summary.kpis-mech-3,#view-mechanisms .summary.kpis-mech-4,#view-mechanisms .summary.kpis-mech-2,#view-cancellations .summary.kpis-cancel-primary,#view-cancellations .summary.kpis-cancel-secondary,#view-cancellations .summary.kpis-cancel-quality,#view-cancellations .summary.kpis-cancel-retention,#view-cancellations .summary.kpis-cancel-ops{grid-template-columns:repeat(2,1fr)}.filters,.filters.general,.filters.meetings,.filters.mechanisms,.filters.financial{grid-template-columns:1fr 1fr}.month-row{grid-template-columns:64px minmax(100px,1fr) minmax(160px,1fr)}.month-val{white-space:normal}}
     @media(max-width:780px){.layout{grid-template-columns:1fr}.sidebar{display:none}main{padding:20px}.page-header{display:block}.status{text-align:left;margin-top:12px}.filters,.filters.general,.filters.mechanisms,.filters.financial,.summary,.pre-cancel-kpis,.pre-cancel-window-grid,.cards,.charts,#view-renewal .charts.renewal-charts,#view-support .summary.kpis-support-6,#view-mechanisms .summary.kpis-mech-3,#view-mechanisms .summary.kpis-mech-4,#view-mechanisms .summary.kpis-mech-2,#view-cancellations .summary.kpis-cancel-primary,#view-cancellations .summary.kpis-cancel-secondary,#view-cancellations .summary.kpis-cancel-quality,#view-cancellations .summary.kpis-cancel-retention,#view-cancellations .summary.kpis-cancel-ops{grid-template-columns:1fr}.topbar{padding:0 20px}.status-actions{align-items:flex-start;justify-content:space-between}.hbar{grid-template-columns:minmax(108px,36%) minmax(48px,1fr) minmax(96px,104px);gap:8px;margin:9px 0}.hbar-val{font-size:11px}.month-row,.temporal-month-row{grid-template-columns:1fr;gap:8px}.temporal-activity-row{grid-template-columns:76px minmax(0,1fr) minmax(62px,80px);gap:7px}.pre-cancel-metric{grid-template-columns:68px minmax(0,1fr) 48px}.month-val{text-align:left}.month-count{margin-left:0;width:100%}#view-mechanisms .help[data-tip]::after{left:0;transform:none;width:min(240px,78vw)}}
     @media(max-width:1100px){.cards,.charts{grid-template-columns:1fr}.summary,.summary.kpis-8,#view-support .summary.kpis-support-6,#view-mechanisms .summary.kpis-mech-3,#view-mechanisms .summary.kpis-mech-4,#view-mechanisms .summary.kpis-mech-2,#view-cancellations .summary.kpis-cancel-primary,#view-cancellations .summary.kpis-cancel-retention,#view-cancellations .summary.kpis-cancel-ops{grid-template-columns:repeat(2,1fr)}.filters,.filters.general,.filters.meetings,.filters.mechanisms,.filters.financial{grid-template-columns:1fr 1fr}.month-row{grid-template-columns:64px minmax(100px,1fr) minmax(160px,1fr)}.month-val{white-space:normal}}
@@ -1310,6 +1316,7 @@
     #view-ep .ep-dual-bar .hbar-track span{display:block;height:100%;border-radius:999px;max-width:100%}
     #view-ep .ep-dual-bar-val{font-size:11px;text-align:right;color:var(--color-text);font-variant-numeric:tabular-nums;white-space:nowrap}
     #view-ep .ep-dual-bar.is-avg .hbar-track span{background:linear-gradient(90deg,#3b82f6,#60a5fa)}
+    #view-ep .ep-dual-bar.is-with .hbar-track span{background:linear-gradient(90deg,#16a34a,#42c985)}
     #view-ep .ep-dual-bar.is-without .hbar-track span{background:linear-gradient(90deg,#b91c1c,#ef4444)}
     #view-ep .ep-dual-bar.is-active .hbar-track span{background:linear-gradient(90deg,#16a34a,#42c985)}
     #view-ep .ep-dual-bar.is-frozen .hbar-track span{background:linear-gradient(90deg,#d97706,#f6bd4b)}
@@ -1670,7 +1677,7 @@
               <p>Construção da tela do tópico 2 com foco em prazos entre contratação, reunião, plano patrimonial, implementação e conclusão do onboarding.</p>
             </div>
             <div class="status-actions">
-              <div class="status"><b id="jStatus" style="color:var(--color-warning)">● Aguardando consulta</b><span id="jUpdated">Fonte única: BASE QV</span></div>
+              <div class="status"><b id="jStatus" style="color:var(--color-warning)">● Aguardando consulta</b><span id="jUpdated">BASE QV + App Pharus</span></div>
               <button class="btn" id="jRefresh" type="button">Atualizar</button>
             </div>
           </header>
@@ -1688,13 +1695,12 @@
           <div class="section-head">
             <div><h2>Indicadores de prazo e conclusão</h2><p>Medianas e distribuições calculadas a partir da BASE QV e App Pharus, excluindo diferenças negativas de datas.</p></div>
           </div>
-          <section class="journey-grid">
+          <section class="journey-grid" aria-label="Indicadores de prazo e conclusão">
             <article class="chart-card"><h3>Dias até a primeira reunião</h3><p>Quantidade de clientes por faixa de dias</p><div id="jFirstMeetingChart"></div></article>
-            <article class="chart-card"><h3>Dias até entrega do plano patrimonial</h3><p>clients.data_inicio_ciclo → client_implementation_meeting_date.meeting_date</p><div id="jPlanDeliveryChart"></div></article>
-            <article class="chart-card"><h3>Dias até primeiro mecanismo implementado</h3><p>clients.data_inicio_ciclo → client_mecanismos.implemented_at</p><div id="jFirstImplementationChart"></div></article>
-            <article class="chart-card"><h3>Tempo total de onboarding</h3><p>clients.data_inicio_ciclo → metrics.events.onboarding_step_completed</p><div id="jTotalOnboardingChart"></div></article>
-            <article class="chart-card"><h3>Concluiu onboarding</h3><p>Sim/Não pelo estágio atual do cliente</p><div id="jCompletionChart"></div></article>
-            <article class="chart-card"><h3>Tempo médio por etapa</h3><p>Eventos App Pharus por quiz, financeiro, onboarding e open finance</p><div id="jStageDurationChart"></div></article>
+            <article class="chart-card"><h3>Dias até entrega do plano patrimonial <span class="help" id="jPlanDeliveryHelp" tabindex="0">?</span></h3><p>Contratação → primeira reunião Central de Inteligência</p><div id="jPlanDeliveryChart"></div></article>
+            <article class="chart-card"><h3>Dias até primeiro mecanismo implementado</h3><p>Contratação → primeira Ativação das Engrenagens ou Implementação</p><div id="jFirstImplementationChart"></div></article>
+            <article class="chart-card"><h3>Tempo total de onboarding <span class="help" id="jTotalOnboardingHelp" tabindex="0">?</span></h3><p>Contratação → primeiro marco: reunião ou dados financeiros</p><div id="jTotalOnboardingChart"></div></article>
+            <article class="chart-card"><h3>Concluiu onboarding</h3><p>Estágio concluído, primeira reunião ou dados financeiros</p><div id="jCompletionChart"></div></article>
           </section>
 
           <section class="table-panel">
@@ -2639,7 +2645,7 @@
           <section class="summary kpis-cancel-primary" id="cKpisPrimary"></section>
           <p class="cancel-kpi-note" id="cKpiOverlapNote">As etapas podem se sobrepor; o mesmo cliente pode aparecer em mais de um card.</p>
 
-          <section id="cKpisTiming" class="cancel-timing-strip-host" aria-live="polite"></section>
+          <section id="cKpisTiming" class="summary kpis-cancel-timing" aria-live="polite"></section>
 
           <div class="kpi-block-label">Retenção</div>
           <section class="summary kpis-cancel-retention" id="cKpisRetention"></section>
@@ -2839,13 +2845,25 @@
 
           <section class="summary kpis-8" id="tKpis"></section>
 
-          <div class="section-head"><div><h2>Evolução mensal agregada</h2><p>Contagens mensais calculadas pelas mesmas regras das abas originais.</p></div></div>
+          <div class="section-head"><div><h2>Dias desde a última atividade por cliente</h2><p>Quantidade de dias entre hoje e o evento mais recente de login, reunião, implementação, atualização financeira e NPS.</p></div><div class="section-head-actions"><span class="export-host" id="tRecencyExportHost"></span><span class="counter" id="tRecencyCounter"></span></div></div>
           <section class="charts">
-            <article class="chart-card" style="grid-column:1/-1">
-              <div class="month-chart-head"><div><h3>Atividades por mês</h3><p>Logins, reuniões, implementações, atualizações financeiras e NPS</p></div>
-                <div class="seg" id="tMonthRangeSeg" role="group" aria-label="Período do gráfico mensal"><button type="button" data-t-month-range="6" class="active">Últimos 6 meses</button><button type="button" data-t-month-range="12">Últimos 12 meses</button></div>
+            <article class="table-panel" style="grid-column:1/-1;margin:0">
+              <div class="table-wrap">
+                <table data-export-covered="1">
+                  <thead><tr>
+                    <th data-t-recency-sort="name">Nome</th>
+                    <th data-t-recency-sort="engineer">Engenheiro Patrimonial</th>
+                    <th class="num" data-t-recency-sort="daysSinceLastLogin" title="Hoje menos a data do último login bem-sucedido">Dias desde login</th>
+                    <th class="num" data-t-recency-sort="daysSinceLastMeeting" title="Hoje menos a data da última reunião válida e não cancelada">Dias desde reunião</th>
+                    <th class="num" data-t-recency-sort="daysSinceLastImplementation" title="Hoje menos a data da última implementação registrada">Dias desde implementação</th>
+                    <th class="num" data-t-recency-sort="daysSinceLastFinancialUpdate" title="Hoje menos a última atualização financeira">Dias desde atualização financeira</th>
+                    <th class="num" data-t-recency-sort="daysSinceLastNps" title="Hoje menos a data da última resposta NPS válida">Dias desde NPS</th>
+                  </tr></thead>
+                  <tbody id="tRecencyRows"></tbody>
+                </table>
               </div>
-              <div id="tMonthlyChart"></div>
+              <div class="empty" id="tRecencyEmpty">Nenhum cliente encontrado para os filtros aplicados.</div>
+              <div class="pagination"><div id="tRecencyPageInfo"></div><div><button class="btn" id="tRecencyPrev" type="button">Anterior</button><button class="btn" id="tRecencyNext" type="button">Próxima</button></div></div>
             </article>
             <article class="chart-card"><h3>Dias sem atividade</h3><p>Média mensal por cliente/usuário com atividade conhecida</p><div id="tInactivityChart"></div></article>
             <article class="chart-card"><h3>Risco pré-cancelamento</h3><p>Clientes com 30+ dias sem atividade nos 3 meses antes do cancelamento</p><div id="tRiskChart"></div></article>
@@ -3221,12 +3239,12 @@
 
           <div class="section-head"><div><h2>Reuniões BASE QV</h2><p>Cobertura e frequência — mesma definição do dashboard Reuniões.</p></div></div>
           <section class="charts ep-charts">
-            <article class="chart-card ep-span-all"><h3>Cobertura de reuniões</h3><p>Clientes com reunião / carteira</p><div id="epChartCoverage"></div><button class="btn engineers-toggle" id="epToggleCoverageAll" type="button">Ver todos</button></article>
+            <article class="chart-card ep-span-all"><h3>Cobertura de reuniões <span class="help" tabindex="0" data-tip="Para cada EP, compara o percentual de clientes com pelo menos uma reunião válida e o percentual sem reunião. As duas barras somam 100% da carteira do EP.">?</span></h3><p>% de clientes com reunião e sem reunião</p><div id="epChartCoverage"></div><button class="btn engineers-toggle" id="epToggleCoverageAll" type="button">Ver todos</button></article>
             <article class="chart-card ep-span-all">
-              <h3>Cobertura e frequência de reuniões por EP
-                <span class="help" tabindex="0" data-tip="A média representa reuniões válidas por cliente. O percentual sem reunião representa clientes da carteira sem nenhuma reunião válida.">?</span>
+              <h3>Frequência média de reuniões por EP
+                <span class="help" tabindex="0" data-tip="Total de reuniões válidas dos clientes do EP dividido pela quantidade de clientes na carteira do EP.">?</span>
               </h3>
-              <p>Média de reuniões por cliente e % de clientes sem reunião</p>
+              <p>Média de reuniões válidas por cliente</p>
               <div id="epChartFrequency"></div>
               <button class="btn engineers-toggle" id="epToggleFreqAll" type="button">Ver todos</button>
             </article>
@@ -5507,35 +5525,45 @@ ${dataRows}
       }).join('');
       return legend + rows;
     }
-    function epRenderFreqCoverageGrouped(named, showAll) {
+    function epRenderCoverageGrouped(named, showAll) {
+      if (!named.length) return epEmptyBlock();
+      const sorted = named.slice().sort((a, b) => (b.meetingCoverage || 0) - (a.meetingCoverage || 0));
+      const limit = epChartLimit(showAll);
+      const visible = limit ? sorted.slice(0, limit) : sorted;
+      const legend = `<div class="ep-chart-legend"><span><i style="background:#42c985"></i>Com reunião</span><span><i style="background:#ef6b78"></i>Sem reunião</span></div>`;
+      const rows = visible.map((e) => {
+        const withPct = epPct(e.clientsWithMeeting, e.totalClients) || 0;
+        const withoutPct = epPct(e.clientsWithoutMeeting, e.totalClients) || 0;
+        const tip = [
+          e.engineer,
+          `Carteira: ${fmt.format(e.totalClients || 0)}`,
+          `Com reunião: ${fmt.format(e.clientsWithMeeting || 0)} · ${epFmtPct(withPct)}`,
+          `Sem reunião: ${fmt.format(e.clientsWithoutMeeting || 0)} · ${epFmtPct(withoutPct)}`
+        ].join(' · ');
+        return `<div class="ep-group-row ep-interactive" data-ep-advisor="${escapeHtml(e.engineer)}" title="${escapeHtml(tip)}">
+          <div class="ep-group-name" title="${escapeHtml(e.engineer)}">${escapeHtml(e.engineer)}</div>
+          <div class="ep-group-metrics">
+            ${epDualBarRow('is-with', 'Com reunião', withPct, epFmtPct(withPct))}
+            ${epDualBarRow('is-without', 'Sem reunião', withoutPct, epFmtPct(withoutPct))}
+          </div>
+        </div>`;
+      }).join('');
+      return legend + rows;
+    }
+    function epRenderFrequencyGrouped(named, showAll) {
       if (!named.length) return epEmptyBlock();
       const sorted = named.slice().sort((a, b) => (b.averageMeetingsPerClient || 0) - (a.averageMeetingsPerClient || 0));
       const limit = epChartLimit(showAll);
       const visible = limit ? sorted.slice(0, limit) : sorted;
       const maxAvg = Math.max(...visible.map((e) => e.averageMeetingsPerClient || 0), 0.1);
-      const maxWithoutPct = Math.max(...visible.map((e) => epPct(e.clientsWithoutMeeting, e.totalClients) || 0), 0.1);
-      const legend = `<div class="ep-chart-legend"><span><i style="background:#60a5fa"></i>Média de reuniões / cliente</span><span><i style="background:#ef4444"></i>% clientes sem reunião</span></div>`;
-      const rows = visible.map((e) => {
+      return visible.map((e) => {
         const avg = e.averageMeetingsPerClient || 0;
-        const withoutPct = epPct(e.clientsWithoutMeeting, e.totalClients) || 0;
-        const tip = [
-          e.engineer,
-          `Carteira: ${fmt.format(e.totalClients || 0)}`,
-          `Reuniões válidas: ${fmt.format(e.totalMeetings || 0)}`,
-          `Com reunião: ${fmt.format(e.clientsWithMeeting || 0)}`,
-          `Média: ${avg || '—'}`,
-          `Sem reunião: ${fmt.format(e.clientsWithoutMeeting || 0)}`,
-          `% sem reunião: ${epFmtPct(withoutPct)}`
-        ].join(' · ');
+        const tip = `${e.engineer} · ${fmt.format(e.totalMeetings || 0)} reuniões válidas · ${fmt.format(e.totalClients || 0)} clientes · média ${avg}`;
         return `<div class="ep-group-row ep-interactive" data-ep-advisor="${escapeHtml(e.engineer)}" title="${escapeHtml(tip)}">
           <div class="ep-group-name" title="${escapeHtml(e.engineer)}">${escapeHtml(e.engineer)}</div>
-          <div class="ep-group-metrics">
-            ${epDualBarRow('is-avg', 'Média / cliente', (avg / maxAvg) * 100, String(avg || '—'))}
-            ${epDualBarRow('is-without', '% sem reunião', (withoutPct / maxWithoutPct) * 100, epFmtPct(withoutPct))}
-          </div>
+          <div class="ep-group-metrics">${epDualBarRow('is-avg', 'Média / cliente', (avg / maxAvg) * 100, String(avg || '—'))}</div>
         </div>`;
       }).join('');
-      return legend + rows;
     }
     function epSyncChartToggle(btnId, showAll, total) {
       const btn = document.querySelector(btnId);
@@ -5612,12 +5640,10 @@ ${dataRows}
       setOrHtml('#epChartPortfolio', portfolioHtml);
       epSyncChartToggle('#epTogglePortfolioAll', epState.showAllPortfolio, named.length);
 
-      const coverageItems = named.map((e) => ({ label: e.engineer, count: e.clientsWithMeeting, percent: e.meetingCoverage || 0 })).sort((a, b) => b.percent - a.percent);
-      const coverageLimit = epChartLimit(epState.showAllCoverage);
-      setOrHtml('#epChartCoverage', coverageItems.length ? hBars(coverageItems, coverageLimit || undefined) : epEmptyBlock());
-      epSyncChartToggle('#epToggleCoverageAll', epState.showAllCoverage, coverageItems.length);
+      setOrHtml('#epChartCoverage', epRenderCoverageGrouped(named, epState.showAllCoverage));
+      epSyncChartToggle('#epToggleCoverageAll', epState.showAllCoverage, named.length);
 
-      setOrHtml('#epChartFrequency', epRenderFreqCoverageGrouped(named, epState.showAllFreq));
+      setOrHtml('#epChartFrequency', epRenderFrequencyGrouped(named, epState.showAllFreq));
       epSyncChartToggle('#epToggleFreqAll', epState.showAllFreq, named.length);
 
       setOrHtml('#epNpsStrip', `<span><strong>Nota média geral</strong> ${typeof npsMeanDisplay === 'number' ? epScoreFmt(npsMeanDisplay) : escapeHtml(String(npsMeanDisplay))}</span><span class="sep">·</span><span><strong>Respondentes</strong> ${fmt.format(npsRespondentsDisplay)}</span><span class="sep">·</span><span><strong>Cobertura</strong> ${npsCoverageDisplay == null ? '—' : epFmtPct(npsCoverageDisplay)}</span>`);
@@ -8533,20 +8559,20 @@ ${dataRows}
         { indicator: 'Evolução mensal da aquisição de clientes', viability: 'Sim', metric: 'Agrupamento mensal pela data oficial de contratação', coverage: fixedCoverage(0, 0, 0), base: 'BASE QV' },
       ]);
       renderViabilityMatrix(document.querySelector('#qJourneyMatrix'), [
-        { indicator: 'Dias entre contratação e primeira reunião', viability: 'Sim', metric: 'clients.data_inicio_ciclo → primeira client_meetings.start_time; diferenças negativas excluídas; mediana', coverage: fixedCoverage(journeySummary.firstMeetingCount, journeySummary.totalClients, journeySummary.firstMeetingCoveragePercent), base: 'BASE QV' },
-        { indicator: 'Dias entre contratação e entrega do plano patrimonial', viability: 'Sim', metric: 'clients.data_inicio_ciclo → primeira client_implementation_meeting_date.meeting_date; diferenças negativas excluídas; mediana', coverage: fixedCoverage(journeySummary.planDeliveryCount, journeySummary.totalClients, journeySummary.planDeliveryCoveragePercent), base: 'BASE QV' },
-        { indicator: 'Dias entre contratação e aprovação do plano', viability: 'Sim', metric: 'Status e datas do plano patrimonial por cliente quando disponíveis', coverage: fixedCoverage(journeySummary.planApprovalCount, journeySummary.totalClients, journeySummary.planApprovalCoveragePercent), base: 'BASE QV' },
-        { indicator: 'Dias entre contratação e primeiro mecanismo implementado', viability: 'Sim', metric: 'clients.data_inicio_ciclo → primeira client_mecanismos.implemented_at; diferenças negativas excluídas; mediana', coverage: fixedCoverage(journeySummary.firstImplementationCount, journeySummary.totalClients, journeySummary.firstImplementationCoveragePercent), base: 'BASE QV' },
-        { indicator: 'Tempo total de onboarding', viability: 'Sim', metric: 'clients.data_inicio_ciclo → App Pharus metrics.events.event_name = onboarding_step_completed; diferenças negativas excluídas; fallback BASE QV client_journeys; mediana', coverage: fixedCoverage(journeySummary.totalOnboardingCount, journeySummary.totalClients, journeySummary.totalOnboardingCoveragePercent), base: 'App Pharus + BASE QV' },
+        { indicator: 'Dias entre contratação e primeira reunião', viability: 'Sim', metric: 'Coorte única dos quatro prazos: data inicial → primeira client_meetings.start_time; diferenças negativas e ordem inconsistente excluídas; mediana', coverage: fixedCoverage(journeySummary.firstMeetingCount, journeySummary.totalClients, journeySummary.firstMeetingCoveragePercent), base: 'BASE QV' },
+        { indicator: 'Dias entre contratação e entrega do plano patrimonial', viability: 'Parcial', metric: 'Coorte única dos quatro prazos: data inicial → primeira reunião Central de Inteligência; diferenças negativas e ordem inconsistente excluídas; mediana', coverage: fixedCoverage(journeySummary.planDeliveryCount, journeySummary.totalClients, journeySummary.planDeliveryCoveragePercent), base: 'BASE QV' },
+        { indicator: 'Dias entre contratação e aprovação do plano', viability: 'Parcial', metric: 'Mesmo proxy da entrega: contratação → primeira reunião Central de Inteligência; não representa aprovação formal', coverage: fixedCoverage(journeySummary.planApprovalCount, journeySummary.totalClients, journeySummary.planApprovalCoveragePercent), base: 'BASE QV' },
+        { indicator: 'Dias entre contratação e primeiro mecanismo implementado', viability: 'Sim', metric: 'Coorte única dos quatro prazos: data inicial → primeira client_meetings com event_name de Ativação das Engrenagens ou Implementação; mediana', coverage: fixedCoverage(journeySummary.firstImplementationCount, journeySummary.totalClients, journeySummary.firstImplementationCoveragePercent), base: 'BASE QV' },
+        { indicator: 'Tempo total de onboarding', viability: 'Parcial', metric: 'Coorte única dos quatro prazos: data inicial → primeiro marco entre reunião e inclusão financeira; diferenças negativas e ordem inconsistente excluídas; mediana', coverage: fixedCoverage(journeySummary.totalOnboardingCount, journeySummary.totalClients, journeySummary.totalOnboardingCoveragePercent), base: 'BASE QV' },
         { indicator: 'Concluíram Onboarding App Pharus', viability: 'Sim', metric: 'count(distinct client_id/user_id) em metrics.events com event_name = onboarding_step_completed', coverage: fixedCoverage(journeySummary.appPharusCompletedOnboarding, journeySummary.totalClients, journeySummary.totalClients ? (journeySummary.appPharusCompletedOnboarding || 0) / journeySummary.totalClients * 100 : 0), base: 'App Pharus' },
-        { indicator: 'Concluiu onboarding (Sim/Não)', viability: 'Sim', metric: 'current_stage_id fora da lista de estágios iniciais/abertos', coverage: fixedCoverage(journeySummary.completedOnboarding, journeySummary.totalClients, journeySummary.completedPercent), base: 'BASE QV' },
-        { indicator: 'Percentual do onboarding concluído', viability: 'Sim', metric: 'Clientes concluídos ÷ clientes com jornada', coverage: fixedCoverage(journeySummary.completedOnboarding, journeySummary.totalClients, journeySummary.completedPercent), base: 'BASE QV' },
+        { indicator: 'Concluiu onboarding (Sim/Não)', viability: 'Sim', metric: 'current_stage_id fora da lista de estágios abertos OU primeira reunião OU registro em public.client_financial_data', coverage: fixedCoverage(journeySummary.completedOnboarding, journeySummary.completionBaseClients, journeySummary.completedPercent), base: 'BASE QV' },
+        { indicator: 'Percentual do onboarding concluído', viability: 'Sim', metric: 'Clientes concluídos por estágio OU primeira reunião OU dados financeiros ÷ clientes com base de conclusão', coverage: fixedCoverage(journeySummary.completedOnboarding, journeySummary.completionBaseClients, journeySummary.completedPercent), base: 'BASE QV' },
         { indicator: 'Tempo médio para cada etapa da jornada', viability: 'Sim', metric: 'Mediana entre eventos consecutivos do mesmo cliente em metrics.events, agrupando event_name por resposta do quiz, status financeiro, onboarding e open finance; fallback journey_stages.name', coverage: fixedCoverage(journeySummary.stageDurationCount, journeySummary.totalClients, journeySummary.stageDurationCoveragePercent), base: 'App Pharus + BASE QV' },
       ]);
       renderViabilityMatrix(document.querySelector('#qPlanMatrix'), [
         { indicator: 'Plano entregue (Sim/Não)', viability: 'Parcial', metric: 'Proxy: contagem de reuniões cujo client_meetings.event_name contém Central de Inteligência', coverage: fixedCoverage(planSummary.planDelivered, planSummary.totalClients, planSummary.totalClients ? (planSummary.deliveredClients || 0) / planSummary.totalClients * 100 : 0), base: 'BASE QV' },
         { indicator: 'Plano aprovado (Sim/Não)', viability: 'Parcial', metric: 'Proxy: clientes distintos com reunião Central de Inteligência; não representa aprovação formal', coverage: fixedCoverage(planSummary.planApproved, planSummary.totalClients, planSummary.totalClients ? (planSummary.planApproved || 0) / planSummary.totalClients * 100 : 0), base: 'BASE QV' },
-        { indicator: 'Dias até aprovação', viability: 'Parcial', metric: 'Proxy: primeira reunião Central de Inteligência - data de contratação; diferenças negativas excluídas', coverage: fixedCoverage(planSummary.daysToApprovalCount, planSummary.totalClients, planSummary.daysToApprovalCoveragePercent), base: 'BASE QV' },
+        { indicator: 'Dias até aprovação', viability: 'Parcial', metric: 'Proxy: última reunião Central de Inteligência - data de contratação; diferenças negativas excluídas', coverage: fixedCoverage(planSummary.daysToApprovalCount, planSummary.totalClients, planSummary.daysToApprovalCoveragePercent), base: 'BASE QV' },
         { indicator: 'Plano revisado posteriormente?', viability: 'Parcial', metric: 'Cliente com mais de uma reunião Central de Inteligência', coverage: fixedCoverage(planSummary.revisedLater, planSummary.totalClients, planSummary.totalClients ? (planSummary.revisedLater || 0) / planSummary.totalClients * 100 : 0), base: 'BASE QV' },
         { indicator: 'Quantidade de revisões', viability: 'Parcial', metric: 'Soma por cliente de reuniões Central de Inteligência menos um', coverage: fixedCoverage(planSummary.revisionsTotal, planSummary.totalClients, planSummary.totalClients ? (planSummary.revisionsTotal || 0) / planSummary.totalClients * 100 : 0), base: 'BASE QV' },
         { indicator: 'Clientes registrados por fonte', viability: 'Sim', metric: 'Contagem distinta de clients.id na BASE QV', coverage: fixedCoverage(planSummary.totalClients, planSummary.totalClients, planSummary.totalClients ? 100 : 0), base: 'BASE QV' },
@@ -9757,7 +9783,7 @@ ${dataRows}
         <article class="metric highlight"><div class="metric-label">Clientes BASE QV</div><div class="metric-value">${fmt.format(summary.baseQvClients || 0)}</div><div class="metric-note">Distinct clients.id</div></article>
         <article class="metric"><div class="metric-label">Plano entregue</div><div class="metric-value">${fmt.format(summary.planDelivered || 0)}</div><div class="metric-note">Reuniões Central de Inteligência</div></article>
         <article class="metric"><div class="metric-label">Plano aprovado</div><div class="metric-value">${fmt.format(summary.planApproved || 0)}</div><div class="metric-note">Clientes distintos · proxy, não aprovação formal</div></article>
-        <article class="metric"><div class="metric-label">Dias até aprovação</div><div class="metric-value">${dayValue(summary.averageDaysToApproval)}</div><div class="metric-note">Proxy: contratação → primeira reunião Central</div></article>
+        <article class="metric"><div class="metric-label">Dias até aprovação ${portalMetricTip('Proxy: diferença não negativa entre a data de contratação e a última reunião cujo event_name contém Central de Inteligência. Não representa aprovação formal.', 'Dias até aprovação')}</div><div class="metric-value">${dayValue(summary.averageDaysToApproval)}</div><div class="metric-note">Proxy: contratação → última reunião Central</div></article>
         <article class="metric"><div class="metric-label">Planos revisados</div><div class="metric-value">${fmt.format(summary.revisionsTotal || 0)}</div><div class="metric-note">${fmt.format(summary.revisedLater || 0)} clientes com mais de uma reunião</div></article>`;
 
       document.querySelector('#pSourceChart').innerHTML = hBars((payload.sources?.databases || []).map(db => ({ label: db.source, count: db.clientCount || 0, percent: (summary.totalClients ? (db.clientCount || 0) / summary.totalClients * 100 : 0) })));
@@ -9875,20 +9901,31 @@ ${dataRows}
       const payload = onboardingState.payload;
       const summary = payload.summary || {};
       const data = filteredOnboardingClients();
+      const journeyCohortTooltip = [
+        `Os quatro cartões usam a mesma coorte completa de ${fmt.format(summary.journeyKpiComparableClients || 0)} clientes.`,
+        `Todos precisam ter data inicial, primeiro marco de onboarding, primeira reunião, primeira reunião Central de Inteligência e primeira Ativação das Engrenagens ou Implementação.`,
+        `Medianas na coorte: onboarding ${dayValue(summary.averageTotalOnboardingDays)}, primeira reunião ${dayValue(summary.averageFirstMeetingDays)}, entrega do plano ${dayValue(summary.averagePlanDeliveryDays)} e primeiro mecanismo ${dayValue(summary.averageFirstImplementationDays)}.`,
+        `O onboarding usa o primeiro entre reunião e inclusão financeira. O primeiro mecanismo usa client_meetings.event_name contendo Ativação das Engrenagens ou Implementação.`,
+        `Diferenças negativas e ${fmt.format(summary.journeyKpiOrderingIssues || 0)} registros com ordem temporal inconsistente foram excluídos.`
+      ].join(' ');
       document.querySelector('#jKpis').innerHTML = `
-        <article class="metric highlight"><div class="metric-label">Mediana até 1ª reunião</div><div class="metric-value">${dayValue(summary.averageFirstMeetingDays)}</div><div class="metric-note">Contratação → primeira reunião</div></article>
-        <article class="metric"><div class="metric-label">Mediana até entrega do plano</div><div class="metric-value">${dayValue(summary.averagePlanDeliveryDays)}</div><div class="metric-note">Contratação → reunião de implementação</div></article>
-        <article class="metric"><div class="metric-label">Mediana até 1º mecanismo</div><div class="metric-value">${dayValue(summary.averageFirstImplementationDays)}</div><div class="metric-note">Contratação → implementação</div></article>
-        <article class="metric"><div class="metric-label">Mediana onboarding total</div><div class="metric-value">${dayValue(summary.averageTotalOnboardingDays)}</div><div class="metric-note">Contratação → onboarding_step_completed</div></article>
-        <article class="metric highlight"><div class="metric-label">Concluíram onboarding</div><div class="metric-value">${fmt.format(summary.completedOnboarding || 0)}</div><div class="metric-note">${pct(summary.completedPercent || 0)} dos clientes com jornada - ${fmt.format(summary.totalClients || 0)} clientes total</div></article>
-        <article class="metric"><div class="metric-label">Concluíram Onboarding App Pharus</div><div class="metric-value">${fmt.format(summary.appPharusCompletedOnboarding || 0)}</div><div class="metric-note">metrics.events · onboarding_step_completed</div></article>`;
+        <article class="metric highlight"><div class="metric-label">Mediana onboarding total <span class="help" tabindex="0" data-tip="${escapeHtml(journeyCohortTooltip)}">?</span></div><div class="metric-value">${dayValue(summary.averageTotalOnboardingDays)}</div><div class="metric-note">Contratação → 1º marco: reunião ou financeiro</div></article>
+        <article class="metric"><div class="metric-label">Mediana até 1ª reunião <span class="help" tabindex="0" data-tip="${escapeHtml(journeyCohortTooltip)}">?</span></div><div class="metric-value">${dayValue(summary.averageFirstMeetingDays)}</div><div class="metric-note">Contratação → primeira reunião</div></article>
+        <article class="metric"><div class="metric-label">Mediana até entrega do plano <span class="help" tabindex="0" data-tip="${escapeHtml(journeyCohortTooltip)}">?</span></div><div class="metric-value">${dayValue(summary.averagePlanDeliveryDays)}</div><div class="metric-note">Contratação → 1ª reunião Central de Inteligência</div></article>
+        <article class="metric"><div class="metric-label">Mediana até 1º mecanismo <span class="help" tabindex="0" data-tip="${escapeHtml(journeyCohortTooltip)}">?</span></div><div class="metric-value">${dayValue(summary.averageFirstImplementationDays)}</div><div class="metric-note">Contratação → Ativação das Engrenagens ou Implementação</div></article>
+        <article class="metric highlight"><div class="metric-label">Concluíram onboarding</div><div class="metric-value">${fmt.format(summary.completedOnboarding || 0)}</div><div class="metric-note">${pct(summary.completedPercent || 0)} de ${fmt.format(summary.completionBaseClients || 0)} avaliáveis · estágio, reunião ou financeiro</div></article>
+      `;
+
+      const planHelp = document.querySelector('#jPlanDeliveryHelp');
+      const onboardingHelp = document.querySelector('#jTotalOnboardingHelp');
+      if (planHelp) planHelp.dataset.tip = journeyCohortTooltip;
+      if (onboardingHelp) onboardingHelp.dataset.tip = journeyCohortTooltip;
 
       document.querySelector('#jFirstMeetingChart').innerHTML = donut(payload.distributions?.firstMeetingRanges || []);
       document.querySelector('#jPlanDeliveryChart').innerHTML = donut(payload.distributions?.planDeliveryRanges || []);
       document.querySelector('#jFirstImplementationChart').innerHTML = donut(payload.distributions?.firstImplementationRanges || []);
       document.querySelector('#jTotalOnboardingChart').innerHTML = donut(payload.distributions?.totalOnboardingRanges || []);
       document.querySelector('#jCompletionChart').innerHTML = donut(payload.distributions?.completion || []);
-      document.querySelector('#jStageDurationChart').innerHTML = hBarsMetric((payload.distributions?.pharusStageDurations?.length ? payload.distributions.pharusStageDurations : payload.distributions?.stageDurations) || []);
 
       const pages = Math.max(1, Math.ceil(data.length / onboardingState.pageSize));
       if (onboardingState.page > pages) onboardingState.page = pages;
@@ -10379,6 +10416,13 @@ ${dataRows}
       const totalNoShows = rows.reduce((a, c) => a + (c.absences || 0), 0);
       const totalReschedules = rows.reduce((a, c) => a + (c.reschedules || 0), 0);
       const now = new Date();
+      const latestMeetingDate = rows
+        .map((client) => client.lastMeetingDate ? new Date(client.lastMeetingDate) : null)
+        .filter((date) => date && !Number.isNaN(date.getTime()) && date <= now)
+        .sort((a, b) => b - a)[0] || null;
+      const daysSinceLatestMeeting = latestMeetingDate
+        ? Math.max(0, meetingDaysBetween(latestMeetingDate, now))
+        : null;
       // Deduplicar antes da taxa
       const deduped = [];
       const seen = new Set();
@@ -10427,6 +10471,8 @@ ${dataRows}
         averageMeetingsPerMonth,
         averageDaysSinceLastMeeting: daysSinceStats.mean,
         typicalDaysSinceLastMeeting: daysSinceStats.median,
+        latestMeetingDate: latestMeetingDate?.toISOString() || null,
+        daysSinceLatestMeeting,
         daysSinceLastMeetingStats: daysSinceStats,
         averageIntervalDays: intervalStats.mean,
         typicalIntervalDays: intervalStats.median,
@@ -10626,13 +10672,17 @@ ${dataRows}
       const scopeNote = summary.periodScoped
         ? 'Considerando o período selecionado'
         : (hasActiveMeetingFilters() ? `Sobre ${fmt.format(summary.filteredClients)} clientes filtrados` : 'Carteira completa');
-      const daysTip = summary.periodScoped
-        ? 'Calculado considerando as reuniões do período selecionado. Mediana dos dias desde a última reunião válida no recorte.'
-        : 'Mediana dos dias entre hoje e a última reunião válida da jornada (exclui reuniões anteriores à entrada).';
+      const daysTip = [
+        'Número principal: data de hoje menos a maior data de reunião válida (HOJE − MAXDATE da reunião).',
+        summary.periodScoped ? 'O MAXDATE respeita o período e os demais filtros aplicados.' : 'O MAXDATE considera todo o histórico do recorte filtrado.',
+        `Última reunião identificada: ${dateBR(summary.latestMeetingDate)}.`,
+        `Referências secundárias por cliente: mediana ${summary.typicalDaysSinceLastMeeting == null ? 'sem dado' : fmt.format(Math.round(summary.typicalDaysSinceLastMeeting)) + ' dias'} e média ${summary.averageDaysSinceLastMeeting == null ? 'sem dado' : fmt.format(Math.round(summary.averageDaysSinceLastMeeting)) + ' dias'}.`,
+        'Reuniões futuras, canceladas, inválidas ou anteriores à entrada do cliente não definem a última reunião válida.'
+      ].join(' ');
       document.querySelector('#mKpis').innerHTML = `
         <article class="metric highlight"><div class="metric-label">Total de reuniões</div><div class="metric-value">${fmt.format(summary.totalMeetings)}</div><div class="metric-note">${scopeNote}</div></article>
         <article class="metric"><div class="metric-label">Média de reuniões/mês</div><div class="metric-value">${summary.averageMeetingsPerMonth == null ? '—' : fmt.format(summary.averageMeetingsPerMonth)}</div><div class="metric-note">${summary.periodScoped ? 'Divisor do período filtrado' : 'Sobre o histórico do recorte'}</div></article>
-        <article class="metric"><div class="metric-label">Dias desde a última reunião <span class="help" title="${escapeHtml(daysTip)}">?</span></div><div class="metric-value">${(summary.typicalDaysSinceLastMeeting ?? summary.averageDaysSinceLastMeeting) == null ? '—' : fmt.format(Math.round(summary.typicalDaysSinceLastMeeting ?? summary.averageDaysSinceLastMeeting))}</div><div class="metric-note">Mediana · média ${summary.averageDaysSinceLastMeeting == null ? '—' : fmt.format(Math.round(summary.averageDaysSinceLastMeeting))}</div></article>
+        <article class="metric"><div class="metric-label">Dias desde a última reunião <span class="help" tabindex="0" data-tip="${escapeHtml(daysTip)}" title="${escapeHtml(daysTip)}">?</span></div><div class="metric-value">${summary.daysSinceLatestMeeting == null ? '—' : fmt.format(Math.round(summary.daysSinceLatestMeeting))}</div><div class="metric-note">Última em ${dateBR(summary.latestMeetingDate)} · mediana ${summary.typicalDaysSinceLastMeeting == null ? '—' : fmt.format(Math.round(summary.typicalDaysSinceLastMeeting))} · média ${summary.averageDaysSinceLastMeeting == null ? '—' : fmt.format(Math.round(summary.averageDaysSinceLastMeeting))}</div></article>
         <article class="metric"><div class="metric-label">Intervalo médio entre reuniões <span class="help" title="Média aritmética dos intervalos positivos entre reuniões válidas consecutivas (presença confirmada) do recorte. Valores negativos e pré-entrada são excluídos.">?</span></div><div class="metric-value">${summary.averageIntervalDays == null ? '—' : fmt.format(Math.round(summary.averageIntervalDays)) + ' d'}</div><div class="metric-note">Intervalo médio entre reuniões consecutivas válidas.${summary.typicalIntervalDays == null ? '' : ` · Mediana ${fmt.format(Math.round(summary.typicalIntervalDays))} d`}</div></article>
         <article class="metric"><div class="metric-label">Total de no-shows <span class="help" title="Quantidade de reuniões com ausência confirmada no recorte filtrado.">?</span></div><div class="metric-value">${fmt.format(noShows)}</div><div class="metric-note">${scopeNote}</div></article>
         <article class="metric"><div class="metric-label">Remarcações <span class="help" tabindex="0" data-tip="${escapeHtml(M_RESCHEDULE_COVERAGE_TIP)}" title="${escapeHtml(M_RESCHEDULE_COVERAGE_TIP)}">?</span></div><div class="metric-value">${fmt.format(summary.totalReschedules)}</div><div class="metric-note">${scopeNote}</div></article>
@@ -12643,6 +12693,7 @@ ${dataRows}
     const temporalState = {
       payload: null, page: 1, pageSize: 25, sortKey: 'month', sortDir: 'desc',
       activeSortKey: 'signalCount', activeSortDir: 'desc',
+      recencyPage: 1, recencySortKey: 'name', recencySortDir: 'asc',
       loading: false, requestId: 0, monthRange: 6
     };
     const tFilters = {
@@ -12696,6 +12747,49 @@ ${dataRows}
         else cmp = String(av).localeCompare(String(bv), 'pt-BR', { numeric: true });
         return temporalState.sortDir === 'asc' ? cmp : -cmp;
       });
+    }
+    function filteredTemporalRecencyRows() {
+      const rows = temporalState.payload?.activityRecency || [];
+      const q = (tFilters.search?.value || '').trim().toLowerCase();
+      return rows.filter((row) => {
+        if (tFilters.source?.value !== 'all' && row.source !== tFilters.source.value) return false;
+        if (q && !`${row.name || ''} ${row.email || ''} ${row.clientId || ''} ${row.code || ''} ${row.engineer || ''}`.toLowerCase().includes(q)) return false;
+        return true;
+      }).sort((a, b) => {
+        const key = temporalState.recencySortKey;
+        const av = a[key], bv = b[key];
+        let cmp = 0;
+        if (av == null && bv == null) cmp = 0;
+        else if (av == null) cmp = 1;
+        else if (bv == null) cmp = -1;
+        else if (typeof av === 'number' && typeof bv === 'number') cmp = av - bv;
+        else cmp = String(av).localeCompare(String(bv), 'pt-BR', { numeric: true });
+        return temporalState.recencySortDir === 'asc' ? cmp : -cmp;
+      });
+    }
+    function temporalRecencyValue(value) {
+      return value == null || !Number.isFinite(Number(value)) ? 'Sem dado' : `${fmt.format(value)} d`;
+    }
+    function renderTemporalRecencyTable() {
+      const rows = filteredTemporalRecencyRows();
+      const pages = Math.max(1, Math.ceil(rows.length / temporalState.pageSize));
+      temporalState.recencyPage = Math.min(Math.max(1, temporalState.recencyPage), pages);
+      const start = (temporalState.recencyPage - 1) * temporalState.pageSize;
+      const pageRows = rows.slice(start, start + temporalState.pageSize);
+      document.querySelector('#tRecencyRows').innerHTML = pageRows.map((row) => `<tr>
+        <td><strong>${escapeHtml(row.name || 'Não informado')}</strong><div class="field-used">${escapeHtml(row.code || row.email || '')}</div></td>
+        <td>${escapeHtml(row.engineer || 'Não informado')}</td>
+        <td class="num" title="${escapeHtml(dateBR(row.lastLoginAt))}">${temporalRecencyValue(row.daysSinceLastLogin)}</td>
+        <td class="num" title="${escapeHtml(dateBR(row.lastMeetingAt))}">${temporalRecencyValue(row.daysSinceLastMeeting)}</td>
+        <td class="num" title="${escapeHtml(dateBR(row.lastImplementationAt))}">${temporalRecencyValue(row.daysSinceLastImplementation)}</td>
+        <td class="num" title="${escapeHtml(dateBR(row.lastFinancialUpdateAt))}">${temporalRecencyValue(row.daysSinceLastFinancialUpdate)}</td>
+        <td class="num" title="${escapeHtml(dateBR(row.lastNpsAt))}">${temporalRecencyValue(row.daysSinceLastNps)}</td>
+      </tr>`).join('');
+      document.querySelector('#tRecencyEmpty').style.display = rows.length ? 'none' : 'block';
+      document.querySelector('#tRecencyCounter').textContent = `${fmt.format(rows.length)} clientes/usuários`;
+      document.querySelector('#tRecencyPageInfo').textContent = rows.length ? `Página ${temporalState.recencyPage} de ${pages}` : '0 registros';
+      document.querySelector('#tRecencyPrev').disabled = temporalState.recencyPage <= 1;
+      document.querySelector('#tRecencyNext').disabled = temporalState.recencyPage >= pages;
     }
     function temporalMonthlyBars(items) {
       const activeItems = (items || []).filter(row =>
@@ -12849,7 +12943,7 @@ ${dataRows}
         return { month, label: temporalMonthLabel(month), logins: monthRows.reduce((s,r)=>s+(r.logins||0),0), meetings: monthRows.reduce((s,r)=>s+(r.meetings||0),0), implementations: monthRows.reduce((s,r)=>s+(r.implementations||0),0), financialUpdates: monthRows.reduce((s,r)=>s+(r.financialUpdates||0),0), npsResponses: monthRows.reduce((s,r)=>s+(r.npsResponses||0),0), averageDaysWithoutActivity: inactivity.length ? inactivity.reduce((a,b)=>a+b,0)/inactivity.length : null };
       });
       const visibleMonths = filteredMonthly.slice(-temporalState.monthRange);
-      document.querySelector('#tMonthlyChart').innerHTML = temporalMonthlyBars(visibleMonths);
+      renderTemporalRecencyTable();
       document.querySelector('#tInactivityChart').innerHTML = hBars(visibleMonths.map(row => ({
         label: row.label,
         count: Math.round(row.averageDaysWithoutActivity || 0),
@@ -12883,6 +12977,7 @@ ${dataRows}
         if (!response.ok) throw Object.assign(new Error(friendlyApiError(response.status, payload)), { status: response.status, payload });
         temporalState.payload = payload;
         temporalState.page = 1;
+        temporalState.recencyPage = 1;
         fillTemporalMonths();
         renderTemporal();
         renderQualityMatrices();
@@ -12896,15 +12991,15 @@ ${dataRows}
         if (error?.code === 'AUTH_REQUIRED' || error?.code === 'AUTH_FORBIDDEN' || error?.message === 'AUTH_REQUIRED') return;
         status.textContent = '● Falha na atualização'; status.style.color = 'var(--color-danger)';
         document.querySelector('#tUpdated').textContent = error.message || friendlyApiError(0, null, true);
-        const chart = document.querySelector('#tMonthlyChart');
-        if (chart) chart.innerHTML = '<div class="empty" style="display:block">Não foi possível carregar indicadores temporais.</div>';
+        const empty = document.querySelector('#tRecencyEmpty');
+        if (empty) { empty.style.display = 'block'; empty.textContent = 'Não foi possível carregar os dados de recência.'; }
       } finally {
         if (requestId === temporalState.requestId) {
           temporalState.loading = false; refresh.disabled = false; refresh.textContent = 'Atualizar';
         }
       }
     }
-    Object.values(tFilters).forEach(el => el?.addEventListener('input', () => { temporalState.page = 1; renderTemporal(); }));
+    Object.values(tFilters).forEach(el => el?.addEventListener('input', () => { temporalState.page = 1; temporalState.recencyPage = 1; renderTemporal(); }));
     document.querySelector('#tClear')?.addEventListener('click', () => {
       tFilters.search.value = '';
       tFilters.source.value = 'all';
@@ -12916,11 +13011,21 @@ ${dataRows}
     document.querySelector('#tRefresh')?.addEventListener('click', loadTemporal);
     document.querySelector('#tActiveRiskPrev')?.addEventListener('click', () => { temporalState.page -= 1; renderTemporal(); });
     document.querySelector('#tActiveRiskNext')?.addEventListener('click', () => { temporalState.page += 1; renderTemporal(); });
+    document.querySelector('#tRecencyPrev')?.addEventListener('click', () => { temporalState.recencyPage -= 1; renderTemporal(); });
+    document.querySelector('#tRecencyNext')?.addEventListener('click', () => { temporalState.recencyPage += 1; renderTemporal(); });
+    document.querySelectorAll('#view-temporal th[data-t-recency-sort]').forEach((th) => th.addEventListener('click', () => {
+      const key = th.dataset.tRecencySort;
+      if (temporalState.recencySortKey === key) temporalState.recencySortDir = temporalState.recencySortDir === 'asc' ? 'desc' : 'asc';
+      else { temporalState.recencySortKey = key; temporalState.recencySortDir = ['name', 'engineer'].includes(key) ? 'asc' : 'desc'; }
+      temporalState.recencyPage = 1;
+      renderTemporal();
+    }));
     document.querySelectorAll('#view-temporal th[data-t-active-sort]').forEach(th => th.addEventListener('click', () => {
       const key = th.dataset.tActiveSort;
       if (temporalState.activeSortKey === key) temporalState.activeSortDir = temporalState.activeSortDir === 'asc' ? 'desc' : 'asc';
       else { temporalState.activeSortKey = key; temporalState.activeSortDir = ['name', 'code', 'engineer', 'signals', 'lastActivityAt'].includes(key) ? 'asc' : 'desc'; }
       temporalState.page = 1;
+      temporalState.recencyPage = 1;
       renderTemporal();
     }));
     document.querySelector('#tMonthRangeSeg')?.addEventListener('click', (event) => {
@@ -14718,7 +14823,7 @@ ${dataRows}
       );
       return `<div class="cancel-evidence-funnel">${cards}</div>
         <div class="cancel-status-funnel">
-          <h4 style="margin:14px 0 6px;font-size:13px">Status atual (BASE QV) — exclusivo ${portalMetricTip('Cada cliente aparece uma vez, no status atual de cancellation_statuses (display_order).', 'Status exclusivo')}</h4>
+          <h4 style="margin:14px 0 6px;font-size:13px">Status das linhas não arquivadas (BASE QV) ${portalMetricTip('Conta linhas não arquivadas de public.cancellations, agrupadas pelo nome de public.cancellation_statuses, sem deduplicar por cliente.', 'Status das linhas')}</h4>
           ${statusBars || '<div class="empty" style="display:block">Sem status de processo no recorte.</div>'}
         </div>`;
     }
@@ -14766,31 +14871,15 @@ ${dataRows}
           <div class="metric-note">Intenção/pedido sem cancelamento efetivado.</div>
         </article>`);
 
-      const timing = summary.timing || {};
-      const timingItems = [
-        cancelTimingStripItem('Tempo médio em processo', timing.medianDaysInProcess),
-        cancelTimingStripItem('Intenção → pedido', timing.medianIntentionToOrder),
-        cancelTimingStripItem('Pedido → efetivação', timing.medianOrderToEffective),
-        cancelTimingStripItem('Intenção → efetivação', timing.medianIntentionToEffective),
-        cancelTimingStripItem('Retenção', timing.medianRetentionDays)
-      ].join('<span class="cancel-timing-sep" aria-hidden="true">·</span>');
+      const processTimeStats = cancelRobustStats(
+        rows.filter((client) => client.inProcessCurrently && !client.isArchived).map((client) => client.daysInProcess)
+      );
       setHtml('#cKpisTiming', `
-        <aside class="cancel-timing-strip" role="status" aria-label="Tempos medianos do processo">
-          <div class="cancel-timing-strip__head">
-            <span class="cancel-timing-strip__icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
-            </span>
-            <span class="cancel-timing-strip__title">Tempos medianos do processo</span>
-            <span
-              class="help"
-              tabindex="0"
-              role="button"
-              aria-label="Sobre o cálculo das medianas de tempo"
-              data-tip="As medianas consideram somente pares de datas válidas e excluem intervalos negativos. Valores do payload completo (não recalculados por filtro de etapa)."
-            >?</span>
-          </div>
-          <div class="cancel-timing-strip__metrics">${timingItems}</div>
-        </aside>`);
+        <article class="metric kpi-secondary">
+          <div class="metric-label">Tempo médio do processo ${portalMetricTip('Média dos dias entre a entrada no processo (data do pedido; fallback para intenção) e hoje, somente para clientes não arquivados que ainda estão em processo. Intervalos negativos e datas ausentes são excluídos. Respeita os filtros.', 'Tempo médio do processo')}</div>
+          <div class="metric-value">${processTimeStats.mean == null ? 'Sem dado' : `${fmt.format(processTimeStats.mean)} d`}</div>
+          <div class="metric-note">${fmt.format(processTimeStats.validCount || 0)} clientes com intervalo válido.</div>
+        </article>`);
 
       const retention = filteredSummary.retention || {};
       setHtml('#cKpisRetention', `
@@ -14806,21 +14895,52 @@ ${dataRows}
         <article class="metric"><div class="metric-label">Arquivados ${portalMetricTip('Registros arquivados no recorte (se o filtro permitir).', 'Arquivados')}</div><div class="metric-value">${fmt.format(operations.archivedRecords ?? 0)}</div><div class="metric-note">Conforme filtro de arquivados.</div></article>`);
 
       const processChartMode = document.querySelector('#cProcessChartMode')?.value || 'status';
-      const processStatusItems = cancelDist(
-        rows.filter((c) => c.inProcessCurrently),
-        (r) => r.processStatusName || 'Status não informado'
+      const processRows = rows.filter((client) => !client.isArchived && client.inProcessCurrently);
+      const processStatusFilterActive = Boolean(
+        (cFilters.search?.value || '').trim()
+        || cFilters.from?.value
+        || cFilters.to?.value
+        || (cFilters.stage?.value && cFilters.stage.value !== 'all')
+        || (cFilters.category?.value && cFilters.category.value !== 'all')
+        || (cFilters.reason?.value && cFilters.reason.value !== 'all')
+        || (cFilters.responsible?.value && cFilters.responsible.value !== 'all')
+        || (cFilters.estagio?.value && cFilters.estagio.value !== 'all')
+        || (cFilters.retention?.value && cFilters.retention.value !== 'all')
+        || (cFilters.critical?.value && cFilters.critical.value !== 'all')
       );
+      const filteredClientIds = new Set(rows.map((client) => String(client.clientId || '')).filter(Boolean));
+      const rawStatusLines = payload.processStatusLines || [];
+      const visibleStatusLines = processStatusFilterActive
+        ? rawStatusLines.filter((line) => line.clientId && filteredClientIds.has(String(line.clientId)))
+        : rawStatusLines;
+      const statusOrder = (payload.processStatusDimension?.statuses || []).map((status) => status.name).filter(Boolean);
+      const processStatusItems = cancelDist(
+        processRows,
+        (client) => client.processStatusName || 'Status não informado'
+      );
+      const processStatusLineItems = cancelDist(
+        visibleStatusLines,
+        (line) => line.processStatusName || 'Status não informado',
+        statusOrder
+      ).filter((item) => item.count > 0).map((item) => ({
+        stage: item.label,
+        totalDistinctClients: item.count,
+        percentage: item.percent,
+        ruleDescription: 'Linhas não arquivadas de public.cancellations agrupadas por cancellation_statuses.name; sem deduplicação por cliente.',
+        sources: [],
+        overlapClients: 0
+      }));
       const processSegmentItems = cancelDist(
-        rows.filter((c) => c.inProcessCurrently),
+        processRows,
         (r) => r.segment,
         C_SEGMENTS
       );
       if (processChartMode === 'segment') {
         setHtml('#cChartProcessStatus', hBars(processSegmentItems));
-        setText('#cChartProcessSub', 'Em processo · segmento · respeita filtros');
+        setText('#cChartProcessSub', 'Clientes em processo · segmento · somente registros não arquivados · respeita filtros');
       } else {
         setHtml('#cChartProcessStatus', hBars(processStatusItems));
-        setText('#cChartProcessSub', 'Em processo · status de cancellation_statuses · respeita filtros');
+        setText('#cChartProcessSub', 'Em processo · clientes distintos por status de cancellation_statuses · respeita filtros');
       }
 
       const backendFunnel = summary.statusEvidenceFunnel || {};
@@ -14828,7 +14948,7 @@ ${dataRows}
         '#cChartFunnel',
         renderEvidenceFunnelHtml(
           filteredSummary.evidenceFunnel || backendFunnel.evidenceFunnel || summary.evidenceFunnel || [],
-          filteredSummary.statusFunnelExclusive || backendFunnel.statusFunnelExclusive || summary.statusFunnelExclusive || []
+          processStatusLineItems
         )
       );
 
@@ -16345,6 +16465,29 @@ ${dataRows}
       };
     }
 
+    function getTemporalRecencyExportPayload() {
+      const rows = filteredTemporalRecencyRows();
+      return {
+        filename: PortalTableExport.exportFilename('indicadores-temporais-recencia-por-cliente'),
+        sheetName: 'Recencia por cliente',
+        columns: [
+          { key: 'name', label: 'Nome', value: (r) => r.name || 'Não informado' },
+          { key: 'engineer', label: 'Engenheiro Patrimonial', value: (r) => r.engineer || 'Não informado' },
+          { key: 'daysSinceLastLogin', label: 'Dias desde login', value: (r) => r.daysSinceLastLogin ?? 'Sem dado' },
+          { key: 'daysSinceLastMeeting', label: 'Dias desde reunião', value: (r) => r.daysSinceLastMeeting ?? 'Sem dado' },
+          { key: 'daysSinceLastImplementation', label: 'Dias desde implementação', value: (r) => r.daysSinceLastImplementation ?? 'Sem dado' },
+          { key: 'daysSinceLastFinancialUpdate', label: 'Dias desde atualização financeira', value: (r) => r.daysSinceLastFinancialUpdate ?? 'Sem dado' },
+          { key: 'daysSinceLastNps', label: 'Dias desde NPS', value: (r) => r.daysSinceLastNps ?? 'Sem dado' },
+          { key: 'lastLoginAt', label: 'Último login', value: (r) => PortalTableExport.formatExportDate(r.lastLoginAt) },
+          { key: 'lastMeetingAt', label: 'Última reunião', value: (r) => PortalTableExport.formatExportDate(r.lastMeetingAt) },
+          { key: 'lastImplementationAt', label: 'Última implementação', value: (r) => PortalTableExport.formatExportDate(r.lastImplementationAt) },
+          { key: 'lastFinancialUpdateAt', label: 'Última atualização financeira', value: (r) => PortalTableExport.formatExportDate(r.lastFinancialUpdateAt) },
+          { key: 'lastNpsAt', label: 'Último NPS', value: (r) => PortalTableExport.formatExportDate(r.lastNpsAt) }
+        ],
+        rows
+      };
+    }
+
     function getSatisfactionExportPayload() {
       const rows = filteredSatisfactionClients();
       return {
@@ -16605,6 +16748,7 @@ ${dataRows}
         ['#epExportHost', getEpExportPayload],
         ['#eExportHost', getEngagementExportPayload],
         ['#tExportHost', getTemporalExportPayload],
+        ['#tRecencyExportHost', getTemporalRecencyExportPayload],
         ['#xExportHost', getSatisfactionExportPayload],
         ['#rExportHost', getRenewalExportPayload],
         ['#perfExportHost', getPerfLegacyExportPayload],

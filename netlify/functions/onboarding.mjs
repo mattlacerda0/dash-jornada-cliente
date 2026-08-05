@@ -102,6 +102,24 @@ function positiveStatus(value, tokens) {
   return tokens.some((token) => text.includes(token));
 }
 
+function fold(value) {
+  return String(value || "")
+    .normalize("NFD")
+    .replace(/\p{M}/gu, "")
+    .toLowerCase()
+    .trim();
+}
+
+function isCentralIntelligenceMeeting(row) {
+  return fold(firstValue(row, "event_name", "title", "name", "meeting_type"))
+    .includes("central de inteligencia");
+}
+
+function isActivationOrImplementationMeeting(row) {
+  const name = fold(firstValue(row, "event_name", "title", "name", "meeting_type"));
+  return name.includes("ativacao das engrenagens") || name.includes("implementacao");
+}
+
 function average(nums) {
   const clean = nums.filter((num) => num != null && Number.isFinite(num));
   if (!clean.length) return null;
@@ -179,11 +197,6 @@ const OPEN_ONBOARDING_STAGE_IDS = new Set([
   "7c43c981-5cc8-4ed3-b6ad-3bad26856b79",
   "ae3a6015-cc67-4e20-8c9b-f7d7b5605b48",
   "33bb253e-6c80-4611-a1dd-abc6515530e7",
-]);
-
-const TOTAL_ONBOARDING_START_STAGE_IDS = new Set([
-  "33bb253e-6c80-4611-a1dd-abc6515530e7",
-  "7c43c981-5cc8-4ed3-b6ad-3bad26856b79",
 ]);
 
 const DAY_RANGE_LABELS = ["0-7 dias", "8-15 dias", "16-30 dias", "31-60 dias", "61-90 dias", "Mais de 90 dias", "Sem base"];
@@ -354,16 +367,14 @@ async function buildPayload() {
     })),
     fetchAllSafe("client_meetings"),
     fetchAllSafe("client_journeys"),
-    fetchAllSafe("client_mecanismos"),
-    fetchAllSafe("client_implementation_meeting_date"),
+    fetchAllSafe("client_financial_data", "client_id,created_at"),
     fetchAllSafe("journey_stages"),
   ]);
   const sourceResults = {
     client_meetings: sourceEntries[0],
     client_journeys: sourceEntries[1],
-    client_mecanismos: sourceEntries[2],
-    client_implementation_meeting_date: sourceEntries[3],
-    journey_stages: sourceEntries[4],
+    client_financial_data: sourceEntries[2],
+    journey_stages: sourceEntries[3],
   };
   for (const [table, result] of Object.entries(sourceResults)) {
     if (!Array.isArray(result)) warnings.push(`${table}: ${result.error}`);
@@ -378,42 +389,44 @@ async function buildPayload() {
 
   const meetingsByClient = byClient(Array.isArray(sourceResults.client_meetings) ? sourceResults.client_meetings : []);
   const journeysByClient = byClient(Array.isArray(sourceResults.client_journeys) ? sourceResults.client_journeys : []);
-  const mechanismsByClient = byClient(Array.isArray(sourceResults.client_mecanismos) ? sourceResults.client_mecanismos : []);
-  const implementationMeetingsByClient = byClient(Array.isArray(sourceResults.client_implementation_meeting_date) ? sourceResults.client_implementation_meeting_date : []);
+  const financialDataByClient = byClient(Array.isArray(sourceResults.client_financial_data) ? sourceResults.client_financial_data : []);
   const stagesById = stageMap(Array.isArray(sourceResults.journey_stages) ? sourceResults.journey_stages : []);
   const allTransitionDurations = transitionDurations(journeysByClient, stagesById);
-  const transitionDurationsByClient = new Map();
-  for (const item of allTransitionDurations) {
-    if (!transitionDurationsByClient.has(item.clientId)) transitionDurationsByClient.set(item.clientId, []);
-    transitionDurationsByClient.get(item.clientId).push(item);
-  }
 
   const rows = clients.map((client) => {
     const clientId = String(client.id);
     const contractDate = parseDate(client.data_inicio_ciclo) || parseDate(client.created_at);
     const meetings = meetingsByClient.get(clientId) || [];
     const journeys = journeysByClient.get(clientId) || [];
-    const mechanisms = mechanismsByClient.get(clientId) || [];
-    const implementationMeetings = implementationMeetingsByClient.get(clientId) || [];
+    const financialRecords = financialDataByClient.get(clientId) || [];
 
     const firstMeeting = minDate(meetings.map((row) => firstValue(row, "start_time", "started_at", "scheduled_at", "created_at")));
-    const planDelivered = minDate(implementationMeetings.map((row) => firstValue(row, "meeting_date", "data_reuniao", "created_at")));
-    const firstImplementation = minDate(mechanisms
-      .filter((row) => positiveStatus(firstValue(row, "status", "state"), ["implement", "implant", "conclu", "feito"]) || firstValue(row, "implemented_at", "implantado_at", "data_implementacao"))
-      .map((row) => firstValue(row, "implemented_at", "implantado_at", "data_implementacao", "updated_at", "created_at")));
+    const firstFinancialData = minDate(financialRecords.map((row) => firstValue(row, "created_at")));
+    const centralIntelligenceMeetings = meetings.filter(isCentralIntelligenceMeeting);
+    const activationOrImplementationMeetings = meetings.filter(isActivationOrImplementationMeeting);
+    const planDelivered = minDate(centralIntelligenceMeetings.map((row) => firstValue(row, "start_time", "meeting_date", "scheduled_at", "created_at")));
+    const firstImplementation = minDate(activationOrImplementationMeetings
+      .map((row) => firstValue(row, "start_time", "meeting_date", "scheduled_at", "created_at")));
 
     const latestJourney = latestByDate(journeys);
     const latestStageId = latestJourney ? String(firstValue(latestJourney, "current_stage_id", "stage_id") || "") : null;
-    const completedOnboarding = latestStageId ? !OPEN_ONBOARDING_STAGE_IDS.has(latestStageId) : null;
-    const clientTransitions = transitionDurationsByClient.get(clientId) || [];
-    const totalOnboardingDurations = clientTransitions
-      .filter((item) => TOTAL_ONBOARDING_START_STAGE_IDS.has(item.stageId))
-      .map((item) => item.days);
+    const completedByJourney = latestStageId ? !OPEN_ONBOARDING_STAGE_IDS.has(latestStageId) : null;
+    const hasFinancialData = financialRecords.length > 0;
+    const hasFirstMeeting = Boolean(firstMeeting);
+    const completedOnboarding = completedByJourney === true || hasFirstMeeting || hasFinancialData
+      ? true
+      : completedByJourney === false
+        ? false
+        : null;
     const pharusCompleted = pharusOnboarding.completedByClient.get(clientId);
-    const totalOnboardingDaysPharus = nonNegativeDaysBetween(contractDate, pharusCompleted?.date || null);
-    const totalOnboardingDays = totalOnboardingDaysPharus ?? median(totalOnboardingDurations);
 
     const daysUntil = (date) => nonNegativeDaysBetween(contractDate, date);
+    const daysToFirstFinancialData = daysUntil(firstFinancialData);
+    const onboardingMilestones = [
+      { source: "base_qv_client_meetings", days: daysUntil(firstMeeting) },
+      { source: "base_qv_client_financial_data", days: daysToFirstFinancialData },
+    ].filter((item) => item.days != null).sort((a, b) => a.days - b.days);
+    const totalOnboardingDays = onboardingMilestones[0]?.days ?? null;
 
     return {
       clientId,
@@ -423,22 +436,28 @@ async function buildPayload() {
       engineer: blankToNull(client.engenheiro_patrimonial) || "Não informado",
       contractDate: contractDate?.toISOString() || null,
       firstMeetingDate: firstMeeting?.toISOString() || null,
+      firstFinancialDataDate: firstFinancialData?.toISOString() || null,
       planDeliveredDate: planDelivered?.toISOString() || null,
       firstImplementationDate: firstImplementation?.toISOString() || null,
       daysToFirstMeeting: daysUntil(firstMeeting),
+      daysToFirstFinancialData,
       daysToPlanDelivery: daysUntil(planDelivered),
       daysToFirstImplementation: daysUntil(firstImplementation),
       totalOnboardingDays,
-      totalOnboardingDaysSource: totalOnboardingDaysPharus != null ? "app_pharus_metrics_events" : "base_qv_client_journeys",
+      totalOnboardingDaysSource: onboardingMilestones[0]?.source || null,
       pharusOnboardingCompletedAt: pharusCompleted?.date ? pharusCompleted.date.toISOString() : null,
       pharusCompletedOnboarding: Boolean(pharusCompleted),
       completedOnboarding,
+      completedByJourney,
+      hasFinancialData,
+      completedOnboardingSource: null,
       currentStageId: latestStageId,
       currentStageName: latestStageId ? (stagesById.get(latestStageId) || latestStageId) : "Sem base",
       journeyRecords: journeys.length,
       meetingRecords: meetings.length,
-      planRecords: implementationMeetings.length,
-      mechanismRecords: mechanisms.length,
+      planRecords: centralIntelligenceMeetings.length,
+      financialRecords: financialRecords.length,
+      mechanismRecords: activationOrImplementationMeetings.length,
     };
   });
 
@@ -453,8 +472,26 @@ async function buildPayload() {
       const contractDate = parseDate(row.contractDate);
       const meetingDate = parseDate(row.firstMeetingDate);
       row.daysToFirstMeeting =
-        contractDate && meetingDate ? daysBetween(contractDate, meetingDate) : row.daysToFirstMeeting;
+        contractDate && meetingDate ? nonNegativeDaysBetween(contractDate, meetingDate) : row.daysToFirstMeeting;
     }
+    const milestones = [
+      { source: "base_qv_client_meetings", days: row.daysToFirstMeeting },
+      { source: "base_qv_client_financial_data", days: row.daysToFirstFinancialData },
+    ].filter((item) => item.days != null).sort((a, b) => a.days - b.days);
+    row.totalOnboardingDays = milestones[0]?.days ?? null;
+    row.totalOnboardingDaysSource = milestones[0]?.source || null;
+    const completedByMeeting = row.daysToFirstMeeting != null;
+    row.completedByFirstMeeting = completedByMeeting;
+    row.completedOnboarding = row.completedByJourney === true || completedByMeeting || row.hasFinancialData
+      ? true
+      : row.completedByJourney === false
+        ? false
+        : null;
+    const completionSources = [];
+    if (row.completedByJourney === true) completionSources.push("journey");
+    if (completedByMeeting) completionSources.push("first_meeting");
+    if (row.hasFinancialData) completionSources.push("financial_data");
+    row.completedOnboardingSource = completionSources.join("_and_") || (row.completedByJourney === false ? "open_journey" : null);
   }
   const afterFallbackWithMeeting = rows.filter((row) => row.firstMeetingDate).length;
 
@@ -464,11 +501,31 @@ async function buildPayload() {
   const withImplementation = rows.filter((row) => row.daysToFirstImplementation != null).length;
   const completeCount = rows.filter((row) => row.completedOnboarding === true).length;
   const openCount = rows.filter((row) => row.completedOnboarding === false).length;
+  const completedByJourneyCount = rows.filter((row) => row.completedByJourney === true).length;
+  const completedByFirstMeetingCount = rows.filter((row) => row.completedByFirstMeeting).length;
+  const completedByFinancialCount = rows.filter((row) => row.hasFinancialData).length;
+  const completedByFinancialOnlyCount = rows.filter((row) => row.hasFinancialData && row.completedByJourney !== true && !row.completedByFirstMeeting).length;
   const withCompletionBase = completeCount + openCount;
   const hasJourney = Array.isArray(sourceResults.client_journeys) && sourceResults.client_journeys.length > 0;
-  const totalOnboardingCount = rows.filter((row) => row.totalOnboardingDays != null).length;
+  const overallTotalOnboardingRows = rows.filter((row) => row.totalOnboardingDays != null);
+  const journeyKpiCandidates = rows.filter((row) =>
+    row.totalOnboardingDays != null
+    && row.daysToFirstMeeting != null
+    && row.daysToPlanDelivery != null
+    && row.daysToFirstImplementation != null
+  );
+  const journeyKpiOrderingIssues = journeyKpiCandidates.filter((row) =>
+    row.totalOnboardingDays > row.daysToFirstMeeting
+    || row.totalOnboardingDays > row.daysToPlanDelivery
+    || row.totalOnboardingDays > row.daysToFirstImplementation
+  ).length;
+  const journeyKpiComparableRows = journeyKpiCandidates.filter((row) =>
+    row.totalOnboardingDays <= row.daysToFirstMeeting
+    && row.totalOnboardingDays <= row.daysToPlanDelivery
+    && row.totalOnboardingDays <= row.daysToFirstImplementation
+  );
+  const totalOnboardingCount = journeyKpiComparableRows.length;
   const pharusCompletedCount = pharusOnboarding.completedByClient.size;
-  const pharusTotalOnboardingCount = rows.filter((row) => row.totalOnboardingDaysSource === "app_pharus_metrics_events").length;
 
   const stageGroups = new Map();
   for (const item of allTransitionDurations) {
@@ -479,15 +536,18 @@ async function buildPayload() {
     .map(([label, values]) => ({ label, count: values.length, value: median(values), percent: 0 }))
     .sort((a, b) => (b.value || 0) - (a.value || 0));
   const pharusStageDurations = pharusOnboarding.stageDurations.sort((a, b) => (b.value || 0) - (a.value || 0));
+  const stageDurationCount = pharusStageDurations.length
+    ? pharusStageDurations.reduce((sum, item) => sum + item.count, 0)
+    : allTransitionDurations.length;
 
   const indicators = [
-    ["Dias entre contratação e primeira reunião", withFirstMeeting ? "Sim" : "Sem base", "Mediana da diferença não negativa entre clients.data_inicio_ciclo e a primeira client_meetings.start_time.", median(rows.map((row) => row.daysToFirstMeeting)), "dias", withFirstMeeting],
-    ["Dias entre contratação e entrega do plano patrimonial", withPlanDelivery ? "Sim" : "Sem base", "Mediana da diferença não negativa entre clients.data_inicio_ciclo e a primeira client_implementation_meeting_date.meeting_date.", median(rows.map((row) => row.daysToPlanDelivery)), "dias", withPlanDelivery],
-    ["Dias entre contratação e primeiro mecanismo implementado", withImplementation ? "Sim" : "Não identificado", "Mediana da diferença não negativa entre clients.data_inicio_ciclo e a primeira client_mecanismos.implemented_at.", median(rows.map((row) => row.daysToFirstImplementation)), "dias", withImplementation],
-    ["Tempo total de onboarding", totalOnboardingCount ? "Sim" : "Sem base", "Mediana da diferença não negativa entre clients.data_inicio_ciclo e App Pharus metrics.events.event_name = onboarding_step_completed; fallback BASE QV client_journeys quando sem vínculo.", median(rows.map((row) => row.totalOnboardingDays)), "dias", totalOnboardingCount],
-    ["Concluiu onboarding (Sim/Não)", hasJourney ? "Sim" : "Sem base", "Sim quando o estágio atual do client_id é diferente dos estágios 7c43c981..., ae3a6015... e 33bb253e.... Não quando é igual.", completeCount, "clientes", withCompletionBase],
+    ["Tempo total de onboarding", totalOnboardingCount ? "Sim" : "Sem base", "Mediana na coorte única dos quatro prazos: data inicial até o primeiro marco entre primeira reunião e inclusão financeira.", median(journeyKpiComparableRows.map((row) => row.totalOnboardingDays)), "dias", totalOnboardingCount],
+    ["Dias entre contratação e primeira reunião", totalOnboardingCount ? "Sim" : "Sem base", "Mediana na mesma coorte dos quatro prazos: data inicial até a primeira client_meetings.start_time.", median(journeyKpiComparableRows.map((row) => row.daysToFirstMeeting)), "dias", totalOnboardingCount],
+    ["Dias entre contratação e entrega do plano patrimonial", totalOnboardingCount ? "Sim" : "Sem base", "Mediana na mesma coorte dos quatro prazos: data inicial até a primeira reunião Central de Inteligência.", median(journeyKpiComparableRows.map((row) => row.daysToPlanDelivery)), "dias", totalOnboardingCount],
+    ["Dias entre contratação e primeiro mecanismo implementado", totalOnboardingCount ? "Sim" : "Sem base", "Mediana na mesma coorte dos quatro prazos: data inicial até a primeira reunião de Ativação das Engrenagens ou Implementação.", median(journeyKpiComparableRows.map((row) => row.daysToFirstImplementation)), "dias", totalOnboardingCount],
+    ["Concluiu onboarding (Sim/Não)", (hasJourney || withFirstMeeting || completedByFinancialCount) ? "Sim" : "Sem base", "Sim quando o estágio atual está fora dos estágios abertos OU existe primeira reunião OU existe registro em public.client_financial_data.", completeCount, "clientes", withCompletionBase],
     ["Concluíram Onboarding App Pharus", pharusCompletedCount ? "Sim" : "Sem base", "count(distinct client_id/user_id) em metrics.events com event_name = onboarding_step_completed.", pharusCompletedCount, "clientes", pharusCompletedCount],
-    ["Tempo médio para cada etapa da jornada", (pharusStageDurations.length || stageDurations.length) ? "Sim" : "Sem base", "Mediana entre eventos consecutivos do mesmo cliente em metrics.events, agrupando event_name por resposta do quiz, status financeiro, onboarding e open finance; fallback journey_stages.name.", median((pharusStageDurations.length ? pharusStageDurations : stageDurations).map((item) => item.value)), "dias", pharusStageDurations.length ? pharusStageDurations.reduce((a, i) => a + i.count, 0) : allTransitionDurations.length],
+    ["Tempo médio para cada etapa da jornada", (pharusStageDurations.length || stageDurations.length) ? "Sim" : "Sem base", "Mediana entre eventos consecutivos do mesmo cliente em metrics.events, agrupando event_name por resposta do quiz, status financeiro, onboarding e open finance; fallback journey_stages.name.", median((pharusStageDurations.length ? pharusStageDurations : stageDurations).map((item) => item.value)), "dias", stageDurationCount],
   ].map(([indicator, viability, metric, value, unit, count]) => ({
     indicator,
     viability,
@@ -503,14 +563,44 @@ async function buildPayload() {
       totalClients: rows.length,
       completedOnboarding: completeCount,
       openOnboarding: openCount,
+      completedByJourney: completedByJourneyCount,
+      completedByFirstMeeting: completedByFirstMeetingCount,
+      completedByFinancialData: completedByFinancialCount,
+      completedByFinancialDataOnly: completedByFinancialOnlyCount,
+      completionBaseClients: withCompletionBase,
       completedPercent: Math.round((completeCount / (withCompletionBase || 1)) * 1000) / 10,
-      averageFirstMeetingDays: indicators[0].value,
-      averagePlanDeliveryDays: indicators[1].value,
-      averageFirstImplementationDays: indicators[2].value,
-      averageTotalOnboardingDays: indicators[3].value,
+      averageTotalOnboardingDays: indicators[0].value,
+      averageFirstMeetingDays: indicators[1].value,
+      averagePlanDeliveryDays: indicators[2].value,
+      averageFirstImplementationDays: indicators[3].value,
+      firstMeetingCount: journeyKpiComparableRows.length,
+      firstMeetingCoveragePercent: indicators[1].coverage,
+      planDeliveryCount: journeyKpiComparableRows.length,
+      planDeliveryCoveragePercent: indicators[2].coverage,
+      overallPlanDeliveryCount: withPlanDelivery,
+      overallPlanDeliveryMedianDays: median(rows.map((row) => row.daysToPlanDelivery)),
+      planApprovalCount: withPlanDelivery,
+      planApprovalCoveragePercent: Math.round((withPlanDelivery / total) * 1000) / 10,
+      firstImplementationCount: journeyKpiComparableRows.length,
+      firstImplementationCoveragePercent: indicators[3].coverage,
+      totalOnboardingCount,
+      totalOnboardingCoveragePercent: indicators[3].coverage,
+      overallTotalOnboardingCount: overallTotalOnboardingRows.length,
+      overallTotalOnboardingMedianDays: median(overallTotalOnboardingRows.map((row) => row.totalOnboardingDays)),
+      comparablePlanOnboardingClients: journeyKpiComparableRows.length,
+      comparablePlanDeliveryMedianDays: indicators[2].value,
+      comparableTotalOnboardingMedianDays: indicators[0].value,
+      journeyKpiComparableClients: journeyKpiComparableRows.length,
+      journeyKpiOrderingIssues,
+      overallFirstMeetingCount: withFirstMeeting,
+      overallFirstMeetingMedianDays: median(rows.map((row) => row.daysToFirstMeeting)),
+      overallFirstImplementationCount: withImplementation,
+      overallFirstImplementationMedianDays: median(rows.map((row) => row.daysToFirstImplementation)),
+      planOnboardingOrderingIssues: journeyKpiOrderingIssues,
       appPharusCompletedOnboarding: pharusCompletedCount,
-      appPharusTotalOnboardingCount: pharusTotalOnboardingCount,
       averageStageDays: indicators[6].value,
+      stageDurationCount,
+      stageDurationCoveragePercent: indicators[6].coverage,
       firstMeetingCoverageBeforeFallback: Math.round((beforeFallbackWithMeeting / total) * 1000) / 10,
       firstMeetingCoverageAfterFallback: Math.round((afterFallbackWithMeeting / total) * 1000) / 10,
       firstMeetingSources: {
@@ -526,10 +616,10 @@ async function buildPayload() {
     },
     indicators,
     distributions: {
-      firstMeetingRanges: distributionFrom(rows, (row) => dayRange(row.daysToFirstMeeting), DAY_RANGE_LABELS),
-      planDeliveryRanges: distributionFrom(rows, (row) => dayRange(row.daysToPlanDelivery), DAY_RANGE_LABELS),
-      firstImplementationRanges: distributionFrom(rows, (row) => dayRange(row.daysToFirstImplementation), DAY_RANGE_LABELS),
-      totalOnboardingRanges: distributionFrom(rows, (row) => dayRange(row.totalOnboardingDays), DAY_RANGE_LABELS),
+      firstMeetingRanges: distributionFrom(journeyKpiComparableRows, (row) => dayRange(row.daysToFirstMeeting), DAY_RANGE_LABELS),
+      planDeliveryRanges: distributionFrom(journeyKpiComparableRows, (row) => dayRange(row.daysToPlanDelivery), DAY_RANGE_LABELS),
+      firstImplementationRanges: distributionFrom(journeyKpiComparableRows, (row) => dayRange(row.daysToFirstImplementation), DAY_RANGE_LABELS),
+      totalOnboardingRanges: distributionFrom(journeyKpiComparableRows, (row) => dayRange(row.totalOnboardingDays), DAY_RANGE_LABELS),
       completion: distributionFrom(rows.filter((row) => row.completedOnboarding != null), (row) => row.completedOnboarding ? "Sim" : "Não", ["Sim", "Não"]),
       stageDurations,
       pharusStageDurations,
@@ -542,7 +632,7 @@ async function buildPayload() {
     sources: {
       primary: "BASE QV",
       schema: "public",
-      tables: ["clients", "client_journeys", "journey_stages", "client_meetings", "client_implementation_meeting_date", "client_mecanismos"],
+      tables: ["clients", "client_journeys", "journey_stages", "client_meetings", "client_financial_data"],
       appPharus: {
         schema: "metrics",
         table: "events",

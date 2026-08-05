@@ -860,6 +860,13 @@ function buildPayload(clients, calendlyRows, manualRows, attendanceRows, implRow
     .filter((v) => v != null && v >= 0);
   const daysSinceStats = robustStats(daysSinceValues);
   const intervalStats = robustStats(intervalValues);
+  const latestMeetingDate = clientRows
+    .map((client) => parseDate(client.lastMeetingDate))
+    .filter((date) => date && date <= now)
+    .sort((a, b) => b - a)[0] || null;
+  const daysSinceLatestMeeting = latestMeetingDate
+    ? Math.max(0, daysBetween(latestMeetingDate, now))
+    : null;
   const clientsWithMeeting = clientRows.filter((c) => c.hasValidMeeting === true).length;
   const noShowFrequency = buildNoShowFrequency(clientRows);
 
@@ -874,6 +881,8 @@ function buildPayload(clients, calendlyRows, manualRows, attendanceRows, implRow
     averageMeetingsPerMonth,
     averageDaysSinceLastMeeting: daysSinceStats.mean,
     typicalDaysSinceLastMeeting: daysSinceStats.median,
+    latestMeetingDate: latestMeetingDate?.toISOString() || null,
+    daysSinceLatestMeeting,
     daysSinceLastMeetingStats: daysSinceStats,
     averageIntervalDays: intervalStats.mean,
     typicalIntervalDays: intervalStats.median,

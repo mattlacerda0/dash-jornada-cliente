@@ -164,6 +164,11 @@ function ensureSubject(subjects, id, seed = {}) {
       source: seed.source || "BASE QV",
       cancellationDate: seed.cancellationDate || null,
       activityDates: [],
+      lastLoginAt: null,
+      lastMeetingAt: null,
+      lastImplementationAt: null,
+      lastFinancialUpdateAt: null,
+      lastNpsAt: null,
       monthly: new Map(),
     });
   } else {
@@ -205,6 +210,11 @@ function ensureMonth(subject, key) {
 
 function addActivity(subject, date) {
   if (date) subject.activityDates.push(date);
+}
+
+function setLatestPastActivity(subject, field, date, now) {
+  if (!subject || !date || date > now) return;
+  if (!subject[field] || date > subject[field]) subject[field] = date;
 }
 
 async function fetchDataAll(table, select, order = "id.asc") {
@@ -581,6 +591,7 @@ export async function computeTemporalIndicatorsPayload() {
   }
 
   const warnings = [];
+  const now = new Date();
   const months = buildMonthWindow(12);
   const monthSet = new Set(months);
   const [
@@ -655,6 +666,7 @@ export async function computeTemporalIndicatorsPayload() {
     if (!subject) continue;
     const key = monthKey(date);
     if (monthSet.has(key)) ensureMonth(subject, key).logins += 1;
+    setLatestPastActivity(subject, "lastLoginAt", date, now);
     addActivity(subject, date);
   }
 
@@ -671,6 +683,7 @@ export async function computeTemporalIndicatorsPayload() {
     const subject = ensureSubject(subjects, id, { source: "BASE QV" });
     const key = monthKey(date);
     if (monthSet.has(key)) ensureMonth(subject, key).meetings += 1;
+    setLatestPastActivity(subject, "lastMeetingAt", date, now);
     addActivity(subject, date);
   }
   for (const row of manualMeetings) {
@@ -683,6 +696,7 @@ export async function computeTemporalIndicatorsPayload() {
     const subject = ensureSubject(subjects, id, { source: "BASE QV" });
     const key = monthKey(date);
     if (monthSet.has(key)) ensureMonth(subject, key).meetings += 1;
+    setLatestPastActivity(subject, "lastMeetingAt", date, now);
     addActivity(subject, date);
   }
 
@@ -693,6 +707,7 @@ export async function computeTemporalIndicatorsPayload() {
     const subject = ensureSubject(subjects, id, { source: "BASE QV" });
     const key = monthKey(date);
     if (monthSet.has(key)) ensureMonth(subject, key).implementations += 1;
+    setLatestPastActivity(subject, "lastImplementationAt", date, now);
     addActivity(subject, date);
   }
 
@@ -708,6 +723,7 @@ export async function computeTemporalIndicatorsPayload() {
       record.financialUpdates += 1;
       if (value != null) record.patrimony = value;
     }
+    setLatestPastActivity(subject, "lastFinancialUpdateAt", date, now);
     addActivity(subject, date);
   }
 
@@ -730,6 +746,7 @@ export async function computeTemporalIndicatorsPayload() {
       if (!npsScoresBySubjectMonth.has(scoreKey)) npsScoresBySubjectMonth.set(scoreKey, []);
       npsScoresBySubjectMonth.get(scoreKey).push(score);
     }
+    setLatestPastActivity(subject, "lastNpsAt", date, now);
     addActivity(subject, date);
   }
 
@@ -740,6 +757,28 @@ export async function computeTemporalIndicatorsPayload() {
     const record = ensureMonth(subject, key);
     record.npsAverage = average(scores);
   }
+
+  const activityRecency = [...subjects.values()].map((subject) => ({
+    subjectId: subject.subjectId,
+    clientId: subject.clientId,
+    code: subject.code,
+    name: subject.name,
+    email: subject.email,
+    engineer: subject.engineer,
+    status: subject.status,
+    source: subject.source,
+    cancellationDate: subject.cancellationDate,
+    lastLoginAt: subject.lastLoginAt?.toISOString() || null,
+    lastMeetingAt: subject.lastMeetingAt?.toISOString() || null,
+    lastImplementationAt: subject.lastImplementationAt?.toISOString() || null,
+    lastFinancialUpdateAt: subject.lastFinancialUpdateAt?.toISOString() || null,
+    lastNpsAt: subject.lastNpsAt?.toISOString() || null,
+    daysSinceLastLogin: subject.lastLoginAt ? Math.max(0, daysBetween(subject.lastLoginAt, now)) : null,
+    daysSinceLastMeeting: subject.lastMeetingAt ? Math.max(0, daysBetween(subject.lastMeetingAt, now)) : null,
+    daysSinceLastImplementation: subject.lastImplementationAt ? Math.max(0, daysBetween(subject.lastImplementationAt, now)) : null,
+    daysSinceLastFinancialUpdate: subject.lastFinancialUpdateAt ? Math.max(0, daysBetween(subject.lastFinancialUpdateAt, now)) : null,
+    daysSinceLastNps: subject.lastNpsAt ? Math.max(0, daysBetween(subject.lastNpsAt, now)) : null,
+  }));
 
   const rows = [];
   for (const subject of subjects.values()) {
@@ -821,6 +860,7 @@ export async function computeTemporalIndicatorsPayload() {
     monthly,
     preCancellation,
     activeRisk,
+    activityRecency,
     clients: rows,
     indicators,
     sources: {

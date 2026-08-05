@@ -480,10 +480,18 @@ def resolve_corporate_user(handler):
     try:
         with urlopen(req, timeout=20) as resp:
             user = json.loads(resp.read().decode("utf-8"))
-    except HTTPError:
+    except HTTPError as exc:
+        if exc.code in (408, 425, 429) or exc.code >= 500:
+            return (503, {
+                "error": "Não foi possível validar a sessão agora. Tente novamente.",
+                "code": "auth_unavailable",
+            }), None
         return (401, {"error": "Sessão inválida ou expirada.", "code": "unauthenticated"}), None
     except Exception:
-        return (401, {"error": "Sessão inválida ou expirada.", "code": "unauthenticated"}), None
+        return (503, {
+            "error": "Não foi possível validar a sessão agora. Tente novamente.",
+            "code": "auth_unavailable",
+        }), None
 
     email = user.get("email")
     if not is_corporate_email(email):
@@ -1061,6 +1069,25 @@ def cancellations_payload():
     return json.loads(result.stdout)
 
 
+def temporal_indicators_payload():
+    """Reaproveita a consolidacao dos indicadores temporais da Netlify Function."""
+    env = os.environ.copy()
+    env["PORTAL_INTERNAL_DATA_RUN"] = "1"
+    result = subprocess.run(
+        [NODE_EXECUTABLE, str(ROOT / "run_temporal_indicators_api.mjs")],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        env=env,
+        timeout=300,
+    )
+    if result.returncode != 0:
+        detail = (result.stderr or result.stdout or "falha ao gerar temporal-indicators").strip()
+        raise RuntimeError(detail[:240])
+    return json.loads(result.stdout)
+
+
 def platform_usage_payload():
     """Reaproveita a consolidação do Netlify Function via Node (fonte única)."""
     env = os.environ.copy()
@@ -1191,6 +1218,7 @@ class Handler(SimpleHTTPRequestHandler):
             "/api/pharus-ep-meetings": ("pharus-ep-meetings", pharus_ep_meetings_payload, "Não foi possível consolidar as reuniões do App Pharus"),
             "/api/statistical-crosses": ("statistical-crosses", statistical_crosses_payload, "Não foi possível consolidar os cruzamentos estatísticos"),
             "/api/cancellations": ("cancellations", cancellations_payload, "Não foi possível consolidar os cancelamentos"),
+            "/api/temporal-indicators": ("temporal-indicators", temporal_indicators_payload, "Nao foi possivel consolidar os indicadores temporais"),
         }
         if path in protected:
             denied = require_corporate_auth(self)

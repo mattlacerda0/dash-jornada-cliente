@@ -782,6 +782,18 @@ function buildPayload(
   } = process;
 
   const statusById = buildStatusDimensionMap(statusRows);
+  const processStatusLines = cancellations
+    .filter((row) => !parseFlexibleDate(row.archived_at))
+    .map((row) => {
+      const status = resolveProcessStatus(row.status_id, statusById);
+      return {
+        cancellationId: row.id == null ? null : String(row.id),
+        clientId: row.client_id == null ? null : String(row.client_id),
+        processStatusId: status.processStatusId,
+        processStatusName: status.processStatusName,
+        processStatusOrder: status.processStatusOrder,
+      };
+    });
   const financialMap = buildFinancialMap(financialRows);
   const attendanceMap = buildAttendanceMap(attendanceRows);
   const meetingsByClient = consolidateMeetings(calendlyRows, manualRows, attendanceMap);
@@ -1528,6 +1540,7 @@ function buildPayload(
       byEngineer,
       bySegment: distributionFrom(efetivados, (r) => r.segment, SEGMENT_LABELS),
     },
+    processStatusLines,
     clients: rows,
     warnings: structuredWarnings,
     quality: {

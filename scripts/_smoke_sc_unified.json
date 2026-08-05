@@ -1,0 +1,16 @@
+{
+  "renewed": 196,
+  "discoveries": 11,
+  "matrixCells": 225,
+  "matrixVars": 15,
+  "matrixMethod": "spearman",
+  "cohortCohorts": 27,
+  "cohortAges": 27,
+  "survivalNStart": 1803,
+  "reportNarratives": 11,
+  "population": {
+    "total": 2246,
+    "active": 1792,
+    "cancelled": 454
+  }
+}

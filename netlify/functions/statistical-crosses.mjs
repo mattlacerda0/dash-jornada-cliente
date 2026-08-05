@@ -30,6 +30,7 @@ import {
   mannWhitney,
   mean,
   median,
+  pearson,
   pointBiserial,
   round3,
   round4,
@@ -42,6 +43,24 @@ import {
   calendarDateFromValue,
   PORTAL_TZ,
 } from "./_shared/client-cycle-renewal.mjs";
+import {
+  buildCorrelationMatrix,
+  DEFAULT_MATRIX_VARIABLES,
+} from "./_shared/correlation-matrix.mjs";
+import { buildCohortRetention } from "./_shared/cohort-retention.mjs";
+import { buildStatisticalDiscoveries } from "./_shared/statistical-discoveries.mjs";
+import { buildAxisMatricesBundle } from "./_shared/sc-axis-matrices.mjs";
+import { buildExploratoryBundle } from "./_shared/sc-exploratory-ext.mjs";
+import { buildClientInsightsBundle } from "./_shared/sc-client-insights.mjs";
+
+export {
+  buildCorrelationMatrix,
+  buildCohortRetention,
+  buildStatisticalDiscoveries,
+  pearson,
+  spearman,
+  DEFAULT_MATRIX_VARIABLES,
+};
 
 const MIN_GROUP = 30;
 const MIN_AUC = 30;
@@ -307,6 +326,8 @@ export function buildAnalyticalPopulation(generalPayload, meetingsPayload, mecha
       segment,
       engineer,
       advisor: engineer,
+      program: blankToNull(g.program) || blankToNull(g.programa) || null,
+      davosContractSigned: g.davosContractSigned === true,
       currentCycle,
       renewalCount: renewal.renewalCount,
       hasRenewed: renewal.hasRenewed,
@@ -972,6 +993,25 @@ export function analyzePopulation(clients, { minSample = MIN_GROUP, includeFroze
     }
   }
 
+  // NPS class + EP (same KM rules; hide insufficient samples)
+  for (const field of ["npsClass", "engineer"]) {
+    const levels = [...new Set(clients.map((c) => c[field]).filter((v) => v != null && v !== ""))];
+    for (const level of levels) {
+      const subset = clients.filter((c) => c[field] === level && c.survivalValid);
+      if (subset.length < MIN_KM_GROUP) continue;
+      const km = kaplanMeier(subset.map((c) => ({ time: c.survivalTime, event: c.survivalEvent })));
+      groups.push({
+        field,
+        level: String(level),
+        n: subset.length,
+        events: km.events,
+        censored: km.censored,
+        medianSurvival: km.medianSurvival,
+        curve: downsampleCurve(km.curve, 40),
+      });
+    }
+  }
+
   const events = survRecords.filter((r) => r.event === 1).length;
   const censored = survRecords.filter((r) => r.event === 0).length;
   const cancelledWithDate = clients.filter((c) => c.isCancelled && c.hasConfirmedDate).length;
@@ -1491,10 +1531,58 @@ export function buildNpsAnalysis(clients, npsRows, { minSample = MIN_GROUP } = {
   };
 }
 
+function parseMatrixVars(raw) {
+  if (raw == null || raw === "") return null;
+  if (Array.isArray(raw)) return raw.map((v) => String(v).trim()).filter(Boolean);
+  return String(raw)
+    .split(",")
+    .map((v) => v.trim())
+    .filter(Boolean);
+}
+
+function buildRiskRulesPreview(clients) {
+  const pool = (clients || []).filter((c) => typeof c.isCancelled === "boolean");
+  const cancelled = pool.filter((c) => c.isCancelled).length;
+  const baseline = pool.length ? cancelled / pool.length : 0;
+  const signals = [
+    { label: "Sem reunião", test: (c) => Number(c.meetingCount || 0) === 0 },
+    { label: "Sem mecanismo registrado", test: (c) => Number(c.mechanismCount || 0) === 0 },
+    { label: "Sem implementação registrada", test: (c) => Number(c.implementedMechanismCount || 0) === 0 },
+    { label: "Sem diagnóstico financeiro", test: (c) => !c.hasFinancialData },
+    { label: "Ciclo 1", test: (c) => Number(c.currentCycle) === 1 },
+    { label: "NPS detrator", test: (c) => c.npsClass === "detractor" },
+  ];
+  const combos = [];
+  for (let i = 0; i < signals.length; i += 1) {
+    for (let j = i + 1; j < signals.length; j += 1) {
+      combos.push([signals[i], signals[j]]);
+    }
+  }
+  return combos
+    .map((parts) => {
+      const selected = pool.filter((c) => parts.every((p) => p.test(c)));
+      const positives = selected.filter((c) => c.isCancelled).length;
+      const rate = selected.length ? positives / selected.length : 0;
+      return {
+        label: parts.map((p) => p.label).join(" + "),
+        clients: selected.length,
+        cancelled: positives,
+        ratePct: round3(rate * 100),
+        lift: baseline ? round4(rate / baseline) : null,
+        caveat: "Padrão exploratório.",
+      };
+    })
+    .filter((r) => r.clients >= 30 && r.lift > 1)
+    .sort((a, b) => b.lift - a.lift || b.clients - a.clients)
+    .slice(0, 8);
+}
+
 function parseFiltersFromRequest(request) {
   try {
     const url = new URL(request.url);
     const get = (k) => url.searchParams.get(k);
+    const correlationMethod = (get("correlationMethod") || "spearman").toLowerCase();
+    const cohortGranularity = (get("cohortGranularity") || "month").toLowerCase();
     return {
       status: get("status") || "active_cancelled",
       segment: get("segment") || "all",
@@ -1517,6 +1605,12 @@ function parseFiltersFromRequest(request) {
       minSample: Number(get("minSample") || MIN_GROUP) || MIN_GROUP,
       minCoverage: get("minCoverage") != null ? Number(get("minCoverage")) : null,
       includeFrozenSeparate: get("includeFrozenSeparate") === "1",
+      correlationMethod: correlationMethod === "pearson" ? "pearson" : "spearman",
+      matrixVars: parseMatrixVars(get("matrixVars")),
+      cohortGranularity: cohortGranularity === "quarter" ? "quarter" : "month",
+      cohortPeriod: (get("cohortPeriod") || "since_2025_01").toLowerCase(),
+      cohortHireFrom: get("cohortHireFrom") || null,
+      cohortHireTo: get("cohortHireTo") || null,
     };
   } catch {
     return { status: "active_cancelled", minSample: MIN_GROUP };
@@ -1778,6 +1872,116 @@ export async function computeStatisticalCrossesPayload(options = {}) {
   const univariatePredictivePower = analysis.univariatePredictivePower || analysis.predictivePower || [];
   const predictivePowerLegacy = univariatePredictivePower.filter((p) => p.auc != null);
 
+  const correlationMethod =
+    String(filters.correlationMethod || "spearman").toLowerCase() === "pearson" ? "pearson" : "spearman";
+  const matrixVars = parseMatrixVars(filters.matrixVars);
+  const correlationMatrix = buildCorrelationMatrix(clients, {
+    method: correlationMethod,
+    variableIds: matrixVars || undefined,
+  });
+
+  const cohortGranularity =
+    String(filters.cohortGranularity || "month").toLowerCase() === "quarter" ? "quarter" : "month";
+  const cohortPeriod = String(filters.cohortPeriod || "since_2025_01").toLowerCase();
+  let cohortHireFrom = null;
+  if (cohortPeriod === "since_2025_01") cohortHireFrom = "2025-01-01";
+  else if (cohortPeriod === "last_12_months") {
+    const [y, m] = cutoffDate.split("-").map(Number);
+    const dt = new Date(Date.UTC(y, m - 1, 1));
+    dt.setUTCMonth(dt.getUTCMonth() - 11);
+    cohortHireFrom = `${dt.getUTCFullYear()}-${String(dt.getUTCMonth() + 1).padStart(2, "0")}-01`;
+  } else if (filters.cohortHireFrom) {
+    cohortHireFrom = String(filters.cohortHireFrom).slice(0, 10);
+  }
+  const cohort = buildCohortRetention(clients, {
+    granularity: cohortGranularity,
+    cutoffDate: cutoffDate,
+    hireFrom: cohortHireFrom,
+    hireTo: filters.cohortHireTo ? String(filters.cohortHireTo).slice(0, 10) : null,
+  });
+  cohort.periodMode = cohortPeriod;
+
+  const { discoveries, report } = buildStatisticalDiscoveries({
+    activeVsCancelled: analysis.activeVsCancelled || analysis.comparisons?.filter((r) => r.type === "numeric") || [],
+    churnAssociations: analysis.churnAssociations || {
+      numeric: (analysis.associations || []).filter((a) => a.type === "numeric"),
+      categorical: (analysis.associations || []).filter((a) => a.type === "categorical"),
+    },
+    renewalAssociations,
+    npsGroups,
+    survival: analysis.survival,
+    cohort,
+    summary: {
+      analyzedClients: analysis.population?.total || clients.length,
+      activeClients: analysis.population?.active || 0,
+      confirmedCancellations: cancelled,
+      averageCoverage,
+      renewedClients,
+    },
+    correlationMatrix,
+    tenureCorrelations,
+  });
+
+  const churnAssocsForAxis = analysis.churnAssociations || {
+    numeric: (analysis.associations || []).filter((a) => a.type === "numeric"),
+    categorical: (analysis.associations || []).filter((a) => a.type === "categorical"),
+  };
+  const axisMatrices = buildAxisMatricesBundle({
+    clients,
+    churnAssociations: churnAssocsForAxis,
+    associations: analysis.associations || [],
+    univariatePredictivePower,
+    activeVsCancelled: analysis.activeVsCancelled || analysis.comparisons?.filter((r) => r.type === "numeric") || [],
+    renewalAssociations,
+  });
+  const exploratory = buildExploratoryBundle({
+    clients,
+    associations: analysis.associations || [],
+    univariatePredictivePower,
+    npsCorrelations,
+    renewalAssociations,
+  });
+
+  // Prévia de regras de risco (mesma lógica da UI) para insights/PDF
+  const riskRulesPreview = buildRiskRulesPreview(clients);
+  const clientInsights = buildClientInsightsBundle({
+    clients,
+    associations: analysis.associations || [],
+    activeVsCancelled: analysis.activeVsCancelled || [],
+    npsGroups,
+    renewedVsNotRenewed,
+    survival: analysis.survival,
+    summary: {
+      analyzedClients: analysis.population?.total || clients.length,
+      validNpsResponses,
+      npsPortfolioCoverage: npsAnalysis.portfolioCoverage ?? null,
+    },
+    highPerformance: exploratory.highPerformance,
+    riskRulesPreview,
+  });
+  // Preferir insights didáticos na seção "Principais descobertas"
+  const discoveriesSimple = (clientInsights.simpleInsights || []).map((d, i) => ({
+    id: d.id || `insight_${i}`,
+    title: d.title,
+    text: d.text,
+    category: d.category,
+    primaryValue: d.primaryValue,
+    sample: d.sample,
+    coverage: d.coverage,
+    strength: d.strength,
+    caveat: d.caveat,
+    technical: d.technical,
+    lowConfidence: !!d.lowConfidence,
+    section: d.category || "geral",
+    priority: 100 - i,
+  }));
+  if (discoveriesSimple.length) {
+    discoveries.length = 0;
+    discoveries.push(...discoveriesSimple.slice(0, 10));
+  } else {
+    while (discoveries.length > 10) discoveries.pop();
+  }
+
   return {
     generatedAt: now.toISOString(),
     source: "BASE QV (general-data + meetings + mechanisms + nps_responses)",
@@ -1874,6 +2078,23 @@ export async function computeStatisticalCrossesPayload(options = {}) {
     tenureCorrelations,
     tenureBuckets,
     survival: analysis.survival,
+    correlationMatrix,
+    axisMatrices,
+    exploratory,
+    predictiveModel: exploratory.predictive,
+    discoveryRankings: exploratory.discoveryRankings,
+    highPerformance: clientInsights.highPerformance || exploratory.highPerformance,
+    groupComparative: exploratory.groupComparative,
+    healthScoreCandidates: exploratory.healthScoreCandidates,
+    simpleInsights: clientInsights.simpleInsights,
+    activeRiskSignals: clientInsights.activeRiskSignals,
+    topClients: clientInsights.topClients,
+    npsComparative: clientInsights.npsComparative,
+    challengeCohort: clientInsights.challengeCohort,
+    riskRules: riskRulesPreview,
+    cohort,
+    discoveries,
+    report,
     excludedVariables: analysis.excludedVariables,
     qualityWarnings: warnings,
     // LEGACY aliases for existing UI/chatbot:
@@ -1926,22 +2147,34 @@ export async function computeStatisticalCrossesPayload(options = {}) {
     clients: clients.map((c) => ({
       clientId: c.clientId,
       clientName: c.clientName,
+      clientCode: c.clientCode,
       statusAnalytic: c.statusAnalytic,
       analyticalStatus: c.analyticalStatus,
       isCancelled: c.isCancelled,
+      isActive: c.isActive,
       segment: c.segment,
       engineer: c.engineer,
       advisor: c.advisor,
+      program: c.program,
+      davosContractSigned: c.davosContractSigned,
       currentCycle: c.currentCycle,
       renewalCount: c.renewalCount,
       hasRenewed: c.hasRenewed,
       stayDays: c.stayDays,
       meetingCount: c.meetingCount,
+      daysSinceLastMeeting: c.daysSinceLastMeeting,
+      noShowCount: c.noShowCount,
+      attendanceRate: c.attendanceRate,
+      averageIntervalDays: c.averageIntervalDays,
       mechanismCount: c.mechanismCount,
       implementedMechanismCount: c.implementedMechanismCount,
       monthlyIncome: c.monthlyIncome,
+      lastContribution: c.lastContribution,
+      liquidityReserve: c.liquidityReserve,
       paidPropertiesValue: c.paidPropertiesValue,
       hasFinancialData: c.hasFinancialData,
+      hasMeeting: c.hasMeeting,
+      hasMechanism: c.hasMechanism,
       npsScore: c.npsScore,
       npsClass: c.npsClass,
       hasNps: c.hasNps,
@@ -1963,6 +2196,9 @@ export async function computeStatisticalCrossesPayload(options = {}) {
       leakage:
         "Permanência, motivo, offboarding e metadados de cancelamento excluídos do AUC. Encoding categórico multi-nível documentado quando usado.",
       survival: "Kaplan–Meier; evento=cancelamento; ativos/congelados censurados na data de geração",
+      correlationMatrix: "Spearman (padrão) ou Pearson; pares completos; diagonal=1; n mínimo 20",
+      cohortRetention: "Coorte = mês/trimestre de contratação; retenção por meses completos; idades futuras = null",
+      discoveries: "Narrativas determinísticas (sem LLM) a partir de limiares de cobertura/amostra",
       associationStrengthBands: {
         r: "|r|<0.1 muito fraca; <0.3 fraca; <0.5 moderada; ≥0.5 forte",
         cramers_v: "V<0.1 muito fraca; <0.2 fraca; <0.3 moderada; ≥0.3 forte",

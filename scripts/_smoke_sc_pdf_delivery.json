@@ -1,0 +1,85 @@
+{
+  "ms": 10607,
+  "discoveries": [
+    {
+      "title": "Menos reuniões entre cancelados",
+      "cat": "Cancelamento",
+      "val": "0 vs 2"
+    },
+    {
+      "title": "Mais tempo sem reunião entre cancelados",
+      "cat": "Cancelamento",
+      "val": "72 dias"
+    },
+    {
+      "title": "Detratores cancelam mais neste recorte",
+      "cat": "NPS",
+      "val": "6,7%"
+    },
+    {
+      "title": "Promotores renovam mais",
+      "cat": "NPS",
+      "val": "21,5%"
+    },
+    {
+      "title": "Cobertura de NPS ainda baixa",
+      "cat": "Qualidade",
+      "val": "12,2%"
+    }
+  ],
+  "insights": 8,
+  "signals": {
+    "active": 50,
+    "signalTypes": [
+      "no_meeting",
+      "no_mechanism",
+      "low_attendance"
+    ]
+  },
+  "top": {
+    "pharusRows": 25,
+    "davosRows": 25,
+    "pharusUniverse": 1547,
+    "davosUniverse": 245,
+    "pharusTop": "Maurício Pelegrini",
+    "davosTop": "Mariana Franceschini Brandão"
+  },
+  "npsCompVars": 17,
+  "highPerf": [
+    {
+      "label": "Somente Promotor",
+      "n": 209,
+      "meetings": 4
+    },
+    {
+      "label": "Somente Renovado",
+      "n": 188,
+      "meetings": 2
+    },
+    {
+      "label": "Promotor e Renovado (alta performance)",
+      "n": 45,
+      "meetings": 2
+    }
+  ],
+  "challenge": {
+    "available": false,
+    "reason": "Não foi localizada uma fonte confiável com data de início e resultado dos desafios (tabelas/colunas de desafio) na BASE QV acessível por este endpoint."
+  },
+  "cohort": {
+    "n": 20,
+    "period": "desde 2025-01-01",
+    "mode": "since_2025_01"
+  },
+  "programSample": [
+    "PHARUS",
+    "DAVOS",
+    "LANDLORD"
+  ],
+  "davosFlag": 8,
+  "davosSamplePrograms": [
+    "DAVOS",
+    "DAVOS",
+    "DAVOS"
+  ]
+}

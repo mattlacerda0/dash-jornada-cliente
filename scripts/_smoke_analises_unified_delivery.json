@@ -1,0 +1,140 @@
+{
+  "ms": 8267,
+  "menuNote": "Análises Estatísticas (única)",
+  "summary": {
+    "analyzedClients": 2246,
+    "activeClients": 1792,
+    "confirmedCancellations": 454,
+    "cancelledWithDate": 446,
+    "cancelledWithoutDate": 8,
+    "renewedClients": 196,
+    "cycle1Clients": 3125,
+    "totalRenewals": 243,
+    "validNpsResponses": 275,
+    "censoredClients": 1792,
+    "evaluatedVariables": 31,
+    "averageCoverage": 72.7,
+    "observationPeriod": {
+      "from": "2024-05-22",
+      "to": "2026-08-05",
+      "timezone": "America/Sao_Paulo"
+    },
+    "cutoffDate": "2026-08-05",
+    "timezone": "America/Sao_Paulo",
+    "topAssociationLabel": "Dias até primeira reunião",
+    "topAssociationAbs": 0.4537,
+    "topAssociationStrength": "moderada",
+    "topAssociationMeasure": "point_biserial",
+    "npsResponses": 275,
+    "npsIndex": 65.1,
+    "npsPortfolioCoverage": 12.2
+  },
+  "discoveries": [
+    "Modelo preditivo (validação)",
+    "Candidatos ao Health Score MVP",
+    "Recorte analítico",
+    "Associação numérica com churn: Dias até primeira reunião",
+    "Associação categórica com churn: Possui reunião",
+    "Segunda associação numérica: Permanência (dias)"
+  ],
+  "discoveriesCount": 10,
+  "matrix": {
+    "method": "spearman",
+    "vars": [
+      "stayDays",
+      "meetingCount",
+      "daysSinceLastMeeting",
+      "daysToFirstMeeting",
+      "noShowCount",
+      "rescheduleCount",
+      "attendanceRate",
+      "monthlyIncome",
+      "liquidityReserve",
+      "lastContribution",
+      "paidPropertiesValue",
+      "mechanismCount",
+      "implementedMechanismCount",
+      "implementationPercent",
+      "npsScore"
+    ],
+    "cells": 225,
+    "topPositive": [
+      {
+        "a": "Permanência (dias)",
+        "b": "Dias até 1ª reunião",
+        "v": 0.7493
+      },
+      {
+        "a": "Dias até 1ª reunião",
+        "b": "Permanência (dias)",
+        "v": 0.7493
+      },
+      {
+        "a": "Mecanismos implementados",
+        "b": "% implementação",
+        "v": 0.6523
+      },
+      {
+        "a": "% implementação",
+        "b": "Mecanismos implementados",
+        "v": 0.6523
+      },
+      {
+        "a": "Taxa de presença",
+        "b": "% implementação",
+        "v": 0.5886
+      }
+    ],
+    "topNegative": [
+      {
+        "a": "No-shows",
+        "b": "Taxa de presença",
+        "v": -0.968
+      },
+      {
+        "a": "Taxa de presença",
+        "b": "No-shows",
+        "v": -0.968
+      },
+      {
+        "a": "Mecanismos disponíveis",
+        "b": "% implementação",
+        "v": -0.5204
+      },
+      {
+        "a": "% implementação",
+        "b": "Mecanismos disponíveis",
+        "v": -0.5204
+      },
+      {
+        "a": "No-shows",
+        "b": "% implementação",
+        "v": -0.5014
+      }
+    ]
+  },
+  "survival": {
+    "nStart": 1803,
+    "events": 410,
+    "censored": 1393,
+    "median": 433
+  },
+  "cohort": {
+    "n": 27,
+    "ret3": 99.51,
+    "ret6": 99.604,
+    "ret12": 95.253,
+    "biggestDrop": {
+      "age": 13,
+      "deltaPp": -8.05
+    }
+  },
+  "reportSections": [
+    "generatedNarratives",
+    "limitations",
+    "methodology",
+    "glossary"
+  ],
+  "narratives": 11,
+  "limitations": 6
+}

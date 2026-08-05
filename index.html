@@ -1062,6 +1062,110 @@
     #view-statistical-crosses .sc-diff-table th{white-space:nowrap}
     #view-statistical-crosses .sc-diff-table td{font-size:12px;vertical-align:top}
     #view-statistical-crosses .sc-reading{color:var(--color-text-muted);font-size:11px;line-height:1.4;max-width:280px}
+    #view-statistical-crosses .sc-discoveries{display:grid;gap:10px;margin:0 0 18px}
+    #view-statistical-crosses .sc-discovery-card{padding:12px 14px;border:1px solid var(--color-border);border-radius:8px;background:rgba(255,255,255,.03)}
+    #view-statistical-crosses .sc-discovery-card strong{display:block;margin-bottom:4px;font-size:13px}
+    #view-statistical-crosses .sc-discovery-card p{margin:0;font-size:12px;line-height:1.45;color:var(--color-text-muted)}
+    #view-statistical-crosses .sc-matrix-vars{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 12px}
+    #view-statistical-crosses .sc-matrix-vars label{display:inline-flex;align-items:center;gap:6px;font-size:11px;padding:4px 8px;border:1px solid var(--color-border);border-radius:999px;background:rgba(255,255,255,.03);cursor:pointer}
+    #view-statistical-crosses .sc-matrix-layout{display:grid;grid-template-columns:minmax(0,1fr) 56px;gap:12px;align-items:start;min-width:0}
+    #view-statistical-crosses .sc-matrix-wrap{width:100%;max-width:100%;overflow:auto;min-width:0;border:1px solid var(--color-border);border-radius:8px;background:#141414;padding:8px;box-sizing:border-box}
+    #view-statistical-crosses .sc-matrix-svg{display:block;min-width:480px}
+    #view-statistical-crosses .sc-matrix-legend{width:56px;min-height:180px}
+    #view-statistical-crosses .sc-matrix-insights{margin:12px 0 8px;padding:12px;border:1px solid var(--color-border);border-radius:8px;background:rgba(255,255,255,.03)}
+    #view-statistical-crosses .sc-matrix-insights ul{margin:8px 0 0;padding-left:18px;font-size:12px;line-height:1.45;color:var(--color-text-muted)}
+    #view-statistical-crosses .sc-chart-host{width:100%;min-height:220px;border:1px solid var(--color-border);border-radius:8px;background:#141414;padding:12px;box-sizing:border-box;margin-bottom:10px;overflow:auto}
+    #view-statistical-crosses .sc-chart-host svg{display:block;width:100%;max-width:100%}
+    #view-statistical-crosses .sc-at-risk{margin:8px 0 12px;overflow:auto}
+    #view-statistical-crosses .sc-at-risk table{border-collapse:collapse;font-size:11px}
+    #view-statistical-crosses .sc-at-risk th,#view-statistical-crosses .sc-at-risk td{border:1px solid var(--color-border);padding:4px 8px;text-align:center}
+    #view-statistical-crosses .sc-tooltip-float{position:fixed;z-index:90;pointer-events:none;max-width:280px;padding:8px 10px;border-radius:6px;background:#111;border:1px solid #555;color:#eee;font-size:11px;line-height:1.4;box-shadow:0 6px 18px rgba(0,0,0,.45)}
+    #view-statistical-crosses details.sc-data-details{margin:8px 0 16px;padding:8px 12px;border:1px solid var(--color-border);border-radius:8px;background:rgba(26,26,26,.55)}
+    #view-statistical-crosses details.sc-data-details > summary{cursor:pointer;font-weight:600;font-size:13px;list-style:revert}
+    #view-statistical-crosses .sc-axis-block{margin:0 0 28px;padding:0 0 8px;border-bottom:1px solid rgba(255,255,255,.06)}
+    #view-statistical-crosses .sc-ms-wrap{position:relative;z-index:6;max-width:420px;margin:0 0 12px}
+    #view-statistical-crosses .sc-ms-wrap.is-open{z-index:40}
+    #view-statistical-crosses .sc-ms-trigger{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;padding:8px 12px;border:1px solid var(--color-border);border-radius:8px;background:#1a1a1a;color:var(--color-text);cursor:pointer;font-size:13px}
+    #view-statistical-crosses .sc-ms-trigger:hover{border-color:rgba(244,121,32,.55)}
+    #view-statistical-crosses .sc-ms-chips{font-size:12px;color:var(--color-text-muted);margin:6px 0 10px;min-height:18px}
+    #view-statistical-crosses .sc-ms-panel{position:absolute;left:0;right:0;top:calc(100% + 6px);max-height:380px;overflow:auto;padding:12px;border:1px solid var(--color-border);border-radius:10px;background:#161616;box-shadow:0 12px 32px rgba(0,0,0,.45)}
+    #view-statistical-crosses .sc-ms-panel[hidden]{display:none!important}
+    #view-statistical-crosses .sc-ms-panel input[type="search"]{width:100%;margin:0 0 8px;padding:8px;border-radius:6px;border:1px solid var(--color-border);background:#111;color:var(--color-text)}
+    #view-statistical-crosses .sc-ms-actions{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 10px}
+    #view-statistical-crosses .sc-ms-actions button,#view-statistical-crosses .sc-zoom-bar button{padding:5px 10px;border:1px solid var(--color-border);border-radius:6px;background:#222;color:var(--color-text);font-size:12px;cursor:pointer}
+    #view-statistical-crosses .sc-ms-group{margin:0 0 10px}
+    #view-statistical-crosses .sc-ms-group strong{display:flex;justify-content:space-between;align-items:center;font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--color-text-muted);margin:0 0 4px}
+    #view-statistical-crosses .sc-ms-option{display:flex;gap:8px;align-items:center;padding:4px 6px;border-radius:6px;font-size:12px;cursor:pointer}
+    #view-statistical-crosses .sc-ms-option:hover{background:rgba(244,121,32,.08)}
+    #view-statistical-crosses .sc-ms-warn{color:#f59e0b;font-size:12px;margin:6px 0}
+    #view-statistical-crosses .sc-zoom-bar{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 8px;align-items:center}
+    #view-statistical-crosses .sc-zoom-stage{overflow:auto;max-width:100%;border:1px solid var(--color-border);border-radius:8px;background:#141414;min-height:180px;touch-action:pan-x pan-y}
+    #view-statistical-crosses .sc-zoom-inner{transform-origin:0 0;display:inline-block;min-width:100%}
+    #view-statistical-crosses .sc-fs-modal{position:fixed;inset:0;z-index:120;background:rgba(0,0,0,.82);display:flex;flex-direction:column;padding:16px;box-sizing:border-box}
+    #view-statistical-crosses .sc-fs-modal[hidden]{display:none!important}
+    #view-statistical-crosses .sc-fs-modal .sc-fs-toolbar{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 10px;align-items:center}
+    #view-statistical-crosses .sc-fs-modal .sc-fs-body{flex:1;min-height:0;overflow:auto;background:#111;border-radius:10px;padding:12px;border:1px solid var(--color-border)}
+    #view-statistical-crosses .sc-health-grid{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));margin:0 0 12px}
+    #view-statistical-crosses .sc-health-card{padding:12px 14px;border:1px solid var(--color-border);border-radius:8px;background:rgba(255,255,255,.03)}
+    #view-statistical-crosses .sc-health-card strong{display:block;margin-bottom:4px}
+    #view-statistical-crosses .sc-health-card p{margin:4px 0;font-size:12px;color:var(--color-text-muted);line-height:1.4}
+    #view-statistical-crosses .sc-toc{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 16px}
+    #view-statistical-crosses .sc-toc a{font-size:12px;color:var(--color-text-muted);text-decoration:none;padding:4px 8px;border:1px solid var(--color-border);border-radius:999px}
+    #view-statistical-crosses .sc-toc a:hover{color:var(--color-text);border-color:rgba(244,121,32,.5)}
+    #view-statistical-crosses .sc-howto{display:flex;gap:8px;align-items:flex-start;margin:0 0 10px;padding:8px 10px;border:1px solid rgba(255,255,255,.08);border-radius:8px;background:rgba(255,255,255,.03);font-size:12px;line-height:1.4;color:var(--color-text-muted)}
+    #view-statistical-crosses .sc-howto strong{color:var(--color-text);font-weight:600}
+    #view-statistical-crosses .sc-howto .sc-howto-ico{flex:0 0 auto;width:18px;height:18px;border-radius:50%;border:1px solid var(--color-border);display:inline-flex;align-items:center;justify-content:center;font-size:11px;color:var(--color-text)}
+    #view-statistical-crosses .sc-assoc-legend{display:flex;gap:14px;font-size:11px;color:var(--color-text-muted);margin:0 0 8px}
+    #view-statistical-crosses .sc-assoc-legend span{display:inline-flex;align-items:center;gap:6px}
+    #view-statistical-crosses .sc-assoc-legend i{width:12px;height:12px;border-radius:2px;display:inline-block}
+    #view-statistical-crosses .sc-discovery-card .sc-disc-cat{font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:var(--color-text-muted)}
+    #view-statistical-crosses .sc-discovery-card .sc-disc-val{font-size:18px;font-weight:700;margin:6px 0;color:var(--color-text)}
+    #view-statistical-crosses .sc-top-table{font-size:11px}
+    #view-statistical-crosses .sc-top-table th,#view-statistical-crosses .sc-top-table td{padding:4px 6px;white-space:nowrap}
+    #view-statistical-crosses .page-header{position:sticky;top:0;z-index:25;background:linear-gradient(180deg,rgba(18,18,18,.98),rgba(18,18,18,.92));backdrop-filter:blur(8px);padding-bottom:10px;margin-bottom:8px;border-bottom:1px solid rgba(255,255,255,.06)}
+    #view-statistical-crosses .sc-export-primary{
+      display:inline-flex;align-items:center;gap:8px;padding:10px 16px;min-height:42px;
+      background:#f47920;color:#111;border:1px solid #ff9a4a;border-radius:10px;
+      font-weight:700;font-size:14px;cursor:pointer;box-shadow:0 6px 18px rgba(244,121,32,.35);
+      transition:transform .15s ease,box-shadow .15s ease,background .15s ease;
+    }
+    #view-statistical-crosses .sc-export-primary:hover{background:#ff8a3a;box-shadow:0 8px 22px rgba(244,121,32,.45);transform:translateY(-1px)}
+    #view-statistical-crosses .sc-export-primary:disabled{opacity:.7;cursor:wait;transform:none;box-shadow:none}
+    #view-statistical-crosses .sc-export-primary .sc-export-ico{width:16px;height:16px;flex:0 0 auto}
+    #view-statistical-crosses .sc-export-primary.is-loading .sc-export-ico{animation:sc-spin .8s linear infinite}
+    @keyframes sc-spin{to{transform:rotate(360deg)}}
+    #view-statistical-crosses .sc-export-primary.is-ok{background:#22c55e;border-color:#4ade80;color:#052e16}
+    #view-statistical-crosses .sc-export-primary.is-err{background:#ef4444;border-color:#f87171;color:#fff}
+    #view-statistical-crosses .btn-group .btn{align-self:center}
+    @media(max-width:720px){
+      #view-statistical-crosses .sc-export-primary{width:100%;justify-content:center}
+      #view-statistical-crosses .page-header .btn-group{width:100%}
+    }
+    @media(max-width:900px){#view-statistical-crosses .sc-matrix-layout{grid-template-columns:1fr}}
+    #view-statistical-crosses .sc-matrix-table{border-collapse:collapse;font-size:10px}
+    #view-statistical-crosses .sc-matrix-table th,#view-statistical-crosses .sc-matrix-table td{min-width:42px;height:42px;text-align:center;border:1px solid rgba(255,255,255,.06);padding:2px}
+    #view-statistical-crosses .sc-matrix-table th{font-weight:600;color:var(--color-text-muted);background:#1a1a1a;position:sticky;top:0;z-index:1}
+    #view-statistical-crosses .sc-matrix-table th.sc-matrix-corner{left:0;z-index:2}
+    #view-statistical-crosses .sc-matrix-table th.sc-matrix-rowhead{position:sticky;left:0;text-align:left;padding:0 8px;white-space:nowrap;max-width:140px;overflow:hidden;text-overflow:ellipsis;background:#1a1a1a}
+    #view-statistical-crosses .sc-matrix-table td{cursor:pointer;color:#f5f5f5;font-variant-numeric:tabular-nums}
+    #view-statistical-crosses .sc-matrix-drawer{position:fixed;top:0;right:0;width:min(420px,100%);height:100%;z-index:80;background:#1a1a1a;border-left:1px solid var(--color-border);padding:20px;overflow:auto;box-shadow:-8px 0 24px rgba(0,0,0,.45)}
+    #view-statistical-crosses .sc-matrix-drawer-close{position:absolute;top:10px;right:12px;background:transparent;border:0;color:var(--color-text);font-size:22px;cursor:pointer}
+    #view-statistical-crosses .sc-cohort-wrap{width:100%;overflow:auto;min-width:0;border:1px solid var(--color-border);border-radius:8px}
+    #view-statistical-crosses .sc-cohort-table{border-collapse:collapse;font-size:11px;min-width:720px}
+    #view-statistical-crosses .sc-cohort-table th,#view-statistical-crosses .sc-cohort-table td{min-width:54px;padding:6px 4px;text-align:center;border:1px solid rgba(255,255,255,.06)}
+    #view-statistical-crosses .sc-cohort-table th{background:#1a1a1a;position:sticky;top:0;z-index:1;font-size:10px}
+    #view-statistical-crosses .sc-cohort-table th.sc-cohort-rowhead,#view-statistical-crosses .sc-cohort-table td.sc-cohort-rowhead{position:sticky;left:0;background:#1a1a1a;text-align:left;padding-left:8px;z-index:2}
+    #view-statistical-crosses .sc-survival-chart{width:100%;min-height:240px;border:1px solid var(--color-border);border-radius:8px;background:#141414;padding:12px;box-sizing:border-box}
+    #view-statistical-crosses .sc-survival-chart svg{width:100%;height:220px;display:block}
+    @media print{
+      body{background:#fff!important;color:#111!important}
+      .sidebar,.topbar,#assistantLauncher,#assistantPanel,#assistantBackdrop,.filters,.status-actions,.export-host,.portal-alert__close,.btn,.sc-matrix-drawer{display:none!important}
+      .layout{display:block!important}
+      main{padding:0!important}
+      .view{display:none!important}
+      #view-statistical-crosses.view.active,#view-statistical-crosses.view{display:block!important}
+      .chart-card,.table-panel,.metric{break-inside:avoid;box-shadow:none;border-color:#ddd}
+    }
     @media(max-width:1100px){
       #view-statistical-crosses .stat-association-grid{grid-template-columns:1fr}
     }
@@ -1070,6 +1174,8 @@
       #view-statistical-crosses .association-metrics strong{display:inline}
       #view-statistical-crosses .association-metrics span::before{content:" · "}
     }
+    #view-exploration{display:none!important}
+    #view-crossings{display:none!important}
     #view-exploration{overflow-x:hidden;min-width:0}
     #view-exploration .exploration-kpis{grid-template-columns:repeat(4,minmax(0,1fr));margin-bottom:16px}
     #view-exploration .exploration-kpis .metric:first-child{border-color:rgba(244,121,32,.58)}
@@ -1352,8 +1458,7 @@
         <button type="button" data-nav="renewal"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 0 1 15.4-6.4L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15.4 6.4L3 16"/><path d="M3 21v-5h5"/></svg></span>Renovação</button>
         <button type="button" data-nav="ep"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>Performance do Engenheiro Patrimonial</button>
         <button type="button" data-nav="temporal"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 16V9"/><path d="M12 16V5"/><path d="M17 16v-4"/><path d="M5 19h14"/></svg></span>Indicadores Temporais</button>
-        <button type="button" data-nav="statistical-crosses"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="7.5" cy="7.5" r="1.5"/><circle cx="16.5" cy="7.5" r="1.5"/><circle cx="7.5" cy="16.5" r="1.5"/><circle cx="16.5" cy="16.5" r="1.5"/><path d="M3 3v18h18"/><path d="m7.5 16.5 9-9"/><path d="m7.5 7.5 3 3"/><path d="m13.5 13.5 3 3"/></svg></span>Cruzamentos estatísticos</button>
-        <button type="button" data-nav="exploration"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 14l3-3 3 2 5-7"/><circle cx="7" cy="14" r="1"/><circle cx="10" cy="11" r="1"/><circle cx="13" cy="13" r="1"/><circle cx="18" cy="6" r="1"/></svg></span>Descobertas exploratórias</button>
+        <button type="button" data-nav="statistical-crosses"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="7.5" cy="7.5" r="1.5"/><circle cx="16.5" cy="7.5" r="1.5"/><circle cx="7.5" cy="16.5" r="1.5"/><circle cx="16.5" cy="16.5" r="1.5"/><path d="M3 3v18h18"/><path d="m7.5 16.5 9-9"/><path d="m7.5 7.5 3 3"/><path d="m13.5 13.5 3 3"/></svg></span>Análises Estatísticas</button>
         <button type="button" data-nav="quality"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/><path d="m9 12 2 2 4-4"/></svg></span>Qualidade</button>
       </nav>
     </aside>
@@ -3255,22 +3360,28 @@
         <div class="container">
           <header class="page-header">
             <div>
-              <div class="eyebrow">BASE QV · Cruzamentos Estatísticos</div>
-              <h1>Cruzamentos Estatísticos</h1>
-              <p>Análises exploratórias e descritivas — associação observada, não causalidade.</p>
+              <div class="eyebrow">BASE QV · Análises Estatísticas</div>
+              <h1>Análises Estatísticas</h1>
+              <p>Cruzamentos, descobertas, correlações, sobrevivência e coortes — associação observada, não causalidade.</p>
             </div>
             <div class="status-actions">
               <div class="status"><b id="scStatus" style="color:var(--color-warning)">● Conectando à base</b><span id="scUpdated">Carregando análises…</span></div>
-              <button class="btn" id="scRefresh" type="button">Atualizar</button>
+              <div class="btn-group" style="display:flex;gap:8px;flex-wrap:wrap">
+                <button class="sc-export-primary" id="scExportReport" type="button" title="Baixa o PDF com o recorte atual">
+                  <svg class="sc-export-ico" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6"/><path d="M12 18v-6"/><path d="M9 15l3 3 3-3"/></svg>
+                  <span class="sc-export-label">Exportar relatório em PDF</span>
+                </button>
+                <button class="btn" id="scRefresh" type="button">Atualizar</button>
+              </div>
             </div>
           </header>
 
           <aside class="portal-alert portal-alert--info" id="scInterpretAlert" data-alert-id="statistical-crosses-interpret" data-persist-session="1" role="status">
             <span class="portal-alert__icon" aria-hidden="true">ℹ</span>
             <div class="portal-alert__body">
-              <strong>Como interpretar os cruzamentos</strong>
-              <p>Os resultados comparam grupos e medem associações observadas na base. Eles não comprovam causalidade. Cobertura baixa, amostra pequena e dados ausentes podem alterar a leitura.</p>
-              <p class="note-muted" style="margin:6px 0 0">Mediana: valor central · Associação: intensidade/direção · Cobertura: % com dados válidos · AUC: separação individual · Sobrevivência: permanência ao longo do tempo.</p>
+              <strong>Como interpretar esta página</strong>
+              <p>Esta página reúne comparações, correlações, poder discriminativo, permanência e retenção. Os resultados mostram padrões observados na base e não comprovam causalidade.</p>
+              <p class="note-muted" style="margin:6px 0 0">Correlação: direção/força · Mediana: valor central · Cobertura: % com dados válidos · AUC: separação individual · Sobrevivência: permanência estimada · Coorte: retenção por mês de contratação.</p>
             </div>
             <button type="button" class="portal-alert__close" data-dismiss-alert aria-label="Fechar">×</button>
           </aside>
@@ -3300,149 +3411,359 @@
             <button class="btn" id="scClear" type="button">Limpar filtros</button>
           </section>
 
-          <div class="section-head"><div><h2>1. Resumo da população</h2><p>Uma linha por cliente · regras oficiais de cancelamento, ciclo e NPS.</p></div></div>
+          <nav class="sc-toc" aria-label="Índice da página">
+            <a href="#scSecResumo">Resumo</a>
+            <a href="#scSecDiscoveries">Descobertas</a>
+            <a href="#scSecCancel">Cancelamento</a>
+            <a href="#scSecNps">NPS</a>
+            <a href="#scSecRenewal">Renovação</a>
+            <a href="#scSecTenure">Permanência</a>
+            <a href="#scSecExplore">Exploratórias</a>
+            <a href="#scSecGroups">Grupos</a>
+            <a href="#scSecPredict">Preditivo</a>
+            <a href="#scSecRules">Combinações</a>
+            <a href="#scSecHealth">Health Score</a>
+            <a href="#scSecSurvival">Sobrevivência</a>
+            <a href="#scSecCohort">Cohort</a>
+            <a href="#scSecGeneralMatrix">Matriz geral</a>
+          </nav>
+
+          <div class="section-head" id="scSecResumo"><div><h2>1. Resumo da base analítica</h2><p>Uma linha por cliente · regras oficiais de cancelamento, ciclo e NPS.</p></div></div>
           <section class="summary kpis-sc-primary" id="scKpis"></section>
           <p class="note-muted" id="scPopNote"></p>
 
-          <div class="section-head"><div><h2>2. Ativos vs cancelados</h2><p>Comparação das medianas dos clientes ativos e cancelados efetivados. Valores positivos indicam que a mediana dos cancelados é maior; valores negativos indicam que é menor.</p></div><span class="export-host" id="scDiffExportHost"></span></div>
-          <p class="sc-section-note">Esta comparação mostra diferenças observadas entre os grupos. Não significa que uma variável causou o cancelamento. <span class="help" tabindex="0" data-tip="Compara as medianas dos dois grupos. Associação: intensidade e direção da relação com o cancelamento (não causalidade). Cobertura: percentual da população com valor válido para a variável.">?</span></p>
-          <section class="table-panel">
-            <div class="table-wrap">
-              <table class="sc-diff-table">
-                <thead>
-                  <tr>
-                    <th>Indicador</th>
-                    <th class="num">Mediana dos ativos</th>
-                    <th class="num">Mediana dos cancelados</th>
-                    <th class="num">Diferença</th>
-                    <th class="num">Diferença percentual</th>
-                    <th title="A associação indica a intensidade e a direção da relação entre a variável e o cancelamento. Valores próximos de zero indicam relação fraca. Associação não implica causalidade.">Associação <span class="help" tabindex="0" data-tip="A associação indica a intensidade e a direção da relação entre a variável e o cancelamento. Valores próximos de zero indicam relação fraca. Associação não implica causalidade.">?</span></th>
-                    <th>Força da associação</th>
-                    <th class="num">Amostra de ativos</th>
-                    <th class="num">Amostra de cancelados</th>
-                    <th class="num" title="Percentual da população para a qual a variável possui valor válido.">Cobertura <span class="help" tabindex="0" data-tip="Percentual da população para a qual a variável possui valor válido. Não confundir com precisão.">?</span></th>
-                    <th>Leitura resumida</th>
-                  </tr>
-                </thead>
-                <tbody id="scDiffRows"></tbody>
-              </table>
+          <div class="section-head" id="scSecDiscoveries"><div><h2>2. Principais descobertas</h2><p class="sc-section-note" style="margin:0">Textos determinísticos (sem IA generativa). Só entram achados com cobertura/amostra suficientes.</p></div>
+            <button class="btn" id="scDiscoveriesToggle" type="button">Ver todas as descobertas</button>
+          </div>
+          <div id="scDiscoveriesHost" class="sc-discoveries"></div>
+
+          <!-- CANCELAMENTO -->
+          <div class="sc-axis-block" id="scSecCancel">
+            <div class="section-head"><div><h2>3. Cancelamento — correlações e associações</h2>
+              <p class="sc-section-note" style="margin:0">Mostra quais variáveis possuem maior relação observada com cancelamento. Valores maiores representam associações mais fortes, não causalidade.</p></div>
+              <span class="export-host" id="scDiffExportHost"></span></div>
+            <h3 style="font-size:14px;margin:12px 0 6px">Matriz de associação com cancelamento</h3>
+            <div class="sc-zoom-bar" data-sc-zoom-for="scCancelMatrixStage">
+              <button type="button" data-sc-zoom="in">Zoom +</button>
+              <button type="button" data-sc-zoom="out">Zoom −</button>
+              <button type="button" data-sc-zoom="fit">Ajustar</button>
+              <button type="button" data-sc-zoom="reset">Resetar</button>
+              <button type="button" data-sc-zoom="fs">Tela cheia</button>
+              <button type="button" data-sc-zoom="export">Exportar PNG</button>
             </div>
-            <div class="empty" id="scDiffEmpty">Não há dados suficientes para este recorte.</div>
-          </section>
-
-          <div class="section-head"><div><h2>3. Associação com cancelamento <span class="help" tabindex="0" data-tip="Mostra a intensidade da relação entre cada variável e o cancelamento efetivado. O sinal indica a direção; a magnitude indica a força. Não representa causalidade.">?</span></h2><p class="sc-section-note" style="margin:0">Indica relação estatística com o cancelamento efetivado.</p></div></div>
-          <section class="stat-association-grid sc-charts">
-            <article class="chart-card">
-              <h3>Numéricas <span class="help" tabindex="0" data-tip="Correlação ponto-bisserial entre a variável contínua e isCancelled (0/1). Sinal preservado. Barra = |associação|.">?</span></h3>
-              <p>Ponto-bisserial · sinal preservado</p>
-              <div id="scChartNumeric"></div>
-            </article>
-            <article class="chart-card">
-              <h3>Categóricas <span class="help" tabindex="0" data-tip="V de Cramér a partir da tabela de contingência variável × cancelamento.">?</span></h3>
-              <p>V de Cramér</p>
-              <div id="scChartCategorical"></div>
-            </article>
-          </section>
-
-          <div class="section-head"><div><h2>4. Poder discriminativo individual</h2><p class="sc-section-note" style="margin:0">AUC mede quanto uma variável, isoladamente, separa ativos de cancelados.</p></div><span class="export-host" id="scAucExportHost"></span></div>
-          <section class="table-panel">
-            <div class="table-wrap">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Variável</th>
-                    <th class="num">AUC original</th>
-                    <th class="num">AUC ajustada</th>
-                    <th>Direção</th>
-                    <th class="num">Amostra</th>
-                    <th class="num">Cobertura</th>
-                    <th>Status</th>
-                    <th>Observação</th>
-                  </tr>
-                </thead>
-                <tbody id="scAucRows"></tbody>
-              </table>
+            <div class="sc-matrix-layout">
+              <div id="scCancelMatrixStage" class="sc-zoom-stage"><div class="sc-zoom-inner" id="scCancelMatrixHost"></div></div>
+              <div id="scCancelMatrixLegend" class="sc-matrix-legend"></div>
             </div>
-            <div class="empty" id="scAucEmpty" hidden>Não há variáveis elegíveis para AUC neste recorte.</div>
-          </section>
+            <p class="note-muted" id="scCancelMatrixNarration"></p>
+            <details class="sc-data-details"><summary>Ver dados da matriz de cancelamento</summary><div id="scCancelMatrixTable" class="table-wrap"></div></details>
 
-          <div class="section-head"><div><h2>5. Relações com NPS</h2><p class="sc-section-note" style="margin:0">Usa a resposta NPS válida mais recente por cliente.</p></div><span class="export-host" id="scNpsCorrExportHost"></span></div>
-          <div id="scNpsCorrHost"></div>
+            <h3 style="font-size:14px;margin:16px 0 6px">Diferença entre ativos e cancelados</h3>
+            <div class="sc-howto"><span class="sc-howto-ico">i</span><div><strong>Como ler este gráfico:</strong> compare o comprimento das barras. <strong>Verde = ativos</strong>, <strong>vermelho = cancelados</strong>. Quando a barra vermelha é maior, a mediana dos cancelados é maior.</div></div>
+            <label style="display:inline-block;margin:0 0 8px;font-size:12px">Unidade do gráfico
+              <select id="scDiffUnit"><option value="time">Tempo / dias</option><option value="meetings">Reuniões</option><option value="money">Financeiro</option><option value="nps">NPS</option><option value="mech">Mecanismos</option></select>
+            </label>
+            <div id="scDiffChart" class="sc-chart-host"></div>
+            <p class="note-muted" id="scDiffNarration"></p>
+            <details class="sc-data-details"><summary>Ver dados de cancelamento (diferenças)</summary>
+              <section class="table-panel" style="margin:0;border:0;padding:0;background:transparent">
+                <div class="table-wrap"><table class="sc-diff-table"><thead><tr>
+                  <th>Indicador</th><th class="num">Mediana ativos</th><th class="num">Mediana cancelados</th><th class="num">Diferença</th><th class="num">Dif. %</th><th>Associação</th><th>Força</th><th class="num">n ativos</th><th class="num">n cancel.</th><th class="num">Cobertura</th><th>Leitura</th>
+                </tr></thead><tbody id="scDiffRows"></tbody></table></div>
+                <div class="empty" id="scDiffEmpty">Não há dados suficientes para este recorte.</div>
+              </section>
+            </details>
 
-          <div class="section-head"><div><h2>6. Promotores, Neutros e Detratores <span class="help" tabindex="0" data-tip="A classificação usa a resposta NPS mais recente de cada cliente.">?</span></h2><p class="sc-section-note" style="margin:0">Classificação pela nota mais recente (9–10 / 7–8 / 0–6).</p></div><span class="export-host" id="scNpsGroupsExportHost"></span></div>
-          <section class="table-panel">
-            <div class="table-wrap">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Grupo</th>
-                    <th class="num">Clientes</th>
-                    <th class="num">%</th>
-                    <th class="num">Cancelados</th>
-                    <th class="num">% cancelado</th>
-                    <th class="num">Permanência mediana</th>
-                    <th class="num">Reuniões mediana</th>
-                    <th class="num">No-shows mediana</th>
-                    <th class="num">Renovados</th>
-                    <th class="num">% renovado</th>
-                    <th class="num">Ciclo mediano</th>
-                    <th class="num">Renda mediana</th>
-                  </tr>
-                </thead>
-                <tbody id="scNpsGroupRows"></tbody>
-              </table>
+            <h3 style="font-size:14px;margin:16px 0 6px">Poder preditivo individual (AUC)</h3>
+            <div class="sc-howto"><span class="sc-howto-ico">i</span><div><strong>A AUC</strong> mede quanto uma variável, sozinha, diferencia cancelados de não cancelados. 0,50 = não diferencia · 0,60 = fraco · 0,70 = moderado · 0,80+ = forte (auditar leakage). <em>AUC não é taxa de acerto nem causalidade.</em> Quanto mais a barra se afasta de 0,50, maior o poder de separação.</div></div>
+            <div id="scAucChart" class="sc-chart-host"></div>
+            <p class="note-muted" id="scAucNarration"></p>
+            <section class="stat-association-grid sc-charts" style="margin-top:12px">
+              <article class="chart-card"><h3>Associações numéricas</h3><div id="scChartNumeric"></div></article>
+              <article class="chart-card"><h3>Associações categóricas</h3><div id="scChartCategorical"></div></article>
+            </section>
+            <details class="sc-data-details"><summary>Ver dados de AUC</summary>
+              <section class="table-panel" style="margin:0;border:0;padding:0;background:transparent">
+                <div class="table-wrap"><table><thead><tr><th>Variável</th><th class="num">AUC original</th><th class="num">AUC ajustada</th><th>Direção</th><th class="num">Amostra</th><th class="num">Cobertura</th><th>Status</th><th>Observação</th></tr></thead><tbody id="scAucRows"></tbody></table></div>
+                <div class="empty" id="scAucEmpty" hidden>Não há variáveis elegíveis para AUC neste recorte.</div>
+              </section>
+            </details>
+            <div id="scCancelRankHost" class="sc-chart-host" style="margin-top:12px"></div>
+            <details class="sc-data-details"><summary>Ver ranking completo — cancelamento</summary><div id="scCancelRankTable" class="table-wrap"></div></details>
+          </div>
+
+          <!-- NPS -->
+          <div class="sc-axis-block" id="scSecNps">
+            <div class="section-head"><div><h2>4. NPS — matriz de correlação</h2>
+              <p class="sc-section-note" style="margin:0">Mostra como cada indicador varia junto com a nota NPS (Spearman). Associação observada, não causalidade.</p></div>
+              <span class="export-host" id="scNpsCorrExportHost"></span></div>
+            <div class="sc-zoom-bar" data-sc-zoom-for="scNpsMatrixStage">
+              <button type="button" data-sc-zoom="in">Zoom +</button>
+              <button type="button" data-sc-zoom="out">Zoom −</button>
+              <button type="button" data-sc-zoom="fit">Ajustar</button>
+              <button type="button" data-sc-zoom="reset">Resetar</button>
+              <button type="button" data-sc-zoom="fs">Tela cheia</button>
+              <button type="button" data-sc-zoom="export">Exportar PNG</button>
             </div>
-            <div class="empty" id="scNpsGroupEmpty" hidden>Sem respostas NPS válidas no recorte.</div>
-          </section>
-
-          <div class="section-head"><div><h2>7. Associação com renovação <span class="help" tabindex="0" data-tip="Mostra a relação entre cada variável e o fato de o cliente possuir mais de um ciclo. Renovado significa ciclo atual maior que 1.">?</span></h2><p class="sc-section-note" style="margin:0">Renovado significa cliente com ciclo atual maior que 1.</p></div></div>
-          <section class="stat-association-grid sc-charts">
-            <article class="chart-card"><h3>Numéricas <span class="help" tabindex="0" data-tip="Ponto-bisserial vs hasRenewed (ciclo&gt;1). renewalCount e ciclo atual não entram como explicativas.">?</span></h3><div id="scChartRenewalNum"></div></article>
-            <article class="chart-card"><h3>Categóricas <span class="help" tabindex="0" data-tip="V de Cramér vs hasRenewed.">?</span></h3><div id="scChartRenewalCat"></div></article>
-          </section>
-
-          <div class="section-head"><div><h2>8. Renovados vs não renovados</h2><p class="sc-section-note" style="margin:0">Ciclo &gt; 1 vs ciclo = 1 · ciclos nulos/≤0 excluídos. Mesma regra do dashboard Renovações.</p></div><span class="export-host" id="scRenewalDiffExportHost"></span></div>
-          <section class="table-panel">
-            <div class="table-wrap">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Variável</th>
-                    <th class="num">Mediana renovados</th>
-                    <th class="num">Mediana não renovados</th>
-                    <th class="num">Diferença</th>
-                    <th>Associação</th>
-                    <th class="num">Amostra</th>
-                    <th class="num">Cobertura</th>
-                    <th>Observação</th>
-                  </tr>
-                </thead>
-                <tbody id="scRenewalDiffRows"></tbody>
-              </table>
+            <div class="sc-matrix-layout">
+              <div id="scNpsMatrixStage" class="sc-zoom-stage"><div class="sc-zoom-inner" id="scNpsMatrixHost"></div></div>
+              <div id="scNpsMatrixLegend" class="sc-matrix-legend"></div>
             </div>
-            <div class="empty" id="scRenewalDiffEmpty" hidden>Sem base de ciclo válida no recorte.</div>
+            <p class="note-muted" id="scNpsMatrixNarration"></p>
+            <details class="sc-data-details"><summary>Ver dados de NPS (correlações)</summary><div id="scNpsCorrHost"></div></details>
+            <h3 style="font-size:14px;margin:16px 0 6px">Promotores, Neutros e Detratores</h3>
+            <div class="sc-howto"><span class="sc-howto-ico">i</span><div><strong>Como ler:</strong> barras agrupadas por classe NPS. Os números acima das barras mostram o percentual. Cobertura NPS baixa reduz a confiança.</div></div>
+            <div id="scNpsGroupsChart" class="sc-chart-host"></div>
+            <p class="note-muted" id="scNpsGroupsNarration"></p>
+            <details class="sc-data-details"><summary>Ver dados de NPS por classe</summary>
+              <section class="table-panel" style="margin:0;border:0;padding:0;background:transparent">
+                <div class="table-wrap"><table><thead><tr>
+                  <th>Grupo</th><th class="num">Clientes</th><th class="num">%</th><th class="num">Cancelados</th><th class="num">% cancelado</th><th class="num">Permanência</th><th class="num">Reuniões</th><th class="num">No-shows</th><th class="num">Renovados</th><th class="num">% renovado</th><th class="num">Ciclo</th><th class="num">Renda</th>
+                </tr></thead><tbody id="scNpsGroupRows"></tbody></table></div>
+                <div class="empty" id="scNpsGroupEmpty" hidden>Sem respostas NPS válidas no recorte.</div>
+              </section>
+            </details>
+            <div id="scNpsRankHost" class="sc-chart-host" style="margin-top:12px"></div>
+          </div>
+
+          <!-- RENOVAÇÃO -->
+          <div class="sc-axis-block" id="scSecRenewal">
+            <div class="section-head"><div><h2>5. Renovação — matriz de associação</h2>
+              <p class="sc-section-note" style="margin:0">Alvo: ciclo atual &gt; 1. currentCycle e renewalCount não entram como explicativas.</p></div>
+              <span class="export-host" id="scRenewalDiffExportHost"></span></div>
+            <div class="sc-zoom-bar" data-sc-zoom-for="scRenewalMatrixStage">
+              <button type="button" data-sc-zoom="in">Zoom +</button>
+              <button type="button" data-sc-zoom="out">Zoom −</button>
+              <button type="button" data-sc-zoom="fit">Ajustar</button>
+              <button type="button" data-sc-zoom="reset">Resetar</button>
+              <button type="button" data-sc-zoom="fs">Tela cheia</button>
+              <button type="button" data-sc-zoom="export">Exportar PNG</button>
+            </div>
+            <div class="sc-matrix-layout">
+              <div id="scRenewalMatrixStage" class="sc-zoom-stage"><div class="sc-zoom-inner" id="scRenewalMatrixHost"></div></div>
+              <div id="scRenewalMatrixLegend" class="sc-matrix-legend"></div>
+            </div>
+            <p class="note-muted" id="scRenewalMatrixNarration"></p>
+            <section class="stat-association-grid sc-charts" style="margin-top:12px">
+              <article class="chart-card"><h3>Associações numéricas</h3><div id="scChartRenewalNum"></div></article>
+              <article class="chart-card"><h3>Associações categóricas</h3><div id="scChartRenewalCat"></div></article>
+            </section>
+            <h3 style="font-size:14px;margin:16px 0 6px">Renovados vs não renovados</h3>
+            <div id="scRenewalDiffChart" class="sc-chart-host"></div>
+            <p class="note-muted" id="scRenewalDiffNarration"></p>
+            <details class="sc-data-details"><summary>Ver dados de renovação</summary>
+              <section class="table-panel" style="margin:0;border:0;padding:0;background:transparent">
+                <div class="table-wrap"><table><thead><tr><th>Variável</th><th class="num">Mediana renovados</th><th class="num">Mediana não renovados</th><th class="num">Diferença</th><th>Associação</th><th class="num">Amostra</th><th class="num">Cobertura</th><th>Observação</th></tr></thead><tbody id="scRenewalDiffRows"></tbody></table></div>
+                <div class="empty" id="scRenewalDiffEmpty" hidden>Sem base de ciclo válida no recorte.</div>
+              </section>
+            </details>
+            <div id="scRenewalRankHost" class="sc-chart-host" style="margin-top:12px"></div>
+          </div>
+
+          <!-- PERMANÊNCIA -->
+          <div class="sc-axis-block" id="scSecTenure">
+            <div class="section-head"><div><h2>6. Permanência — matriz de correlação</h2>
+              <p class="sc-section-note" style="margin:0">Correlações descritivas com permanência em dias. Não confundir com Kaplan–Meier.</p></div></div>
+            <div class="sc-zoom-bar" data-sc-zoom-for="scTenureMatrixStage">
+              <button type="button" data-sc-zoom="in">Zoom +</button>
+              <button type="button" data-sc-zoom="out">Zoom −</button>
+              <button type="button" data-sc-zoom="fit">Ajustar</button>
+              <button type="button" data-sc-zoom="reset">Resetar</button>
+              <button type="button" data-sc-zoom="fs">Tela cheia</button>
+              <button type="button" data-sc-zoom="export">Exportar PNG</button>
+            </div>
+            <div class="sc-matrix-layout">
+              <div id="scTenureMatrixStage" class="sc-zoom-stage"><div class="sc-zoom-inner" id="scTenureMatrixHost"></div></div>
+              <div id="scTenureMatrixLegend" class="sc-matrix-legend"></div>
+            </div>
+            <p class="note-muted" id="scTenureMatrixNarration"></p>
+            <section class="charts sc-charts">
+              <article class="chart-card sc-span-all"><h3>Correlações com permanência (Spearman)</h3><div id="scChartTenure"></div></article>
+              <article class="chart-card sc-span-all"><h3>Clientes por faixa de permanência</h3><div id="scChartTenureBuckets"></div></article>
+            </section>
+          </div>
+
+          <!-- EXPLORATÓRIAS -->
+          <div class="section-head" id="scSecExplore"><div><h2>7. Descobertas exploratórias</h2>
+            <p class="sc-section-note" style="margin:0">Rankings por eixo, combinações e candidatos a Health Score — evidência estatística, sem causalidade.</p></div></div>
+
+          <div class="section-head" id="scSecGroups"><div><h2>8. Matriz comparativa dos grupos</h2>
+            <p class="sc-section-note" style="margin:0">Diferença padronizada em relação à referência global. Unidades distintas — use a padronização para comparar.</p></div></div>
+          <div class="sc-zoom-bar" data-sc-zoom-for="scGroupMatrixStage">
+            <button type="button" data-sc-zoom="in">Zoom +</button>
+            <button type="button" data-sc-zoom="out">Zoom −</button>
+            <button type="button" data-sc-zoom="fit">Ajustar</button>
+            <button type="button" data-sc-zoom="reset">Resetar</button>
+            <button type="button" data-sc-zoom="fs">Tela cheia</button>
+            <button type="button" data-sc-zoom="export">Exportar PNG</button>
+          </div>
+          <div id="scGroupMatrixStage" class="sc-zoom-stage"><div class="sc-zoom-inner" id="scGroupMatrixHost"></div></div>
+          <p class="note-muted" id="scGroupMatrixNarration"></p>
+          <details class="sc-data-details"><summary>Ver dados da matriz de grupos</summary><div id="scGroupMatrixTable" class="table-wrap"></div></details>
+
+          <div class="section-head" id="scSecPredict"><div><h2>9. Ranking preditivo de cancelamento</h2>
+            <p class="sc-section-note" style="margin:0">Mostra quais variáveis mais contribuíram para separar cancelados e não cancelados no modelo de validação. Importância ≠ causalidade.</p></div></div>
+          <div id="scPredictMeta" class="note-muted"></div>
+          <div id="scPredictChart" class="sc-chart-host"></div>
+          <details class="sc-data-details"><summary>Ver ranking completo (Top 20)</summary><div id="scPredictTable" class="table-wrap"></div></details>
+
+          <div class="section-head" id="scSecRules"><div><h2>10. Combinações de fatores</h2>
+            <p class="sc-section-note" style="margin:0">Mostra grupos de condições associados a taxas diferentes de cancelamento. Também inclui perfil de alta performance (Promotor ∩ Renovado).</p></div>
+            <span class="export-host" id="scRulesExportHost"></span></div>
+          <div id="scHighPerfHost" class="sc-chart-host"></div>
+          <p class="note-muted" id="scHighPerfNarration"></p>
+          <details class="sc-data-details"><summary>Ver regras de risco (amostra mínima)</summary>
+            <section class="table-panel" style="margin:0;border:0;padding:0;background:transparent">
+              <div class="table-wrap"><table><thead><tr><th>Combinação</th><th class="num">Clientes</th><th class="num">Cancelados</th><th class="num">Taxa</th><th class="num">Lift</th><th>Ressalva</th></tr></thead><tbody id="scRiskRuleRows"></tbody></table></div>
+              <div class="empty" id="scRiskRulesEmpty">Nenhuma combinação com suporte suficiente.</div>
+            </section>
+          </details>
+
+          <div class="section-head" id="scSecHealth"><div><h2>11. Health Score MVP — candidatos</h2>
+            <p class="sc-section-note" style="margin:0">Apresenta candidatos iniciais para um indicador operacional, escolhidos pela força, cobertura e disponibilidade do dado.</p></div></div>
+          <div id="scHealthHost" class="sc-health-grid"></div>
+          <p class="note-muted" id="scHealthNarration"></p>
+
+          <!-- SOBREVIVÊNCIA -->
+          <div class="section-head" id="scSecSurvival"><div><h2>12. Curva de sobrevivência</h2>
+            <p class="sc-section-note" style="margin:0">Kaplan–Meier: cancelamento com data = evento; demais = censurados até hoje (America/Sao_Paulo).</p></div></div>
+          <label style="display:inline-block;margin:0 0 8px;font-size:12px">Comparar por
+            <select id="scSurvivalCompare">
+              <option value="overall" selected>Curva geral</option>
+              <option value="segment">Segmento</option>
+              <option value="npsClass">Classe NPS</option>
+              <option value="hasRenewed">Renovou / não renovou</option>
+              <option value="hasMeeting">Possui reunião</option>
+              <option value="hasMechanism">Possui mecanismo</option>
+              <option value="hasFinancialData">Diagnóstico financeiro</option>
+              <option value="engineer">EP (amostra mínima)</option>
+            </select>
+          </label>
+          <div id="scSurvivalChart" class="sc-chart-host sc-survival-chart"></div>
+          <div id="scAtRiskHost" class="sc-at-risk"></div>
+          <p class="note-muted" id="scSurvivalNarration"></p>
+          <details class="sc-data-details"><summary>Ver dados da curva</summary><div id="scSurvivalHost"></div></details>
+          <details class="sc-data-details"><summary>Ver grupos estratificados (tabela)</summary><div id="scSurvivalGroupsHost" style="margin-top:12px"></div></details>
+
+          <!-- COHORT -->
+          <div class="section-head" id="scSecCohort"><div><h2>13. Análise de cohort</h2>
+            <p class="sc-section-note" style="margin:0">Cada coluna é uma coorte de contratação. Meses futuros ficam vazios (não observáveis), não 0%.</p></div>
+            <span class="export-host" id="scCohortExportHost"></span></div>
+          <section class="filters financial" aria-label="Controles da coorte" style="margin-bottom:10px">
+            <label>Tipo<select id="scCohortType"><option value="contract" selected>Retenção contratual</option><option value="challenges" disabled>Desafios 45 dias (indisponível)</option></select></label>
+            <label>Período da cohort<select id="scCohortPeriod"><option value="since_2025_01" selected>Desde jan/2025</option><option value="last_12_months">Últimos 12 meses</option><option value="all">Todo o histórico</option></select></label>
+            <label>Granularidade<select id="scCohortGranularity"><option value="month" selected>Mensal</option><option value="quarter">Trimestral</option></select></label>
+            <label>Texto da célula<select id="scCohortCellMode"><option value="pct" selected>Percentual</option><option value="n">Quantidade</option></select></label>
+            <label>Tamanho mínimo da coorte<input id="scCohortMinN" type="number" min="1" value="5" style="width:72px"/></label>
           </section>
+          <p class="note-muted" id="scChallengeCohortNote"></p>
+          <div class="sc-zoom-bar" data-sc-zoom-for="scCohortStage">
+            <button type="button" data-sc-zoom="in">Aumentar zoom</button>
+            <button type="button" data-sc-zoom="out">Diminuir zoom</button>
+            <button type="button" data-sc-zoom="fit">Ajustar à largura</button>
+            <button type="button" data-sc-zoom="reset">Resetar</button>
+            <button type="button" data-sc-zoom="fs" id="scCohortExpand">Ampliar cohort</button>
+            <button type="button" data-sc-zoom="export">Exportar PNG</button>
+          </div>
+          <div id="scCohortStage" class="sc-zoom-stage sc-cohort-wrap" style="min-height:320px"><div class="sc-zoom-inner" id="scCohortHost"></div></div>
+          <p class="note-muted" id="scCohortNote"></p>
+          <details class="sc-data-details"><summary>Ver dados do cohort</summary><div id="scCohortTableHost" class="table-wrap"></div></details>
 
-          <div class="section-head"><div><h2>9. Associação com permanência</h2><p class="sc-section-note" style="margin:0">Para ativos, o tempo é calculado até hoje. Para cancelados, até a data analítica do cancelamento.</p></div></div>
-          <section class="charts sc-charts">
-            <article class="chart-card sc-span-all"><h3>Correlações com permanência (Spearman)</h3><div id="scChartTenure"></div></article>
-            <article class="chart-card sc-span-all"><h3>Clientes por faixa de permanência</h3><div id="scChartTenureBuckets"></div></article>
+          <!-- MATRIZ GERAL -->
+          <div class="section-head" id="scSecGeneralMatrix"><div><h2>14. Matriz geral de relações entre variáveis</h2>
+            <p class="sc-section-note" style="margin:0">Complementar às matrizes por eixo. Spearman (padrão) ou Pearson.</p></div></div>
+          <section class="filters financial" aria-label="Controles da matriz geral" style="margin-bottom:10px">
+            <label title="Spearman mede relações monotônicas e é mais robusto a valores extremos. Pearson mede relações lineares.">Método
+              <select id="scCorrMethod" title="Spearman mede relações monotônicas e é mais robusto a valores extremos. Pearson mede relações lineares.">
+                <option value="spearman" selected>Spearman</option>
+                <option value="pearson">Pearson</option>
+              </select>
+            </label>
           </section>
+          <div class="sc-ms-wrap" id="scMsWrap">
+            <button type="button" class="sc-ms-trigger" id="scMsTrigger" aria-haspopup="listbox" aria-expanded="false">
+              <span id="scMsSummary">Variáveis selecionadas: 10</span><span aria-hidden="true">▾</span>
+            </button>
+            <div class="sc-ms-chips" id="scMsChips"></div>
+            <div class="sc-ms-panel" id="scMsPanel" hidden>
+              <input type="search" id="scMsSearch" placeholder="Buscar variável…" />
+              <div class="sc-ms-actions">
+                <button type="button" id="scMatrixRecommended">Selecionar recomendadas</button>
+                <button type="button" id="scMatrixClear">Limpar</button>
+                <button type="button" id="scMsApply">Aplicar</button>
+                <button type="button" id="scMsCancel">Cancelar</button>
+              </div>
+              <div id="scMsWarn" class="sc-ms-warn" hidden>Selecione no máximo 12 variáveis para manter a legibilidade.</div>
+              <div id="scMatrixVarsHost"></div>
+            </div>
+          </div>
+          <div class="sc-zoom-bar" data-sc-zoom-for="scMatrixStage">
+            <button type="button" data-sc-zoom="in">Zoom +</button>
+            <button type="button" data-sc-zoom="out">Zoom −</button>
+            <button type="button" data-sc-zoom="fit">Ajustar</button>
+            <button type="button" data-sc-zoom="reset">Resetar</button>
+            <button type="button" data-sc-zoom="fs">Tela cheia</button>
+            <button type="button" data-sc-zoom="export">Exportar PNG</button>
+          </div>
+          <div class="sc-matrix-layout">
+            <div id="scMatrixStage" class="sc-zoom-stage"><div class="sc-zoom-inner" id="scMatrixHost" class="sc-matrix-wrap" aria-label="Heatmap de correlação"></div></div>
+            <div id="scMatrixLegend" class="sc-matrix-legend" aria-hidden="true"></div>
+          </div>
+          <div id="scMatrixInsights" class="sc-matrix-insights"></div>
+          <details class="sc-data-details"><summary>Ver dados da matriz geral</summary><div id="scMatrixTableHost" class="table-wrap"></div></details>
+          <aside id="scMatrixDrawer" class="sc-matrix-drawer" hidden>
+            <button type="button" class="sc-matrix-drawer-close" id="scMatrixDrawerClose" aria-label="Fechar">×</button>
+            <div id="scMatrixDrawerBody"></div>
+          </aside>
 
-          <div class="section-head"><div><h2>10. Curva de sobrevivência</h2><p class="sc-section-note" style="margin:0">A curva considera cancelamento com data como evento e clientes não cancelados como censurados.</p></div></div>
-          <div id="scSurvivalHost"></div>
-          <div id="scSurvivalGroupsHost" style="margin-top:12px"></div>
+          <div class="section-head" id="scSecSignals"><div><h2>Clientes ativos com sinais detectados</h2>
+            <p class="sc-section-note" style="margin:0">Clientes ainda ativos com padrões associados ao cancelamento. Não é previsão certa de churn.</p></div></div>
+          <div class="sc-howto"><span class="sc-howto-ico" title="Informação">i</span><div><strong>Como ler:</strong> cada linha é um cliente ativo com um ou mais sinais. Use a intensidade e a cobertura dos sinais — não trate como lista de cancelamento futuro.</div></div>
+          <div id="scSignalsSummary" class="note-muted"></div>
+          <div id="scSignalsChart" class="sc-chart-host"></div>
+          <details class="sc-data-details"><summary>Ver clientes com sinais</summary><div id="scSignalsTable" class="table-wrap"></div></details>
 
-          <div class="section-head"><div><h2>11. Variáveis excluídas</h2><p>Leakage, cobertura, amostra, constante ou inválida.</p></div><span class="export-host" id="scExcludedExportHost"></span></div>
+          <div class="section-head" id="scSecTop"><div><h2>Top clientes — Pharus e Davos</h2>
+            <p class="sc-section-note" style="margin:0">Ranking pelo índice exploratório de alta performance (transparente). Não é Health Score oficial.</p></div></div>
+          <div class="sc-howto"><span class="sc-howto-ico">i</span><div><strong>Como ler:</strong> pontuação equilibra NPS, renovação, reuniões, mecanismos, financeiro e permanência. Renda tem teto para não dominar o ranking.</div></div>
+          <p class="note-muted" id="scTopMethodNote"></p>
+          <div class="section-head" style="margin-top:8px"><div><h3 style="font-size:14px;margin:0">Top clientes — Pharus</h3></div>
+            <button class="btn" type="button" id="scExportPharusCsv">Exportar CSV</button>
+          </div>
+          <details class="sc-data-details" open><summary>Ver tabela Pharus</summary><div id="scTopPharusTable" class="table-wrap"></div></details>
+          <div class="section-head" style="margin-top:8px"><div><h3 style="font-size:14px;margin:0">Top clientes — Davos</h3></div>
+            <button class="btn" type="button" id="scExportDavosCsv">Exportar CSV</button>
+          </div>
+          <details class="sc-data-details" open><summary>Ver tabela Davos</summary><div id="scTopDavosTable" class="table-wrap"></div></details>
+
+          <div class="section-head" id="scSecNpsMatrix"><div><h2>Matriz comparativa NPS (variáveis amplas)</h2>
+            <p class="sc-section-note" style="margin:0">Promotores, Neutros e Detratores em renda, aporte, mecanismos, reuniões e demais indicadores disponíveis.</p></div></div>
+          <label style="font-size:12px">Modo <select id="scNpsCompMode"><option value="standardized" selected>Padronizado vs população</option><option value="value">Valor original</option><option value="diff">Diferença vs população</option></select></label>
+          <div id="scNpsCompHost" class="sc-chart-host" style="margin-top:8px"></div>
+          <p class="note-muted" id="scNpsCompNarration"></p>
+
+          <div class="section-head"><div><h2>15. Variáveis excluídas</h2><p>Leakage, cobertura, amostra, constante ou inválida.</p></div><span class="export-host" id="scExcludedExportHost"></span></div>
           <div id="scExcludedHost"></div>
 
-          <div class="section-head"><div><h2>12. Qualidade dos dados</h2><p>Avisos metodológicos e de cobertura.</p></div></div>
+          <div id="scFsModal" class="sc-fs-modal" hidden>
+            <div class="sc-fs-toolbar">
+              <strong id="scFsTitle">Visualização ampliada</strong>
+              <button type="button" data-sc-zoom="in" data-sc-fs="1">Zoom +</button>
+              <button type="button" data-sc-zoom="out" data-sc-fs="1">Zoom −</button>
+              <button type="button" data-sc-zoom="fit" data-sc-fs="1">Ajustar</button>
+              <button type="button" data-sc-zoom="export" data-sc-fs="1">Exportar PNG</button>
+              <button type="button" id="scFsClose">Fechar (Esc)</button>
+            </div>
+            <div class="sc-fs-body" id="scFsBody"></div>
+          </div>
+
+          <div class="section-head" id="scSecQuality"><div><h2>16. Qualidade, cobertura e limitações</h2><p>Avisos metodológicos e de cobertura.</p></div></div>
           <div id="scSourceAlertHost" style="margin-top:0">
             <div id="scSourceAlert" data-alert-id="statistical-crosses-quality-warning" hidden role="status"></div>
           </div>
 
           <details class="metric-avail-details" id="scMetricAvailabilitySection">
-            <summary>13. Detalhamento técnico / disponibilidade</summary>
+            <summary>17. Dados técnicos recolhíveis</summary>
             <div id="scMetricAvailabilityHost"></div>
             <div class="section-head" style="margin-top:16px"><div><h2>Exportação técnica</h2></div><span class="export-host" id="scTechExportHost"></span></div>
           </details>
@@ -4405,7 +4726,7 @@ ${dataRows}
       if (btn.dataset.nav === 'performance' && !performanceState.payload) loadPerformance();
       if (btn.dataset.nav === 'ep' && !epState.payload) loadEpPerformance();
       if (btn.dataset.nav === 'statistical-crosses' && !scState.payload) loadStatisticalCrosses();
-      if (btn.dataset.nav === 'exploration' && !explorationState.payload) loadExploration();
+      if (btn.dataset.nav === 'exploration') { document.querySelector('[data-nav="statistical-crosses"]')?.click(); return; }
       if (btn.dataset.nav === 'quality' && !qualityData.length) loadQuality();
       remountPortalAlertsForPage(btn.dataset.nav);
     }));
@@ -4417,7 +4738,7 @@ ${dataRows}
     })[window.__portalCurrentPage] || window.__portalCurrentPage;
 
     (function portalHashNav(){
-      const map = { ep:'ep', 'performance-ep':'ep', 'statistical-crosses':'statistical-crosses', sc:'statistical-crosses', exploration:'exploration', discoveries:'exploration' };
+      const map = { ep:'ep', 'performance-ep':'ep', 'statistical-crosses':'statistical-crosses', sc:'statistical-crosses', exploration:'statistical-crosses', discoveries:'statistical-crosses', crossings:'statistical-crosses', 'analises-estatisticas':'statistical-crosses', analises:'statistical-crosses' };
       const apply = () => {
         const key = map[(location.hash||'').replace(/^#/, '')];
         if (!key) return;
@@ -5788,6 +6109,1711 @@ ${dataRows}
       return ((b - a) / Math.abs(a)) * 100;
     }
 
+    const SC_MATRIX_ALL = [
+      { id: 'stayDays', label: 'Permanência' },
+      { id: 'meetingCount', label: 'Total de reuniões' },
+      { id: 'daysToFirstMeeting', label: 'Dias até 1ª reunião' },
+      { id: 'daysSinceLastMeeting', label: 'Dias desde última reunião' },
+      { id: 'averageIntervalDays', label: 'Intervalo médio' },
+      { id: 'noShowCount', label: 'No-shows' },
+      { id: 'rescheduleCount', label: 'Remarcações' },
+      { id: 'attendanceRate', label: 'Taxa de comparecimento' },
+      { id: 'monthlyIncome', label: 'Renda mensal' },
+      { id: 'liquidityReserve', label: 'Reserva de liquidez' },
+      { id: 'lastContribution', label: 'Último aporte' },
+      { id: 'paidPropertiesValue', label: 'Patrimônio' },
+      { id: 'daysSinceFinancialUpdate', label: 'Dias desde atualização financeira' },
+      { id: 'mechanismCount', label: 'Quantidade de mecanismos' },
+      { id: 'npsScore', label: 'Nota NPS' },
+      { id: 'currentCycle', label: 'Ciclo atual' },
+      { id: 'renewalCount', label: 'Quantidade de renovações' }
+    ];
+    const SC_MATRIX_RECOMMENDED = ['stayDays','meetingCount','daysSinceLastMeeting','daysToFirstMeeting','noShowCount','npsScore','monthlyIncome','liquidityReserve','mechanismCount','currentCycle'];
+    scState.showAllDiscoveries = false;
+    scState.matrixVarIds = [...SC_MATRIX_RECOMMENDED];
+
+    function scEnsureFloatTip() {
+      let el = document.getElementById('scFloatTip');
+      if (!el) {
+        el = document.createElement('div');
+        el.id = 'scFloatTip';
+        el.className = 'sc-tooltip-float';
+        el.hidden = true;
+        document.body.appendChild(el);
+      }
+      return el;
+    }
+    function scShowTip(htmlContent, evt) {
+      const el = scEnsureFloatTip();
+      el.innerHTML = htmlContent;
+      el.hidden = false;
+      const x = Math.min(window.innerWidth - 300, (evt?.clientX || 0) + 14);
+      const y = Math.min(window.innerHeight - 120, (evt?.clientY || 0) + 14);
+      el.style.left = x + 'px';
+      el.style.top = y + 'px';
+    }
+    function scHideTip() {
+      const el = document.getElementById('scFloatTip');
+      if (el) el.hidden = true;
+    }
+
+    function scCorrColor(v) {
+      if (v == null || !Number.isFinite(Number(v))) return { fill: '#3a3a3a', text: '#ccc' };
+      const x = Math.max(-1, Math.min(1, Number(v)));
+      const t = Math.abs(x);
+      let r, g, b;
+      if (x >= 0) {
+        // neutral -> orange/red
+        r = Math.round(55 + t * (220 - 55));
+        g = Math.round(55 + t * (90 - 55));
+        b = Math.round(55 + t * (40 - 55));
+      } else {
+        // neutral -> blue
+        r = Math.round(55 + t * (40 - 55));
+        g = Math.round(55 + t * (110 - 55));
+        b = Math.round(55 + t * (220 - 55));
+      }
+      const fill = 'rgb(' + r + ',' + g + ',' + b + ')';
+      const lum = 0.299 * r + 0.587 * g + 0.114 * b;
+      return { fill, text: lum > 140 ? '#111' : '#f5f5f5' };
+    }
+
+    function scRetentionColor(pct) {
+      if (pct == null || !Number.isFinite(Number(pct))) return { fill: '#3a3a3a', text: '#ccc' };
+      const t = Math.max(0, Math.min(1, Number(pct) / 100));
+      // low retention red/orange, high blue/green
+      const r = Math.round(210 - t * 150);
+      const g = Math.round(70 + t * 130);
+      const b = Math.round(50 + t * 120);
+      const fill = 'rgb(' + r + ',' + g + ',' + b + ')';
+      const lum = 0.299 * r + 0.587 * g + 0.114 * b;
+      return { fill, text: lum > 140 ? '#111' : '#f5f5f5' };
+    }
+
+
+    const SC_VAR_GROUPS = [
+      { id: 'finance', label: 'Financeiro', ids: ['monthlyIncome','liquidityReserve','lastContribution','paidPropertiesValue'] },
+      { id: 'meetings', label: 'Reuniões', ids: ['meetingCount','daysToFirstMeeting','daysSinceLastMeeting','averageIntervalDays','noShowCount','rescheduleCount','attendanceRate'] },
+      { id: 'nps', label: 'NPS', ids: ['npsScore'] },
+      { id: 'mech', label: 'Mecanismos', ids: ['mechanismCount','implementedMechanismCount','implementationPercent'] },
+      { id: 'renewal', label: 'Renovação', ids: ['currentCycle','renewalCount'] },
+      { id: 'tenure', label: 'Permanência', ids: ['stayDays'] },
+      { id: 'finupd', label: 'Atualização financeira', ids: ['daysSinceFinancialUpdate','financialUpdateCount'] }
+    ];
+    const SC_VAR_LABELS = Object.fromEntries(SC_MATRIX_ALL.map((v) => [v.id, v.label]));
+    scState.zoom = scState.zoom || {};
+    scState.msDraft = null;
+    scState.fsStageId = null;
+
+    function scEnsureZoom(stageId) {
+      if (!scState.zoom[stageId]) scState.zoom[stageId] = { scale: 1 };
+      return scState.zoom[stageId];
+    }
+    function scApplyZoom(stageId) {
+      const stage = document.getElementById(stageId);
+      const inner = stage?.querySelector?.('.sc-zoom-inner') || stage;
+      if (!inner) return;
+      const z = scEnsureZoom(stageId);
+      inner.style.transform = 'scale(' + z.scale + ')';
+    }
+    function scExportStagePng(stageId) {
+      const stage = document.getElementById(stageId);
+      const svg = stage?.querySelector?.('svg');
+      if (!svg) { alert('Nenhum gráfico para exportar neste card.'); return; }
+      const xml = new XMLSerializer().serializeToString(svg);
+      const blob = new Blob([xml], { type: 'image/svg+xml;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = (stageId || 'analises') + '.svg';
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+    function scOpenFullscreen(stageId, title) {
+      const modal = document.getElementById('scFsModal');
+      const body = document.getElementById('scFsBody');
+      const ttl = document.getElementById('scFsTitle');
+      const stage = document.getElementById(stageId);
+      if (!modal || !body || !stage) return;
+      scState.fsStageId = stageId;
+      if (ttl) ttl.textContent = title || 'Visualização ampliada';
+      body.innerHTML = '';
+      const clone = stage.cloneNode(true);
+      clone.id = stageId + '__fs';
+      clone.style.minHeight = '70vh';
+      body.appendChild(clone);
+      scEnsureZoom(clone.id).scale = scEnsureZoom(stageId).scale || 1;
+      scApplyZoom(clone.id);
+      modal.hidden = false;
+    }
+    function scCloseFullscreen() {
+      const modal = document.getElementById('scFsModal');
+      if (modal) modal.hidden = true;
+      scState.fsStageId = null;
+    }
+    function scBindZoomBars() {
+      document.querySelectorAll('#view-statistical-crosses .sc-zoom-bar').forEach((bar) => {
+        if (bar.dataset.bound) return;
+        bar.dataset.bound = '1';
+        bar.addEventListener('click', (evt) => {
+          const btn = evt.target.closest('[data-sc-zoom]');
+          if (!btn) return;
+          const action = btn.getAttribute('data-sc-zoom');
+          const stageId = bar.getAttribute('data-sc-zoom-for');
+          const targetId = (btn.getAttribute('data-sc-fs') && scState.fsStageId) ? (scState.fsStageId + '__fs') : stageId;
+          const z = scEnsureZoom(targetId === stageId + '__fs' ? targetId : stageId);
+          if (action === 'in') z.scale = Math.min(3, (z.scale || 1) * 1.2);
+          if (action === 'out') z.scale = Math.max(0.4, (z.scale || 1) / 1.2);
+          if (action === 'reset') z.scale = 1;
+          if (action === 'fit') z.scale = 1;
+          if (action === 'fs') { scOpenFullscreen(stageId, bar.closest('.sc-axis-block, .section-head')?.querySelector('h2')?.textContent || 'Cohort'); return; }
+          if (action === 'export') { scExportStagePng(stageId); return; }
+          scApplyZoom(targetId === stageId + '__fs' ? targetId : stageId);
+          if (targetId.endsWith('__fs')) scApplyZoom(targetId);
+          else scApplyZoom(stageId);
+        });
+      });
+      document.getElementById('scFsClose')?.addEventListener('click', scCloseFullscreen);
+      document.addEventListener('keydown', (e) => { if (e.key === 'Escape') scCloseFullscreen(); });
+      const fsToolbar = document.querySelector('#scFsModal .sc-fs-toolbar');
+      if (fsToolbar && !fsToolbar.dataset.bound) {
+        fsToolbar.dataset.bound = '1';
+        fsToolbar.addEventListener('click', (evt) => {
+          const btn = evt.target.closest('[data-sc-zoom]');
+          if (!btn || !scState.fsStageId) return;
+          const action = btn.getAttribute('data-sc-zoom');
+          const id = scState.fsStageId + '__fs';
+          const z = scEnsureZoom(id);
+          if (action === 'in') z.scale = Math.min(3, (z.scale || 1) * 1.2);
+          if (action === 'out') z.scale = Math.max(0.4, (z.scale || 1) / 1.2);
+          if (action === 'fit' || action === 'reset') z.scale = 1;
+          if (action === 'export') { scExportStagePng(scState.fsStageId); return; }
+          scApplyZoom(id);
+        });
+      }
+    }
+
+    function scSeqColor(t) {
+      const x = Math.max(0, Math.min(1, Number(t) || 0));
+      const r = Math.round(40 + (1 - x) * 160);
+      const g = Math.round(60 + x * 100);
+      const b = Math.round(90 + x * 130);
+      const fill = 'rgb(' + r + ',' + g + ',' + b + ')';
+      const lum = 0.299 * r + 0.587 * g + 0.114 * b;
+      return { fill, text: lum > 140 ? '#111' : '#f5f5f5' };
+    }
+
+    function scRenderAxisHeatmap(matrix, hostId, legendId, narrId, tableId) {
+      const host = document.getElementById(hostId);
+      const legend = legendId ? document.getElementById(legendId) : null;
+      const narr = narrId ? document.getElementById(narrId) : null;
+      const table = tableId ? document.getElementById(tableId) : null;
+      if (!host) return;
+      if (!matrix?.rows?.length) {
+        host.innerHTML = '<div class="empty" style="display:block">Não há variáveis suficientes para esta matriz neste recorte.</div>';
+        if (narr) narr.textContent = '';
+        return;
+      }
+      const rows = matrix.rows;
+      const metrics = matrix.metrics || [];
+      const cellW = 88, cellH = 36, labelW = 170, labelH = 70;
+      const w = labelW + metrics.length * cellW + 8;
+      const h = labelH + rows.length * cellH + 8;
+      let cells = '';
+      rows.forEach((r, i) => {
+        metrics.forEach((m, j) => {
+          const raw = r[m.id];
+          const x = labelW + j * cellW;
+          const y = labelH + i * cellH;
+          let colors, txt;
+          if (raw == null || !Number.isFinite(Number(raw))) {
+            colors = { fill: '#3a3a3a', text: '#bbb' };
+            txt = '—';
+          } else if (m.sequential || !m.signed) {
+            const max = m.scaleMax || 1;
+            colors = scSeqColor(Number(raw) / max);
+            txt = m.scaleMax === 100 ? Number(raw).toFixed(0) + '%' : Number(raw).toFixed(2).replace('.', ',');
+          } else {
+            colors = scCorrColor(Number(raw));
+            txt = Number(raw).toFixed(2).replace('.', ',');
+          }
+          const tip = escapeHtml(r.label) + ' · ' + escapeHtml(m.label) + ': ' + txt +
+            (r.n != null ? '<br/>n=' + r.n : '') +
+            (r.coveragePercent != null ? '<br/>cobertura=' + r.coveragePercent + '%' : '');
+          cells += '<g class="sc-axis-cell" data-tip="' + tip + '"><rect x="' + x + '" y="' + y + '" width="' + (cellW - 3) + '" height="' + (cellH - 3) + '" rx="3" fill="' + colors.fill + '"/>' +
+            '<text x="' + (x + cellW / 2 - 1) + '" y="' + (y + cellH / 2 + 4) + '" text-anchor="middle" font-size="11" fill="' + colors.text + '">' + txt + '</text></g>';
+        });
+      });
+      const colLabs = metrics.map((m, j) => '<text transform="translate(' + (labelW + j * cellW + cellW / 2) + ',' + (labelH - 10) + ') rotate(-40)" text-anchor="start" font-size="10" fill="#bbb">' + escapeHtml(m.label) + '</text>').join('');
+      const rowLabs = rows.map((r, i) => '<text x="' + (labelW - 8) + '" y="' + (labelH + i * cellH + cellH / 2 + 4) + '" text-anchor="end" font-size="11" fill="#ccc">' + escapeHtml((r.label || r.id).slice(0, 26)) + '</text>').join('');
+      host.innerHTML = '<svg viewBox="0 0 ' + w + ' ' + h + '" width="' + w + '" height="' + h + '" role="img" aria-label="' + escapeHtml(matrix.title || 'Matriz') + '">' +
+        '<rect width="' + w + '" height="' + h + '" fill="#141414"/>' + colLabs + rowLabs + cells + '</svg>';
+      host.querySelectorAll('.sc-axis-cell').forEach((g) => {
+        g.addEventListener('mousemove', (evt) => scShowTip(g.getAttribute('data-tip') || '', evt));
+        g.addEventListener('mouseleave', scHideTip);
+      });
+      if (legend) {
+        const sequential = metrics.some((m) => m.sequential || !m.signed);
+        if (sequential) {
+          let stops = '';
+          for (let i = 0; i <= 10; i += 1) {
+            stops += '<rect x="18" y="' + (20 + i * 12) + '" width="18" height="12" fill="' + scSeqColor(1 - i / 10).fill + '"/>';
+          }
+          legend.innerHTML = '<svg width="56" height="180"><text x="28" y="14" text-anchor="middle" font-size="9" fill="#aaa">forte</text>' + stops + '<text x="28" y="170" text-anchor="middle" font-size="9" fill="#aaa">fraco</text></svg>';
+        } else {
+          let stops = '';
+          for (let i = 0; i <= 20; i += 1) {
+            const v = -1 + i / 10;
+            stops += '<rect x="18" y="' + (10 + i * 8) + '" width="18" height="8" fill="' + scCorrColor(v).fill + '"/>';
+          }
+          legend.innerHTML = '<svg width="56" height="200"><text x="28" y="10" text-anchor="middle" font-size="9" fill="#aaa">+1</text>' + stops + '<text x="28" y="188" text-anchor="middle" font-size="9" fill="#aaa">-1</text></svg>';
+        }
+      }
+      if (narr) {
+        const top = rows.find((r) => r.association != null) || rows[0];
+        narr.textContent = matrix.note || '';
+        if (top?.association != null) {
+          narr.textContent += ' Destaque: ' + (top.label || top.id) + ' (' + Number(top.association).toFixed(2).replace('.', ',') + ').';
+        }
+      }
+      if (table) {
+        table.innerHTML = '<table><thead><tr><th>Variável</th>' + metrics.map((m) => '<th class="num">' + escapeHtml(m.label) + '</th>').join('') + '<th class="num">n</th></tr></thead><tbody>' +
+          rows.map((r) => '<tr><td>' + escapeHtml(r.label || r.id) + '</td>' + metrics.map((m) => {
+            const v = r[m.id];
+            return '<td class="num">' + (v == null ? '—' : Number(v).toFixed(m.scaleMax === 100 ? 1 : 3).replace('.', ',')) + '</td>';
+          }).join('') + '<td class="num">' + (r.n ?? '—') + '</td></tr>').join('') + '</tbody></table>';
+      }
+    }
+
+    function scRenderRankBars(rows, hostId, valueKey) {
+      const host = document.getElementById(hostId);
+      if (!host) return;
+      const list = (rows || []).filter((r) => Number.isFinite(Number(r[valueKey] ?? r.association ?? r.importance))).slice(0, 12);
+      if (!list.length) { host.innerHTML = '<div class="empty" style="display:block">Ranking indisponível neste recorte.</div>'; return; }
+      const w = 720, rowH = 26, padL = 190, padR = 50, padT = 12, padB = 12;
+      const h = padT + list.length * rowH + padB;
+      const maxAbs = Math.max(...list.map((r) => Math.abs(Number(r[valueKey] ?? r.association ?? r.importance))), 0.01);
+      const bars = list.map((r, i) => {
+        const v = Number(r[valueKey] ?? r.association ?? r.importance);
+        const y = padT + i * rowH;
+        const bw = (Math.abs(v) / maxAbs) * (w - padL - padR);
+        const fill = v < 0 ? '#3b82f6' : '#f47920';
+        return '<text x="' + (padL - 8) + '" y="' + (y + 14) + '" text-anchor="end" font-size="11" fill="#ccc">' + escapeHtml((r.label || r.id || '').slice(0, 28)) + '</text>' +
+          '<rect x="' + padL + '" y="' + (y + 4) + '" width="' + Math.max(2, bw) + '" height="14" fill="' + fill + '" rx="2"/>' +
+          '<text x="' + (padL + bw + 6) + '" y="' + (y + 15) + '" font-size="10" fill="#ddd">' + v.toFixed(3).replace('.', ',') + '</text>';
+      }).join('');
+      host.innerHTML = '<div class="sc-assoc-legend"><span><i style="background:#f47920"></i> Positiva</span><span><i style="background:#3b82f6"></i> Negativa</span></div>' +
+        '<svg viewBox="0 0 ' + w + ' ' + h + '" width="100%" height="' + h + '"><rect width="' + w + '" height="' + h + '" fill="#141414"/>' + bars + '</svg>' +
+        '<p class="note-muted" style="margin:6px 0 0">Laranja: associação positiva. Azul: associação negativa (quando a variável aumenta, o indicador tende a diminuir).</p>';
+    }
+
+    function scRenderGroupComparative(p) {
+      const m = p.groupComparative || p.exploratory?.groupComparative;
+      const host = document.getElementById('scGroupMatrixHost');
+      const narr = document.getElementById('scGroupMatrixNarration');
+      const table = document.getElementById('scGroupMatrixTable');
+      if (!host) return;
+      if (!m?.variables?.length || !m?.groups?.length) {
+        host.innerHTML = '<div class="empty" style="display:block">Matriz comparativa indisponível.</div>';
+        return;
+      }
+      const cellW = 72, cellH = 32, labelW = 150, labelH = 90;
+      const w = labelW + m.groups.length * cellW + 8;
+      const h = labelH + m.variables.length * cellH + 8;
+      const byKey = new Map((m.cells || []).map((c) => [c.varId + '||' + c.groupId, c]));
+      let cells = '';
+      m.variables.forEach((v, i) => {
+        m.groups.forEach((g, j) => {
+          const c = byKey.get(v.id + '||' + g.id);
+          const std = c?.standardized;
+          const colors = std == null ? { fill: '#3a3a3a', text: '#bbb' } : scCorrColor(Math.max(-1, Math.min(1, std)));
+          const txt = std == null ? '—' : (std > 0 ? '+' : '') + Number(std).toFixed(2).replace('.', ',');
+          const tip = escapeHtml(v.label) + ' · ' + escapeHtml(g.label) + '<br/>padronizado: ' + txt +
+            (c?.value != null ? '<br/>valor: ' + c.value : '') + '<br/>n=' + (g.n ?? '—');
+          const x = labelW + j * cellW;
+          const y = labelH + i * cellH;
+          cells += '<g class="sc-axis-cell" data-tip="' + tip + '"><rect x="' + x + '" y="' + y + '" width="' + (cellW - 2) + '" height="' + (cellH - 2) + '" rx="2" fill="' + colors.fill + '"/>' +
+            '<text x="' + (x + cellW / 2) + '" y="' + (y + cellH / 2 + 4) + '" text-anchor="middle" font-size="10" fill="' + colors.text + '">' + txt + '</text></g>';
+        });
+      });
+      const colLabs = m.groups.map((g, j) => '<text transform="translate(' + (labelW + j * cellW + cellW / 2) + ',' + (labelH - 8) + ') rotate(-50)" text-anchor="start" font-size="10" fill="#bbb">' + escapeHtml(g.label) + ' (n=' + g.n + ')</text>').join('');
+      const rowLabs = m.variables.map((v, i) => '<text x="' + (labelW - 6) + '" y="' + (labelH + i * cellH + cellH / 2 + 3) + '" text-anchor="end" font-size="10" fill="#ccc">' + escapeHtml(v.label) + '</text>').join('');
+      host.innerHTML = '<svg viewBox="0 0 ' + w + ' ' + h + '" width="' + Math.min(w, 960) + '" height="' + Math.min(h, 520) + '"><rect width="' + w + '" height="' + h + '" fill="#141414"/>' + colLabs + rowLabs + cells + '</svg>';
+      host.querySelectorAll('.sc-axis-cell').forEach((g) => {
+        g.addEventListener('mousemove', (evt) => scShowTip(g.getAttribute('data-tip') || '', evt));
+        g.addEventListener('mouseleave', scHideTip);
+      });
+      if (narr) narr.textContent = m.note || '';
+      if (table) {
+        table.innerHTML = '<table><thead><tr><th>Variável</th>' + m.groups.map((g) => '<th class="num">' + escapeHtml(g.label) + '</th>').join('') + '</tr></thead><tbody>' +
+          m.variables.map((v) => '<tr><td>' + escapeHtml(v.label) + '</td>' + m.groups.map((g) => {
+            const c = byKey.get(v.id + '||' + g.id);
+            return '<td class="num">' + (c?.value == null ? '—' : c.value) + '</td>';
+          }).join('') + '</tr>').join('') + '</tbody></table>';
+      }
+    }
+
+    function scRenderPredictive(p) {
+      const pred = p.predictiveModel || p.exploratory?.predictive;
+      const meta = document.getElementById('scPredictMeta');
+      const table = document.getElementById('scPredictTable');
+      if (meta) {
+        if (!pred) meta.textContent = 'Modelo preditivo indisponível.';
+        else if (pred.status === 'insufficient_sample') meta.textContent = pred.note || 'Amostra insuficiente.';
+        else {
+          const m = pred.metrics || {};
+          meta.textContent = 'Técnica: ' + (pred.method || '—') + ' · split: ' + (pred.splitType || '—') +
+            ' · treino n=' + (pred.sample?.train ?? '—') + ' · validação n=' + (pred.sample?.test ?? '—') +
+            ' · prevalência=' + (pred.sample?.prevalence != null ? (pred.sample.prevalence * 100).toFixed(1).replace('.', ',') + '%' : '—') +
+            ' · ROC-AUC=' + (m.rocAuc ?? '—') + ' · precision=' + (m.precision ?? '—') + ' · recall=' + (m.recall ?? '—') + ' · F1=' + (m.f1 ?? '—') +
+            '. Leakage removido: stayDays, datas/status de churn.';
+        }
+      }
+      scRenderRankBars(pred?.ranking || [], 'scPredictChart', 'importance');
+      if (table && pred?.ranking?.length) {
+        table.innerHTML = '<table><thead><tr><th>#</th><th>Variável</th><th class="num">Importância</th><th>Direção</th><th class="num">AUC univ.</th><th class="num">Cobertura</th><th>Estabilidade</th><th>Leakage</th><th>Observação</th></tr></thead><tbody>' +
+          pred.ranking.map((r) => '<tr><td>' + r.rank + '</td><td>' + escapeHtml(r.label || r.id) + '</td><td class="num">' + (r.importance != null ? Number(r.importance).toFixed(3).replace('.', ',') : '—') + '</td><td>' + escapeHtml(r.direction || '—') + '</td><td class="num">' + (r.univariateAuc != null ? Number(r.univariateAuc).toFixed(3).replace('.', ',') : '—') + '</td><td class="num">' + (r.coveragePercent != null ? epFmtPct(r.coveragePercent) : '—') + '</td><td class="num">' + (r.stability != null ? Number(r.stability).toFixed(2) : '—') + '</td><td>' + escapeHtml(r.leakageRisk || '—') + '</td><td>' + escapeHtml(r.observation || '—') + '</td></tr>').join('') + '</tbody></table>';
+      }
+    }
+
+    function scRenderHighPerf(p) {
+      const hp = p.highPerformance || p.exploratory?.highPerformance;
+      const host = document.getElementById('scHighPerfHost');
+      const narr = document.getElementById('scHighPerfNarration');
+      if (!host) return;
+      if (!hp?.groups?.length) { host.innerHTML = '<div class="empty" style="display:block">Alta performance indisponível.</div>'; return; }
+      const w = 720, h = 220, padL = 40, padR = 20, padT = 30, padB = 40;
+      const groups = hp.groups.filter((g) => (g.n || 0) > 0);
+      const gW = (w - padL - padR) / Math.max(groups.length, 1);
+      let bars = '';
+      groups.forEach((g, i) => {
+        const v = Number(g.cancelledPct || 0);
+        const bh = (v / 100) * (h - padT - padB);
+        const x = padL + i * gW + gW * 0.2;
+        bars += '<rect x="' + x + '" y="' + (h - padB - bh) + '" width="' + (gW * 0.6) + '" height="' + Math.max(1, bh) + '" fill="#22c55e" rx="2"/>' +
+          '<text x="' + (padL + i * gW + gW / 2) + '" y="' + (h - 14) + '" text-anchor="middle" font-size="10" fill="#ccc">' + escapeHtml((g.label || '').slice(0, 22)) + '</text>' +
+          '<text x="' + (padL + i * gW + gW / 2) + '" y="' + (h - padB - bh - 6) + '" text-anchor="middle" font-size="10" fill="#ddd">' + v.toFixed(1).replace('.', ',') + '%</text>';
+      });
+      host.innerHTML = '<svg viewBox="0 0 ' + w + ' ' + h + '" width="100%" height="' + h + '"><rect width="' + w + '" height="' + h + '" fill="#141414"/>' + bars +
+        '<text x="' + padL + '" y="18" font-size="11" fill="#aaa">% cancelado por perfil de alta performance (menor é melhor)</text></svg>';
+      if (narr) narr.textContent = (hp.definition || '') + ' ' + (hp.note || '');
+    }
+
+    function scRenderHealth(p) {
+      const list = p.healthScoreCandidates || p.exploratory?.healthScoreCandidates || [];
+      const host = document.getElementById('scHealthHost');
+      const narr = document.getElementById('scHealthNarration');
+      if (!host) return;
+      if (!list.length) {
+        host.innerHTML = '<p class="note-muted">Sem candidatos elegíveis com cobertura/estabilidade suficientes neste recorte.</p>';
+        return;
+      }
+      host.innerHTML = list.map((c) => '<article class="sc-health-card"><strong>' + escapeHtml(c.label || c.id) + '</strong>' +
+        '<p><em>' + escapeHtml(c.dimension || '') + '</em> · cobertura ' + (c.coveragePercent != null ? epFmtPct(c.coveragePercent) : '—') + ' · facilidade ' + escapeHtml(c.operationalEase || '—') + '</p>' +
+        '<p>Churn: ' + (c.associationChurn != null ? Number(c.associationChurn).toFixed(2).replace('.', ',') : '—') +
+        ' · Renovação: ' + (c.associationRenewal != null ? Number(c.associationRenewal).toFixed(2).replace('.', ',') : '—') +
+        ' · NPS: ' + (c.associationNps != null ? Number(c.associationNps).toFixed(2).replace('.', ',') : '—') +
+        ' · AUC: ' + (c.univariateAuc != null ? Number(c.univariateAuc).toFixed(3).replace('.', ',') : '—') + '</p>' +
+        '<p>' + escapeHtml(c.justification || '') + '</p>' +
+        '<p>' + escapeHtml(c.limitations || '') + '</p></article>').join('');
+      if (narr) narr.textContent = 'Uma variável representante por dimensão (engajamento, satisfação, implementação etc.) para reduzir redundância.';
+    }
+
+
+    function scRenderActiveSignals(p) {
+      const block = p.activeRiskSignals;
+      const sum = document.getElementById('scSignalsSummary');
+      const chart = document.getElementById('scSignalsChart');
+      const table = document.getElementById('scSignalsTable');
+      if (!block) return;
+      if (sum) sum.textContent = (block.note || '') + ' Ativos com sinais listados: ' + (block.summary?.activeWithSignals ?? 0) + ' · EPs afetados: ' + (block.summary?.engineersAffected ?? 0) + ' · baseline cancelamento: ' + (block.baselinePct ?? '—') + '%.';
+      if (chart) {
+        const stats = (block.signalStats || []).slice(0, 8);
+        if (!stats.length) chart.innerHTML = '<div class="empty" style="display:block">Nenhum sinal com suporte neste recorte.</div>';
+        else {
+          const w = 720, rowH = 28, padL = 220, padT = 10;
+          const h = padT + stats.length * rowH + 20;
+          const maxLift = Math.max(...stats.map((s) => Number(s.lift) || 1), 1.01);
+          const bars = stats.map((s, i) => {
+            const y = padT + i * rowH;
+            const lift = Number(s.lift) || 1;
+            const bw = ((lift - 1) / (maxLift - 1 || 1)) * 400 + 20;
+            const tip = escapeHtml(s.label) + '<br/>Ativos com sinal: ' + s.activeClientsWithSignal + '<br/>Taxa observada: ' + (s.observedRatePct ?? '—') + '%<br/>Baseline: ' + (s.baselinePct ?? '—') + '%<br/>Lift: ' + (s.lift ?? '—') + '<br/>' + escapeHtml(s.caveat || '');
+            return '<g class="sc-sig" data-tip="' + tip + '"><text x="' + (padL - 8) + '" y="' + (y + 14) + '" text-anchor="end" font-size="11" fill="#ccc">' + escapeHtml(s.label.slice(0, 32)) + '</text><rect x="' + padL + '" y="' + (y + 4) + '" width="' + bw + '" height="14" fill="#f59e0b" rx="2"/><text x="' + (padL + bw + 6) + '" y="' + (y + 15) + '" font-size="10" fill="#ddd">lift ' + (s.lift != null ? Number(s.lift).toFixed(2) : '—') + '</text></g>';
+          }).join('');
+          chart.innerHTML = '<svg viewBox="0 0 ' + w + ' ' + h + '" width="100%" height="' + h + '"><rect width="' + w + '" height="' + h + '" fill="#141414"/>' + bars + '</svg>';
+          chart.querySelectorAll('.sc-sig').forEach((g) => {
+            g.addEventListener('mousemove', (evt) => scShowTip(g.getAttribute('data-tip') || '', evt));
+            g.addEventListener('mouseleave', scHideTip);
+          });
+        }
+      }
+      if (table) {
+        const rows = block.clients || [];
+        table.innerHTML = rows.length
+          ? '<table class="sc-top-table"><thead><tr><th>Cliente</th><th>EP</th><th>Segmento</th><th>Programa</th><th>Sinais</th><th class="num">Qtd</th><th>Intensidade</th><th>NPS</th><th class="num">Dias s/ reunião</th></tr></thead><tbody>' +
+            rows.slice(0, 40).map((r) => '<tr><td>' + escapeHtml(r.clientName || '—') + '</td><td>' + escapeHtml(r.engineer || '—') + '</td><td>' + escapeHtml(r.segment || '—') + '</td><td>' + escapeHtml(r.program || '—') + '</td><td>' + escapeHtml((r.signals || []).join('; ')) + '</td><td class="num">' + r.signalCount + '</td><td>' + escapeHtml(r.intensity || '—') + '</td><td>' + escapeHtml(r.npsClass || '—') + '</td><td class="num">' + (r.daysSinceLastMeeting ?? '—') + '</td></tr>').join('') + '</tbody></table>'
+          : '<p class="note-muted">Nenhum cliente ativo com os sinais configurados.</p>';
+      }
+    }
+
+    function scRenderTopClients(p) {
+      const top = p.topClients;
+      const note = document.getElementById('scTopMethodNote');
+      if (note && top?.methodology) {
+        note.textContent = top.methodology.name + ': ' + top.methodology.note + ' Regra de programa: ' + top.methodology.programRule;
+      }
+      const renderTable = (hostId, bucket) => {
+        const host = document.getElementById(hostId);
+        if (!host) return;
+        const rows = bucket?.rows || [];
+        if (!rows.length) { host.innerHTML = '<p class="note-muted">Sem clientes elegíveis neste programa no recorte.</p>'; return; }
+        host.innerHTML = '<table class="sc-top-table"><thead><tr><th>#</th><th>Cliente</th><th>Código</th><th>EP</th><th>Segmento</th><th>NPS</th><th class="num">Ciclo</th><th class="num">Reuniões</th><th class="num">Mec. impl.</th><th class="num">Índice</th><th>Sinais +</th></tr></thead><tbody>' +
+          rows.map((r) => '<tr title="' + escapeHtml((r.alerts || []).join('; ')) + '"><td>' + r.rank + '</td><td>' + escapeHtml(r.clientName || '—') + '</td><td>' + escapeHtml(r.clientCode || '—') + '</td><td>' + escapeHtml(r.engineer || '—') + '</td><td>' + escapeHtml(r.segment || '—') + '</td><td>' + escapeHtml((r.npsClass || '—') + (r.npsScore != null ? ' (' + r.npsScore + ')' : '')) + '</td><td class="num">' + (r.currentCycle ?? '—') + '</td><td class="num">' + (r.meetingCount ?? '—') + '</td><td class="num">' + (r.implementedMechanismCount ?? '—') + '</td><td class="num">' + (r.exploratoryScore ?? '—') + '</td><td>' + escapeHtml((r.positiveSignals || []).slice(0, 3).join(', ')) + '</td></tr>').join('') + '</tbody></table>';
+      };
+      renderTable('scTopPharusTable', top?.pharus);
+      renderTable('scTopDavosTable', top?.davos);
+      const challenge = document.getElementById('scChallengeCohortNote');
+      if (challenge) {
+        const ch = p.challengeCohort;
+        challenge.textContent = ch?.available === false
+          ? ('Cohort de desafios: ' + (ch.reason || 'fonte indisponível.'))
+          : '';
+      }
+    }
+
+    function scRenderNpsComparative(p) {
+      const m = p.npsComparative;
+      const host = document.getElementById('scNpsCompHost');
+      const narr = document.getElementById('scNpsCompNarration');
+      if (!host || !m?.variables?.length) return;
+      const mode = document.getElementById('scNpsCompMode')?.value || 'standardized';
+      const cellW = 90, cellH = 30, labelW = 170, labelH = 70;
+      const w = labelW + m.groups.length * cellW + 8;
+      const h = labelH + m.variables.length * cellH + 8;
+      const byKey = new Map((m.cells || []).map((c) => [c.varId + '||' + c.groupId, c]));
+      let cells = '';
+      m.variables.forEach((v, i) => {
+        m.groups.forEach((g, j) => {
+          const c = byKey.get(v.id + '||' + g.id);
+          let raw = null;
+          if (mode === 'value') raw = c?.value;
+          else if (mode === 'diff') raw = c?.diffVsGlobal;
+          else raw = c?.standardized;
+          const colors = raw == null ? { fill: '#3a3a3a', text: '#bbb' } : scCorrColor(Math.max(-1, Math.min(1, Number(raw) / (mode === 'value' ? (Math.abs(Number(raw)) || 1) : 1))));
+          const txt = raw == null ? '—' : (mode === 'value' ? String(Number(raw).toFixed(0)) : ((raw > 0 ? '+' : '') + Number(raw).toFixed(2).replace('.', ',')));
+          const tip = escapeHtml(v.label) + ' · ' + escapeHtml(g.label) + '<br/>valor: ' + (c?.value ?? '—') + '<br/>n=' + (g.n ?? '—') + '<br/>cobertura: ' + (c?.coveragePercent ?? '—') + '%';
+          const x = labelW + j * cellW, y = labelH + i * cellH;
+          cells += '<g class="sc-axis-cell" data-tip="' + tip + '"><rect x="' + x + '" y="' + y + '" width="' + (cellW - 2) + '" height="' + (cellH - 2) + '" rx="2" fill="' + colors.fill + '"/><text x="' + (x + cellW / 2) + '" y="' + (y + cellH / 2 + 4) + '" text-anchor="middle" font-size="10" fill="' + colors.text + '">' + txt + '</text></g>';
+        });
+      });
+      const colLabs = m.groups.map((g, j) => '<text transform="translate(' + (labelW + j * cellW + cellW / 2) + ',' + (labelH - 8) + ') rotate(-40)" text-anchor="start" font-size="10" fill="#bbb">' + escapeHtml(g.label) + ' (n=' + g.n + ')</text>').join('');
+      const rowLabs = m.variables.map((v, i) => '<text x="' + (labelW - 6) + '" y="' + (labelH + i * cellH + cellH / 2 + 3) + '" text-anchor="end" font-size="10" fill="#ccc">' + escapeHtml(v.label) + '</text>').join('');
+      host.innerHTML = '<svg viewBox="0 0 ' + w + ' ' + h + '" width="' + Math.min(w, 900) + '" height="' + Math.min(h, 560) + '"><rect width="' + w + '" height="' + h + '" fill="#141414"/>' + colLabs + rowLabs + cells + '</svg>';
+      host.querySelectorAll('.sc-axis-cell').forEach((g) => {
+        g.addEventListener('mousemove', (evt) => scShowTip(g.getAttribute('data-tip') || '', evt));
+        g.addEventListener('mouseleave', scHideTip);
+      });
+      if (narr) narr.textContent = (m.note || '') + (m.coverageWarning ? ' ' + m.coverageWarning : '');
+    }
+
+    function scExportTopCsv(bucket) {
+      const rows = bucket?.rows || [];
+      if (!rows.length) { alert('Sem linhas para exportar.'); return; }
+      const headers = ['rank','clientName','clientCode','program','engineer','segment','npsClass','npsScore','currentCycle','meetingCount','implementedMechanismCount','exploratoryScore'];
+      const lines = [headers.join(';')].concat(rows.map((r) => headers.map((h) => String(r[h] ?? '').replace(/;/g, ',')).join(';')));
+      const blob = new Blob([lines.join('\n')], { type: 'text/csv;charset=utf-8' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'top-clientes-' + (bucket.label || 'export').toLowerCase().replace(/\s+/g, '-') + '.csv';
+      a.click();
+    }
+
+    function scRenderExploratoryAll(p) {
+      const axes = p.axisMatrices || {};
+      scRenderAxisHeatmap(axes.cancellation, 'scCancelMatrixHost', 'scCancelMatrixLegend', 'scCancelMatrixNarration', 'scCancelMatrixTable');
+      scRenderAxisHeatmap(axes.nps, 'scNpsMatrixHost', 'scNpsMatrixLegend', 'scNpsMatrixNarration', null);
+      scRenderAxisHeatmap(axes.renewal, 'scRenewalMatrixHost', 'scRenewalMatrixLegend', 'scRenewalMatrixNarration', null);
+      scRenderAxisHeatmap(axes.tenure, 'scTenureMatrixHost', 'scTenureMatrixLegend', 'scTenureMatrixNarration', null);
+      const ranks = p.discoveryRankings || p.exploratory?.discoveryRankings || {};
+      scRenderRankBars(ranks.cancellation, 'scCancelRankHost', 'association');
+      scRenderRankBars(ranks.nps, 'scNpsRankHost', 'association');
+      scRenderRankBars(ranks.renewal, 'scRenewalRankHost', 'association');
+      const table = document.getElementById('scCancelRankTable');
+      if (table && ranks.cancellation?.length) {
+        table.innerHTML = '<table><thead><tr><th>#</th><th>Variável</th><th class="num">Associação</th><th class="num">AUC</th><th class="num">Cobertura</th><th>Direção</th><th>Observação</th></tr></thead><tbody>' +
+          ranks.cancellation.map((r) => '<tr><td>' + r.rank + '</td><td>' + escapeHtml(r.label) + '</td><td class="num">' + (r.association != null ? Number(r.association).toFixed(3).replace('.', ',') : '—') + '</td><td class="num">' + (r.auc != null ? Number(r.auc).toFixed(3).replace('.', ',') : '—') + '</td><td class="num">' + (r.coveragePercent != null ? epFmtPct(r.coveragePercent) : '—') + '</td><td>' + escapeHtml(r.direction || '—') + '</td><td>' + escapeHtml(r.observation || '—') + '</td></tr>').join('') + '</tbody></table>';
+      }
+      scRenderGroupComparative(p);
+      scRenderPredictive(p);
+      scRenderHighPerf(p);
+      scRenderHealth(p);
+      scRenderActiveSignals(p);
+      scRenderTopClients(p);
+      scRenderNpsComparative(p);
+      scBindZoomBars();
+    }
+
+
+    function scRenderDiscoveries(p) {
+      const all = p.discoveries || [];
+      const rows = scState.showAllDiscoveries ? all : all.slice(0, 6);
+      const host = document.querySelector('#scDiscoveriesHost');
+      const btn = document.querySelector('#scDiscoveriesToggle');
+      if (btn) btn.textContent = scState.showAllDiscoveries ? 'Ver menos' : 'Ver todas as descobertas';
+      if (!host) return;
+      if (!rows.length) {
+        host.innerHTML = '<p class="note-muted">Nenhuma descoberta publicada com os limiares atuais de cobertura/amostra.</p>';
+        return;
+      }
+      host.innerHTML = rows.map((d) => {
+        const tip = [d.technical, d.caveat, d.sample != null ? ('Amostra: ' + d.sample) : '', d.coverage != null ? ('Cobertura: ' + d.coverage + '%') : ''].filter(Boolean).join(' · ');
+        return '<article class="sc-discovery-card" tabindex="0" data-tip="' + escapeHtml(tip) + '"><div class="sc-disc-cat">' + escapeHtml(d.category || d.section || 'Insight') + (d.lowConfidence ? ' · cautela' : '') + '</div><strong>' + escapeHtml(d.title || d.id || 'Descoberta') + '</strong>' +
+          (d.primaryValue ? '<div class="sc-disc-val">' + escapeHtml(String(d.primaryValue)) + '</div>' : '') +
+          '<p>' + escapeHtml(d.text || '') + '</p></article>';
+      }).join('');
+      host.querySelectorAll('[data-tip]').forEach((el) => {
+        el.addEventListener('mousemove', (evt) => scShowTip(el.getAttribute('data-tip') || '', evt));
+        el.addEventListener('mouseleave', scHideTip);
+        el.addEventListener('focus', (evt) => scShowTip(el.getAttribute('data-tip') || '', evt));
+        el.addEventListener('blur', scHideTip);
+      });
+    }
+
+    function scRenderMatrixVars(p) {
+      const host = document.querySelector('#scMatrixVarsHost');
+      const summary = document.querySelector('#scMsSummary');
+      const chips = document.querySelector('#scMsChips');
+      if (!host) return;
+      const selected = new Set(scState.msDraft || scState.matrixVarIds || SC_MATRIX_RECOMMENDED);
+      const q = (document.querySelector('#scMsSearch')?.value || '').toLowerCase().trim();
+      host.innerHTML = SC_VAR_GROUPS.map((g) => {
+        const opts = g.ids.map((id) => {
+          const label = SC_VAR_LABELS[id] || id;
+          if (q && !label.toLowerCase().includes(q) && !id.toLowerCase().includes(q)) return '';
+          const checked = selected.has(id);
+          return '<label class="sc-ms-option"><input type="checkbox" data-sc-matrix-var="' + escapeHtml(id) + '" ' + (checked ? 'checked' : '') + '/> <span>' + escapeHtml(label) + '</span></label>';
+        }).join('');
+        if (!opts.replace(/\s/g, '')) return '';
+        return '<div class="sc-ms-group"><strong>' + escapeHtml(g.label) +
+          ' <button type="button" data-sc-group="' + escapeHtml(g.id) + '" style="font-size:10px;padding:2px 6px">grupo</button></strong>' + opts + '</div>';
+      }).join('');
+      const count = selected.size;
+      if (summary) summary.textContent = 'Variáveis selecionadas: ' + count;
+      if (chips) {
+        const labels = [...selected].map((id) => SC_VAR_LABELS[id] || id);
+        chips.textContent = labels.length <= 3 ? labels.join(', ') : (labels.slice(0, 3).join(', ') + ' +' + (labels.length - 3));
+      }
+      const warn = document.getElementById('scMsWarn');
+      if (warn) warn.hidden = count <= 12;
+      host.querySelectorAll('input[data-sc-matrix-var]').forEach((inp) => {
+        inp.addEventListener('change', () => {
+          const ids = [...host.querySelectorAll('input[data-sc-matrix-var]:checked')].map((el) => el.dataset.scMatrixVar);
+          scState.msDraft = ids.slice(0, 12);
+          if (ids.length > 12) {
+            inp.checked = false;
+            scState.msDraft = [...host.querySelectorAll('input[data-sc-matrix-var]:checked')].map((el) => el.dataset.scMatrixVar);
+          }
+          scRenderMatrixVars(p);
+        });
+      });
+      host.querySelectorAll('[data-sc-group]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const g = SC_VAR_GROUPS.find((x) => x.id === btn.dataset.scGroup);
+          if (!g) return;
+          const cur = new Set(scState.msDraft || scState.matrixVarIds || []);
+          g.ids.forEach((id) => cur.add(id));
+          scState.msDraft = [...cur].slice(0, 12);
+          scRenderMatrixVars(p);
+        });
+      });
+    }
+
+    function scOpenMatrixCell(cell, p) {
+      const drawer = document.querySelector('#scMatrixDrawer');
+      const body = document.querySelector('#scMatrixDrawerBody');
+      if (!drawer || !body || !cell) return;
+      const val = cell.value != null ? Number(cell.value).toFixed(2).replace('.', ',') : '—';
+      const dir = cell.direction === 'positive' ? 'positiva' : cell.direction === 'negative' ? 'negativa' : 'neutra/indefinida';
+      const clients = p?.clients || [];
+      const fieldA = cell.idA;
+      const fieldB = cell.idB;
+      const pairs = [];
+      for (const c of clients) {
+        const xa = Number(c[fieldA]);
+        const xb = Number(c[fieldB]);
+        if (!Number.isFinite(xa) || !Number.isFinite(xb)) continue;
+        pairs.push([xa, xb]);
+      }
+      const sampleN = Math.min(400, pairs.length);
+      const sampled = pairs.length <= sampleN ? pairs : pairs.filter((_, i) => i % Math.ceil(pairs.length / sampleN) === 0).slice(0, sampleN);
+      let scatter = '';
+      if (sampled.length >= 5 && cell.idA !== cell.idB) {
+        const xs = sampled.map((d) => d[0]);
+        const ys = sampled.map((d) => d[1]);
+        const minX = Math.min(...xs), maxX = Math.max(...xs);
+        const minY = Math.min(...ys), maxY = Math.max(...ys);
+        const w = 320, h = 200, pad = 28;
+        const sx = (v) => pad + ((v - minX) / (maxX - minX || 1)) * (w - pad * 2);
+        const sy = (v) => h - pad - ((v - minY) / (maxY - minY || 1)) * (h - pad * 2);
+        const dots = sampled.map((d) => '<circle cx="' + sx(d[0]).toFixed(1) + '" cy="' + sy(d[1]).toFixed(1) + '" r="2.2" fill="#f47920" opacity="0.7"/>').join('');
+        scatter = '<p class="note-muted">Dispersão amostrada (' + sampleN + ' de ' + pairs.length + ' pares). A correlação usa toda a amostra válida.</p>' +
+          '<svg viewBox="0 0 ' + w + ' ' + h + '" width="100%" height="200" role="img"><rect x="0" y="0" width="' + w + '" height="' + h + '" fill="#141414"/>' +
+          '<line x1="' + pad + '" y1="' + (h - pad) + '" x2="' + (w - pad) + '" y2="' + (h - pad) + '" stroke="#555"/><line x1="' + pad + '" y1="' + pad + '" x2="' + pad + '" y2="' + (h - pad) + '" stroke="#555"/>' +
+          dots + '</svg>';
+      }
+      body.innerHTML = '<h3 style="margin-top:0">Relação entre ' + escapeHtml(cell.labelA || cell.idA) + ' e ' + escapeHtml(cell.labelB || cell.idB) + '</h3>' +
+        '<p><strong>Correlação:</strong> ' + val + ' · <strong>Método:</strong> ' + escapeHtml(cell.method || '—') + '</p>' +
+        '<p><strong>Força:</strong> ' + escapeHtml(cell.strength || '—') + ' · <strong>Direção:</strong> ' + dir + '</p>' +
+        '<p><strong>Amostra:</strong> ' + (cell.n ?? '—') + ' · <strong>Cobertura:</strong> ' + (cell.coveragePercent != null ? epFmtPct(cell.coveragePercent) : '—') + '</p>' +
+        '<p class="note-muted">Associação observada. Não implica causalidade.</p>' + scatter;
+      drawer.hidden = false;
+    }
+
+    function scRenderCorrelationMatrix(p) {
+      const m = p.correlationMatrix;
+      const host = document.querySelector('#scMatrixHost');
+      const legend = document.querySelector('#scMatrixLegend');
+      const insights = document.querySelector('#scMatrixInsights');
+      const tableHost = document.querySelector('#scMatrixTableHost');
+      if (!host) return;
+      if (!m?.variables?.length) {
+        host.innerHTML = '<div class="empty" style="display:block">Não há variáveis suficientes selecionadas para a matriz.</div>';
+        if (legend) legend.innerHTML = '';
+        if (insights) insights.innerHTML = '';
+        return;
+      }
+      const vars = m.variables;
+      const n = vars.length;
+      const cellSize = Math.max(48, Math.min(56, Math.floor(560 / Math.max(n, 1))));
+      const labelW = 120;
+      const labelH = 110;
+      const w = labelW + n * cellSize + 8;
+      const h = labelH + n * cellSize + 8;
+      const byKey = new Map((m.cells || []).map((c) => [c.idA + '||' + c.idB, c]));
+      let rects = '';
+      vars.forEach((row, i) => {
+        vars.forEach((col, j) => {
+          const cell = byKey.get(row.id + '||' + col.id) || byKey.get(col.id + '||' + row.id);
+          const v = cell?.value;
+          const colors = scCorrColor(v);
+          const txt = v == null || !Number.isFinite(Number(v)) ? '—' : Number(v).toFixed(2).replace('.', ',');
+          const x = labelW + j * cellSize;
+          const y = labelH + i * cellSize;
+          const tip = cell
+            ? (cell.labelA || cell.idA) + ' × ' + (cell.labelB || cell.idB) + '<br/>' + (cell.method || 'Spearman') + ': ' + txt +
+              '<br/>' + (cell.strength || '') + ' · direção ' + (cell.direction || '—') +
+              '<br/>Amostra: ' + (cell.n ?? '—') + '<br/>Cobertura: ' + (cell.coveragePercent != null ? cell.coveragePercent + '%' : '—')
+            : 'Sem dados';
+          rects += '<g class="sc-hm-cell" data-ida="' + escapeHtml(row.id) + '" data-idb="' + escapeHtml(col.id) + '" data-tip="' + escapeHtml(tip) + '">' +
+            '<rect x="' + x + '" y="' + y + '" width="' + (cellSize - 2) + '" height="' + (cellSize - 2) + '" rx="3" fill="' + colors.fill + '"/>' +
+            '<text x="' + (x + cellSize / 2 - 1) + '" y="' + (y + cellSize / 2 + 4) + '" text-anchor="middle" font-size="10" fill="' + colors.text + '">' + txt + '</text></g>';
+        });
+      });
+      const colLabels = vars.map((v, j) => {
+        const x = labelW + j * cellSize + cellSize / 2;
+        const y = labelH - 8;
+        return '<text transform="translate(' + x + ',' + y + ') rotate(-55)" text-anchor="start" font-size="10" fill="#bbb">' + escapeHtml((v.label || v.id).slice(0, 18)) + '</text>';
+      }).join('');
+      const rowLabels = vars.map((v, i) => {
+        const y = labelH + i * cellSize + cellSize / 2 + 3;
+        return '<text x="' + (labelW - 8) + '" y="' + y + '" text-anchor="end" font-size="10" fill="#bbb">' + escapeHtml((v.label || v.id).slice(0, 16)) + '</text>';
+      }).join('');
+      host.innerHTML = '<svg class="sc-matrix-svg" viewBox="0 0 ' + w + ' ' + h + '" width="' + w + '" height="' + h + '" role="img" aria-label="Heatmap de correlação">' +
+        '<rect width="' + w + '" height="' + h + '" fill="#141414"/>' + colLabels + rowLabels + rects + '</svg>';
+      host.querySelectorAll('.sc-hm-cell').forEach((g) => {
+        g.addEventListener('mousemove', (evt) => scShowTip(g.getAttribute('data-tip') || '', evt));
+        g.addEventListener('mouseleave', scHideTip);
+        g.addEventListener('click', () => {
+          const cell = byKey.get(g.dataset.ida + '||' + g.dataset.idb) || byKey.get(g.dataset.idb + '||' + g.dataset.ida);
+          if (cell && cell.idA !== cell.idB) scOpenMatrixCell(cell, p);
+        });
+      });
+      if (legend) {
+        let stops = '';
+        for (let i = 0; i <= 20; i += 1) {
+          const v = -1 + i / 10;
+          const c = scCorrColor(v).fill;
+          const y = 10 + i * 8;
+          stops += '<rect x="18" y="' + y + '" width="18" height="8" fill="' + c + '"/>';
+        }
+        legend.innerHTML = '<svg width="56" height="200" viewBox="0 0 56 200"><text x="28" y="10" text-anchor="middle" font-size="9" fill="#aaa">+1</text>' + stops +
+          '<text x="28" y="188" text-anchor="middle" font-size="9" fill="#aaa">-1</text><text x="28" y="100" text-anchor="middle" font-size="9" fill="#888">0</text></svg>';
+      }
+      // insights: unique off-diagonal pairs
+      const seen = new Set();
+      const pairs = [];
+      for (const c of (m.cells || [])) {
+        if (!c || c.idA === c.idB || c.value == null || !Number.isFinite(Number(c.value))) continue;
+        if ((c.n || 0) < 20 || (c.coveragePercent != null && c.coveragePercent < 20)) continue;
+        const key = [c.idA, c.idB].sort().join('||');
+        if (seen.has(key)) continue;
+        seen.add(key);
+        pairs.push(c);
+      }
+      const pos = [...pairs].filter((c) => c.value > 0).sort((a, b) => b.value - a.value).slice(0, 3);
+      const neg = [...pairs].filter((c) => c.value < 0).sort((a, b) => a.value - b.value).slice(0, 3);
+      if (insights) {
+        const lines = [
+          ...pos.map((c) => c.labelA + ' e ' + c.labelB + ' apresentam associação positiva ' + (c.strength || '') + ' de ' + Number(c.value).toFixed(2).replace('.', ',') + '.'),
+          ...neg.map((c) => c.labelA + ' e ' + c.labelB + ' apresentam associação negativa ' + (c.strength || '') + ' de ' + Number(c.value).toFixed(2).replace('.', ',') + '.')
+        ];
+        insights.innerHTML = '<strong>Principais relações encontradas</strong><ul>' +
+          (lines.length ? lines.map((t) => '<li>' + escapeHtml(t) + '</li>').join('') : '<li>Sem pares com amostra/cobertura suficientes além da diagonal.</li>') +
+          '</ul><p class="note-muted" style="margin:8px 0 0">Método: ' + escapeHtml(m.method || 'spearman') + '. Associação observada, não causalidade.</p>';
+      }
+      if (tableHost) {
+        tableHost.innerHTML = '<table><thead><tr><th>X</th><th>Y</th><th class="num">ρ</th><th class="num">n</th><th class="num">Cobertura</th><th>Força</th></tr></thead><tbody>' +
+          pairs.map((c) => '<tr><td>' + escapeHtml(c.labelA) + '</td><td>' + escapeHtml(c.labelB) + '</td><td class="num">' + Number(c.value).toFixed(3).replace('.', ',') + '</td><td class="num">' + (c.n ?? '—') + '</td><td class="num">' + (c.coveragePercent != null ? epFmtPct(c.coveragePercent) : '—') + '</td><td>' + escapeHtml(c.strength || '—') + '</td></tr>').join('') +
+          '</tbody></table>';
+      }
+    }
+
+    function scSurvivalAt(curve, day) {
+      if (!curve?.length) return null;
+      let last = curve[0];
+      for (const pt of curve) {
+        if (Number(pt.time) > day) break;
+        last = pt;
+      }
+      return last;
+    }
+
+    function scRenderSurvivalChart(p) {
+      const host = document.querySelector('#scSurvivalChart');
+      const narr = document.querySelector('#scSurvivalNarration');
+      const atRiskHost = document.querySelector('#scAtRiskHost');
+      const compare = document.querySelector('#scSurvivalCompare')?.value || 'overall';
+      if (!host) return;
+      const overall = p.survival?.overall || {};
+      const curve = overall.curve || [];
+      if (!curve.length) {
+        host.innerHTML = '<div class="empty" style="display:block">Não há cancelamentos com data válida para calcular a curva.</div>';
+        if (narr) narr.textContent = '';
+        if (atRiskHost) atRiskHost.innerHTML = '';
+        return;
+      }
+      const series = [{ key: 'overall', label: 'Geral', color: '#f47920', curve }];
+      if (compare !== 'overall') {
+        const groups = (p.survival?.groups || []).filter((g) => g.field === compare);
+        const palette = ['#3b82f6', '#22c55e', '#eab308', '#a855f7', '#ef4444'];
+        const picked = groups.filter((g) => (g.n || 0) >= 20 && g.curve?.length).sort((a, b) => (b.n || 0) - (a.n || 0)).slice(0, 5);
+        if (picked.length) {
+          series.length = 0;
+          picked.forEach((g, i) => series.push({ key: String(g.level), label: String(g.level), color: palette[i % palette.length], curve: g.curve }));
+        }
+      }
+      const allTimes = series.flatMap((s) => s.curve.map((c) => Number(c.time) || 0));
+      const maxT = Math.max(...allTimes, 1);
+      const w = 760, h = 280, padL = 52, padR = 20, padT = 20, padB = 40;
+      const xOf = (t) => padL + (t / maxT) * (w - padL - padR);
+      const yOf = (s) => padT + (1 - s) * (h - padT - padB);
+      let paths = '';
+      let censorMarks = '';
+      series.forEach((s) => {
+        let d = '';
+        s.curve.forEach((pt, i) => {
+          const x = xOf(Number(pt.time) || 0);
+          const y = yOf(Number(pt.survival) || 0);
+          if (i === 0) d += 'M ' + xOf(0) + ' ' + yOf(1) + ' L ' + x + ' ' + yOf(1);
+          const prev = s.curve[i - 1];
+          if (prev) {
+            const px = xOf(Number(prev.time) || 0);
+            const py = yOf(Number(prev.survival) || 0);
+            d += ' L ' + x + ' ' + py + ' L ' + x + ' ' + y;
+          } else {
+            d += ' L ' + x + ' ' + y;
+          }
+          if ((pt.censored || 0) > 0) {
+            censorMarks += '<line x1="' + x + '" y1="' + (y - 6) + '" x2="' + x + '" y2="' + (y + 6) + '" stroke="' + s.color + '" stroke-width="1.4" opacity="0.75"><title>Censura: cliente sem cancelamento observado até a data de corte</title></line>';
+            censorMarks += '<text x="' + x + '" y="' + (y - 8) + '" text-anchor="middle" font-size="9" fill="' + s.color + '" opacity="0.8">+</text>';
+          }
+        });
+        paths += '<path data-series="' + escapeHtml(s.label) + '" d="' + d + '" fill="none" stroke="' + s.color + '" stroke-width="2.4"/>';
+      });
+      // hover capture
+      const hitPts = (series[0]?.curve || []).map((pt) => {
+        const x = xOf(Number(pt.time) || 0);
+        return '<circle class="sc-km-hit" cx="' + x + '" cy="' + yOf(Number(pt.survival) || 0) + '" r="10" fill="transparent" data-tip="' +
+          escapeHtml((pt.time || 0) + ' dias\nProbabilidade de permanência: ' + ((Number(pt.survival) || 0) * 100).toFixed(1).replace('.', ',') + '%\nEm risco: ' + (pt.atRisk ?? '—') + '\nCancelamentos no ponto: ' + (pt.events ?? 0) + '\nCensurados: ' + (pt.censored ?? 0)) + '"/>';
+      }).join('');
+      const legend = series.map((s, i) => '<g transform="translate(' + (padL + i * 120) + ',14)"><rect width="12" height="3" y="5" fill="' + s.color + '"/><text x="16" y="10" font-size="10" fill="#ccc">' + escapeHtml(s.label) + '</text></g>').join('');
+      const yTicks = [0, 0.25, 0.5, 0.75, 1].map((v) => {
+        const y = yOf(v);
+        return '<line x1="' + padL + '" y1="' + y + '" x2="' + (w - padR) + '" y2="' + y + '" stroke="#333"/><text x="' + (padL - 8) + '" y="' + (y + 3) + '" text-anchor="end" font-size="10" fill="#888">' + Math.round(v * 100) + '%</text>';
+      }).join('');
+      host.innerHTML = '<svg viewBox="0 0 ' + w + ' ' + h + '" width="100%" height="' + h + '" role="img" aria-label="Curva Kaplan-Meier">' +
+        '<rect width="' + w + '" height="' + h + '" fill="#141414"/>' + yTicks +
+        '<line x1="' + padL + '" y1="' + (h - padB) + '" x2="' + (w - padR) + '" y2="' + (h - padB) + '" stroke="#555"/>' +
+        '<line x1="' + padL + '" y1="' + padT + '" x2="' + padL + '" y2="' + (h - padB) + '" stroke="#555"/>' +
+        paths + censorMarks + hitPts + legend +
+        '<text x="' + (w / 2) + '" y="' + (h - 10) + '" text-anchor="middle" font-size="11" fill="#aaa">Dias desde a contratação</text>' +
+        '<text x="14" y="' + (h / 2) + '" transform="rotate(-90 14 ' + (h / 2) + ')" text-anchor="middle" font-size="11" fill="#aaa">Probabilidade de permanência</text></svg>';
+      host.querySelectorAll('.sc-km-hit').forEach((c) => {
+        c.addEventListener('mousemove', (evt) => scShowTip((c.getAttribute('data-tip') || '').replace(/\n/g, '<br/>'), evt));
+        c.addEventListener('mouseleave', scHideTip);
+      });
+
+      const marks = [0, 90, 180, 365, 730].filter((d) => d <= maxT + 1);
+      if (atRiskHost) {
+        const row = marks.map((d) => {
+          const pt = scSurvivalAt(curve, d);
+          return '<td>' + (pt?.atRisk ?? '—') + '</td>';
+        }).join('');
+        atRiskHost.innerHTML = '<table><thead><tr><th>Tempo</th>' + marks.map((d) => '<th>' + d + '</th>').join('') + '</tr></thead><tbody><tr><th>Em risco</th>' + row + '</tr></tbody></table>';
+      }
+      const p90 = scSurvivalAt(curve, 90);
+      const p180 = scSurvivalAt(curve, 180);
+      const p365 = scSurvivalAt(curve, 365);
+      const fmtP = (pt) => pt?.survival != null ? (pt.survival * 100).toFixed(1).replace('.', ',') + '%' : '—';
+      if (narr) {
+        let text = 'Probabilidade estimada de permanência: 3 meses ' + fmtP(p90) + ' · 6 meses ' + fmtP(p180) + ' · 12 meses ' + fmtP(p365) + '. ';
+        if (overall.medianSurvival != null) text += 'A mediana de sobrevivência foi atingida em ' + overall.medianSurvival + ' dias. ';
+        else text += 'A probabilidade estimada de permanência não caiu abaixo de 50% no período observado. ';
+        text += 'n início=' + (overall.nStart ?? '—') + ' · eventos=' + (overall.events ?? '—') + ' · censurados=' + (overall.censored ?? '—') + '. Marcas verticais indicam censura.';
+        narr.textContent = text;
+      }
+    }
+
+    function scRenderCohort(p) {
+      const cohort = p.cohort;
+      const host = document.querySelector('#scCohortHost');
+      const note = document.querySelector('#scCohortNote');
+      const tableHost = document.querySelector('#scCohortTableHost');
+      if (!host) return;
+      if (!cohort?.cohorts?.length || !cohort?.ages?.length) {
+        host.innerHTML = '<div class="empty" style="display:block">Coorte indisponível neste recorte.</div>';
+        if (note) note.textContent = '';
+        return;
+      }
+      const minCohortN = Number(document.querySelector('#scCohortMinN')?.value || 5);
+      const cellMode = document.querySelector('#scCohortCellMode')?.value || 'pct';
+      const cohorts = (cohort.cohorts || []).filter((c) => (c.nStart || 0) >= minCohortN);
+      const ages = cohort.ages;
+      const cellMap = new Map((cohort.cells || []).map((c) => [c.cohortKey + '||' + c.age, c]));
+      const avgMap = new Map((cohort.averages || []).map((a) => [a.age, a]));
+      const cellW = 56, cellH = 34, labelW = 54, labelH = 78;
+      const w = labelW + cohorts.length * cellW + 8;
+      const h = labelH + ages.length * cellH + 8;
+      let cells = '';
+      ages.forEach((age, i) => {
+        cohorts.forEach((c, j) => {
+          const cell = cellMap.get(c.key + '||' + age);
+          const x = labelW + j * cellW;
+          const y = labelH + i * cellH;
+          const observable = cell && cell.observable !== false && cell.retainedPct != null;
+          const colors = observable ? scRetentionColor(cell.retainedPct) : { fill: '#3a3a3a', text: '#bbb' };
+          const txt = observable
+            ? (cellMode === 'n' ? String(cell.retainedN ?? '—') : (Number(cell.retainedPct).toFixed(0) + '%'))
+            : '—';
+          const tip = observable
+            ? ('Coorte: ' + (c.label || c.key) + '<br/>Mês de vida: ' + age + '<br/>Clientes iniciais: ' + (c.nStart ?? '—') + '<br/>Retidos: ' + (cell.retainedN ?? '—') + '<br/>Retenção: ' + Number(cell.retainedPct).toFixed(1).replace('.', ',') + '%<br/>Cancel. acum.: ' + (cell.cancelledCum ?? '—'))
+            : ('Coorte: ' + (c.label || c.key) + '<br/>Mês ' + age + ': período ainda não observável');
+          cells += '<g class="sc-cohort-cell" data-tip="' + escapeHtml(tip) + '"><rect x="' + x + '" y="' + y + '" width="' + (cellW - 2) + '" height="' + (cellH - 2) + '" rx="2" fill="' + colors.fill + '"/>' +
+            '<text x="' + (x + cellW / 2 - 1) + '" y="' + (y + cellH / 2 + 4) + '" text-anchor="middle" font-size="9" fill="' + colors.text + '">' + txt + '</text></g>';
+        });
+      });
+      const colLabs = cohorts.map((c, j) => '<text transform="translate(' + (labelW + j * cellW + cellW / 2) + ',' + (labelH - 8) + ') rotate(-55)" text-anchor="start" font-size="9" fill="#bbb">' + escapeHtml(c.label || c.key) + '</text>').join('');
+      const rowLabs = ages.map((age, i) => '<text x="' + (labelW - 6) + '" y="' + (labelH + i * cellH + cellH / 2 + 3) + '" text-anchor="end" font-size="10" fill="#bbb">M' + age + '</text>').join('');
+      host.innerHTML = '<svg viewBox="0 0 ' + w + ' ' + h + '" width="' + Math.min(w, 900) + '" height="' + Math.min(h, 520) + '" role="img" aria-label="Heatmap de coorte">' +
+        '<rect width="' + w + '" height="' + h + '" fill="#141414"/>' + colLabs + rowLabs + cells + '</svg>';
+      host.querySelectorAll('.sc-cohort-cell').forEach((g) => {
+        g.addEventListener('mousemove', (evt) => scShowTip(g.getAttribute('data-tip') || '', evt));
+        g.addEventListener('mouseleave', scHideTip);
+      });
+      const deltas = (cohort.averages || []).filter((a) => a.deltaPp != null).sort((a, b) => a.deltaPp - b.deltaPp);
+      if (note) {
+        const a3 = avgMap.get(3)?.meanRetentionPct;
+        const a6 = avgMap.get(6)?.meanRetentionPct;
+        const a12 = avgMap.get(12)?.meanRetentionPct;
+        const drop = deltas[0];
+        note.textContent = 'Coortes: ' + cohorts.length + ' · Retenção média 3/6/12 meses: ' +
+          (a3 != null ? Number(a3).toFixed(1) + '%' : '—') + ' / ' +
+          (a6 != null ? Number(a6).toFixed(1) + '%' : '—') + ' / ' +
+          (a12 != null ? Number(a12).toFixed(1) + '%' : '—') +
+          (drop ? ('. Maior queda média entre o mês ' + (drop.age - 1) + ' e o mês ' + drop.age + ' (' + Number(drop.deltaPp).toFixed(1) + ' p.p.).') : '.') +
+          ' Coortes recentes podem não ter tempo suficiente para 12 meses.';
+      }
+      if (tableHost) {
+        tableHost.innerHTML = '<table><thead><tr><th>Idade</th>' + cohorts.map((c) => '<th>' + escapeHtml(c.label || c.key) + '</th>').join('') + '</tr></thead><tbody>' +
+          ages.map((age) => '<tr><td>Mês ' + age + '</td>' + cohorts.map((c) => {
+            const cell = cellMap.get(c.key + '||' + age);
+            if (!cell || cell.observable === false || cell.retainedPct == null) return '<td>—</td>';
+            return '<td>' + Number(cell.retainedPct).toFixed(1) + '%</td>';
+          }).join('') + '</tr>').join('') + '</tbody></table>';
+      }
+    }
+
+    function scRenderDiffChart(p) {
+      const host = document.querySelector('#scDiffChart');
+      const narr = document.querySelector('#scDiffNarration');
+      if (!host) return;
+      const unit = document.querySelector('#scDiffUnit')?.value || 'time';
+      const unitRe = {
+        time: /dia|perman|intervalo|tenure|stay|since|until/i,
+        meetings: /reuni|meeting|no-?show|remarc/i,
+        money: /renda|reserva|aporte|patrim|líquid|liquid|valor|income/i,
+        nps: /nps|nota/i,
+        mech: /mecan|implement/i
+      }[unit] || /./;
+      const rows = (p.activeVsCancelled || []).filter((d) => {
+        const medA = d.medianActive ?? d.activeMedian;
+        const medC = d.medianCancelled ?? d.cancelledMedian;
+        return medA != null && medC != null && unitRe.test((d.id || '') + ' ' + (d.label || ''));
+      }).slice(0, 10);
+      if (!rows.length) {
+        host.innerHTML = '<div class="empty" style="display:block">Sem variáveis neste grupo de unidade para o gráfico.</div>';
+        if (narr) narr.textContent = '';
+        return;
+      }
+      const h = Math.max(220, rows.length * 34 + 40);
+      const w = 720, padL = 160, padR = 20, padT = 16, padB = 20;
+      const vals = rows.flatMap((d) => [Number(d.medianActive ?? d.activeMedian), Number(d.medianCancelled ?? d.cancelledMedian)]);
+      const maxV = Math.max(...vals.map((v) => Math.abs(v)), 1);
+      const xOf = (v) => padL + (Math.abs(v) / maxV) * (w - padL - padR) * 0.45;
+      let bars = '';
+      rows.forEach((d, i) => {
+        const y = padT + i * 34;
+        const a = Number(d.medianActive ?? d.activeMedian);
+        const c = Number(d.medianCancelled ?? d.cancelledMedian);
+        const tip = escapeHtml(d.label || d.id) + '<br/>Ativos: mediana ' + escapeHtml(String(scFormatValue(d.id, d.label, a))) +
+          '<br/>Cancelados: mediana ' + escapeHtml(String(scFormatValue(d.id, d.label, c))) +
+          '<br/>Diferença: ' + escapeHtml(String(scFormatValue(d.id, d.label, c - a))) +
+          '<br/>Interpretação: ' + (c < a ? 'cancelados tiveram valor inferior neste recorte.' : c > a ? 'cancelados tiveram valor superior neste recorte.' : 'medianas semelhantes.');
+        bars += '<g class="sc-diff-row" data-tip="' + tip + '"><text x="' + (padL - 8) + '" y="' + (y + 14) + '" text-anchor="end" font-size="11" fill="#ccc">' + escapeHtml((d.label || d.id || '').slice(0, 22)) + '</text>' +
+          '<rect x="' + padL + '" y="' + y + '" width="' + xOf(a) + '" height="10" fill="#22c55e" rx="2"/>' +
+          '<rect x="' + padL + '" y="' + (y + 12) + '" width="' + xOf(c) + '" height="10" fill="#ef4444" rx="2"/></g>';
+      });
+      host.innerHTML = '<svg viewBox="0 0 ' + w + ' ' + h + '" width="100%" height="' + h + '"><rect width="' + w + '" height="' + h + '" fill="#141414"/>' + bars +
+        '<g transform="translate(' + padL + ',' + (h - 8) + ')"><rect width="12" height="8" fill="#22c55e"/><text x="16" y="8" font-size="10" fill="#aaa">Ativos</text><rect x="70" width="12" height="8" fill="#ef4444"/><text x="86" y="8" font-size="10" fill="#aaa">Cancelados</text></g></svg>';
+      host.querySelectorAll('.sc-diff-row').forEach((g) => {
+        g.addEventListener('mousemove', (evt) => scShowTip(g.getAttribute('data-tip') || '', evt));
+        g.addEventListener('mouseleave', scHideTip);
+      });
+      if (narr) {
+        const top = rows.find((d) => /reuni|meeting/i.test((d.id || '') + (d.label || ''))) || rows[0];
+        narr.textContent = top
+          ? ('Exemplo deste recorte: clientes ativos tiveram mediana de ' + scFormatValue(top.id, top.label, top.medianActive ?? top.activeMedian) + ' e cancelados tiveram mediana de ' + scFormatValue(top.id, top.label, top.medianCancelled ?? top.cancelledMedian) + ' em ' + (top.label || top.id) + '.')
+          : '';
+      }
+    }
+
+    function scRenderAucChart(p) {
+      const host = document.querySelector('#scAucChart');
+      const narr = document.querySelector('#scAucNarration');
+      if (!host) return;
+      const rows = (p.univariatePredictivePower || p.predictivePower || [])
+        .filter((a) => Number.isFinite(Number(a.aucAdjusted ?? a.aucInverted ?? a.auc)))
+        .sort((a, b) => Number(b.aucAdjusted ?? b.aucInverted ?? b.auc) - Number(a.aucAdjusted ?? a.aucInverted ?? a.auc))
+        .slice(0, 12);
+      if (!rows.length) {
+        host.innerHTML = '<div class="empty" style="display:block">Sem AUC calculável neste recorte.</div>';
+        return;
+      }
+      const w = 720, rowH = 28, padL = 170, padR = 40, padT = 24, padB = 24;
+      const h = padT + rows.length * rowH + padB;
+      const xOf = (auc) => padL + ((auc - 0.5) / 0.5) * (w - padL - padR);
+      const refs = [0.5, 0.6, 0.7, 1.0].map((v) => {
+        const x = xOf(v);
+        return '<line x1="' + x + '" y1="' + padT + '" x2="' + x + '" y2="' + (h - padB) + '" stroke="#333" stroke-dasharray="3 3"/><text x="' + x + '" y="' + (padT - 6) + '" text-anchor="middle" font-size="9" fill="#888">' + v.toFixed(2).replace('.', ',') + '</text>';
+      }).join('');
+      const bars = rows.map((r, i) => {
+        const auc = Number(r.aucAdjusted ?? r.aucInverted ?? r.auc);
+        const y = padT + i * rowH;
+        const x0 = xOf(0.5);
+        const x1 = xOf(Math.min(1, Math.max(0.5, auc)));
+        return '<text x="' + (padL - 8) + '" y="' + (y + 14) + '" text-anchor="end" font-size="11" fill="#ccc">' + escapeHtml((r.label || r.id || '').slice(0, 24)) + '</text>' +
+          '<rect x="' + x0 + '" y="' + (y + 4) + '" width="' + Math.max(2, x1 - x0) + '" height="14" fill="#f47920" rx="2"/>' +
+          '<text x="' + (x1 + 6) + '" y="' + (y + 15) + '" font-size="10" fill="#ddd">' + auc.toFixed(3).replace('.', ',') + '</text>';
+      }).join('');
+      host.innerHTML = '<svg viewBox="0 0 ' + w + ' ' + h + '" width="100%" height="' + h + '"><rect width="' + w + '" height="' + h + '" fill="#141414"/>' + refs + bars + '</svg>';
+      if (narr) narr.textContent = 'Maior AUC ajustada: ' + (rows[0].label || rows[0].id) + ' (' + Number(rows[0].aucAdjusted ?? rows[0].auc).toFixed(3).replace('.', ',') + '). Linhas: 0,50 sem discriminação · 0,60 sinal fraco · 0,70 sinal moderado.';
+    }
+
+    function scRenderNpsGroupsChart(p) {
+      const host = document.querySelector('#scNpsGroupsChart');
+      const narr = document.querySelector('#scNpsGroupsNarration');
+      if (!host) return;
+      const groups = p.npsGroups || [];
+      if (!groups.length) {
+        host.innerHTML = '<div class="empty" style="display:block">Sem grupos NPS no recorte.</div>';
+        return;
+      }
+      const metrics = [
+        { key: 'cancelledPct', label: '% cancelado', color: '#ef4444' },
+        { key: 'renewedPct', label: '% renovado', color: '#22c55e' }
+      ];
+      const w = 720, h = 220, padL = 50, padR = 20, padT = 30, padB = 40;
+      const gW = (w - padL - padR) / groups.length;
+      let bars = '';
+      groups.forEach((g, gi) => {
+        metrics.forEach((m, mi) => {
+          const v = Number(g[m.key] || 0);
+          const bw = gW / (metrics.length + 1);
+          const x = padL + gi * gW + (mi + 0.5) * bw;
+          const bh = (v / 100) * (h - padT - padB);
+          const y = h - padB - bh;
+          bars += '<rect x="' + x + '" y="' + y + '" width="' + (bw * 0.8) + '" height="' + Math.max(1, bh) + '" fill="' + m.color + '" rx="2"/>' +
+            '<text x="' + (x + bw * 0.4) + '" y="' + (y - 4) + '" text-anchor="middle" font-size="10" fill="#eee">' + v.toFixed(1).replace('.', ',') + '%</text>';
+        });
+        bars += '<text x="' + (padL + gi * gW + gW / 2) + '" y="' + (h - 12) + '" text-anchor="middle" font-size="11" fill="#ccc">' + escapeHtml(g.label || g.class || '') + '</text>';
+      });
+      host.innerHTML = '<svg viewBox="0 0 ' + w + ' ' + h + '" width="100%" height="' + h + '"><rect width="' + w + '" height="' + h + '" fill="#141414"/>' + bars +
+        '<rect x="' + padL + '" y="8" width="10" height="10" fill="#ef4444"/><text x="' + (padL + 14) + '" y="17" font-size="10" fill="#aaa">% cancelado</text>' +
+        '<rect x="' + (padL + 110) + '" y="8" width="10" height="10" fill="#22c55e"/><text x="' + (padL + 124) + '" y="17" font-size="10" fill="#aaa">% renovado</text></svg>';
+      const det = groups.find((g) => /detrat/i.test(g.label || g.class || '')) || groups[groups.length - 1];
+      const pro = groups.find((g) => /promo/i.test(g.label || g.class || '')) || groups[0];
+      if (narr && det && pro && (det.n || 0) >= 5 && (pro.n || 0) >= 5) {
+        narr.textContent = (Number(det.cancelledPct || 0) > Number(pro.cancelledPct || 0))
+          ? 'Detratores apresentam maior proporção de cancelamento neste recorte (' + Number(det.cancelledPct).toFixed(1).replace('.', ',') + '% vs ' + Number(pro.cancelledPct || 0).toFixed(1).replace('.', ',') + '%).'
+          : 'Diferença de cancelamento entre classes NPS é limitada neste recorte; interpretar com cobertura NPS em mente.';
+      } else if (narr) narr.textContent = 'Amostra NPS por grupo abaixo do mínimo em alguns casos — cautela na comparação.';
+    }
+
+    function scRenderRenewalDiffChart(p) {
+      const host = document.querySelector('#scRenewalDiffChart');
+      const narr = document.querySelector('#scRenewalDiffNarration');
+      if (!host) return;
+      const rows = (p.renewedVsNotRenewed || p.renewalDifferences || []).filter((d) => {
+        const a = d.medianRenewed ?? d.median1;
+        const b = d.medianNotRenewed ?? d.median0 ?? d.medianNonRenewed;
+        return a != null && b != null;
+      }).slice(0, 10);
+      if (!rows.length) {
+        host.innerHTML = '<div class="empty" style="display:block">Sem diferenças de renovação para o gráfico.</div>';
+        if (narr) narr.textContent = '';
+        return;
+      }
+      const h = Math.max(220, rows.length * 34 + 40);
+      const w = 720, padL = 160, padR = 20, padT = 16, padB = 20;
+      const vals = rows.flatMap((d) => [Number(d.medianRenewed ?? d.median1), Number(d.medianNotRenewed ?? d.median0)]);
+      const maxV = Math.max(...vals.map((v) => Math.abs(v)), 1);
+      const xOf = (v) => padL + (Math.abs(v) / maxV) * (w - padL - padR) * 0.45;
+      let bars = '';
+      rows.forEach((d, i) => {
+        const y = padT + i * 34;
+        const a = Number(d.medianRenewed ?? d.median1);
+        const b = Number(d.medianNotRenewed ?? d.median0);
+        bars += '<text x="' + (padL - 8) + '" y="' + (y + 14) + '" text-anchor="end" font-size="11" fill="#ccc">' + escapeHtml((d.label || d.id || '').slice(0, 22)) + '</text>' +
+          '<rect x="' + padL + '" y="' + y + '" width="' + xOf(a) + '" height="10" fill="#22c55e" rx="2"/>' +
+          '<rect x="' + padL + '" y="' + (y + 12) + '" width="' + xOf(b) + '" height="10" fill="#94a3b8" rx="2"/>';
+      });
+      host.innerHTML = '<svg viewBox="0 0 ' + w + ' ' + h + '" width="100%" height="' + h + '"><rect width="' + w + '" height="' + h + '" fill="#141414"/>' + bars +
+        '<g transform="translate(' + padL + ',' + (h - 8) + ')"><rect width="12" height="8" fill="#22c55e"/><text x="16" y="8" font-size="10" fill="#aaa">Renovados</text><rect x="90" width="12" height="8" fill="#94a3b8"/><text x="106" y="8" font-size="10" fill="#aaa">Não renovados</text></g></svg>';
+      if (narr) narr.textContent = 'Comparação descritiva de medianas. Associação não implica causalidade.';
+    }
+
+    function scRenderRiskRules(p) {
+      if (typeof exBuildRiskRules !== 'function') return;
+      const rules = exBuildRiskRules(p.clients || []);
+      setOrHtml('#scRiskRuleRows', rules.map((rule) => `<tr><td><strong>${escapeHtml(rule.label)}</strong></td><td class="num">${fmt.format(rule.clients)}</td><td class="num">${fmt.format(rule.cancelled)}</td><td class="num">${Number(rule.ratePct).toFixed(1).replace('.', ',')}%</td><td class="num"><strong>${scNum(rule.lift, 2)}x</strong></td><td class="exploration-note">${escapeHtml(rule.caveat || 'Associação descritiva.')}</td></tr>`).join(''));
+      const empty = document.querySelector('#scRiskRulesEmpty');
+      if (empty) empty.style.display = rules.length ? 'none' : 'block';
+    }
+
+    function scHumanFilters(p) {
+      const f = p.filters || p.metadata?.filtersApplied || {};
+      const mapStatus = { active_cancelled: 'Ativos e cancelados', all: 'Todos', active: 'Ativos', cancelled: 'Cancelados efetivados' };
+      const yesNo = { yes: 'Sim', no: 'Não', all: 'Todos' };
+      const lines = [];
+      const add = (label, val) => {
+        if (val == null || val === '' || val === 'null') return;
+        lines.push(label + ': ' + val);
+      };
+      add('Status', mapStatus[f.status] || f.status || 'Ativos e cancelados');
+      add('Segmento', f.segment === 'all' ? 'Todos' : (f.segment || 'Todos'));
+      add('Engenheiro Patrimonial', f.engineer === 'all' ? 'Todos' : (f.engineer || 'Todos'));
+      add('Possui reunião', yesNo[f.hasMeeting] || 'Todos');
+      add('Possui NPS', yesNo[f.hasNps] || 'Todos');
+      add('Renovação', yesNo[f.renewed] || 'Todos');
+      add('Possui mecanismo', yesNo[f.hasMechanism] || 'Todos');
+      add('Diagnóstico financeiro', yesNo[f.hasFinancial] || 'Todos');
+      add('Amostra mínima', f.minSample != null ? String(f.minSample) : '5');
+      add('Cobertura mínima', f.minCoverage != null ? (f.minCoverage + '%') : '30%');
+      if (f.hireFrom || f.hireTo) add('Contratação', (f.hireFrom || '…') + ' → ' + (f.hireTo || '…'));
+      return lines;
+    }
+
+    function scSvgNaturalSize(svgEl) {
+      if (!svgEl) return { w: 720, h: 280 };
+      const vb = (svgEl.getAttribute('viewBox') || '').trim().split(/[\s,]+/).map(Number);
+      if (vb.length === 4 && vb[2] > 0 && vb[3] > 0) return { w: vb[2], h: vb[3] };
+      const wAttr = Number(svgEl.getAttribute('width'));
+      const hAttr = Number(svgEl.getAttribute('height'));
+      if (wAttr > 0 && hAttr > 0) return { w: wAttr, h: hAttr };
+      const bb = typeof svgEl.getBBox === 'function' ? svgEl.getBBox() : null;
+      if (bb && bb.width > 0 && bb.height > 0) return { w: bb.width, h: bb.height };
+      return {
+        w: Math.max(svgEl.clientWidth || 0, svgEl.width?.baseVal?.value || 0, 720),
+        h: Math.max(svgEl.clientHeight || 0, svgEl.height?.baseVal?.value || 0, 240)
+      };
+    }
+
+    function scCloneSvgForExport(svgEl) {
+      if (!svgEl) return null;
+      const clone = svgEl.cloneNode(true);
+      clone.removeAttribute('style');
+      clone.style.transform = 'none';
+      clone.style.maxWidth = 'none';
+      const size = scSvgNaturalSize(svgEl);
+      clone.setAttribute('width', String(size.w));
+      clone.setAttribute('height', String(size.h));
+      if (!clone.getAttribute('viewBox')) clone.setAttribute('viewBox', '0 0 ' + size.w + ' ' + size.h);
+      // Print remap: dark UI charts → light background + dark labels (preserve data colors)
+      const printFill = {
+        '#141414': '#ffffff', '#111': '#ffffff', '#1a1a1a': '#ffffff',
+        '#ccc': '#333333', '#aaaaaa': '#555555', '#aaa': '#555555',
+        '#ddd': '#444444', '#888': '#666666', '#999': '#666666',
+        '#e5e5e5': '#333333', '#f5f5f5': '#222222'
+      };
+      const remapAttr = (el, attr, map) => {
+        const v = (el.getAttribute(attr) || '').trim().toLowerCase();
+        if (map[v]) el.setAttribute(attr, map[v]);
+      };
+      clone.querySelectorAll('[fill]').forEach((n) => remapAttr(n, 'fill', printFill));
+      clone.querySelectorAll('[stroke]').forEach((n) => {
+        const v = (n.getAttribute('stroke') || '').trim().toLowerCase();
+        if (v === '#ccc' || v === '#aaa' || v === '#888' || v === '#ddd') n.setAttribute('stroke', '#555555');
+      });
+      const bg = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      bg.setAttribute('x', '0'); bg.setAttribute('y', '0');
+      bg.setAttribute('width', String(size.w)); bg.setAttribute('height', String(size.h));
+      bg.setAttribute('fill', '#ffffff');
+      clone.insertBefore(bg, clone.firstChild);
+      return { clone, size };
+    }
+
+    function scSvgToPngDataUrl(svgEl, scale = 2.5) {
+      return new Promise((resolve) => {
+        if (!svgEl) { resolve(null); return; }
+        const prepared = scCloneSvgForExport(svgEl);
+        if (!prepared) { resolve(null); return; }
+        const { clone, size } = prepared;
+        const xml = new XMLSerializer().serializeToString(clone);
+        const svg64 = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(xml);
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          canvas.width = Math.max(1, Math.round(size.w * scale));
+          canvas.height = Math.max(1, Math.round(size.h * scale));
+          const ctx = canvas.getContext('2d');
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          resolve({ dataUrl: canvas.toDataURL('image/png'), width: size.w, height: size.h });
+        };
+        img.onerror = () => resolve(null);
+        img.src = svg64;
+      });
+    }
+
+    function scPickSvg(sel) {
+      const el = document.querySelector(sel);
+      if (!el) return null;
+      // Prefer direct SVG, never capture zoom stage with controls
+      if (el.tagName && el.tagName.toLowerCase() === 'svg') return el;
+      const inner = el.querySelector('.sc-zoom-inner svg') || el.querySelector('svg');
+      return inner || null;
+    }
+
+    function scFitImageMm(naturalW, naturalH, maxW, maxH) {
+      const scale = Math.min(maxW / naturalW, maxH / naturalH);
+      return { w: naturalW * scale, h: naturalH * scale };
+    }
+
+    function scBuildChartStory(key, p) {
+      const s = p.summary || {};
+      const insights = p.simpleInsights || p.discoveries || [];
+      const find = (re) => insights.find((d) => re.test((d.title || '') + ' ' + (d.text || '') + ' ' + (d.id || '')));
+      const stories = {
+        cancelMatrix: {
+          see: 'Este mapa mostra quais indicadores aparecem mais ligados ao cancelamento neste recorte.',
+          indicate: (find(/reuni|contato|cancel/i)?.text) || 'Valores positivos sugerem que o indicador tende a ser maior entre cancelados; valores negativos, menor. Barras/células mais intensas indicam relação observada mais forte.',
+          matter: 'Isso ajuda a priorizar o que acompanhar no dia a dia, sem afirmar causa.',
+          caveat: 'Padrão observado — não comprova causalidade. Laranja tende a relação positiva; azul, negativa.'
+        },
+        diff: {
+          see: 'Este gráfico compara a mediana dos clientes ativos (verde) com a dos cancelados (vermelho).',
+          indicate: (find(/reuni/i)?.text) || (document.querySelector('#scDiffNarration')?.textContent || 'Há diferenças de mediana entre os dois grupos em alguns indicadores.'),
+          matter: 'Diferenças grandes sugerem sinais úteis para acompanhamento preventivo.',
+          caveat: 'Associação observada; não prova que o indicador causou o cancelamento.'
+        },
+        auc: {
+          see: 'A leitura responde: se escolhermos ao acaso um cliente cancelado e um não cancelado, qual a chance desta variável posicionar o cancelado como mais arriscado?',
+          indicate: '0,50 quase não separa; cerca de 0,60 ajuda pouco; cerca de 0,70 é um sinal útil; 0,80+ é separação forte e merece revisão cuidadosa.',
+          matter: 'Serve para priorizar variáveis candidatas a monitoramento. A métrica não é a taxa de acerto de um modelo completo.',
+          caveat: 'Sinais fortes devem ser revisados para garantir que não usam informação só disponível após o cancelamento.'
+        },
+        nps: {
+          see: 'Este mapa relaciona a nota NPS com outros indicadores da jornada.',
+          indicate: (find(/nps|promo|detrat/i)?.text) || 'Alguns indicadores acompanham a nota de satisfação neste recorte.',
+          matter: 'Ajuda a entender o contexto dos clientes mais e menos satisfeitos.',
+          caveat: (s.npsPortfolioCoverage != null && s.npsPortfolioCoverage < 30)
+            ? ('Cobertura de NPS em torno de ' + String(s.npsPortfolioCoverage).replace('.', ',') + '% — tratar como sinal inicial.')
+            : 'Associação observada, não causalidade.'
+        },
+        npsGroups: {
+          see: 'Comparamos Promotores, Neutros e Detratores em cancelamento e renovação.',
+          indicate: (find(/promo|detrat/i)?.text) || 'Promotores tendem a renovar mais e cancelar menos neste recorte; detratores, o oposto — sempre com cautela pela cobertura.',
+          matter: 'Útil para comunicação e priorização de cuidado.',
+          caveat: (s.npsPortfolioCoverage != null)
+            ? ('Cobertura de NPS: ' + String(s.npsPortfolioCoverage).replace('.', ',') + '%. Poucas respostas reduzem a confiança.')
+            : 'Poucos clientes com NPS reduzem a confiança da comparação.'
+        },
+        renewal: {
+          see: 'Este mapa mostra indicadores associados à renovação. Renovação: cliente no ciclo 2 ou superior.',
+          indicate: (find(/renov/i)?.text) || 'Alguns indicadores aparecem mais fortes entre quem renovou — por exemplo permanência, mecanismos ou reuniões, quando os dados mostram isso.',
+          matter: 'Ajuda a descrever o perfil de quem permanece e renova.',
+          caveat: 'Não afirma que o indicador causou a renovação.'
+        },
+        tenure: {
+          see: 'Este mapa relaciona a permanência em dias com outros indicadores.',
+          indicate: 'Alguns fatores acompanham tempos de permanência maiores ou menores neste recorte.',
+          matter: 'Complementa a leitura de retenção, sem substituir a curva de permanência.',
+          caveat: 'Leitura descritiva; diferente da análise de evento de cancelamento.'
+        },
+        survival: {
+          see: 'A curva estima a chance de o cliente continuar na carteira ao longo do tempo desde a contratação.',
+          indicate: (find(/12 meses|permanência estimada|sobreviv/i)?.text) || (document.querySelector('#scSurvivalNarration')?.textContent || 'A curva mostra a permanência estimada ao longo dos meses. A queda mais acentuada marca períodos de maior saída.'),
+          matter: 'Ajuda a planejar acompanhamento em marcos como 3, 6 e 12 meses.',
+          caveat: 'Clientes ainda ativos no fim do período continuam na análise sem serem tratados como cancelados.'
+        },
+        cohort: {
+          see: 'Cada coluna reúne clientes que começaram no mesmo mês. As linhas mostram quantos seguem na carteira depois de 1, 2, 3 meses…',
+          indicate: (document.querySelector('#scCohortNote')?.textContent || 'Cores mais frias sugerem retenção maior; cores mais quentes, queda maior.'),
+          matter: 'Permite ver se coortes recentes estão retendo melhor ou pior ao longo do tempo.',
+          caveat: 'Coortes recentes ainda não têm tempo suficiente para comparar 12 meses.'
+        },
+        predict: {
+          see: 'Este ranking mostra quais indicadores mais ajudaram a separar grupos no teste fora da amostra.',
+          indicate: 'Os primeiros da lista tiveram maior contribuição relativa neste recorte.',
+          matter: 'Orienta o que merece validação operacional — não é prova de causa.',
+          caveat: 'Importância do modelo não deve ser lida como causalidade.'
+        }
+      };
+      return stories[key] || { see: '', indicate: '', matter: '', caveat: 'Associação observada, não causalidade.' };
+    }
+
+    function scSetExportBtn(state, label) {
+      const btn = document.querySelector('#scExportReport');
+      if (!btn) return;
+      const span = btn.querySelector('.sc-export-label');
+      btn.classList.remove('is-ok', 'is-err', 'is-loading');
+      if (state === 'loading') {
+        btn.disabled = true;
+        btn.classList.add('is-loading');
+        if (span) span.textContent = label || 'Gerando relatório…';
+      } else if (state === 'ok') {
+        btn.disabled = false;
+        btn.classList.add('is-ok');
+        if (span) span.textContent = label || 'Relatório baixado';
+        setTimeout(() => {
+          btn.classList.remove('is-ok');
+          if (span) span.textContent = 'Exportar relatório em PDF';
+        }, 2500);
+      } else if (state === 'err') {
+        btn.disabled = false;
+        btn.classList.add('is-err');
+        if (span) span.textContent = label || 'Não foi possível gerar o relatório';
+        setTimeout(() => {
+          btn.classList.remove('is-err');
+          if (span) span.textContent = 'Exportar relatório em PDF';
+        }, 3500);
+      } else {
+        btn.disabled = false;
+        if (span) span.textContent = 'Exportar relatório em PDF';
+      }
+    }
+
+    async function scExportReport() {
+      const p = scState.payload;
+      const btn = document.querySelector('#scExportReport');
+      if (!p) { alert('Carregue as análises antes de exportar.'); return; }
+      if (btn?.disabled) return;
+      if (!window.jspdf?.jsPDF) {
+        scSetExportBtn('err');
+        alert('Biblioteca PDF não carregou. Verifique a conexão e recarregue a página.');
+        return;
+      }
+      scSetExportBtn('loading');
+      // reset zoom transforms that could affect DOM size reads
+      const zoomBackup = {};
+      document.querySelectorAll('#view-statistical-crosses .sc-zoom-inner').forEach((el, i) => {
+        zoomBackup[i] = el.style.transform;
+        el.style.transform = 'none';
+      });
+      await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+      try {
+        const { jsPDF } = window.jspdf;
+        let doc = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
+        let orient = 'portrait';
+        let pageW = doc.internal.pageSize.getWidth();
+        let pageH = doc.internal.pageSize.getHeight();
+        const margin = 14;
+        const footerH = 12;
+        const headerH = 10;
+        let y = margin + headerH;
+        let pageHasContent = false;
+        const pdfDebug = !!(window.SC_PDF_DEBUG || (typeof localStorage !== 'undefined' && localStorage.getItem('scPdfDebug') === '1'));
+        const pageLog = [];
+        const logBreak = (reason, extra = {}) => {
+          if (!pdfDebug) return;
+          const entry = {
+            page: doc.getNumberOfPages(),
+            orient,
+            y: Math.round(y * 10) / 10,
+            remaining: Math.round((pageH - footerH - y) * 10) / 10,
+            pageHasContent,
+            reason,
+            ...extra
+          };
+          pageLog.push(entry);
+          console.debug('[scPdf]', entry);
+        };
+        const markContent = (section) => {
+          if (!pageHasContent && pdfDebug) logBreak('first-content', { section });
+          pageHasContent = true;
+        };
+
+        const syncSize = () => {
+          pageW = doc.internal.pageSize.getWidth();
+          pageH = doc.internal.pageSize.getHeight();
+        };
+        const remainingHeight = () => Math.max(0, pageH - footerH - y - 4);
+
+        /** Cria página só se a atual já tem conteúdo (evita páginas em branco). */
+        const newPage = (orientation, reason = 'newPage') => {
+          const next = orientation || orient;
+          if (!pageHasContent && orient === next) {
+            logBreak('skip-duplicate-blank', { wanted: next, reason });
+            y = margin + headerH;
+            return;
+          }
+          if (!pageHasContent && orient !== next) {
+            // Página vazia na orientação errada: substitui em vez de empilhar branco
+            const n = doc.getNumberOfPages();
+            try { doc.deletePage(n); } catch (_) { /* ignore */ }
+            doc.addPage('a4', next);
+            orient = next;
+            syncSize();
+            y = margin + headerH;
+            pageHasContent = false;
+            logBreak('replace-empty-orientation', { wanted: next, reason });
+            return;
+          }
+          doc.addPage('a4', next);
+          orient = next;
+          syncSize();
+          y = margin + headerH;
+          pageHasContent = false;
+          logBreak('addPage', { wanted: next, reason });
+        };
+
+        /** Garante orientação; só quebra se a página atual já tem conteúdo. */
+        const ensureOrientation = (want, reason = 'orient') => {
+          if (orient === want) return;
+          newPage(want, reason);
+        };
+
+        /**
+         * Quebra só quando: página tem conteúdo E o bloco não cabe.
+         * Nunca cria página “antecipada” em página vazia.
+         */
+        const ensureSpace = (need, orientation) => {
+          if (orientation) ensureOrientation(orientation, 'ensureSpace-orient');
+          const needN = Number(need) || 0;
+          if (needN <= 0) return;
+          const rem = remainingHeight();
+          if (needN > rem && pageHasContent) {
+            newPage(orient, 'ensureSpace-overflow');
+          } else if (needN > rem && !pageHasContent) {
+            logBreak('fit-on-empty-page', { need: needN, rem });
+          }
+        };
+
+        /** Inicia seção: troca orientação ou quebra só se necessário. */
+        const beginSection = (wantOrient, minNeed, reason) => {
+          ensureOrientation(wantOrient || orient, reason || 'section-orient');
+          if (minNeed && minNeed > remainingHeight() && pageHasContent) {
+            newPage(wantOrient || orient, reason || 'section-overflow');
+          }
+        };
+
+        const paintBrandLine = () => {
+          doc.setDrawColor(244, 121, 32);
+          doc.setLineWidth(0.8);
+          doc.line(margin, y, pageW - margin, y);
+          y += 5;
+          markContent('brand-line');
+        };
+        const h1 = (t) => {
+          ensureSpace(18);
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(18);
+          doc.setTextColor(24, 24, 24);
+          doc.text(t, margin, y);
+          y += 7;
+          markContent('h1:' + t);
+          paintBrandLine();
+        };
+        const h2 = (t) => {
+          ensureSpace(16);
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(13);
+          doc.setTextColor(30, 30, 30);
+          doc.text(t, margin, y);
+          y += 6;
+          doc.setDrawColor(230, 230, 230);
+          doc.setLineWidth(0.3);
+          doc.line(margin, y, pageW - margin, y);
+          y += 4;
+          markContent('h2:' + t);
+        };
+        const para = (t, opts = {}) => {
+          if (!t) return;
+          doc.setFont('helvetica', opts.bold ? 'bold' : 'normal');
+          doc.setFontSize(opts.size || 10);
+          doc.setTextColor(opts.color || 45);
+          const lines = doc.splitTextToSize(String(t), pageW - margin * 2);
+          ensureSpace(lines.length * 4.8 + 2);
+          doc.text(lines, margin, y);
+          y += lines.length * 4.8 + 2;
+          markContent('para');
+        };
+        const label = (t) => {
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(9);
+          doc.setTextColor(244, 121, 32);
+          ensureSpace(6);
+          doc.text(String(t).toUpperCase(), margin, y);
+          y += 4.5;
+          markContent('label');
+        };
+        const card = (title, value, subtitle) => {
+          ensureSpace(20);
+          doc.setFillColor(248, 248, 248);
+          doc.setDrawColor(230, 230, 230);
+          doc.roundedRect(margin, y - 4, pageW - margin * 2, 16, 2, 2, 'FD');
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(9);
+          doc.setTextColor(100);
+          doc.text(title, margin + 3, y + 1);
+          doc.setFontSize(13);
+          doc.setTextColor(20);
+          doc.text(String(value), margin + 3, y + 8);
+          if (subtitle) {
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(8);
+            doc.setTextColor(110);
+            doc.text(subtitle, margin + 55, y + 8);
+          }
+          y += 18;
+          markContent('card:' + title);
+        };
+        const bulletSafe = (arr) => { (arr || []).forEach((line) => para('• ' + line)); };
+        const storyBlock = (story) => {
+          if (!story) return;
+          label('O que estamos vendo');
+          para(story.see);
+          label('O que os dados indicam');
+          para(story.indicate);
+          label('Por que isso importa');
+          para(story.matter);
+          if (story.caveat) {
+            doc.setFont('helvetica', 'italic');
+            doc.setFontSize(8.5);
+            doc.setTextColor(110);
+            const lines = doc.splitTextToSize('Ressalva: ' + story.caveat, pageW - margin * 2);
+            ensureSpace(lines.length * 4 + 2);
+            doc.text(lines, margin, y);
+            y += lines.length * 4 + 3;
+            markContent('caveat');
+          }
+        };
+
+        const addChartBlock = async ({ title, sel, storyKey, landscape = false, maxHRatio = 0.42 }) => {
+          const want = landscape ? 'landscape' : 'portrait';
+          const story = scBuildChartStory(storyKey, p);
+          const svg = scPickSvg(sel);
+          const captured = await scSvgToPngDataUrl(svg, 2.5);
+
+          // Altura provisória do gráfico (já limitado à página) — sem forçar nova página “fantasma”
+          ensureOrientation(want, 'chart-orient:' + storyKey);
+          const maxW = pageW - margin * 2;
+          const maxChartH = pageH * (landscape ? 0.68 : Math.max(maxHRatio, 0.45));
+          const headH = 54;
+          const chartH = captured?.dataUrl
+            ? scFitImageMm(captured.width, captured.height, maxW, maxChartH).h
+            : 12;
+          const need = headH + chartH + 5;
+          // Só quebra se a página atual já tem conteúdo e o bloco não cabe
+          if (need > remainingHeight() && pageHasContent) {
+            newPage(want, 'chart-block:' + storyKey);
+          }
+
+          h2(title);
+          storyBlock(story);
+          if (!captured?.dataUrl || !(captured.width > 0) || !(captured.height > 0)) {
+            para('Gráfico indisponível neste recorte.');
+            return;
+          }
+          const availH = Math.max(36, remainingHeight());
+          const fit = scFitImageMm(captured.width, captured.height, maxW, Math.min(availH, maxChartH));
+          if (!(fit.w > 0) || !(fit.h > 0)) {
+            para('Gráfico indisponível neste recorte.');
+            return;
+          }
+          const x = margin + (maxW - fit.w) / 2;
+          doc.addImage(captured.dataUrl, 'PNG', x, y, fit.w, fit.h, undefined, 'FAST');
+          y += fit.h + 5;
+          markContent('chart:' + storyKey);
+          logBreak('chart-placed', { section: title, usedH: fit.h, remAfter: remainingHeight() });
+        };
+
+        const s = p.summary || {};
+        const day = (s.cutoffDate || new Date().toISOString().slice(0, 10));
+
+        // CAPA
+        y = margin + 20;
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(22);
+        doc.setTextColor(20);
+        doc.text('Análises Estatísticas', margin, y);
+        y += 10;
+        markContent('cover-title');
+        doc.setFontSize(12);
+        doc.setTextColor(244, 121, 32);
+        doc.text('Jornada do Cliente · BASE QV', margin, y);
+        y += 8;
+        paintBrandLine();
+        para('Relatório gerado em ' + new Date().toLocaleString('pt-BR') + '.');
+        para('Período observado: ' + (s.observationPeriod?.from || '—') + ' → ' + (s.observationPeriod?.to || s.cutoffDate || '—') + '.');
+        label('Filtros aplicados');
+        scHumanFilters(p).forEach((line) => para('• ' + line));
+        y += 2;
+        label('Resumo da carteira');
+        card('Clientes analisados', String(s.analyzedClients ?? '—'), 'população do recorte');
+        card('Cancelamentos', String(s.confirmedCancellations ?? '—'), 'efetivados');
+        card('Renovados', String(s.renewedClients ?? '—'), 'ciclo > 1');
+        card('Cobertura NPS', (s.npsPortfolioCoverage != null ? String(s.npsPortfolioCoverage).replace('.', ',') + '%' : '—'), 'respostas válidas');
+
+        // Capa permanece em página própria (já tem conteúdo → quebra segura)
+        newPage('portrait', 'after-cover');
+        h1('Principais descobertas');
+        para('Leitura simples do que os dados mostram neste recorte. Números vêm das análises já calculadas — sem inventar conclusões.');
+        (p.simpleInsights || p.discoveries || []).slice(0, 10).forEach((d, i) => {
+          ensureSpace(22);
+          doc.setFillColor(252, 252, 252);
+          doc.setDrawColor(235, 235, 235);
+          doc.roundedRect(margin, y - 3, pageW - margin * 2, 18, 2, 2, 'FD');
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(10);
+          doc.setTextColor(20);
+          doc.text((i + 1) + '. ' + (d.title || 'Descoberta'), margin + 3, y + 2);
+          doc.setFont('helvetica', 'normal');
+          doc.setFontSize(9);
+          doc.setTextColor(60);
+          const body = (d.text || '') + (d.primaryValue ? ('  ·  Número principal: ' + d.primaryValue) : '');
+          const lines = doc.splitTextToSize(body, pageW - margin * 2 - 6);
+          doc.text(lines.slice(0, 2), margin + 3, y + 8);
+          y += 20;
+          markContent('discovery');
+          if (d.lowConfidence || /cobertura|cautela/i.test(d.caveat || '')) {
+            para('Atenção: cobertura ou amostra limitada neste ponto.');
+          }
+        });
+
+        await addChartBlock({ title: 'Cancelamento — mapa de relações', sel: '#scCancelMatrixHost', storyKey: 'cancelMatrix', landscape: true, maxHRatio: 0.55 });
+        await addChartBlock({ title: 'Ativos vs cancelados', sel: '#scDiffChart', storyKey: 'diff', landscape: false, maxHRatio: 0.5 });
+        await addChartBlock({ title: 'Quanto cada indicador separa os grupos', sel: '#scAucChart', storyKey: 'auc', landscape: false, maxHRatio: 0.5 });
+        await addChartBlock({ title: 'NPS — relações com a satisfação', sel: '#scNpsMatrixHost', storyKey: 'nps', landscape: true });
+        await addChartBlock({ title: 'Promotores, Neutros e Detratores', sel: '#scNpsGroupsChart', storyKey: 'npsGroups' });
+        await addChartBlock({ title: 'Renovação — relações observadas', sel: '#scRenewalMatrixHost', storyKey: 'renewal', landscape: true });
+        await addChartBlock({ title: 'Permanência — relações observadas', sel: '#scTenureMatrixHost', storyKey: 'tenure', landscape: true });
+        await addChartBlock({ title: 'Permanência ao longo do tempo', sel: '#scSurvivalChart', storyKey: 'survival', landscape: false, maxHRatio: 0.48 });
+        await addChartBlock({ title: 'Retenção por mês de entrada', sel: '#scCohortHost', storyKey: 'cohort', landscape: true, maxHRatio: 0.7 });
+
+        beginSection('portrait', 36, 'sinais-ativos');
+        h2('Clientes ativos com sinais de atenção');
+        para('Alguns clientes ainda ativos apresentam combinações que, neste recorte, aparecem mais entre cancelados. Isso não significa que esses clientes vão cancelar.');
+        bulletSafe((p.activeRiskSignals?.signalStats || []).slice(0, 6).map((s) => s.label + ': ' + s.activeClientsWithSignal + ' ativos · taxa observada ' + (s.observedRatePct ?? '—') + '%'));
+
+        h2('Alta performance e destaques');
+        (p.highPerformance?.groups || []).forEach((g) => {
+          para((g.label || '') + ' — ' + (g.n ?? '—') + ' clientes' + (g.medianMeetings != null ? (', mediana de ' + g.medianMeetings + ' reuniões') : '') + '.');
+        });
+        para('Top Pharus: ' + ((p.topClients?.pharus?.rows || []).slice(0, 5).map((r) => r.clientName).join(', ') || '—'));
+        para('Top Davos: ' + ((p.topClients?.davos?.rows || []).slice(0, 5).map((r) => r.clientName).join(', ') || '—'));
+
+        await addChartBlock({ title: 'Prioridades do modelo de validação', sel: '#scPredictChart', storyKey: 'predict' });
+
+        h2('Candidatos a um indicador operacional (MVP)');
+        (p.healthScoreCandidates || []).forEach((c) => {
+          para((c.label || c.id) + ' — ' + (c.dimension || '') + '. ' + (c.justification || '').replace(/AUC|assoc\.|Spearman|ponto-bisserial/gi, '').trim());
+        });
+
+        beginSection('portrait', 40, 'apendice');
+        h1('Apêndice técnico');
+        para('Esta parte é opcional. A leitura principal do relatório usa linguagem simples; abaixo estão os métodos.');
+        para('Métodos: correlação de postos, associação numérica–binária, associação entre categorias, separação individual (AUC), mediana, cobertura, renovação por ciclo, curva de permanência com clientes ainda ativos até a data de corte, retenção por coorte e modelo regularizado com teste fora da amostra.');
+        para('Renovação: cliente renovado quando o ciclo atual é maior que 1.');
+        para('Cobertura: percentual de clientes com informação válida.');
+        para('Cliente ainda ativo na data de corte permanece na curva de permanência sem ser tratado como cancelado.');
+        h2('Limitações');
+        ['Associações não comprovam causalidade.', 'Amostras pequenas e baixa cobertura reduzem a estabilidade.', 'NPS pode ter cobertura limitada.', 'Sinais em ativos são exploratórios.', 'O índice de alta performance não é um score oficial.'].forEach((t) => para('• ' + t));
+        h2('Glossário');
+        para('Cancelado efetivado: cliente com regra oficial de churn/distrato.');
+        para('Cliente ainda ativo na data de corte: permanece na análise de permanência sem evento de cancelamento.');
+        para('Censurado (termo técnico): cliente que ainda não foi cancelado até a data de corte.');
+        para('Lift: quanto a taxa de um grupo supera a média do recorte.');
+
+        // Remove trailing blank page if any (paranoia)
+        while (doc.getNumberOfPages() > 1 && !pageHasContent) {
+          logBreak('delete-trailing-blank');
+          doc.deletePage(doc.getNumberOfPages());
+          // after delete, assume previous page had content
+          pageHasContent = true;
+          doc.setPage(doc.getNumberOfPages());
+          syncSize();
+        }
+
+        // Headers/footers
+        const pages = doc.getNumberOfPages();
+        for (let i = 1; i <= pages; i += 1) {
+          doc.setPage(i);
+          const w = doc.internal.pageSize.getWidth();
+          const h = doc.internal.pageSize.getHeight();
+          doc.setFont('helvetica', 'normal');
+          doc.setFontSize(8);
+          doc.setTextColor(120);
+          doc.text('Análises Estatísticas — Jornada do Cliente', margin, 8);
+          doc.setDrawColor(244, 121, 32);
+          doc.setLineWidth(0.4);
+          doc.line(margin, 10, w - margin, 10);
+          doc.setTextColor(130);
+          doc.text('Fonte: BASE QV · ' + new Date().toLocaleDateString('pt-BR') + ' · Associações não comprovam causalidade.', margin, h - 6);
+          doc.text('Página ' + i + ' de ' + pages, w - margin, h - 6, { align: 'right' });
+        }
+
+        if (pdfDebug) {
+          console.info('[scPdf] summary', { pages, breaks: pageLog.length, log: pageLog });
+          window.__scPdfPageLog = pageLog;
+        }
+
+        doc.save('relatorio-analises-estatisticas-' + day + '.pdf');
+        scSetExportBtn('ok');
+      } catch (err) {
+        console.error(err);
+        scSetExportBtn('err');
+        alert('Não foi possível gerar o relatório: ' + (err?.message || err));
+      } finally {
+        document.querySelectorAll('#view-statistical-crosses .sc-zoom-inner').forEach((el, i) => {
+          if (zoomBackup[i] != null) el.style.transform = zoomBackup[i];
+        });
+      }
+    }
+
+
     function renderStatisticalCrosses() {
       if (!scState.payload) return;
       const p = scState.payload;
@@ -6007,6 +8033,27 @@ ${dataRows}
       if (typeof restoreStaticPortalAlert === 'function') {
         restoreStaticPortalAlert('#scInterpretAlert', 'statistical-crosses-interpret');
       }
+      scRenderDiscoveries(p);
+      scRenderMatrixVars(p);
+      scRenderCorrelationMatrix(p);
+      scRenderDiffChart(p);
+      scRenderAucChart(p);
+      scRenderNpsGroupsChart(p);
+      scRenderRenewalDiffChart(p);
+      scRenderExploratoryAll(p);
+      scRenderSurvivalChart(p);
+      scRenderCohort(p);
+      scRenderRiskRules(p);
+      scBindZoomBars();
+      const onlyActive = scFilters.status?.value === 'active';
+      const onlyCancelled = scFilters.status?.value === 'cancelled';
+      if (onlyActive || onlyCancelled) {
+        const diffEmpty = document.querySelector('#scDiffEmpty');
+        if (diffEmpty) {
+          diffEmpty.style.display = 'block';
+          diffEmpty.textContent = 'O bloco Ativos vs cancelados precisa dos dois grupos. Ajuste o filtro de status para "Ativos e cancelados" ou "Todos".';
+        }
+      }
     }
 
     async function loadStatisticalCrosses() {
@@ -6055,6 +8102,13 @@ ${dataRows}
         if (scFilters.hireTo?.value) params.set('hireTo', scFilters.hireTo.value);
         if (scFilters.cancelFrom?.value) params.set('cancelFrom', scFilters.cancelFrom.value);
         if (scFilters.cancelTo?.value) params.set('cancelTo', scFilters.cancelTo.value);
+        const corrMethod = document.querySelector('#scCorrMethod')?.value || 'spearman';
+        const cohortGran = document.querySelector('#scCohortGranularity')?.value || 'month';
+        params.set('correlationMethod', corrMethod);
+        params.set('cohortGranularity', cohortGran);
+        const cohortPeriod = document.querySelector('#scCohortPeriod')?.value || 'since_2025_01';
+        params.set('cohortPeriod', cohortPeriod);
+        if (scState.matrixVarIds?.length) params.set('matrixVars', scState.matrixVarIds.join(','));
         const response = await apiFetch(`${endpoint}?${params}`, {
           cache: 'no-store',
           signal: controller?.signal,
@@ -6130,6 +8184,64 @@ ${dataRows}
       loadStatisticalCrosses();
     });
     document.querySelector('#scRefresh')?.addEventListener('click', loadStatisticalCrosses);
+    document.querySelector('#scExportReport')?.addEventListener('click', () => { scExportReport(); });
+    document.querySelector('#scDiscoveriesToggle')?.addEventListener('click', () => {
+      scState.showAllDiscoveries = !scState.showAllDiscoveries;
+      if (scState.payload) scRenderDiscoveries(scState.payload);
+    });
+    document.querySelector('#scCorrMethod')?.addEventListener('change', () => loadStatisticalCrosses());
+    document.querySelector('#scCohortGranularity')?.addEventListener('change', () => loadStatisticalCrosses());
+    document.querySelector('#scCohortPeriod')?.addEventListener('change', () => loadStatisticalCrosses());
+    document.querySelector('#scNpsCompMode')?.addEventListener('change', () => { if (scState.payload) scRenderNpsComparative(scState.payload); });
+    document.querySelector('#scExportPharusCsv')?.addEventListener('click', () => scExportTopCsv(scState.payload?.topClients?.pharus));
+    document.querySelector('#scExportDavosCsv')?.addEventListener('click', () => scExportTopCsv(scState.payload?.topClients?.davos));
+    document.querySelector('#scMsTrigger')?.addEventListener('click', () => {
+      const wrap = document.getElementById('scMsWrap');
+      const panel = document.getElementById('scMsPanel');
+      const open = panel && !panel.hidden;
+      if (panel) panel.hidden = !!open;
+      if (wrap) wrap.classList.toggle('is-open', !open);
+      document.querySelector('#scMsTrigger')?.setAttribute('aria-expanded', open ? 'false' : 'true');
+      if (!open) {
+        scState.msDraft = [...(scState.matrixVarIds || SC_MATRIX_RECOMMENDED)];
+        if (scState.payload) scRenderMatrixVars(scState.payload);
+      }
+    });
+    document.querySelector('#scMsSearch')?.addEventListener('input', () => { if (scState.payload) scRenderMatrixVars(scState.payload); });
+    document.querySelector('#scMsApply')?.addEventListener('click', () => {
+      const ids = scState.msDraft || [];
+      if (ids.length > 12) { alert('Selecione no máximo 12 variáveis para manter a legibilidade.'); return; }
+      scState.matrixVarIds = ids.length ? ids : [...SC_MATRIX_RECOMMENDED];
+      const panel = document.getElementById('scMsPanel');
+      const wrap = document.getElementById('scMsWrap');
+      if (panel) panel.hidden = true;
+      if (wrap) wrap.classList.remove('is-open');
+      loadStatisticalCrosses();
+    });
+    document.querySelector('#scMsCancel')?.addEventListener('click', () => {
+      scState.msDraft = null;
+      const panel = document.getElementById('scMsPanel');
+      const wrap = document.getElementById('scMsWrap');
+      if (panel) panel.hidden = true;
+      if (wrap) wrap.classList.remove('is-open');
+      if (scState.payload) scRenderMatrixVars(scState.payload);
+    });
+    document.querySelector('#scMatrixRecommended')?.addEventListener('click', () => {
+      scState.msDraft = [...SC_MATRIX_RECOMMENDED];
+      if (scState.payload) scRenderMatrixVars(scState.payload);
+    });
+    document.querySelector('#scMatrixClear')?.addEventListener('click', () => {
+      scState.msDraft = [];
+      if (scState.payload) scRenderMatrixVars(scState.payload);
+    });
+    document.querySelector('#scCohortCellMode')?.addEventListener('change', () => { if (scState.payload) scRenderCohort(scState.payload); });
+    document.querySelector('#scCohortMinN')?.addEventListener('change', () => { if (scState.payload) scRenderCohort(scState.payload); });
+    document.querySelector('#scMatrixDrawerClose')?.addEventListener('click', () => {
+      const d = document.querySelector('#scMatrixDrawer');
+      if (d) d.hidden = true;
+    });
+    document.querySelector('#scSurvivalCompare')?.addEventListener('change', () => { if (scState.payload) scRenderSurvivalChart(scState.payload); });
+    document.querySelector('#scDiffUnit')?.addEventListener('change', () => { if (scState.payload) scRenderDiffChart(scState.payload); });
     ['status', 'segment', 'engineer', 'hasMeeting', 'hasNps', 'npsClass', 'renewed', 'hasFinancial', 'hasMechanism', 'hireFrom', 'hireTo', 'cancelFrom', 'cancelTo'].forEach((k) => {
       scFilters[k]?.addEventListener('change', () => loadStatisticalCrosses());
     });
@@ -14626,6 +16738,8 @@ ${dataRows}
     window.startPortalApp = startPortalApp;
     window.resetPortalApp = resetPortalApp;
   </script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.1/dist/umd/supabase.min.js"></script>
   <script type="module">
     try {

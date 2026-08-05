@@ -1,0 +1,106 @@
+{
+  "ms": 12888,
+  "clients": 2246,
+  "analyzed": 2246,
+  "axis": {
+    "cancelRows": 20,
+    "npsRows": 13,
+    "renewalRows": 20,
+    "tenureRows": 13
+  },
+  "predictive": {
+    "method": "logistic_l2_regularized + permutation_importance",
+    "status": "available",
+    "split": "temporal_70_30",
+    "auc": 0.7438,
+    "top5": [
+      {
+        "id": "meetingCount",
+        "imp": 0.124
+      },
+      {
+        "id": "npsScore",
+        "imp": 0.0469
+      },
+      {
+        "id": "attendanceRate",
+        "imp": 0.0299
+      },
+      {
+        "id": "averageIntervalDays",
+        "imp": 0.0245
+      },
+      {
+        "id": "hasMeeting",
+        "imp": 0.0097
+      }
+    ]
+  },
+  "health": [
+    {
+      "id": "meetingCount",
+      "dim": "Engajamento",
+      "cov": 100
+    },
+    {
+      "id": "npsScore",
+      "dim": "Satisfação",
+      "cov": 100
+    },
+    {
+      "id": "implementedMechanismCount",
+      "dim": "Implementação",
+      "cov": 100
+    },
+    {
+      "id": "hasFinancialData",
+      "dim": "Atualização financeira",
+      "cov": 100
+    },
+    {
+      "id": "liquidityReserve",
+      "dim": "Perfil financeiro",
+      "cov": 100
+    }
+  ],
+  "highPerf": [
+    {
+      "label": "Somente Promotor",
+      "n": 209,
+      "cancelledPct": 0.957
+    },
+    {
+      "label": "Somente Renovado",
+      "n": 188,
+      "cancelledPct": 1.064
+    },
+    {
+      "label": "Promotor e Renovado (alta performance)",
+      "n": 45,
+      "cancelledPct": 0
+    }
+  ],
+  "groupMatrix": {
+    "vars": 12,
+    "groups": 8
+  },
+  "rankings": {
+    "cancel": [
+      "Dias até primeira reunião",
+      "Possui reunião",
+      "Engenheiro Patrimonial"
+    ],
+    "nps": [
+      "Dias até primeira implementação",
+      "Último aporte",
+      "Reserva de liquidez"
+    ],
+    "renewal": [
+      "Mecanismos implementados",
+      "Possui reunião",
+      "Engenheiro Patrimonial"
+    ]
+  },
+  "renewed": 196,
+  "discoveries": 8
+}

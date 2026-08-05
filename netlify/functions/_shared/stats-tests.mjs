@@ -75,7 +75,9 @@ export function spearman(x, y) {
     pairs.push({ x: Number(x[i]), y: Number(y[i]) });
   }
   const n = pairs.length;
-  if (n < 3) return { rho: null, n, warning: "sample_too_small" };
+  if (n < 3) {
+    return { rho: null, r: null, n, warning: "sample_too_small", status: "sample_too_small", reason: "n < 3" };
+  }
   const rx = averageRanks(pairs.map((p) => p.x));
   const ry = averageRanks(pairs.map((p) => p.y));
   const mx = mean(rx);
@@ -90,8 +92,43 @@ export function spearman(x, y) {
     dx += a * a;
     dy += b * b;
   }
-  if (!dx || !dy) return { rho: null, n, warning: "zero_variance" };
-  return { rho: round4(num / Math.sqrt(dx * dy)), n, warning: null };
+  if (!dx || !dy) {
+    return { rho: null, r: null, n, warning: "zero_variance", status: "zero_variance", reason: "variância zero nos ranks" };
+  }
+  const rho = round4(num / Math.sqrt(dx * dy));
+  return { rho, r: rho, n, warning: null, status: "ok", reason: null };
+}
+
+/** Correlação de Pearson (pares completos). */
+export function pearson(x, y) {
+  const pairs = [];
+  const nIn = Math.min(x?.length || 0, y?.length || 0);
+  for (let i = 0; i < nIn; i += 1) {
+    if (x[i] == null || !Number.isFinite(Number(x[i]))) continue;
+    if (y[i] == null || !Number.isFinite(Number(y[i]))) continue;
+    pairs.push({ x: Number(x[i]), y: Number(y[i]) });
+  }
+  const n = pairs.length;
+  if (n < 3) {
+    return { r: null, rho: null, n, warning: "sample_too_small", status: "sample_too_small", reason: "n < 3" };
+  }
+  const mx = mean(pairs.map((p) => p.x));
+  const my = mean(pairs.map((p) => p.y));
+  let num = 0;
+  let dx = 0;
+  let dy = 0;
+  for (const p of pairs) {
+    const a = p.x - mx;
+    const b = p.y - my;
+    num += a * b;
+    dx += a * a;
+    dy += b * b;
+  }
+  if (!dx || !dy) {
+    return { r: null, rho: null, n, warning: "zero_variance", status: "zero_variance", reason: "variância zero" };
+  }
+  const r = round4(num / Math.sqrt(dx * dy));
+  return { r, rho: r, n, warning: null, status: "ok", reason: null };
 }
 
 /** Mann–Whitney U (two-sided p via normal approximation with tie correction). */

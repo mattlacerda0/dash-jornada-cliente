@@ -1076,6 +1076,36 @@ export const portalMetricRegistry = {
     aggregation: "value",
     definition: "Tempo (dias) em que a curva KM atinge 50%, se atingido.",
   },
+  sc_discoveries: {
+    domain: "statistical_crosses",
+    label: "Principais descobertas",
+    payloadPath: "discoveries",
+    sampleSizePath: "summary.analyzedClients",
+    unit: "list",
+    aggregation: "list",
+    definition: "Narrativas determinísticas a partir de associações/diferenças com cobertura e amostra suficientes. Não afirmam causalidade.",
+    aliases: ["principais descobertas", "descobertas estatisticas", "quais descobertas"],
+  },
+  sc_correlation_matrix: {
+    domain: "statistical_crosses",
+    label: "Matriz de correlação",
+    payloadPath: "correlationMatrix",
+    sampleSizePath: "summary.analyzedClients",
+    unit: "matrix",
+    aggregation: "matrix",
+    definition: "Matriz Spearman (padrão) ou Pearson entre variáveis numéricas; pares completos; diagonal = 1.",
+    aliases: ["matriz de correlacao", "maior correlacao", "correlacao entre variaveis"],
+  },
+  sc_cohort: {
+    domain: "statistical_crosses",
+    label: "Coorte de retenção",
+    payloadPath: "cohort",
+    sampleSizePath: "summary.analyzedClients",
+    unit: "cohort",
+    aggregation: "cohort",
+    definition: "Retenção por mês/trimestre de contratação e idade em meses. Meses futuros não observáveis ficam vazios.",
+    aliases: ["coorte", "retencao por coorte", "retencao apos 6 meses", "retencao apos 12 meses"],
+  },
 
   /* ---------- CANCELAMENTO (BASE QV) ---------- */
   total_cancellations: {

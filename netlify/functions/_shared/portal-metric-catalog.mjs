@@ -2661,6 +2661,11 @@ export function normalizePortalPage(page) {
     ep_performance: "ep_performance",
     "statistical-crosses": "statistical_crosses",
     statistical_crosses: "statistical_crosses",
+    exploration: "statistical_crosses",
+    discoveries: "statistical_crosses",
+    crossings: "statistical_crosses",
+    "analises-estatisticas": "statistical_crosses",
+    analises: "statistical_crosses",
     quality: "quality",
   };
   return map[p] || p || null;

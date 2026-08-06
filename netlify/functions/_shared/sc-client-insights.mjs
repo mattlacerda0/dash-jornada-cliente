@@ -3,9 +3,10 @@
  * Top Pharus/Davos, matriz NPS expandida.
  * Sem alteração de banco. Sem LLM.
  */
-import { median, mean, coveragePct, round3, round4 } from "./stats-tests.mjs";
+import { median, mean, coveragePct, round3, round4, sampleSd, standardizedDifference } from "./stats-tests.mjs";
 
 function num(v) {
+  if (v == null || v === "") return null;
   if (typeof v === "boolean") return v ? 1 : 0;
   const n = Number(v);
   return Number.isFinite(n) ? n : null;
@@ -419,38 +420,64 @@ export function buildNpsComparativeMatrix(clients) {
     { id: "detractor", label: "Detratores", test: (c) => c.npsClass === "detractor" },
   ];
   const variables = [
-    { id: "monthlyIncome", label: "Renda", kind: "median" },
-    { id: "lastContribution", label: "Último aporte", kind: "median" },
-    { id: "implementedMechanismCount", label: "Mecanismos implementados", kind: "median" },
-    { id: "meetingCount", label: "Total de reuniões", kind: "median" },
-    { id: "averageIntervalDays", label: "Intervalo médio", kind: "median" },
-    { id: "renewalCount", label: "Renovações", kind: "median" },
-    { id: "currentCycle", label: "Ciclo atual", kind: "median" },
+    { id: "monthlyIncome", label: "Renda mensal", kind: "median" },
+    { id: "lastContribution", label: "Aporte", kind: "median" },
     { id: "liquidityReserve", label: "Reserva", kind: "median" },
-    { id: "stayDays", label: "Permanência", kind: "median" },
     { id: "paidPropertiesValue", label: "Patrimônio", kind: "median" },
+    { id: "mechanismCount", label: "Mecanismos", kind: "median" },
+    { id: "implementedMechanismCount", label: "Mecanismos implementados", kind: "median" },
+    { id: "meetingCount", label: "Reuniões", kind: "median" },
+    { id: "averageIntervalDays", label: "Intervalo médio", kind: "median" },
     { id: "daysSinceLastMeeting", label: "Dias desde última reunião", kind: "median" },
+    { id: "attendanceRate", label: "Taxa de comparecimento", kind: "median" },
     { id: "noShowCount", label: "No-shows", kind: "median" },
-    { id: "daysSinceFinancialUpdate", label: "Dias desde atualização financeira", kind: "median" },
-    { id: "isCancelled", label: "% cancelado", kind: "pct" },
-    { id: "hasRenewed", label: "% renovado", kind: "pct" },
+    { id: "rescheduleCount", label: "Remarcações", kind: "median" },
+    { id: "stayDays", label: "Permanência", kind: "median" },
+    { id: "currentCycle", label: "Ciclo atual", kind: "median" },
+    { id: "renewalCount", label: "Quantidade de renovações", kind: "median" },
+    { id: "isCancelled", label: "Cancelamento", kind: "pct" },
+    { id: "hasRenewed", label: "Renovação", kind: "pct" },
     { id: "hasFinancialData", label: "% com financeiro", kind: "pct" },
     { id: "hasMeeting", label: "% com reunião", kind: "pct" },
   ];
 
-  const withNps = (clients || []).filter((c) => c.npsClass);
+  const eligible = clients || [];
+  const eligibleN = eligible.length;
+  // NPS válido descritivo da matriz: resposta mais recente já consolidada no cliente + classe.
+  // Alinha à cobertura preditiva da seção principal quando npsPredictiveOk estiver disponível.
+  const withNps = eligible.filter((c) => c.hasNps && c.npsClass && (c.npsPredictiveOk !== false));
+  const withNpsN = withNps.length;
+  const npsCoverageGeneral = coveragePct(withNpsN, eligibleN);
+
   const groupData = groups.map((g) => {
     const rows = withNps.filter(g.test);
     return { ...g, n: rows.length, rows };
   });
 
-  const global = {};
+  const classCoverage = Object.fromEntries(
+    groupData.map((g) => [g.id, {
+      n: g.n,
+      pctOfNps: coveragePct(g.n, withNpsN),
+      pctOfEligible: coveragePct(g.n, eligibleN),
+    }])
+  );
+
+  const globalMed = {};
+  const globalSd = {};
+  const globalValidN = {};
   for (const v of variables) {
     if (v.kind === "median") {
-      global[v.id] = median(withNps.map((c) => num(c[v.id])).filter((x) => x != null));
+      const allVals = withNps.map((c) => num(c[v.id])).filter((x) => x != null);
+      globalMed[v.id] = median(allVals);
+      globalSd[v.id] = sampleSd(allVals);
+      globalValidN[v.id] = allVals.length;
     } else {
-      const vals = withNps.filter((c) => c[v.id] != null);
-      global[v.id] = vals.length ? (vals.filter((c) => !!c[v.id]).length / vals.length) * 100 : null;
+      const valid = withNps.filter((c) => c[v.id] != null && c[v.id] !== "");
+      globalMed[v.id] = valid.length
+        ? (valid.filter((c) => !!c[v.id] && c[v.id] !== 0).length / valid.length) * 100
+        : null;
+      globalSd[v.id] = null;
+      globalValidN[v.id] = valid.length;
     }
   }
 
@@ -460,32 +487,62 @@ export function buildNpsComparativeMatrix(clients) {
     for (let j = 0; j < groupData.length; j += 1) {
       const g = groupData[j];
       let value = null;
-      let coverage = null;
+      let indicatorCoverageInClass = null;
+      let nValidInClass = null;
       if (g.n >= 5) {
         if (v.kind === "median") {
           const vals = g.rows.map((c) => num(c[v.id])).filter((x) => x != null);
           value = vals.length ? median(vals) : null;
-          coverage = coveragePct(vals.length, g.n);
+          nValidInClass = vals.length;
+          indicatorCoverageInClass = coveragePct(vals.length, g.n);
         } else {
-          const vals = g.rows;
-          const pos = vals.filter((c) => !!c[v.id]).length;
+          const vals = g.rows.filter((c) => c[v.id] != null && c[v.id] !== "");
+          const pos = vals.filter((c) => !!c[v.id] && c[v.id] !== 0).length;
           value = vals.length ? round3((pos / vals.length) * 100) : null;
-          coverage = 100;
+          nValidInClass = vals.length;
+          indicatorCoverageInClass = coveragePct(vals.length, g.n);
         }
       }
-      const gref = global[v.id];
-      const standardized = value != null && gref != null && Math.abs(gref) > 1e-9
-        ? round4((value - gref) / Math.abs(gref))
-        : value != null && gref != null ? round4(value - gref) : null;
+      const gref = globalMed[v.id];
+      let standardized = null;
+      let difference = null;
+      let pctDiff = null;
+      if (value != null && gref != null) {
+        difference = round4(value - gref);
+        if (Math.abs(gref) > 1e-9) pctDiff = round3((difference / Math.abs(gref)) * 100);
+        if (v.kind === "median" && globalSd[v.id] != null && globalSd[v.id] > 1e-12) {
+          standardized = standardizedDifference(value, gref, globalSd[v.id]);
+        } else if (Math.abs(gref) > 1e-9) {
+          standardized = round4((value - gref) / Math.abs(gref));
+        } else {
+          standardized = round4(value - gref);
+        }
+      }
+      const dir = standardized == null ? "sem dado"
+        : Math.abs(standardized) < 0.15 ? "semelhante à referência"
+        : standardized > 0 ? "acima da referência" : "abaixo da referência";
       cells.push({
-        i, j, varId: v.id, groupId: g.id, labelRow: v.label, labelCol: g.label,
-        value, standardized, diffVsGlobal: value != null && gref != null ? round3(value - gref) : null,
-        coveragePercent: coverage, n: g.n,
+        i, j,
+        varId: v.id,
+        groupId: g.id,
+        labelRow: v.label,
+        labelCol: g.label,
+        value,
+        reference: gref,
+        difference,
+        pctDiff,
+        standardized,
+        coveragePercent: indicatorCoverageInClass,
+        indicatorCoverageInClass,
+        n: g.n,
+        nValid: nValidInClass,
+        npsValidWithIndicator: globalValidN[v.id] ?? null,
+        npsCoverageGeneral,
+        observation: dir,
       });
     }
   }
 
-  // engineer/segment mode for top levels per NPS class
   const categorical = groups.map((g) => {
     const rows = withNps.filter(g.test);
     const topEng = modeLabel(rows.map((c) => c.engineer));
@@ -495,12 +552,21 @@ export function buildNpsComparativeMatrix(clients) {
 
   return {
     title: "Matriz comparativa NPS (Promotores / Neutros / Detratores)",
-    note: "Valores padronizados vs referência da população com NPS. Associação observada, não causalidade.",
+    mode: "standardized_vs_nps_population",
+    note: "Cada cor compara a classe NPS com a referência geral dos clientes com NPS válido no recorte. Azul = abaixo; cinza = semelhante; laranja/vermelho = acima.",
+    referenceNote: "Referência = clientes com resposta NPS válida (mais recente, nota 0–10) após os filtros aplicados — não a população total do portal.",
+    referenceN: withNpsN,
+    eligiblePopulation: eligibleN,
+    clientsWithValidNps: withNpsN,
+    npsCoverageGeneral,
+    classCoverage,
+    coverageWarning: (npsCoverageGeneral == null || npsCoverageGeneral < 40)
+      ? "Cobertura baixa: os resultados representam somente a parcela de clientes que respondeu ao NPS."
+      : null,
     variables,
     groups: groupData.map((g) => ({ id: g.id, label: g.label, n: g.n })),
     cells,
     categoricalHighlights: categorical,
-    coverageWarning: withNps.length < 30 ? "Amostra NPS limitada." : null,
   };
 }
 

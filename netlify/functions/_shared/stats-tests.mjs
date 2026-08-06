@@ -34,6 +34,49 @@ export function mean(values) {
   return nums.reduce((a, b) => a + b, 0) / nums.length;
 }
 
+/** Desvio-padrão amostral (n−1). */
+export function sampleSd(values) {
+  const nums = values.filter((v) => v != null && Number.isFinite(Number(v))).map(Number);
+  if (nums.length < 2) return null;
+  const m = mean(nums);
+  if (m == null) return null;
+  const ss = nums.reduce((acc, v) => acc + (v - m) * (v - m), 0);
+  return Math.sqrt(ss / (nums.length - 1));
+}
+
+/**
+ * Desvio-padrão agrupado de dois grupos.
+ * Usado na diferença padronizada: (média/mediana₁ − média/mediana₀) / sdPooled.
+ */
+export function pooledSd(groupA, groupB) {
+  const a = (groupA || []).filter((v) => v != null && Number.isFinite(Number(v))).map(Number);
+  const b = (groupB || []).filter((v) => v != null && Number.isFinite(Number(v))).map(Number);
+  const sa = sampleSd(a);
+  const sb = sampleSd(b);
+  if (sa == null && sb == null) return null;
+  if (sa == null) return sb;
+  if (sb == null) return sa;
+  const na = a.length;
+  const nb = b.length;
+  if (na + nb < 3) return sa || sb;
+  return Math.sqrt(((na - 1) * sa * sa + (nb - 1) * sb * sb) / (na + nb - 2));
+}
+
+/**
+ * Diferença padronizada entre dois grupos (efeito comparável).
+ * Convenção: (valorGrupoAlvo − valorReferência) / sdPooled.
+ * Positivo = alvo maior; negativo = alvo menor.
+ */
+export function standardizedDifference(targetStat, referenceStat, pooled) {
+  const t = Number(targetStat);
+  const r = Number(referenceStat);
+  const sd = Number(pooled);
+  if (!Number.isFinite(t) || !Number.isFinite(r)) return null;
+  const denom = Number.isFinite(sd) && sd > 1e-12 ? sd : null;
+  if (denom == null) return t === r ? 0 : null;
+  return round4((t - r) / denom);
+}
+
 export function round4(n) {
   if (n == null || !Number.isFinite(n)) return null;
   return Math.round(n * 10000) / 10000;

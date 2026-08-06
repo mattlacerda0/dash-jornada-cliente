@@ -32,9 +32,12 @@ import {
   median,
   pearson,
   pointBiserial,
+  pooledSd,
   round3,
   round4,
+  sampleSd,
   spearman,
+  standardizedDifference,
 } from "./_shared/stats-tests.mjs";
 import {
   parseCurrentCycle,
@@ -244,12 +247,27 @@ export function buildAnalyticalPopulation(generalPayload, meetingsPayload, mecha
     const contractDate = parseDate(g.contractDate);
     const createdAt = parseDate(g.createdAt);
     const hireDate = contractDate || createdAt;
-    let stayDays = g.stayDays;
-    if (stayDays == null && hireDate) {
-      const end = isCancelledWithDate ? cancellationDate : now;
-      stayDays = daysBetween(hireDate, end);
+    // Permanência oficial do eixo SC (America/Sao_Paulo via daysBetween/now):
+    // cancelado com data → cancel − contratação; não cancelado → hoje − contratação.
+    // Cancelado sem data, contratação futura, datas inválidas ou permanência negativa → null.
+    let stayDays = null;
+    if (!hireDate) {
+      bump("missing_hire_for_stay", "Sem data de contratação — permanência excluída");
+    } else if (hireDate.getTime() > now.getTime()) {
+      bump("future_hire_for_stay", "Contratação futura — permanência excluída");
+    } else if (isCancelledWithDate) {
+      stayDays = daysBetween(hireDate, cancellationDate);
       if (stayDays != null && stayDays < 0) {
         bump("negative_stay", "Permanência negativa (cancelamento anterior à contratação)");
+        stayDays = null;
+      }
+    } else if (isCancelled) {
+      bump("cancelled_without_date_stay", "Cancelado sem data válida — permanência excluída");
+      stayDays = null;
+    } else {
+      stayDays = daysBetween(hireDate, now);
+      if (stayDays != null && stayDays < 0) {
+        bump("negative_stay_active", "Permanência negativa — excluída");
         stayDays = null;
       }
     }
@@ -268,6 +286,12 @@ export function buildAnalyticalPopulation(generalPayload, meetingsPayload, mecha
     if (journeyCount != null && journeyCount > 0 && noShowCount != null) {
       const attendedProxy = journeyCount - noShowCount;
       if (attendedProxy >= 0) attendanceRate = round4(attendedProxy / journeyCount);
+    }
+    /** Reuniões por mês de permanência (normaliza tempo de exposição). Null se meetingCount ou stayDays ausentes. */
+    let meetingsPerMonth = null;
+    if (meetingCount != null && Number.isFinite(Number(meetingCount)) && stayDays != null && Number.isFinite(stayDays) && stayDays >= 0) {
+      const months = Math.max(stayDays / 30.4375, 1);
+      meetingsPerMonth = round4(Number(meetingCount) / months);
     }
 
     const available = k?.available ?? null;
@@ -315,7 +339,8 @@ export function buildAnalyticalPopulation(generalPayload, meetingsPayload, mecha
       isFrozen,
       hasConfirmedDate,
       cancelledWithoutDate,
-      cancellationSource: blankToNull(g.cancellationSource) || null,
+      cancellationSource: blankToNull(g.cancellationSource) || blankToNull(g.cancellationDateSource) || null,
+      cancellationDateSource: blankToNull(g.cancellationDateSource) || blankToNull(g.cancellationSource) || null,
       contractDate: contractDate ? contractDate.toISOString() : null,
       hireDate: hireDate ? hireDate.toISOString() : null,
       acquisitionDate: g.acquisitionDate || (hireDate ? hireDate.toISOString() : null),
@@ -344,6 +369,7 @@ export function buildAnalyticalPopulation(generalPayload, meetingsPayload, mecha
       incomeBand: g.incomeBand || incomeBand(g.monthlyIncome),
       liquidityBand: g.liquidityBand || liquidityBand(g.liquidityReserve),
       meetingCount,
+      meetingsPerMonth,
       journeyMeetingCount: journeyCount,
       noShowCount,
       rescheduleCount,
@@ -434,6 +460,7 @@ const NUMERIC_VARS = [
   { id: "lastContribution", label: "Último aporte", field: "lastContribution", predictive: true, source: "client_financial_data.ultimo_aporte" },
   { id: "paidPropertiesValue", label: "Patrimônio (imóveis quitados)", field: "paidPropertiesValue", predictive: true, source: "client_financial_data.valor_imoveis_quitados" },
   { id: "meetingCount", label: "Total de reuniões", field: "meetingCount", predictive: true, source: "client_meetings + manual_meetings (dashboard Reuniões)" },
+  { id: "meetingsPerMonth", label: "Reuniões por mês de permanência", field: "meetingsPerMonth", predictive: true, source: "meetingCount / max(stayDays/30.4375, 1)", note: "Normaliza exposição temporal; não substitui o total de reuniões." },
   { id: "noShowCount", label: "No-shows", field: "noShowCount", predictive: true, source: "meeting_attendance" },
   { id: "rescheduleCount", label: "Remarcações", field: "rescheduleCount", predictive: true, source: "meeting_attendance.remarcado" },
   { id: "attendanceRate", label: "Taxa de presença (proxy)", field: "attendanceRate", predictive: true, source: "journeyMeetings − absences" },
@@ -500,6 +527,10 @@ function analyzeNumericVariable(def, active, cancelled, minSample) {
   const medC = median(cVals);
   const meanA = mean(aVals);
   const meanC = mean(cVals);
+  const sdA = sampleSd(aVals);
+  const sdC = sampleSd(cVals);
+  const sdPool = pooledSd(aVals, cVals);
+  const stdDiff = standardizedDifference(medC, medA, sdPool);
   let diffAbs = null;
   let diffPct = null;
   if (medA != null && medC != null) {
@@ -576,6 +607,12 @@ function analyzeNumericVariable(def, active, cancelled, minSample) {
     medianNonCancelled: round3(medA),
     activeMean: round3(meanA),
     cancelledMean: round3(meanC),
+    sdActive: round3(sdA),
+    sdCancelled: round3(sdC),
+    sdPooled: round3(sdPool),
+    pooledSd: round3(sdPool),
+    stdDiff,
+    standardizedDifference: stdDiff,
     differenceAbs: diffAbs,
     differencePct: diffPct,
     diff: diffAbs,
@@ -1052,6 +1089,8 @@ export function analyzePopulation(clients, { minSample = MIN_GROUP, includeFroze
       overall: {
         ...overall,
         curve: downsampleCurve(overall.curve, 60),
+        excluded: cancelledWithoutDate,
+        excludedNoDate: cancelledWithoutDate,
         definition: {
           start: "data de contratação (data_inicio_ciclo ou created_at)",
           event: "cancelamento analítico com data consolidada",
@@ -1061,6 +1100,7 @@ export function analyzePopulation(clients, { minSample = MIN_GROUP, includeFroze
       groups,
       atRisk: survRecords.length,
       logRank: logRankResult,
+      cutoffDate: civilDateInSaoPaulo(new Date()) || null,
     },
     quality,
     excludedVariables: excluded,
@@ -1197,6 +1237,9 @@ export function compareRenewedVsNot(clients, minSample = MIN_GROUP) {
       .map(Number);
     const medR = median(rVals);
     const medN = median(nVals);
+    const sdPool = pooledSd(rVals, nVals);
+    // Positivo = maior entre renovados
+    const stdDiff = standardizedDifference(medR, medN, sdPool);
     const descriptiveOk = rVals.length >= MIN_DESCRIPTIVE && nVals.length >= MIN_DESCRIPTIVE;
     const mw = mannWhitney(nVals, rVals);
     let diffAbs = null;
@@ -1207,8 +1250,13 @@ export function compareRenewedVsNot(clients, minSample = MIN_GROUP) {
       medianRenewed: round3(medR),
       medianNotRenewed: round3(medN),
       differenceAbs: diffAbs,
+      sdPooled: round3(sdPool),
+      pooledSd: round3(sdPool),
+      stdDiff,
+      standardizedDifference: stdDiff,
       nRenewed: rVals.length,
       nNotRenewed: nVals.length,
+      coveragePercent: coveragePct(rVals.length + nVals.length, eligible.length),
       pValue: mw.pValue,
       rankBiserial: mw.rankBiserial,
       status: descriptiveOk ? "available" : "small_sample",
@@ -1230,6 +1278,14 @@ export function buildNpsGroupsComparison(clients) {
     const g = withNps.filter((c) => c.npsClass === key);
     const cancelled = g.filter((c) => c.isCancelled).length;
     const renewed = g.filter((c) => c.hasRenewed).length;
+    const others = withNps.filter((c) => c.npsClass !== key);
+    const othersCancelled = others.filter((c) => c.isCancelled).length;
+    const rate = g.length ? (cancelled / g.length) * 100 : null;
+    const othersRate = others.length ? (othersCancelled / others.length) * 100 : null;
+    // Diferença de proporções em pontos percentuais / escala 100 (simples e legível)
+    const cancelStdDiff = rate != null && othersRate != null
+      ? round4((rate - othersRate) / 100)
+      : null;
     const numericMedians = {};
     for (const def of [
       { id: "stayDays", field: "stayDays" },
@@ -1247,8 +1303,12 @@ export function buildNpsGroupsComparison(clients) {
       class: key,
       label,
       n: g.length,
+      nOthers: others.length,
       cancelled,
       cancelledPct: pct(cancelled, g.length),
+      cancelledPctOthers: othersRate != null ? round3(othersRate) : null,
+      /** Diferença padronizada do % cancelado vs demais classes (em escala de proporção) */
+      stdDiffCancelledVsOthers: cancelStdDiff,
       renewed,
       renewedPct: pct(renewed, g.length),
       medians: numericMedians,
@@ -1259,12 +1319,39 @@ export function buildNpsGroupsComparison(clients) {
   });
 }
 
-/** Spearman: permanência × preditores numéricos (não-cancelados = censurados). */
+/** Spearman: permanência × preditores numéricos (não-cancelados = tempo até hoje; cancelados só com data). */
 export function analyzeTenureCorrelations(clients) {
-  const pool = (clients || []).filter((c) => c.stayDays != null && Number.isFinite(c.stayDays));
-  const eventCount = pool.filter((c) => c.isCancelled).length;
+  const pool = (clients || []).filter((c) => c.stayDays != null && Number.isFinite(c.stayDays) && c.stayDays >= 0);
+  const eventCount = pool.filter((c) => c.isCancelled && c.hasConfirmedDate).length;
   const censoredCount = pool.length - eventCount;
+  const stayVals = pool.map((c) => c.stayDays);
+  const stayMedian = median(stayVals);
+  const highStay = pool.filter((c) => c.stayDays >= stayMedian);
+  const lowStay = pool.filter((c) => c.stayDays < stayMedian);
   const rows = [];
+
+  const INTERPRET = {
+    meetingCount: {
+      positive: "Clientes que permanecem por mais tempo acumulam mais reuniões ao longo da jornada.",
+      negative: "Neste recorte, maior permanência aparece com menos reuniões totais — auditar cobertura e janela de observação.",
+    },
+    meetingsPerMonth: {
+      positive: "Clientes com maior permanência apresentam maior frequência mensal de reuniões.",
+      negative: "Clientes mais antigos apresentam menor frequência mensal de reuniões, mesmo que acumulem mais reuniões no total.",
+    },
+    daysSinceLastMeeting: {
+      positive: "Clientes com maior permanência tendem a estar há mais dias sem reunião.",
+      negative: "Clientes com maior permanência tendem a apresentar menor distância desde a última reunião, indicando contato mais recente.",
+    },
+    daysToFirstMeeting: {
+      positive: "Clientes com maior permanência tiveram, em mediana, mais dias até a primeira reunião.",
+      negative: "Clientes com maior permanência chegaram à primeira reunião mais cedo.",
+    },
+    averageIntervalDays: {
+      positive: "Maior permanência aparece com intervalos médios maiores entre reuniões.",
+      negative: "Maior permanência aparece com intervalos médios menores entre reuniões.",
+    },
+  };
 
   for (const def of NUMERIC_VARS) {
     if (def.field === "stayDays" || def.id === "stayDays") continue;
@@ -1278,22 +1365,71 @@ export function analyzeTenureCorrelations(clients) {
       ys.push(Number(v));
     }
     const sp = spearman(xs, ys);
+    const absRho = sp.rho == null ? null : Math.abs(sp.rho);
+    const nearPerfect = absRho != null && absRho >= 0.95;
+    const derivedRisk = nearPerfect && /cycle|renova|stay|perman|tenure/i.test(`${def.id} ${def.label}`);
+
+    const valsHigh = highStay.map((c) => numOrNull(c[def.field])).filter((v) => v != null);
+    const valsLow = lowStay.map((c) => numOrNull(c[def.field])).filter((v) => v != null);
+    let stdDiff = null;
+    if (valsHigh.length >= 10 && valsLow.length >= 10) {
+      stdDiff = standardizedDifference(median(valsHigh), median(valsLow), pooledSd(valsHigh, valsLow));
+    }
+    const interp = INTERPRET[def.id];
+    let interpretation = null;
+    if (sp.rho != null && interp) {
+      interpretation = sp.rho >= 0 ? interp.positive : interp.negative;
+    } else if (sp.rho != null) {
+      interpretation = sp.rho >= 0
+        ? `Correlação positiva: o indicador tende a crescer junto com a permanência.`
+        : `Correlação negativa: o indicador tende a diminuir enquanto a permanência aumenta.`;
+    }
+
     rows.push({
       id: def.id,
       label: def.label,
       rho: sp.rho,
+      association: sp.rho,
       n: sp.n,
-      warning: sp.warning,
+      warning: sp.warning || (nearPerfect ? "near_perfect_correlation" : null),
+      auditNote: nearPerfect
+        ? (derivedRisk
+          ? "Correlação muito alta — verificar se a variável deriva da permanência ou do ciclo (possível leakage)."
+          : "Correlação muito alta — revisar outliers e definição da variável antes de tratar como descoberta.")
+        : null,
+      interpretation,
+      stdDiff,
+      stdDiffGroups: "Alta permanência (≥ mediana) vs baixa permanência (< mediana)",
+      medianHighStay: valsHigh.length ? median(valsHigh) : null,
+      medianLowStay: valsLow.length ? median(valsLow) : null,
+      nHighStay: valsHigh.length,
+      nLowStay: valsLow.length,
+      stayMedian,
       strength: associationStrength(sp.rho, "r"),
       eventCount,
       censoredCount,
       censored: true,
-      note: "Permanência de não-cancelados é tempo observado (censura à direita).",
+      stayPoolN: stayVals.length,
+      stayMin: stayVals.length ? Math.min(...stayVals) : null,
+      stayMax: stayVals.length ? Math.max(...stayVals) : null,
+      yMin: ys.length ? Math.min(...ys) : null,
+      yMax: ys.length ? Math.max(...ys) : null,
+      yZeros: ys.filter((v) => v === 0).length,
+      note: "Permanência: cancelados com data = cancel−contratação; ativos = hoje−contratação (SP). Spearman descritivo.",
       coverage: coveragePct(xs.length, pool.length),
+      coveragePercent: coveragePct(xs.length, pool.length),
+      eligiblePopulation: pool.length,
+      missing: Math.max(0, pool.length - xs.length),
+      pValue: sp.pValue ?? null,
     });
   }
   rows.sort((a, b) => Math.abs(b.rho || 0) - Math.abs(a.rho || 0));
   return rows;
+}
+
+function numOrNull(v) {
+  const n = Number(v);
+  return Number.isFinite(n) ? n : null;
 }
 
 /** Buckets de permanência. */
@@ -1581,7 +1717,6 @@ function parseFiltersFromRequest(request) {
   try {
     const url = new URL(request.url);
     const get = (k) => url.searchParams.get(k);
-    const correlationMethod = (get("correlationMethod") || "spearman").toLowerCase();
     const cohortGranularity = (get("cohortGranularity") || "month").toLowerCase();
     return {
       status: get("status") || "active_cancelled",
@@ -1605,10 +1740,10 @@ function parseFiltersFromRequest(request) {
       minSample: Number(get("minSample") || MIN_GROUP) || MIN_GROUP,
       minCoverage: get("minCoverage") != null ? Number(get("minCoverage")) : null,
       includeFrozenSeparate: get("includeFrozenSeparate") === "1",
-      correlationMethod: correlationMethod === "pearson" ? "pearson" : "spearman",
+      correlationMethod: "spearman",
       matrixVars: parseMatrixVars(get("matrixVars")),
       cohortGranularity: cohortGranularity === "quarter" ? "quarter" : "month",
-      cohortPeriod: (get("cohortPeriod") || "since_2025_01").toLowerCase(),
+      cohortPeriod: (get("cohortPeriod") || "since_2026_01").toLowerCase(),
       cohortHireFrom: get("cohortHireFrom") || null,
       cohortHireTo: get("cohortHireTo") || null,
     };
@@ -1872,19 +2007,18 @@ export async function computeStatisticalCrossesPayload(options = {}) {
   const univariatePredictivePower = analysis.univariatePredictivePower || analysis.predictivePower || [];
   const predictivePowerLegacy = univariatePredictivePower.filter((p) => p.auc != null);
 
-  const correlationMethod =
-    String(filters.correlationMethod || "spearman").toLowerCase() === "pearson" ? "pearson" : "spearman";
   const matrixVars = parseMatrixVars(filters.matrixVars);
   const correlationMatrix = buildCorrelationMatrix(clients, {
-    method: correlationMethod,
+    method: "spearman",
     variableIds: matrixVars || undefined,
   });
 
   const cohortGranularity =
     String(filters.cohortGranularity || "month").toLowerCase() === "quarter" ? "quarter" : "month";
-  const cohortPeriod = String(filters.cohortPeriod || "since_2025_01").toLowerCase();
+  const cohortPeriod = String(filters.cohortPeriod || "since_2026_01").toLowerCase();
   let cohortHireFrom = null;
-  if (cohortPeriod === "since_2025_01") cohortHireFrom = "2025-01-01";
+  if (cohortPeriod === "since_2026_01") cohortHireFrom = "2026-01-01";
+  else if (cohortPeriod === "since_2025_01") cohortHireFrom = "2025-01-01";
   else if (cohortPeriod === "last_12_months") {
     const [y, m] = cutoffDate.split("-").map(Number);
     const dt = new Date(Date.UTC(y, m - 1, 1));
@@ -1933,6 +2067,7 @@ export async function computeStatisticalCrossesPayload(options = {}) {
     univariatePredictivePower,
     activeVsCancelled: analysis.activeVsCancelled || analysis.comparisons?.filter((r) => r.type === "numeric") || [],
     renewalAssociations,
+    renewedVsNotRenewed,
   });
   const exploratory = buildExploratoryBundle({
     clients,

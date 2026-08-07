@@ -872,6 +872,15 @@
     .pre-cancel-track{height:8px;border:1px solid #3a3a3a;border-radius:999px;background:#242424;overflow:hidden}
     .pre-cancel-fill{display:block;height:100%;border-radius:999px;max-width:100%}
     .pre-cancel-value{font-size:11px;text-align:right;color:#ffab6f;font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap}
+    .pre-cancel-matrix-wrap{overflow-x:auto;border:1px solid var(--color-border);border-radius:8px}
+    .pre-cancel-matrix{width:100%;min-width:720px;border-collapse:collapse;font-variant-numeric:tabular-nums}
+    .pre-cancel-matrix th,.pre-cancel-matrix td{padding:12px 14px;border-bottom:1px solid var(--color-border);text-align:right}
+    .pre-cancel-matrix th{font-size:11px;text-transform:uppercase;color:var(--color-text-subtle);background:var(--color-surface-2)}
+    .pre-cancel-matrix th:first-child,.pre-cancel-matrix td:first-child{text-align:left;font-weight:700;color:var(--color-text)}
+    .pre-cancel-matrix tbody tr:last-child td{border-bottom:0}
+    .pre-cancel-matrix tbody tr:hover{background:var(--color-surface-2)}
+    .pre-cancel-matrix td:not(:first-child){color:#ffab6f;font-weight:800}
+    .pre-cancel-matrix-note{margin:10px 0 0;color:var(--color-text-subtle);font-size:11px}
     /* Aquisição mensal — colunas verticais (não reutilizar month-bars) */
     .acquisition-chart{display:grid;gap:14px;margin-top:4px}
     .acquisition-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
@@ -2662,16 +2671,9 @@
             <article class="chart-card cancel-span-all">
               <div class="section-head" style="margin:0 0 8px;align-items:flex-start">
                 <div>
-                  <h3 style="margin:0">Clientes por etapa do processo de cancelamento</h3>
-                  <p id="cChartProcessSub" style="margin:4px 0 0">Em processo (intenção/pedido, sem efetivação) · status de cancellation_statuses</p>
+                  <h3 style="margin:0">Status das linhas não arquivadas (BASE QV)</h3>
+                  <p id="cChartProcessSub" style="margin:4px 0 0">Linhas de public.cancellations com archived_at vazio · sem deduplicar clientes</p>
                 </div>
-                <label style="font-size:12px;color:var(--color-text-muted);display:flex;flex-direction:column;gap:4px;min-width:160px">
-                  Segmentação
-                  <select id="cProcessChartMode" title="Alterna a dimensão do gráfico">
-                    <option value="status" selected>Por status do processo</option>
-                    <option value="segment">Por segmento</option>
-                  </select>
-                </label>
               </div>
               <div id="cChartProcessStatus"></div>
             </article>
@@ -2873,7 +2875,7 @@
           <section class="summary pre-cancel-kpis" id="tPreCancelKpis" style="margin-bottom:16px"></section>
           <section class="pre-cancel-layout">
             <article class="chart-card"><h3>Ranking de sinais</h3><p>Ocorrência entre clientes cancelados analisáveis</p><div id="tPreCancelSignals"></div></article>
-            <article class="chart-card"><h3>Janelas pré-cancelamento</h3><p>Atividades agregadas por distância até o cancelamento</p><div id="tPreCancelWindows"></div></article>
+            <article class="chart-card"><h3>Matriz de atividades pré-cancelamento</h3><p>Ocorrências por 100 clientes-mês; dias sem atividade permanecem em média de dias</p><div id="tPreCancelWindows"></div></article>
           </section>
           <div class="section-head"><div><h2>Clientes ativos com sinais de possível cancelamento</h2><p>Regras de mudança de comportamento aplicadas somente a clientes atualmente ativos.</p></div><div class="section-head-actions"><span class="export-host" id="tExportHost"></span><span class="counter" id="tActiveRiskCounter"></span></div></div>
           <section class="summary" id="tActiveRiskKpis" style="margin-bottom:16px"></section>
@@ -8559,11 +8561,11 @@ ${dataRows}
         { indicator: 'Evolução mensal da aquisição de clientes', viability: 'Sim', metric: 'Agrupamento mensal pela data oficial de contratação', coverage: fixedCoverage(0, 0, 0), base: 'BASE QV' },
       ]);
       renderViabilityMatrix(document.querySelector('#qJourneyMatrix'), [
-        { indicator: 'Dias entre contratação e primeira reunião', viability: 'Sim', metric: 'Coorte única dos quatro prazos: data inicial → primeira client_meetings.start_time; diferenças negativas e ordem inconsistente excluídas; mediana', coverage: fixedCoverage(journeySummary.firstMeetingCount, journeySummary.totalClients, journeySummary.firstMeetingCoveragePercent), base: 'BASE QV' },
-        { indicator: 'Dias entre contratação e entrega do plano patrimonial', viability: 'Parcial', metric: 'Coorte única dos quatro prazos: data inicial → primeira reunião Central de Inteligência; diferenças negativas e ordem inconsistente excluídas; mediana', coverage: fixedCoverage(journeySummary.planDeliveryCount, journeySummary.totalClients, journeySummary.planDeliveryCoveragePercent), base: 'BASE QV' },
+        { indicator: 'Dias entre contratação e primeira reunião', viability: 'Sim', metric: 'Coorte cronológica dos três marcos: data inicial → primeira client_meetings.start_time; mediana', coverage: fixedCoverage(journeySummary.firstMeetingCount, journeySummary.totalClients, journeySummary.firstMeetingCoveragePercent), base: 'BASE QV' },
+        { indicator: 'Dias entre contratação e entrega do plano patrimonial', viability: 'Parcial', metric: 'Mesma coorte: data inicial → primeira reunião Central de Inteligência; mediana e ordem onboarding ≤ reunião ≤ plano', coverage: fixedCoverage(journeySummary.planDeliveryCount, journeySummary.totalClients, journeySummary.planDeliveryCoveragePercent), base: 'BASE QV' },
         { indicator: 'Dias entre contratação e aprovação do plano', viability: 'Parcial', metric: 'Mesmo proxy da entrega: contratação → primeira reunião Central de Inteligência; não representa aprovação formal', coverage: fixedCoverage(journeySummary.planApprovalCount, journeySummary.totalClients, journeySummary.planApprovalCoveragePercent), base: 'BASE QV' },
         { indicator: 'Dias entre contratação e primeiro mecanismo implementado', viability: 'Sim', metric: 'Data inicial → primeira implementação válida em public.client_mecanismos; prioridade implemented_at, implantado_at ou data_implementacao, com fallback updated_at/created_at para status implementado; negativos excluídos; mediana', coverage: fixedCoverage(journeySummary.firstImplementationCount, journeySummary.totalClients, journeySummary.firstImplementationCoveragePercent), base: 'BASE QV' },
-        { indicator: 'Tempo total de onboarding', viability: 'Parcial', metric: 'Coorte única dos quatro prazos: data inicial → primeiro marco entre reunião e inclusão financeira; diferenças negativas e ordem inconsistente excluídas; mediana', coverage: fixedCoverage(journeySummary.totalOnboardingCount, journeySummary.totalClients, journeySummary.totalOnboardingCoveragePercent), base: 'BASE QV' },
+        { indicator: 'Tempo total de onboarding', viability: 'Parcial', metric: 'Coorte cronológica dos três marcos: data inicial → primeiro entre primeira reunião e primeira inclusão financeira; mediana', coverage: fixedCoverage(journeySummary.totalOnboardingCount, journeySummary.totalClients, journeySummary.totalOnboardingCoveragePercent), base: 'BASE QV' },
         { indicator: 'Concluíram Onboarding App Pharus', viability: 'Sim', metric: 'count(distinct client_id/user_id) em metrics.events com event_name = onboarding_step_completed', coverage: fixedCoverage(journeySummary.appPharusCompletedOnboarding, journeySummary.totalClients, journeySummary.totalClients ? (journeySummary.appPharusCompletedOnboarding || 0) / journeySummary.totalClients * 100 : 0), base: 'App Pharus' },
         { indicator: 'Concluiu onboarding (Sim/Não)', viability: 'Sim', metric: 'current_stage_id fora da lista de estágios abertos OU primeira reunião OU registro em public.client_financial_data', coverage: fixedCoverage(journeySummary.completedOnboarding, journeySummary.completionBaseClients, journeySummary.completedPercent), base: 'BASE QV' },
         { indicator: 'Percentual do onboarding concluído', viability: 'Sim', metric: 'Clientes concluídos por estágio OU primeira reunião OU dados financeiros ÷ clientes com base de conclusão', coverage: fixedCoverage(journeySummary.completedOnboarding, journeySummary.completionBaseClients, journeySummary.completedPercent), base: 'BASE QV' },
@@ -9781,10 +9783,8 @@ ${dataRows}
       const data = filteredPlanClients();
       document.querySelector('#pKpis').innerHTML = `
         <article class="metric highlight"><div class="metric-label">Clientes BASE QV</div><div class="metric-value">${fmt.format(summary.baseQvClients || 0)}</div><div class="metric-note">Distinct clients.id</div></article>
-        <article class="metric"><div class="metric-label">Plano entregue</div><div class="metric-value">${fmt.format(summary.planDelivered || 0)}</div><div class="metric-note">Reuniões Central de Inteligência</div></article>
         <article class="metric"><div class="metric-label">Plano aprovado</div><div class="metric-value">${fmt.format(summary.planApproved || 0)}</div><div class="metric-note">Clientes distintos · proxy, não aprovação formal</div></article>
-        <article class="metric"><div class="metric-label">Dias até aprovação ${portalMetricTip('Proxy: diferença não negativa entre a data de contratação e a última reunião cujo event_name contém Central de Inteligência. Não representa aprovação formal.', 'Dias até aprovação')}</div><div class="metric-value">${dayValue(summary.averageDaysToApproval)}</div><div class="metric-note">Proxy: contratação → última reunião Central</div></article>
-        <article class="metric"><div class="metric-label">Planos revisados</div><div class="metric-value">${fmt.format(summary.revisionsTotal || 0)}</div><div class="metric-note">${fmt.format(summary.revisedLater || 0)} clientes com mais de uma reunião</div></article>`;
+        <article class="metric"><div class="metric-label">Dias até aprovação ${portalMetricTip('Proxy: diferença não negativa entre a data de contratação e a última reunião cujo event_name contém Central de Inteligência. Não representa aprovação formal.', 'Dias até aprovação')}</div><div class="metric-value">${dayValue(summary.averageDaysToApproval)}</div><div class="metric-note">Proxy: contratação → última reunião Central</div></article>`;
 
       document.querySelector('#pSourceChart').innerHTML = hBars((payload.sources?.databases || []).map(db => ({ label: db.source, count: db.clientCount || 0, percent: (summary.totalClients ? (db.clientCount || 0) / summary.totalClients * 100 : 0) })));
       document.querySelector('#pStatusChart').innerHTML = hBars([
@@ -9901,10 +9901,21 @@ ${dataRows}
       const payload = onboardingState.payload;
       const summary = payload.summary || {};
       const data = filteredOnboardingClients();
-      const journeyCohortTooltip = [
-        `Onboarding, primeira reunião e entrega do plano usam a coorte comparável de ${fmt.format(summary.journeyKpiComparableClients || 0)} clientes.`,
-        `O onboarding usa o primeiro marco entre reunião e inclusão financeira.`,
-        `Diferenças negativas e ${fmt.format(summary.journeyKpiOrderingIssues || 0)} registros com ordem temporal inconsistente foram excluídos.`
+      const onboardingTooltip = [
+        `Mesma coorte cronológica de ${fmt.format(summary.journeyKpiComparableClients || 0)} clientes usada nos cartões de onboarding, primeira reunião e entrega do plano.`,
+        `Data inicial: clients.data_inicio_ciclo, com fallback clients.created_at.`,
+        `Data final: a primeira entre client_meetings.start_time e client_financial_data.created_at.`,
+        `Só entram clientes com os três marcos válidos e na ordem onboarding ≤ primeira reunião ≤ entrega do plano. A agregação exibida é a mediana.`
+      ].join(' ');
+      const firstMeetingTooltip = [
+        `Mesma coorte cronológica de ${fmt.format(summary.journeyKpiComparableClients || 0)} clientes usada nos três cartões.`,
+        `Dias = primeira client_meetings.start_time menos clients.data_inicio_ciclo, com fallback clients.created_at.`,
+        `Só entram clientes com onboarding ≤ primeira reunião ≤ entrega do plano. A agregação exibida é a mediana.`
+      ].join(' ');
+      const planDeliveryTooltip = [
+        `Mesma coorte cronológica de ${fmt.format(summary.journeyKpiComparableClients || 0)} clientes usada nos três cartões.`,
+        `Dias = primeira client_meetings.start_time cujo event_name contém Central de Inteligência menos a data inicial.`,
+        `Só entram clientes com onboarding ≤ primeira reunião ≤ entrega do plano. A agregação exibida é a mediana e representa um proxy de entrega.`
       ].join(' ');
       const firstMechanismTooltip = [
         `Amostra independente de ${fmt.format(summary.firstImplementationCount || 0)} clientes com implementação válida em public.client_mecanismos.`,
@@ -9913,17 +9924,17 @@ ${dataRows}
         `Diferenças negativas são excluídas. A agregação exibida é a mediana.`
       ].join(' ');
       document.querySelector('#jKpis').innerHTML = `
-        <article class="metric highlight"><div class="metric-label">Mediana onboarding total <span class="help" tabindex="0" data-tip="${escapeHtml(journeyCohortTooltip)}">?</span></div><div class="metric-value">${dayValue(summary.averageTotalOnboardingDays)}</div><div class="metric-note">Contratação → 1º marco: reunião ou financeiro</div></article>
-        <article class="metric"><div class="metric-label">Mediana até 1ª reunião <span class="help" tabindex="0" data-tip="${escapeHtml(journeyCohortTooltip)}">?</span></div><div class="metric-value">${dayValue(summary.averageFirstMeetingDays)}</div><div class="metric-note">Contratação → primeira reunião</div></article>
-        <article class="metric"><div class="metric-label">Mediana até entrega do plano <span class="help" tabindex="0" data-tip="${escapeHtml(journeyCohortTooltip)}">?</span></div><div class="metric-value">${dayValue(summary.averagePlanDeliveryDays)}</div><div class="metric-note">Contratação → 1ª reunião Central de Inteligência</div></article>
+        <article class="metric highlight"><div class="metric-label">Mediana onboarding total <span class="help" tabindex="0" data-tip="${escapeHtml(onboardingTooltip)}">?</span></div><div class="metric-value">${dayValue(summary.averageTotalOnboardingDays)}</div><div class="metric-note">Contratação → 1º marco: reunião ou financeiro</div></article>
+        <article class="metric"><div class="metric-label">Mediana até 1ª reunião <span class="help" tabindex="0" data-tip="${escapeHtml(firstMeetingTooltip)}">?</span></div><div class="metric-value">${dayValue(summary.averageFirstMeetingDays)}</div><div class="metric-note">Contratação → primeira reunião</div></article>
+        <article class="metric"><div class="metric-label">Mediana até entrega do plano <span class="help" tabindex="0" data-tip="${escapeHtml(planDeliveryTooltip)}">?</span></div><div class="metric-value">${dayValue(summary.averagePlanDeliveryDays)}</div><div class="metric-note">Contratação → 1ª reunião Central de Inteligência</div></article>
         <article class="metric"><div class="metric-label">Mediana até 1º mecanismo <span class="help" tabindex="0" data-tip="${escapeHtml(firstMechanismTooltip)}">?</span></div><div class="metric-value">${dayValue(summary.averageFirstImplementationDays)}</div><div class="metric-note">Contratação → primeira implementação válida</div></article>
         <article class="metric highlight"><div class="metric-label">Concluíram onboarding</div><div class="metric-value">${fmt.format(summary.completedOnboarding || 0)}</div><div class="metric-note">${pct(summary.completedPercent || 0)} de ${fmt.format(summary.completionBaseClients || 0)} avaliáveis · estágio, reunião ou financeiro</div></article>
       `;
 
       const planHelp = document.querySelector('#jPlanDeliveryHelp');
       const onboardingHelp = document.querySelector('#jTotalOnboardingHelp');
-      if (planHelp) planHelp.dataset.tip = journeyCohortTooltip;
-      if (onboardingHelp) onboardingHelp.dataset.tip = journeyCohortTooltip;
+      if (planHelp) planHelp.dataset.tip = planDeliveryTooltip;
+      if (onboardingHelp) onboardingHelp.dataset.tip = onboardingTooltip;
 
       document.querySelector('#jFirstMeetingChart').innerHTML = donut(payload.distributions?.firstMeetingRanges || []);
       document.querySelector('#jPlanDeliveryChart').innerHTML = donut(payload.distributions?.planDeliveryRanges || []);
@@ -12725,11 +12736,15 @@ ${dataRows}
         .join('');
       select.value = [...select.options].some(opt => opt.value === current) ? current : 'all';
     }
+    function temporalSourceMatches(source, selected = tFilters.source?.value || 'all') {
+      if (!selected || selected === 'all') return true;
+      return String(source || '').split('+').map(item => item.trim()).includes(selected);
+    }
     function filteredTemporalRows() {
       const rows = temporalState.payload?.clients || [];
       const q = (tFilters.search?.value || '').trim().toLowerCase();
       return rows.filter(row => {
-        if (tFilters.source?.value !== 'all' && row.source !== tFilters.source.value) return false;
+        if (!temporalSourceMatches(row.source)) return false;
         if (tFilters.month?.value !== 'all' && row.month !== tFilters.month.value) return false;
         if (tFilters.cancelWindow?.value === 'none' && row.cancellationDate) return false;
         if (tFilters.cancelWindow?.value !== 'all' && tFilters.cancelWindow?.value !== 'none') {
@@ -12755,8 +12770,10 @@ ${dataRows}
     function filteredTemporalRecencyRows() {
       const rows = temporalState.payload?.activityRecency || [];
       const q = (tFilters.search?.value || '').trim().toLowerCase();
+      const allowedIds = new Set(filteredTemporalRows().map(row => String(row.subjectId || row.clientId)).filter(Boolean));
       return rows.filter((row) => {
-        if (tFilters.source?.value !== 'all' && row.source !== tFilters.source.value) return false;
+        if (!allowedIds.has(String(row.subjectId || row.clientId))) return false;
+        if (!temporalSourceMatches(row.source)) return false;
         if (q && !`${row.name || ''} ${row.email || ''} ${row.clientId || ''} ${row.code || ''} ${row.engineer || ''}`.toLowerCase().includes(q)) return false;
         return true;
       }).sort((a, b) => {
@@ -12828,47 +12845,75 @@ ${dataRows}
         </div>`;
       }).join('')}</div>`;
     }
-    function temporalPreCancelWindowBars(items) {
-      const rows = items || [];
-      if (!rows.length) return '<div class="empty" style="display:block">Sem janelas pré-cancelamento para exibir.</div>';
-      const metricDefs = [
-        ['Logins', 'logins', '#f47920', ''],
-        ['Reuniões', 'meetings', '#69a8ff', ''],
-        ['Impl.', 'implementations', '#42c985', ''],
-        ['Fin.', 'financialUpdates', '#f6bd4b', ''],
-        ['NPS', 'npsResponses', '#b48cff', ''],
+    function temporalPreCancelMatrix(rows = []) {
+      const windows = [
+        { key: 'd0_30', label: '0–30 dias', min: 0, max: 0 },
+        { key: 'd31_60', label: '31–60 dias', min: 1, max: 1 },
+        { key: 'd61_90', label: '61–90 dias', min: 2, max: 2 },
+        { key: 'd91_180', label: '91–180 dias', min: 3, max: 6 },
+      ].map(window => {
+        const values = rows.filter(row => row.monthsToCancellation != null && row.monthsToCancellation >= window.min && row.monthsToCancellation <= window.max);
+        return { ...window, rows: values, clientMonths: values.length };
+      });
+      if (!windows.some(window => window.clientMonths)) return '<div class="empty" style="display:block">Sem janelas pré-cancelamento para os filtros aplicados.</div>';
+      const definitions = [
+        ['Logins', 'logins', 'rate'],
+        ['Reuniões', 'meetings', 'rate'],
+        ['Implementações', 'implementations', 'rate'],
+        ['Atualizações financeiras', 'financialUpdates', 'rate'],
+        ['NPS', 'npsResponses', 'rate'],
+        ['Dias sem atividade', 'daysWithoutActivity', 'days'],
       ];
-      const maxValue = Math.max(...rows.flatMap(row => metricDefs.map(([, key]) => row[key] || 0)), 1);
-      return `<div class="pre-cancel-window-grid">${rows.map(row => `<div class="pre-cancel-window">
-        <div class="pre-cancel-window-title">${escapeHtml(row.label)}<span>${escapeHtml(row.monthsToCancellation || '')} meses</span></div>
-        ${metricDefs.map(([label, key, color]) => {
-            const value = row[key] || 0;
-            const width = value ? Math.max(3, value / maxValue * 100) : 0;
-            return `<div class="pre-cancel-metric" title="${escapeHtml(row.label)} · ${escapeHtml(label)}: ${fmt.format(value)}">
-              <div class="pre-cancel-metric-label"><i class="temporal-dot" style="background:${color}"></i>${escapeHtml(label)}</div>
-              <div class="pre-cancel-track"><span class="pre-cancel-fill" style="width:${width}%;background:${color}"></span></div>
-              <div class="pre-cancel-value">${fmt.format(value)}</div>
-            </div>`;
-          }).join('')}
-        <div class="pre-cancel-metric" title="${escapeHtml(row.label)} · dias sem atividade">
-          <div class="pre-cancel-metric-label">Sem ativ.</div>
-          <div class="pre-cancel-track"><span class="pre-cancel-fill" style="width:${Math.min(100, Math.max(0, row.averageDaysWithoutActivity || 0))}%;background:var(--color-danger)"></span></div>
-          <div class="pre-cancel-value">${row.averageDaysWithoutActivity == null ? 'Sem dado' : fmt.format(Math.round(row.averageDaysWithoutActivity)) + ' d'}</div>
-        </div>
-      </div>`).join('')}</div>`;
+      const cell = (window, key, type) => {
+        const validRows = window.rows.filter(row => type !== 'days' || row[key] != null);
+        const raw = validRows.reduce((sum, row) => sum + (Number(row[key]) || 0), 0);
+        if (!validRows.length) return '<td title="Sem dados no recorte">Sem dado</td>';
+        if (type === 'days') {
+          const averageDays = raw / validRows.length;
+          const tip = `${window.label}: média de ${averageDays.toLocaleString('pt-BR', { maximumFractionDigits: 1 })} dias · ${fmt.format(validRows.length)} clientes-mês válidos`;
+          return `<td title="${escapeHtml(tip)}">${averageDays.toLocaleString('pt-BR', { maximumFractionDigits: 1 })} d</td>`;
+        }
+        const rate = window.clientMonths ? raw / window.clientMonths * 100 : 0;
+        const tip = `${window.label}: ${fmt.format(raw)} ocorrências ÷ ${fmt.format(window.clientMonths)} clientes-mês × 100`;
+        return `<td title="${escapeHtml(tip)}">${rate.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}</td>`;
+      };
+      return `<div class="pre-cancel-matrix-wrap"><table class="pre-cancel-matrix">
+        <thead><tr><th>Indicador</th>${windows.map(window => `<th>${escapeHtml(window.label)}</th>`).join('')}</tr></thead>
+        <tbody>${definitions.map(([label, key, type]) => `<tr><td>${escapeHtml(label)}</td>${windows.map(window => cell(window, key, type)).join('')}</tr>`).join('')}</tbody>
+      </table></div><p class="pre-cancel-matrix-note">Frequências, não percentuais: cada valor representa ocorrências por 100 clientes-mês. Passe o cursor sobre uma célula para ver a contagem bruta.</p>`;
     }
-    function renderTemporalPreCancellation(pre = {}) {
-      const signals = pre.signals || [];
+    function filteredTemporalPreCancellation(pre = {}, rows = []) {
+      const analyzedIds = new Set(rows.filter(row => row.cancellationDate).map(row => String(row.subjectId || row.clientId)).filter(Boolean));
+      const clients = (pre.clients || []).filter(client => analyzedIds.has(String(client.subjectId || client.clientId)));
+      const signalDefinitions = pre.signals || [];
+      const signals = signalDefinitions.map(signal => {
+        const count = clients.filter(client => (client.signals || []).includes(signal.label)).length;
+        return { ...signal, count, percent: analyzedIds.size ? count / analyzedIds.size * 100 : 0 };
+      });
+      const totalSignals = clients.reduce((sum, client) => sum + (client.signalCount || 0), 0);
+      return {
+        ...pre,
+        analyzedCancelledClients: analyzedIds.size,
+        clientsWithSignals: clients.length,
+        clientsWithSignalsPercent: analyzedIds.size ? clients.length / analyzedIds.size * 100 : 0,
+        averageSignalsPerClient: clients.length ? Math.round(totalSignals / clients.length * 10) / 10 : 0,
+        signals,
+        clients,
+      };
+    }
+    function renderTemporalPreCancellation(pre = {}, rows = []) {
+      const filteredPre = filteredTemporalPreCancellation(pre, rows);
+      const signals = filteredPre.signals || [];
       document.querySelector('#tPreCancelKpis').innerHTML = `
-        <article class="metric highlight"><div class="metric-label">Cancelados analisáveis</div><div class="metric-value">${fmt.format(pre.analyzedCancelledClients || 0)}</div><div class="metric-note">Clientes com data de cancelamento</div></article>
-        <article class="metric"><div class="metric-label">Com sinais detectados</div><div class="metric-value">${fmt.format(pre.clientsWithSignals || 0)}</div><div class="metric-note">${pct(pre.clientsWithSignalsPercent || 0)} dos cancelados analisáveis</div></article>
-        <article class="metric"><div class="metric-label">Média de sinais</div><div class="metric-value">${fmt.format(pre.averageSignalsPerClient || 0)}</div><div class="metric-note">Entre clientes com sinal</div></article>
+        <article class="metric highlight"><div class="metric-label">Cancelados analisáveis</div><div class="metric-value">${fmt.format(filteredPre.analyzedCancelledClients || 0)}</div><div class="metric-note">Clientes com data de cancelamento</div></article>
+        <article class="metric"><div class="metric-label">Com sinais detectados</div><div class="metric-value">${fmt.format(filteredPre.clientsWithSignals || 0)}</div><div class="metric-note">${pct(filteredPre.clientsWithSignalsPercent || 0)} dos cancelados analisáveis</div></article>
+        <article class="metric"><div class="metric-label">Média de sinais</div><div class="metric-value">${fmt.format(filteredPre.averageSignalsPerClient || 0)}</div><div class="metric-note">Entre clientes com sinal</div></article>
         <article class="metric"><div class="metric-label">Sinal mais frequente</div><div class="metric-value text-kpi">${escapeHtml((signals || []).slice().sort((a,b)=>(b.count||0)-(a.count||0))[0]?.label || 'Sem dado')}</div><div class="metric-note">Ranking por ocorrência</div></article>`;
       const sortedSignals = signals.slice().sort((a, b) => (b.count || 0) - (a.count || 0) || String(a.label || '').localeCompare(String(b.label || ''), 'pt-BR'));
       document.querySelector('#tPreCancelSignals').innerHTML = sortedSignals.length
         ? hBars(sortedSignals.map(signal => ({ label: signal.label, count: signal.count || 0, percent: signal.percent || 0 })))
         : '<div class="empty" style="display:block">Sem sinais calculados.</div>';
-      document.querySelector('#tPreCancelWindows').innerHTML = temporalPreCancelWindowBars(pre.windowSummary || []);
+      document.querySelector('#tPreCancelWindows').innerHTML = temporalPreCancelMatrix(rows);
     }
     function renderTemporalActiveRisk(active = {}) {
       const clients = active.clients || [];
@@ -12916,8 +12961,8 @@ ${dataRows}
       const summary = payload.summary || {};
       const rows = filteredTemporalRows();
       const subjectIds = new Set(rows.map((row) => row.subjectId || row.clientId).filter(Boolean));
-      const baseIds = new Set(rows.filter((row) => row.source === 'BASE QV').map((row) => row.subjectId || row.clientId).filter(Boolean));
-      const pharusIds = new Set(rows.filter((row) => row.source === 'App Pharus').map((row) => row.subjectId || row.clientId).filter(Boolean));
+      const baseIds = new Set(rows.filter((row) => temporalSourceMatches(row.source, 'BASE QV')).map((row) => row.subjectId || row.clientId).filter(Boolean));
+      const pharusIds = new Set(rows.filter((row) => temporalSourceMatches(row.source, 'App Pharus')).map((row) => row.subjectId || row.clientId).filter(Boolean));
       const derived = {
         totalSubjects: subjectIds.size,
         baseClients: baseIds.size,
@@ -12959,7 +13004,7 @@ ${dataRows}
         .slice(0, 8)
         .map(row => ({ label: row.name || row.clientId, count: row.daysWithoutActivity || 0, percent: Math.min(100, row.daysWithoutActivity || 0) }));
       document.querySelector('#tRiskChart').innerHTML = riskRows.length ? hBars(riskRows) : '<div class="empty" style="display:block">Sem clientes no recorte pré-cancelamento.</div>';
-      renderTemporalPreCancellation(payload.preCancellation || {});
+      renderTemporalPreCancellation(payload.preCancellation || {}, rows);
       const activeSource = payload.activeRisk || {};
       const activeClients = filteredTemporalActiveClients();
       const activeSignals = (activeSource.signals || []).map((signal) => ({ ...signal, count: activeClients.filter((client) => (client.signals || []).includes(signal.label)).length, percent: activeClients.length ? activeClients.filter((client) => (client.signals || []).includes(signal.label)).length / activeClients.length * 100 : 0 })).sort((a,b)=>b.count-a.count);
@@ -14793,7 +14838,7 @@ ${dataRows}
       };
     }
 
-    function renderEvidenceFunnelHtml(evidenceFunnel, statusFunnelExclusive) {
+    function renderEvidenceFunnelHtml(evidenceFunnel) {
       const maxSrc = Math.max(
         1,
         ...(evidenceFunnel || []).flatMap((e) => (e.sources || []).map((s) => s.clients || 0)),
@@ -14819,17 +14864,7 @@ ${dataRows}
           ${bars}
         </div>`;
       }).join('');
-      const statusBars = hBars(
-        (statusFunnelExclusive || [])
-          .filter((s) => (s.totalDistinctClients || 0) > 0)
-          .map((s) => ({ label: s.stage, count: s.totalDistinctClients, percent: s.percentage })),
-        12
-      );
-      return `<div class="cancel-evidence-funnel">${cards}</div>
-        <div class="cancel-status-funnel">
-          <h4 style="margin:14px 0 6px;font-size:13px">Status das linhas não arquivadas (BASE QV) ${portalMetricTip('Conta linhas não arquivadas de public.cancellations, agrupadas pelo nome de public.cancellation_statuses, sem deduplicar por cliente.', 'Status das linhas')}</h4>
-          ${statusBars || '<div class="empty" style="display:block">Sem status de processo no recorte.</div>'}
-        </div>`;
+      return `<div class="cancel-evidence-funnel">${cards}</div>`;
     }
 
     function renderCancellations() {
@@ -14860,17 +14895,12 @@ ${dataRows}
           <div class="metric-note">Churn, distrato assinado/Assinado ou data_churn.${effectiveNoteExtra}</div>
         </article>
         <article class="metric kpi-secondary">
-          <div class="metric-label">Clientes ativos com intenção/pedido ${portalMetricTip('Clientes com status analítico Ativo, intenção ou pedido registrado e sem cancelamento efetivado. Fonte: BASE QV.', 'Ativos com intenção/pedido')}</div>
-          <div class="metric-value">${fmt.format(filteredSummary.activeWithCancellationIntention || 0)}</div>
-          <div class="metric-note">Ainda ativos, com intenção/pedido e sem efetivação.</div>
-        </article>
-        <article class="metric kpi-secondary">
-          <div class="metric-label">Intenções/pedidos de cancelamento ${portalMetricTip('Clientes com intenção ou pedido de cancelamento registrado. Esse indicador não representa cancelamentos efetivados.', 'Intenções/pedidos')}</div>
+          <div class="metric-label">Intenções/pedidos de cancelamento ${portalMetricTip('Clientes distintos com pelo menos uma evidência em registro não arquivado: data_pedido preenchida, intencao_registrada_at preenchida ou status de intenção/pedido em cancellation_statuses. O indicador mostra entrada ou passagem pelo processo e não significa, sozinho, que o cancelamento foi efetivado. Um cliente conta uma única vez mesmo com múltiplas evidências. Fonte: BASE QV.', 'Intenções/pedidos')}</div>
           <div class="metric-value">${fmt.format(filteredSummary.intentionsOrOrdersRegistered || 0)}</div>
           <div class="metric-note">data_pedido OU intencao_registrada_at OU status · clientes distintos.</div>
         </article>
         <article class="metric kpi-primary">
-          <div class="metric-label">Clientes em processo de cancelamento ${portalMetricTip('Possui intenção/pedido e ainda não foi efetivado. Fonte: BASE QV.', 'Em processo')}</div>
+          <div class="metric-label">Clientes em processo de cancelamento ${portalMetricTip('Clientes distintos com intenção ou pedido em registro não arquivado e sem evidência de cancelamento efetivado. Efetivação considera churn_efetivado_at, distrato_assinado_at, distrato igual a Assinado ou clients.data_churn. A diferença para Intenções/pedidos corresponde a clientes que já possuem evidência de efetivação. Fonte: BASE QV.', 'Em processo')}</div>
           <div class="metric-value">${fmt.format(filteredSummary.clientsInCancellationProcess || 0)}</div>
           <div class="metric-note">Intenção/pedido sem cancelamento efetivado.</div>
         </article>`);
@@ -14898,8 +14928,6 @@ ${dataRows}
         <article class="metric"><div class="metric-label">Sem tratativa ${portalMetricTip('Sem registro de tratativa.', 'Sem tratativa')}</div><div class="metric-value">${fmt.format(operations.withoutTratativaCount || 0)}</div><div class="metric-note">Sem registro de tratativa.</div></article>
         <article class="metric"><div class="metric-label">Arquivados ${portalMetricTip('Registros arquivados no recorte (se o filtro permitir).', 'Arquivados')}</div><div class="metric-value">${fmt.format(operations.archivedRecords ?? 0)}</div><div class="metric-note">Conforme filtro de arquivados.</div></article>`);
 
-      const processChartMode = document.querySelector('#cProcessChartMode')?.value || 'status';
-      const processRows = rows.filter((client) => !client.isArchived && client.inProcessCurrently);
       const processStatusFilterActive = Boolean(
         (cFilters.search?.value || '').trim()
         || cFilters.from?.value
@@ -14918,10 +14946,6 @@ ${dataRows}
         ? rawStatusLines.filter((line) => line.clientId && filteredClientIds.has(String(line.clientId)))
         : rawStatusLines;
       const statusOrder = (payload.processStatusDimension?.statuses || []).map((status) => status.name).filter(Boolean);
-      const processStatusItems = cancelDist(
-        processRows,
-        (client) => client.processStatusName || 'Status não informado'
-      );
       const processStatusLineItems = cancelDist(
         visibleStatusLines,
         (line) => line.processStatusName || 'Status não informado',
@@ -14934,25 +14958,20 @@ ${dataRows}
         sources: [],
         overlapClients: 0
       }));
-      const processSegmentItems = cancelDist(
-        processRows,
-        (r) => r.segment,
-        C_SEGMENTS
-      );
-      if (processChartMode === 'segment') {
-        setHtml('#cChartProcessStatus', hBars(processSegmentItems));
-        setText('#cChartProcessSub', 'Clientes em processo · segmento · somente registros não arquivados · respeita filtros');
-      } else {
-        setHtml('#cChartProcessStatus', hBars(processStatusItems));
-        setText('#cChartProcessSub', 'Em processo · clientes distintos por status de cancellation_statuses · respeita filtros');
-      }
+      setHtml('#cChartProcessStatus', hBars(
+        processStatusLineItems.map((item) => ({
+          label: item.stage,
+          count: item.totalDistinctClients,
+          percent: item.percentage,
+        }))
+      ));
+      setText('#cChartProcessSub', 'Linhas não arquivadas de public.cancellations · agrupadas por cancellation_statuses.name · sem deduplicar clientes · respeita filtros');
 
       const backendFunnel = summary.statusEvidenceFunnel || {};
       setHtml(
         '#cChartFunnel',
         renderEvidenceFunnelHtml(
-          filteredSummary.evidenceFunnel || backendFunnel.evidenceFunnel || summary.evidenceFunnel || [],
-          processStatusLineItems
+          filteredSummary.evidenceFunnel || backendFunnel.evidenceFunnel || summary.evidenceFunnel || []
         )
       );
 
@@ -15155,7 +15174,6 @@ ${dataRows}
     }
 
     Object.values(cFilters).forEach(el => el?.addEventListener('input', () => { cancellationsState.page = 1; renderCancellations(); }));
-    document.querySelector('#cProcessChartMode')?.addEventListener('change', () => { renderCancellations(); });
     document.querySelector('#cClear')?.addEventListener('click', () => {
       if (cFilters.search) cFilters.search.value = '';
       if (cFilters.stage) cFilters.stage.value = 'all';
@@ -16807,8 +16825,10 @@ ${dataRows}
     }
     function filteredTemporalActiveClients() {
       const q = (tFilters.search?.value || '').trim().toLowerCase();
+      const allowedIds = new Set(filteredTemporalRows().map(row => String(row.subjectId || row.clientId)).filter(Boolean));
       return (temporalState.payload?.activeRisk?.clients || []).filter((client) => {
-        if (tFilters.source?.value === 'App Pharus') return false;
+        if (!allowedIds.has(String(client.subjectId || client.clientId))) return false;
+        if (!temporalSourceMatches(client.source)) return false;
         if (!['all', 'none'].includes(tFilters.cancelWindow?.value || 'all')) return false;
         return !q || `${client.name || ''} ${client.email || ''} ${client.clientId || ''} ${client.code || ''} ${client.engineer || ''} ${(client.signals || []).join(' ')}`.toLowerCase().includes(q);
       });

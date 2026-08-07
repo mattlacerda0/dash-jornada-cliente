@@ -7,7 +7,8 @@ import {
 } from "./_shared/analytical-cancellation.mjs";
 import { fetchPharusDemoIdentities, filterPharusDemoRows, isPharusDemoEmail } from "./_shared/pharus-demo-filter.mjs";
 
-const CLIENT_SELECT = "id,codigo,name,status,engenheiro_patrimonial,data_inicio_ciclo,created_at,data_churn";
+const CLIENT_SELECT =
+  "id,codigo,name,email,phone,cpf_digits,phone_digits,linked_user_id,status,engenheiro_patrimonial,data_inicio_ciclo,created_at,data_churn";
 const CANCEL_SELECT = ANALYTICAL_CANCEL_SELECT;
 const MEETINGS_SELECT = "id,client_id,calendly_event_uri,event_name,start_time,end_time";
 const MANUAL_MEETINGS_SELECT = "id,client_id,title,start_time,end_time,google_event_id";
@@ -76,6 +77,27 @@ function normalizeToken(value) {
     .trim()
     .replace(/[_-]+/g, " ")
     .replace(/\s+/g, " ");
+}
+
+function normalizeIdentityText(value) {
+  return String(value || "")
+    .normalize("NFD")
+    .replace(/\p{M}/gu, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, "");
+}
+
+function identityDigits(value) {
+  return String(value || "").replace(/\D/g, "");
+}
+
+function mergeSourceLabels(current, next) {
+  const hasBase = String(current || "").includes("BASE QV") || String(next || "").includes("BASE QV");
+  const hasPharus = String(current || "").includes("App Pharus") || String(next || "").includes("App Pharus");
+  if (hasBase && hasPharus) return "BASE QV + App Pharus";
+  if (hasBase) return "BASE QV";
+  if (hasPharus) return "App Pharus";
+  return next || current || "Nao informado";
 }
 
 function objectValue(row, fields) {
@@ -173,7 +195,8 @@ function ensureSubject(subjects, id, seed = {}) {
     });
   } else {
     const item = subjects.get(subjectId);
-    for (const key of ["code", "name", "email", "engineer", "status", "source", "cancellationDate"]) {
+    item.source = mergeSourceLabels(item.source, seed.source);
+    for (const key of ["code", "name", "email", "engineer", "status", "cancellationDate"]) {
       if ((!item[key] || item[key] === "Nao informado" || item[key] === item.subjectId) && seed[key]) item[key] = seed[key];
     }
   }
@@ -293,7 +316,7 @@ async function fetchPharusLoginEvents(warnings) {
 async function fetchPharusPersonalInfo(warnings) {
   try {
     const client = getPharusSupabaseClient({ schema: "core" });
-    return await client.fetchAll("personal_info", "user_id,name,alternative_email", { pageSize: 1000, maxRows: 200000 });
+    return await client.fetchAll("personal_info", "user_id,name,alternative_email,cpf,phone", { pageSize: 1000, maxRows: 200000 });
   } catch (error) {
     warnings.push({
       code: "PHARUS_PERSONAL_INFO",
@@ -349,6 +372,8 @@ function buildPharusProfileMap(personalRows, authRows) {
     map.set(id, {
       name: String(metadata.name || metadata.full_name || row.email || "").trim(),
       email: String(row.email || "").trim(),
+      cpf: "",
+      phone: "",
     });
   }
   for (const row of personalRows || []) {
@@ -358,9 +383,51 @@ function buildPharusProfileMap(personalRows, authRows) {
     map.set(id, {
       name: String(row?.name || current.name || "").trim(),
       email: String(current.email || row?.alternative_email || "").trim(),
+      cpf: String(row?.cpf || current.cpf || "").trim(),
+      phone: String(row?.phone || current.phone || "").trim(),
     });
   }
   return map;
+}
+
+function uniqueClientIndex(clients, valueOf) {
+  const index = new Map();
+  for (const client of clients || []) {
+    const value = valueOf(client);
+    if (!value) continue;
+    if (!index.has(value)) index.set(value, []);
+    index.get(value).push(String(client.id));
+  }
+  return index;
+}
+
+function buildPharusClientCrosswalk(clients, profiles) {
+  const indexes = [
+    ["linked_user_id", uniqueClientIndex(clients, (client) => String(client.linked_user_id || "").trim())],
+    ["cpf", uniqueClientIndex(clients, (client) => identityDigits(client.cpf_digits))],
+    ["email", uniqueClientIndex(clients, (client) => normalizeIdentityText(client.email))],
+    ["phone", uniqueClientIndex(clients, (client) => identityDigits(client.phone_digits || client.phone))],
+  ];
+  const byUserId = new Map();
+  const reasonByUserId = new Map();
+  for (const [userId, profile] of profiles.entries()) {
+    const values = {
+      linked_user_id: String(userId || "").trim(),
+      cpf: identityDigits(profile.cpf),
+      email: normalizeIdentityText(profile.email),
+      phone: identityDigits(profile.phone),
+    };
+    for (const [reason, index] of indexes) {
+      const value = values[reason];
+      if (!value) continue;
+      const candidates = index.get(value) || [];
+      if (candidates.length !== 1) continue;
+      byUserId.set(String(userId), candidates[0]);
+      reasonByUserId.set(String(userId), reason);
+      break;
+    }
+  }
+  return { byUserId, reasonByUserId };
 }
 
 function buildMonthWindow(monthsBack = 12) {
@@ -645,6 +712,7 @@ export async function computeTemporalIndicatorsPayload() {
   const eligiblePharusPersonalRows = filterPharusDemoRows(pharusPersonalRows, pharusDemoIdentities);
   const eligiblePharusAuthRows = (pharusAuthRows || []).filter((row) => !isPharusDemoEmail(row?.email));
   const pharusProfiles = buildPharusProfileMap(eligiblePharusPersonalRows, eligiblePharusAuthRows);
+  const pharusCrosswalk = buildPharusClientCrosswalk(clients, pharusProfiles);
   const attendanceByUri = new Map();
   for (const row of attendanceRows) {
     const uri = blankToNull(row.calendly_event_uri);
@@ -654,13 +722,15 @@ export async function computeTemporalIndicatorsPayload() {
 
   for (const event of eligiblePharusEvents) {
     if (!LOGIN_EVENTS.includes(eventName(event))) continue;
-    const id = eventSubjectId(event);
+    const pharusUserId = eventSubjectId(event);
     const date = eventDate(event);
-    if (!id || !date) continue;
-    const profile = pharusProfiles.get(id) || {};
-    const subject = ensureSubject(subjects, id, {
-      source: "App Pharus",
-      name: profile.name || profile.email || id,
+    if (!pharusUserId || !date) continue;
+    const canonicalClientId = pharusCrosswalk.byUserId.get(pharusUserId) || pharusUserId;
+    const profile = pharusProfiles.get(pharusUserId) || {};
+    const subject = ensureSubject(subjects, canonicalClientId, {
+      clientId: canonicalClientId,
+      source: pharusCrosswalk.byUserId.has(pharusUserId) ? "BASE QV + App Pharus" : "App Pharus",
+      name: profile.name || profile.email || pharusUserId,
       email: profile.email || "",
     });
     if (!subject) continue;
@@ -822,10 +892,20 @@ export async function computeTemporalIndicatorsPayload() {
   const highRisk = rows.filter((row) => row.monthsToCancellation != null && row.monthsToCancellation >= 0 && row.monthsToCancellation <= 3 && (row.daysWithoutActivity || 0) >= 30).length;
   const preCancellation = buildPreCancellationAnalysis(rows, subjects);
   const activeRisk = buildActiveRiskAnalysis(rows, subjects, months);
+  const pharusLoginUserIds = new Set(eligiblePharusEvents.map(eventSubjectId).filter(Boolean));
+  const matchedPharusUserIds = [...pharusLoginUserIds].filter((userId) => pharusCrosswalk.byUserId.has(userId));
+  const identityMatchesByRule = matchedPharusUserIds.reduce((acc, userId) => {
+    const reason = pharusCrosswalk.reasonByUserId.get(userId) || "unknown";
+    acc[reason] = (acc[reason] || 0) + 1;
+    return acc;
+  }, {});
   const summary = {
     totalSubjects: subjects.size,
     baseClients: clients.length,
-    appPharusUsers: new Set(eligiblePharusEvents.map(eventSubjectId).filter(Boolean)).size,
+    appPharusUsers: pharusLoginUserIds.size,
+    matchedPharusUsers: matchedPharusUserIds.length,
+    unmatchedPharusUsers: pharusLoginUserIds.size - matchedPharusUserIds.length,
+    identityMatchesByRule,
     months: months.length,
     activeMonthlyRows: activeRows.length,
     totalLogins: monthly.reduce((sum, row) => sum + row.logins, 0),

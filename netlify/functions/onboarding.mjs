@@ -508,22 +508,21 @@ async function buildPayload() {
   const completedByFinancialOnlyCount = rows.filter((row) => row.hasFinancialData && row.completedByJourney !== true && !row.completedByFirstMeeting).length;
   const withCompletionBase = completeCount + openCount;
   const hasJourney = Array.isArray(sourceResults.client_journeys) && sourceResults.client_journeys.length > 0;
-  const overallTotalOnboardingRows = rows.filter((row) => row.totalOnboardingDays != null);
+  const totalOnboardingRows = rows.filter((row) => row.totalOnboardingDays != null);
   const journeyKpiCandidates = rows.filter((row) =>
     row.totalOnboardingDays != null
     && row.daysToFirstMeeting != null
     && row.daysToPlanDelivery != null
-    && row.daysToFirstImplementation != null
   );
   const journeyKpiOrderingIssues = journeyKpiCandidates.filter((row) =>
     row.totalOnboardingDays > row.daysToFirstMeeting
     || row.totalOnboardingDays > row.daysToPlanDelivery
-    || row.totalOnboardingDays > row.daysToFirstImplementation
+    || row.daysToFirstMeeting > row.daysToPlanDelivery
   ).length;
   const journeyKpiComparableRows = journeyKpiCandidates.filter((row) =>
     row.totalOnboardingDays <= row.daysToFirstMeeting
     && row.totalOnboardingDays <= row.daysToPlanDelivery
-    && row.totalOnboardingDays <= row.daysToFirstImplementation
+    && row.daysToFirstMeeting <= row.daysToPlanDelivery
   );
   const totalOnboardingCount = journeyKpiComparableRows.length;
   const pharusCompletedCount = pharusOnboarding.completedByClient.size;
@@ -542,9 +541,9 @@ async function buildPayload() {
     : allTransitionDurations.length;
 
   const indicators = [
-    ["Tempo total de onboarding", totalOnboardingCount ? "Sim" : "Sem base", "Mediana na coorte única dos quatro prazos: data inicial até o primeiro marco entre primeira reunião e inclusão financeira.", median(journeyKpiComparableRows.map((row) => row.totalOnboardingDays)), "dias", totalOnboardingCount],
-    ["Dias entre contratação e primeira reunião", totalOnboardingCount ? "Sim" : "Sem base", "Mediana na mesma coorte dos quatro prazos: data inicial até a primeira client_meetings.start_time.", median(journeyKpiComparableRows.map((row) => row.daysToFirstMeeting)), "dias", totalOnboardingCount],
-    ["Dias entre contratação e entrega do plano patrimonial", totalOnboardingCount ? "Sim" : "Sem base", "Mediana na mesma coorte dos quatro prazos: data inicial até a primeira reunião Central de Inteligência.", median(journeyKpiComparableRows.map((row) => row.daysToPlanDelivery)), "dias", totalOnboardingCount],
+    ["Tempo total de onboarding", totalOnboardingCount ? "Sim" : "Sem base", "Mediana, na coorte cronológica dos três marcos, entre a data inicial e o primeiro marco disponível: primeira reunião ou primeira inclusão financeira.", median(journeyKpiComparableRows.map((row) => row.totalOnboardingDays)), "dias", totalOnboardingCount],
+    ["Dias entre contratação e primeira reunião", totalOnboardingCount ? "Sim" : "Sem base", "Mediana, na mesma coorte, entre a data inicial e a primeira client_meetings.start_time.", median(journeyKpiComparableRows.map((row) => row.daysToFirstMeeting)), "dias", totalOnboardingCount],
+    ["Dias entre contratação e entrega do plano patrimonial", totalOnboardingCount ? "Sim" : "Sem base", "Mediana, na mesma coorte, entre a data inicial e a primeira reunião Central de Inteligência.", median(journeyKpiComparableRows.map((row) => row.daysToPlanDelivery)), "dias", totalOnboardingCount],
     ["Dias entre contratação e primeiro mecanismo implementado", withImplementation ? "Sim" : "Sem base", "Mediana da diferença não negativa entre clients.data_inicio_ciclo (fallback created_at) e a primeira implementação válida em public.client_mecanismos.", median(firstImplementationRows.map((row) => row.daysToFirstImplementation)), "dias", withImplementation],
     ["Concluiu onboarding (Sim/Não)", (hasJourney || withFirstMeeting || completedByFinancialCount) ? "Sim" : "Sem base", "Sim quando o estágio atual está fora dos estágios abertos OU existe primeira reunião OU existe registro em public.client_financial_data.", completeCount, "clientes", withCompletionBase],
     ["Concluíram Onboarding App Pharus", pharusCompletedCount ? "Sim" : "Sem base", "count(distinct client_id/user_id) em metrics.events com event_name = onboarding_step_completed.", pharusCompletedCount, "clientes", pharusCompletedCount],
@@ -586,8 +585,8 @@ async function buildPayload() {
       firstImplementationCoveragePercent: indicators[3].coverage,
       totalOnboardingCount,
       totalOnboardingCoveragePercent: indicators[0].coverage,
-      overallTotalOnboardingCount: overallTotalOnboardingRows.length,
-      overallTotalOnboardingMedianDays: median(overallTotalOnboardingRows.map((row) => row.totalOnboardingDays)),
+      overallTotalOnboardingCount: totalOnboardingRows.length,
+      overallTotalOnboardingMedianDays: median(totalOnboardingRows.map((row) => row.totalOnboardingDays)),
       comparablePlanOnboardingClients: journeyKpiComparableRows.length,
       comparablePlanDeliveryMedianDays: indicators[2].value,
       comparableTotalOnboardingMedianDays: indicators[0].value,

@@ -794,7 +794,7 @@ const JOURNEY_METRICS = {
     definition: "median_days_contract_to_first_meeting",
     sources: JOURNEY_SOURCES,
     rule:
-      "Mediana na coorte única dos quatro prazos entre a data inicial e a primeira client_meetings.start_time.",
+      "Mediana entre a data inicial e a primeira client_meetings.start_time na coorte cronológica dos três marcos.",
     compute: (rows) => medianFinite(comparableJourneyKpiRows(rows).map((r) => r.daysToFirstMeeting)),
   },
   average_days_to_plan_delivery: {
@@ -803,7 +803,7 @@ const JOURNEY_METRICS = {
     definition: "median_days_contract_to_plan_proxy",
     sources: JOURNEY_SOURCES,
     rule:
-      "Proxy na mesma coorte dos quatro prazos: mediana entre a data inicial e a primeira reunião Central de Inteligência.",
+      "Proxy: mediana entre a data inicial e a primeira reunião Central de Inteligência na coorte cronológica dos três marcos.",
     compute: (rows) => medianFinite(comparableJourneyKpiRows(rows).map((r) => r.daysToPlanDelivery)),
   },
   average_days_to_first_mechanism: {
@@ -821,7 +821,7 @@ const JOURNEY_METRICS = {
     definition: "median_total_onboarding_days_proxy",
     sources: JOURNEY_SOURCES,
     rule:
-      "Mediana na coorte única dos quatro prazos entre a data inicial e o primeiro marco disponível: primeira reunião ou inclusão financeira.",
+      "Mediana entre a data inicial e o primeiro marco disponível: primeira reunião ou inclusão financeira, na coorte cronológica dos três marcos.",
     compute: (rows) => medianFinite(comparableJourneyKpiRows(rows).map((r) => r.totalOnboardingDays)),
   },
   completed_onboarding_clients: {

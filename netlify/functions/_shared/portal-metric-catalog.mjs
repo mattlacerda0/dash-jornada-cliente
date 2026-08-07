@@ -580,12 +580,12 @@ export const portalMetricCatalog = {
       "tempo medio ate a primeira reuniao",
     ],
     description:
-      "Mediana na coorte única dos quatro prazos entre a data inicial e a primeira reunião do cliente.",
+      "Mediana dos dias entre a data inicial e a primeira reunião, na mesma coorte cronológica de onboarding e entrega do plano.",
     aggregation: "median",
     allowedAggregations: ["average", "median", "comparison"],
     unit: "days",
     formula:
-      "Na coorte com os quatro prazos válidos: dias = primeira client_meetings.start_time − data inicial. Excluir diferenças negativas e ordem temporal inconsistente; calcular a mediana.",
+      "Na coorte com os três marcos válidos e ordenados: dias = primeira client_meetings.start_time − data inicial; calcular a mediana.",
     numerator: "soma dos dias válidos",
     denominator: "clientes com contratação e primeira reunião datadas",
     dateStart: "clients.data_inicio_ciclo (fallback created_at)",
@@ -612,12 +612,12 @@ export const portalMetricCatalog = {
       "entrega do plano patrimonial",
     ],
     description:
-      "Proxy na coorte comparável: mediana dos dias entre a contratação e a primeira reunião Central de Inteligência, somente para clientes com marco de onboarding válido.",
+      "Proxy: mediana dos dias entre a contratação e a primeira reunião Central de Inteligência, na mesma coorte cronológica dos três marcos.",
     aggregation: "median",
     allowedAggregations: ["average", "median", "comparison"],
     unit: "days",
     formula:
-      "Na mesma coorte do onboarding total: dias = primeira reunião Central de Inteligência − data inicial. Excluir intervalos negativos e casos em que o onboarding ocorre depois da entrega; calcular a mediana.",
+      "Na coorte com onboarding ≤ primeira reunião ≤ entrega: dias = primeira reunião Central de Inteligência − data inicial; calcular a mediana.",
     numerator: null,
     denominator: "clientes com contratação e reunião Central de Inteligência datadas",
     dateStart: "clients.data_inicio_ciclo (fallback created_at)",
@@ -676,12 +676,12 @@ export const portalMetricCatalog = {
     label: "Mediana de dias de onboarding",
     aliases: ["media de onboarding", "tempo total de onboarding", "onboarding total"],
     description:
-      "Proxy na mesma coorte da entrega do plano: mediana dos dias entre a contratação e o primeiro marco disponível, reunião ou inclusão financeira.",
+      "Proxy: mediana dos dias entre a contratação e o primeiro marco disponível, na mesma coorte cronológica de primeira reunião e entrega do plano.",
     aggregation: "median",
     allowedAggregations: ["median"],
     unit: "days",
     formula:
-      "Para clientes com entrega do plano e marco de onboarding: usar o menor intervalo não negativo até a primeira reunião ou inclusão financeira. Excluir ordem temporal inconsistente e calcular a mediana.",
+      "Na coorte com os três marcos válidos e ordenados: usar o menor intervalo até a primeira reunião ou inclusão financeira e calcular a mediana.",
     numerator: null,
     denominator: "clientes com data inicial e ao menos um dos dois marcos datados",
     dateStart: "clients.data_inicio_ciclo (fallback created_at)",

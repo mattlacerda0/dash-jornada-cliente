@@ -19,8 +19,13 @@ export {
   SESSION_EXPIRED_MESSAGE,
 };
 
-/** @type {'loading' | 'unauthenticated' | 'authenticated' | 'unauthorizedDomain' | 'error'} */
-let authState = 'loading';
+/**
+ * Estados oficiais do Auth Guard
+ * @typedef {'initializing' | 'unauthenticated' | 'authenticating' | 'authenticated' | 'unauthorizedDomain' | 'error'} AuthState
+ */
+
+/** @type {AuthState} */
+let authState = 'initializing';
 let authSupabase = null;
 let session = null;
 let authListenerBound = false;
@@ -31,6 +36,8 @@ let sessionExpiryHandled = false;
 let sessionExpiryPromise = null;
 let lastNotifiedAccessToken = null;
 let refreshSessionPromise = null;
+let bootReady = false;
+let lastBootError = null;
 
 const els = {};
 const isDev =
@@ -38,8 +45,21 @@ const isDev =
   location.hostname === '127.0.0.1' ||
   location.search.includes('authdebug=1');
 
+const GET_SESSION_TIMEOUT_MS = 20000;
+
 function $(id) {
   return document.getElementById(id);
+}
+
+function maskKey(key) {
+  if (!key || typeof key !== 'string') return null;
+  if (key.length <= 16) return '(curta)';
+  return `${key.slice(0, 8)}…${key.slice(-6)} (len=${key.length})`;
+}
+
+function logAuthDiag(label, extra = {}) {
+  if (!isDev) return;
+  console.info(`[AuthDiag] ${label}`, extra);
 }
 
 function debugAuth(extra = {}) {
@@ -48,18 +68,20 @@ function debugAuth(extra = {}) {
     hasSession: Boolean(session),
     email: session?.user?.email ?? null,
     authState,
+    bootReady,
+    clientReady: Boolean(authSupabase?.auth),
     ...extra,
   });
 }
 
 function setAuthState(next) {
   authState = next;
-  document.body.dataset.auth = next;
-  debugAuth();
+  document.body.dataset.auth = next === 'initializing' ? 'loading' : next;
+  debugAuth({ phase: 'setAuthState' });
 }
 
 export function getAuthStatus() {
-  return authState;
+  return authState === 'initializing' ? 'loading' : authState;
 }
 
 export function getSession() {
@@ -86,16 +108,52 @@ export function isAuthenticated() {
   return authState === 'authenticated' && Boolean(session?.access_token);
 }
 
+export function isAuthClientReady() {
+  return Boolean(authSupabase?.auth) && bootReady;
+}
+
+function withTimeout(promise, ms, label) {
+  let timer;
+  const timeout = new Promise((_, reject) => {
+    timer = setTimeout(() => {
+      const err = new Error(`${label} excedeu ${ms}ms`);
+      err.code = 'AUTH_TIMEOUT';
+      reject(err);
+    }, ms);
+  });
+  return Promise.race([promise, timeout]).finally(() => clearTimeout(timer));
+}
+
 async function loadPublicConfig() {
   const response = await fetch(`/api/auth-config?t=${Date.now()}`, { cache: 'no-store' });
   const payload = await response.json().catch(() => ({}));
   if (!response.ok) {
-    throw new Error(payload.error || 'Não foi possível carregar a configuração de autenticação.');
+    const missing =
+      response.status === 503 ||
+      /AUTH_SUPABASE|configure|ausente|missing/i.test(String(payload.error || ''));
+    const err = new Error(
+      payload.error || 'Não foi possível carregar a configuração de autenticação.',
+    );
+    err.code = missing ? 'AUTH_CONFIG_MISSING' : 'AUTH_CONFIG_ERROR';
+    err.status = response.status;
+    throw err;
   }
-  const url = payload.authSupabaseUrl;
-  const anonKey = payload.authSupabaseAnonKey;
+  const url = String(payload.authSupabaseUrl || '').trim().replace(/\/$/, '');
+  const anonKey = String(payload.authSupabaseAnonKey || '').trim();
   if (!url || !anonKey) {
-    throw new Error('AUTH_SUPABASE_URL ou AUTH_SUPABASE_ANON_KEY ausentes no servidor.');
+    const err = new Error('Configuração de autenticação ausente.');
+    err.code = 'AUTH_CONFIG_MISSING';
+    throw err;
+  }
+  if (!/^https:\/\//i.test(url)) {
+    const err = new Error('AUTH_SUPABASE_URL deve usar HTTPS.');
+    err.code = 'AUTH_CONFIG_INVALID';
+    throw err;
+  }
+  if (/service_role/i.test(anonKey)) {
+    const err = new Error('Chave de serviço detectada no navegador. Use a anon key.');
+    err.code = 'AUTH_CONFIG_INVALID';
+    throw err;
   }
   return { authSupabaseUrl: url, authSupabaseAnonKey: anonKey };
 }
@@ -103,7 +161,9 @@ async function loadPublicConfig() {
 function resolveCreateClient() {
   const createClient = window.supabase?.createClient;
   if (typeof createClient !== 'function') {
-    throw new Error('Biblioteca Supabase JS não carregou. Verifique a conexão com a CDN.');
+    const err = new Error('Biblioteca Supabase JS não carregou. Verifique a conexão com a CDN.');
+    err.code = 'SUPABASE_CDN_MISSING';
+    throw err;
   }
   return createClient;
 }
@@ -126,18 +186,37 @@ function showPanel(name) {
   if (els.login) els.login.hidden = name !== 'login';
 }
 
-function resetGoogleButton() {
+function setGoogleButtonEnabled(enabled, label) {
   if (!els.googleBtn) return;
-  els.googleBtn.disabled = false;
-  els.googleBtn.innerHTML =
-    '<span class="auth-google-icon" aria-hidden="true"></span> Continuar com Google';
+  const ready = Boolean(enabled && authSupabase?.auth && bootReady);
+  els.googleBtn.disabled = !ready;
+  els.googleBtn.setAttribute('aria-disabled', ready ? 'false' : 'true');
+  if (label) {
+    els.googleBtn.innerHTML = label;
+  } else if (ready) {
+    els.googleBtn.innerHTML =
+      '<span class="auth-google-icon" aria-hidden="true"></span> Continuar com Google';
+  } else if (authState === 'authenticating') {
+    els.googleBtn.textContent = 'Redirecionando…';
+  } else if (authState === 'initializing') {
+    els.googleBtn.textContent = 'Preparando autenticação…';
+  } else {
+    els.googleBtn.innerHTML =
+      '<span class="auth-google-icon" aria-hidden="true"></span> Continuar com Google';
+  }
+}
+
+function resetGoogleButton() {
+  setGoogleButtonEnabled(Boolean(authSupabase?.auth && bootReady));
 }
 
 function renderAuthLoading() {
-  setAuthState('loading');
+  setAuthState('initializing');
+  bootReady = false;
   if (els.gate) els.gate.hidden = false;
   if (els.app) els.app.hidden = true;
   showPanel('loading');
+  setGoogleButtonEnabled(false, 'Preparando autenticação…');
 }
 
 function renderLoginPage(message = '') {
@@ -160,12 +239,19 @@ function renderUnauthorizedDomain() {
   resetGoogleButton();
 }
 
-function renderAuthError(message) {
+function renderAuthError(message, { allowRetry = true } = {}) {
   setAuthState('error');
   if (els.gate) els.gate.hidden = false;
   if (els.app) els.app.hidden = true;
   showPanel('login');
   setLoginMessage(message || 'Erro ao verificar o acesso.');
+  if (allowRetry && authSupabase?.auth) {
+    bootReady = true;
+    resetGoogleButton();
+  } else {
+    bootReady = false;
+    setGoogleButtonEnabled(false);
+  }
 }
 
 function userDisplayName(user) {
@@ -220,6 +306,7 @@ function clearHeaderUser() {
 
 function renderPortal() {
   setAuthState('authenticated');
+  bootReady = true;
   if (els.gate) els.gate.hidden = true;
   if (els.app) els.app.hidden = false;
   updateHeaderUser(session?.user);
@@ -240,9 +327,19 @@ function setLoginMessage(text, kind = 'error') {
 
 function friendlyAuthError(err) {
   const raw = err instanceof Error ? err.message : String(err || '');
+  const code = err?.code || '';
   const lower = raw.toLowerCase();
   console.error('[auth]', err);
 
+  if (code === 'AUTH_CONFIG_MISSING' || lower.includes('ausente') || lower.includes('configure auth_supabase')) {
+    return 'Configuração de autenticação ausente.';
+  }
+  if (code === 'AUTH_CONFIG_INVALID' || lower.includes('https') || lower.includes('service')) {
+    return 'Configuração de autenticação inválida.';
+  }
+  if (code === 'AUTH_TIMEOUT' || lower.includes('excedeu')) {
+    return 'A verificação de sessão demorou demais. Recarregue a página.';
+  }
   if (lower.includes('popup') && (lower.includes('closed') || lower.includes('cancel'))) {
     return 'Login cancelado. Tente novamente.';
   }
@@ -252,7 +349,7 @@ function friendlyAuthError(err) {
   if (lower.includes('provider') || (lower.includes('google') && lower.includes('not enabled'))) {
     return 'O login com Google ainda não está configurado. Contate o administrador.';
   }
-  if (lower.includes('cdn') || lower.includes('biblioteca supabase')) {
+  if (code === 'SUPABASE_CDN_MISSING' || lower.includes('cdn') || lower.includes('biblioteca supabase')) {
     return 'Não foi possível carregar o cliente de autenticação. Verifique a rede e tente novamente.';
   }
   if (lower.includes('network') || lower.includes('fetch') || lower.includes('failed to fetch')) {
@@ -269,6 +366,7 @@ function isTransientAuthError(err) {
   const raw = err instanceof Error ? err.message : String(err || '');
   const lower = raw.toLowerCase();
   return (
+    err?.code === 'AUTH_TIMEOUT' ||
     status === 0 ||
     status === 408 ||
     status === 425 ||
@@ -278,6 +376,7 @@ function isTransientAuthError(err) {
     lower.includes('fetch failed') ||
     lower.includes('network') ||
     lower.includes('timeout') ||
+    lower.includes('excedeu') ||
     lower.includes('temporarily unavailable')
   );
 }
@@ -383,15 +482,27 @@ async function expireSession(message = SESSION_EXPIRED_MESSAGE) {
 async function verifyStoredSession(candidate) {
   if (!candidate?.access_token) return null;
 
-  const verify = await authSupabase.auth.getUser(candidate.access_token);
+  const verify = await withTimeout(
+    authSupabase.auth.getUser(candidate.access_token),
+    GET_SESSION_TIMEOUT_MS,
+    'getUser',
+  );
   if (!verify.error && verify.data?.user) {
     return { ...candidate, user: verify.data.user };
   }
 
-  const refreshed = await authSupabase.auth.refreshSession();
+  const refreshed = await withTimeout(
+    authSupabase.auth.refreshSession(),
+    GET_SESSION_TIMEOUT_MS,
+    'refreshSession',
+  );
   if (!refreshed.error && refreshed.data?.session?.access_token) {
     const refreshedSession = refreshed.data.session;
-    const refreshedUser = await authSupabase.auth.getUser(refreshedSession.access_token);
+    const refreshedUser = await withTimeout(
+      authSupabase.auth.getUser(refreshedSession.access_token),
+      GET_SESSION_TIMEOUT_MS,
+      'getUser(refreshed)',
+    );
     if (!refreshedUser.error && refreshedUser.data?.user) {
       return { ...refreshedSession, user: refreshedUser.data.user };
     }
@@ -497,23 +608,28 @@ export async function apiFetch(url, options = {}) {
 
 async function handleGoogleSignIn() {
   setLoginMessage('');
-  if (!authSupabase) {
-    setLoginMessage('Autenticação ainda não inicializada. Recarregue a página.');
+  if (!authSupabase?.auth || !bootReady) {
+    const msg = lastBootError
+      ? friendlyAuthError(lastBootError)
+      : 'Autenticação ainda não inicializada. Aguarde ou recarregue a página.';
+    setLoginMessage(msg);
+    setGoogleButtonEnabled(false);
+    logAuthDiag('google-click-blocked', {
+      clientReady: Boolean(authSupabase?.auth),
+      bootReady,
+      authState,
+    });
     return;
   }
 
-  if (els.googleBtn) {
-    els.googleBtn.disabled = true;
-    els.googleBtn.textContent = 'Redirecionando…';
-  }
+  setAuthState('authenticating');
+  setGoogleButtonEnabled(false, 'Redirecionando…');
 
   const redirectTo = window.location.origin + window.location.pathname;
-  console.debug('[OAuth]', {
+  logAuthDiag('oauth-start', {
     origin: window.location.origin,
     pathname: window.location.pathname,
-    href: window.location.href,
     redirectTo,
-    authProject: 'rckpuebaiswrxzmywllv',
   });
 
   try {
@@ -526,30 +642,31 @@ async function handleGoogleSignIn() {
         },
       },
     });
-    console.debug('[OAuth result]', {
+    logAuthDiag('oauth-result', {
       hasUrl: Boolean(data?.url),
-      provider: data?.provider,
-      error: error
-        ? { message: error.message, status: error.status, code: error.code, name: error.name }
-        : null,
+      provider: data?.provider || null,
+      errorMessage: error?.message || null,
+      errorStatus: error?.status || null,
     });
     if (error) {
       console.error('[OAuth error]', error);
-      setLoginMessage(error.message || friendlyAuthError(error));
+      setLoginMessage(friendlyAuthError(error));
       setAuthState('error');
       showPanel('login');
+      bootReady = true;
       resetGoogleButton();
       return;
     }
-    if (data?.url && !window.location.href.startsWith('https://accounts.google.com')) {
-      console.debug('[OAuth] navegando manualmente para', data.url.slice(0, 120) + '…');
+    // Se a lib não redirecionar sozinha, força navegação.
+    if (data?.url) {
+      window.location.assign(data.url);
     }
   } catch (err) {
     console.error('[OAuth error]', err);
-    const message = err instanceof Error ? err.message : String(err);
-    setLoginMessage(message || friendlyAuthError(err));
+    setLoginMessage(friendlyAuthError(err));
     setAuthState('error');
     showPanel('login');
+    bootReady = true;
     resetGoogleButton();
   }
 }
@@ -604,13 +721,9 @@ function bindAuthListener() {
     if (
       event === 'SIGNED_IN' ||
       event === 'TOKEN_REFRESHED' ||
-      event === 'USER_UPDATED' ||
-      event === 'INITIAL_SESSION'
+      event === 'USER_UPDATED'
     ) {
-      if (!nextSession) {
-        if (event === 'INITIAL_SESSION') renderLoginPage('');
-        return;
-      }
+      if (!nextSession) return;
       sessionExpiryHandled = false;
       const applied = await applySession(nextSession);
       if (applied.ok) notifyAuthenticated();
@@ -623,6 +736,8 @@ function bindAuthListener() {
  */
 export async function bootAuth(options = {}) {
   bootOptions = options;
+  lastBootError = null;
+  bootReady = false;
   cacheElements();
   bindUi();
   renderAuthLoading();
@@ -631,6 +746,14 @@ export async function bootAuth(options = {}) {
 
   try {
     const config = await loadPublicConfig();
+    logAuthDiag('config-loaded', {
+      urlConfigured: true,
+      anonKeyConfigured: true,
+      urlHost: config.authSupabaseUrl.replace(/^https?:\/\//, '').split('/')[0],
+      anonKey: maskKey(config.authSupabaseAnonKey),
+      cdnPresent: typeof window.supabase?.createClient === 'function',
+    });
+
     const createClient = resolveCreateClient();
     authSupabase = createClient(config.authSupabaseUrl, config.authSupabaseAnonKey, {
       auth: {
@@ -641,30 +764,79 @@ export async function bootAuth(options = {}) {
       },
     });
 
+    logAuthDiag('client-created', {
+      clientCreated: Boolean(authSupabase),
+      authApiReady: Boolean(authSupabase?.auth),
+      persistSession: true,
+      autoRefreshToken: true,
+      detectSessionInUrl: true,
+    });
+
     bindAuthListener();
 
-    const { data, error } = await authSupabase.auth.getSession();
+    let sessionResult;
+    try {
+      sessionResult = await withTimeout(
+        authSupabase.auth.getSession(),
+        GET_SESSION_TIMEOUT_MS,
+        'getSession',
+      );
+    } catch (sessionErr) {
+      logAuthDiag('getSession-failed', {
+        sessionQueried: true,
+        error: sessionErr?.message || String(sessionErr),
+        code: sessionErr?.code || null,
+      });
+      throw sessionErr;
+    }
+
+    const { data, error } = sessionResult;
+    logAuthDiag('getSession-ok', {
+      sessionQueried: true,
+      hasSession: Boolean(data?.session),
+      error: error?.message || null,
+    });
     if (error) throw error;
 
     cleanAuthParamsFromUrl();
-    debugAuth({ phase: 'boot getSession', authUrl: config.authSupabaseUrl });
+    debugAuth({ phase: 'boot getSession', authUrlHost: config.authSupabaseUrl.split('//')[1]?.split('/')[0] });
+
+    // Cliente pronto: login pode ser tentado mesmo se a sessão armazenada falhar.
+    bootReady = true;
 
     if (callbackError && !data.session) {
       renderLoginPage(callbackError);
+      logAuthDiag('final-state', { authState, bootReady, clientReady: true });
       return;
     }
 
     const verifiedSession = await verifyStoredSession(data.session);
     if (!verifiedSession) {
       if (!data.session && !callbackError) renderLoginPage('');
+      logAuthDiag('final-state', { authState, bootReady, clientReady: true, hasVerifiedSession: false });
       return;
     }
 
     const applied = await applySession(verifiedSession);
     if (applied.ok) notifyAuthenticated();
+    logAuthDiag('final-state', {
+      authState,
+      bootReady,
+      clientReady: true,
+      authenticated: applied.ok,
+    });
   } catch (err) {
+    lastBootError = err;
+    bootReady = Boolean(authSupabase?.auth);
     console.error('[auth] boot failed:', err);
-    renderAuthError(friendlyAuthError(err));
+    logAuthDiag('boot-failed', {
+      urlConfigured: err?.code !== 'AUTH_CONFIG_MISSING',
+      clientCreated: Boolean(authSupabase),
+      errorCode: err?.code || null,
+      errorMessage: err?.message || String(err),
+      finalState: 'error',
+    });
+    renderAuthError(friendlyAuthError(err), { allowRetry: Boolean(authSupabase?.auth) });
   }
 }
 
@@ -680,6 +852,7 @@ window.PortalAuth = {
   getSupabase,
   getAuthSupabase,
   isAuthenticated,
+  isAuthClientReady,
   isCorporateEmail,
   isQuartaviaEmail,
 };

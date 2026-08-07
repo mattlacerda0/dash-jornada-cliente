@@ -3,7 +3,7 @@
  * alta performance, matriz comparativa de grupos, Health Score MVP.
  * Sem dependências externas; sem alteração de banco.
  */
-import { coveragePct, mean, median, rocAuc, round3, round4 } from "./stats-tests.mjs";
+import { coveragePct, mean, median, rocAuc, round3, round4, sampleSd, standardizedDifference } from "./stats-tests.mjs";
 
 const LEAKAGE_IDS = new Set([
   "isCancelled",
@@ -64,6 +64,7 @@ function shuffleInPlace(arr, rng) {
 }
 
 function num(v) {
+  if (v == null || v === "") return null;
   if (typeof v === "boolean") return v ? 1 : 0;
   const n = Number(v);
   return Number.isFinite(n) ? n : null;
@@ -384,14 +385,18 @@ export function buildGroupComparativeMatrix(clients) {
   });
 
   const globalMed = {};
+  const globalSd = {};
   for (const v of variables) {
     if (v.kind === "median") {
-      globalMed[v.id] = median(clients.map((c) => num(c[v.id])).filter((x) => x != null));
+      const allVals = clients.map((c) => num(c[v.id])).filter((x) => x != null);
+      globalMed[v.id] = median(allVals);
+      globalSd[v.id] = sampleSd(allVals);
     } else {
       const valid = clients.filter((c) => c[v.id] != null && c[v.id] !== "");
       globalMed[v.id] = valid.length
         ? (valid.filter((c) => !!c[v.id] && c[v.id] !== 0).length / valid.length) * 100
         : null;
+      globalSd[v.id] = null;
     }
   }
 
@@ -416,10 +421,16 @@ export function buildGroupComparativeMatrix(clients) {
       }
       const gref = globalMed[v.id];
       let standardized = null;
-      if (value != null && gref != null && Math.abs(gref) > 1e-9) {
-        standardized = round4((value - gref) / (Math.abs(gref) || 1));
-      } else if (value != null && gref != null) {
-        standardized = round4(value - gref);
+      let difference = null;
+      if (value != null && gref != null) {
+        difference = round4(value - gref);
+        if (v.kind === "median" && globalSd[v.id] != null && globalSd[v.id] > 1e-12) {
+          standardized = standardizedDifference(value, gref, globalSd[v.id]);
+        } else if (Math.abs(gref) > 1e-9) {
+          standardized = round4((value - gref) / (Math.abs(gref) || 1));
+        } else {
+          standardized = round4(value - gref);
+        }
       }
       cells.push({
         i, j,
@@ -428,9 +439,12 @@ export function buildGroupComparativeMatrix(clients) {
         labelRow: v.label,
         labelCol: g.label,
         value,
+        reference: gref,
+        difference,
         standardized,
         coveragePercent: coverage,
         n: g.n,
+        nValid: coverage != null && g.n ? Math.round((coverage / 100) * g.n) : null,
       });
     }
   }
@@ -438,7 +452,9 @@ export function buildGroupComparativeMatrix(clients) {
   return {
     title: "Matriz comparativa dos grupos",
     mode: "standardized_vs_global",
-    note: "Células padronizadas = (valor do grupo − referência global) / |referência|. Não implica causalidade.",
+    note: "Cada cor compara o grupo com a referência geral da população filtrada. Laranja representa valores acima da referência, azul abaixo e cinza valores semelhantes.",
+    referenceNote: "Referência = população elegível após os filtros aplicados.",
+    referenceN: clients.length,
     variables,
     groups: groupData.map((g) => ({ id: g.id, label: g.label, n: g.n })),
     cells,

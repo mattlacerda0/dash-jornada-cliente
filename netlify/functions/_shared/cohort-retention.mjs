@@ -90,15 +90,19 @@ function cohortPeriodEnd(key, granularity) {
 }
 
 /**
- * Retido na idade N se nunca cancelou com data, ou cancelamento é DEPOIS do fim do mês N desde a contratação.
- * Idade futura (cutoff < fim do mês N) → não observável.
+ * Retido na idade N se nunca cancelou com data, ou o mês de vida do cancelamento é posterior a N
+ * (completeMonthsBetween(hire, cancel) > N).
+ * Ex.: contratado 10/01 e cancelado 20/03 → meses=2 → M0/M1 retido, M2+ não retido.
+ * Idade futura (cutoff < fim do mês N desde a contratação) → não observável.
  */
 function retentionAtAge(hire, cancel, cutoff, age) {
   const endOfAge = addCalendarMonths(hire, age);
   if (!endOfAge) return { observable: false, retained: null };
   if (cutoff < endOfAge) return { observable: false, retained: null };
   if (!cancel) return { observable: true, retained: true };
-  return { observable: true, retained: cancel > endOfAge };
+  const cancelMonth = completeMonthsBetween(hire, cancel);
+  if (cancelMonth == null) return { observable: true, retained: true };
+  return { observable: true, retained: cancelMonth > age };
 }
 
 /**
@@ -118,11 +122,32 @@ export function buildCohortRetention(clients, options = {}) {
   const hireTo = options.hireTo ? String(options.hireTo).slice(0, 10) : null;
 
   const members = [];
+  const seenIds = new Set();
   let skippedNoHire = 0;
+  let skippedCancelledNoDate = 0;
+  let skippedDuplicate = 0;
+  let skippedCancelBeforeHire = 0;
   for (const c of clients || []) {
+    const idKey = c?.clientId != null ? String(c.clientId) : (c?.id != null ? String(c.id) : null);
+    if (idKey != null) {
+      if (seenIds.has(idKey)) {
+        skippedDuplicate += 1;
+        continue;
+      }
+      seenIds.add(idKey);
+    }
     const hire = hireYmd(c);
     if (!hire || hire > cutoff) {
       skippedNoHire += 1;
+      continue;
+    }
+    if (c?.isCancelled && !cancelYmd(c)) {
+      skippedCancelledNoDate += 1;
+      continue;
+    }
+    const cancel = cancelYmd(c);
+    if (cancel && cancel < hire) {
+      skippedCancelBeforeHire += 1;
       continue;
     }
     if (hireFrom && hire < hireFrom) continue;
@@ -132,13 +157,14 @@ export function buildCohortRetention(clients, options = {}) {
       skippedNoHire += 1;
       continue;
     }
-    const cancel = cancelYmd(c);
     members.push({
-      clientId: c.clientId,
+      clientId: c.clientId ?? c.id ?? null,
       hire,
       cancel,
+      cancelSource: c.cancellationDateSource || c.cancellationSource || null,
       key,
       ageMonth: completeMonthsBetween(hire, cancel && cancel <= cutoff ? cancel : cutoff),
+      cancelMonth: cancel ? completeMonthsBetween(hire, cancel) : null,
     });
   }
 
@@ -249,10 +275,33 @@ export function buildCohortRetention(clients, options = {}) {
     metadata: {
       clientsWithHire: members.length,
       skippedNoHire,
+      skippedCancelledNoDate,
+      skippedDuplicate,
+      skippedCancelBeforeHire,
       cohortCount: cohorts.length,
       maxAge,
       note:
-        "Retido na idade N se cancelamento analítico é posterior ao fim do mês N desde a contratação (ou nunca cancelou). Idades futuras = null.",
+        "Inclui apenas contratação válida; cancelados sem data analítica (churn_efetivado_at → distrato_assinado_at → data_churn) são excluídos; cancelamento anterior à contratação excluído. Retido na idade N se completeMonths(hire→cancel) > N (ou nunca cancelou). Idades futuras = null.",
+      auditSample: members.slice(0, 80).map((m) => {
+        const agesToCheck = [0, 1, 2, 3, 6].filter((age) => age <= maxAge);
+        return {
+          clientId: m.clientId,
+          hire: m.hire,
+          cancel: m.cancel,
+          cancelSource: m.cancelSource,
+          cohort: m.key,
+          ageMonthAtCutoff: m.ageMonth,
+          cancelMonth: m.cancelMonth,
+          retentionByAge: agesToCheck.map((age) => {
+            const r = retentionAtAge(m.hire, m.cancel, cutoff, age);
+            return {
+              age,
+              observable: r.observable,
+              retained: r.observable ? (r.retained ? "sim" : "não") : null,
+            };
+          }),
+        };
+      }),
     },
   };
 }

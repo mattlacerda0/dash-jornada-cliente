@@ -767,7 +767,7 @@ function buildPayload(
 ) {
   const now = new Date();
   const process = buildCancellationProcessMap(cancellations, {
-    includeArchived: false,
+    includeArchived: true,
     clients,
   });
   const analyticalCancel = buildAnalyticalCancellationMap(cancellations, clients);
@@ -782,22 +782,25 @@ function buildPayload(
   } = process;
 
   const statusById = buildStatusDimensionMap(statusRows);
+  const clientById = new Map(clients.map((c) => [String(c.id), c]));
+  const financialMap = buildFinancialMap(financialRows);
   const processStatusLines = cancellations
     .filter((row) => !parseFlexibleDate(row.archived_at))
     .map((row) => {
       const status = resolveProcessStatus(row.status_id, statusById);
+      const client = clientById.get(String(row.client_id || ""));
       return {
         cancellationId: row.id == null ? null : String(row.id),
         clientId: row.client_id == null ? null : String(row.client_id),
         processStatusId: status.processStatusId,
         processStatusName: status.processStatusName,
         processStatusOrder: status.processStatusOrder,
+        segment: resolveClientSegmentInfo(String(row.client_id || ""), client, financialMap)?.segmentLabel
+          || "Dados insuficientes",
       };
     });
-  const financialMap = buildFinancialMap(financialRows);
   const attendanceMap = buildAttendanceMap(attendanceRows);
   const meetingsByClient = consolidateMeetings(calendlyRows, manualRows, attendanceMap);
-  const clientById = new Map(clients.map((c) => [String(c.id), c]));
 
   const structuredWarnings = [];
   const rows = [];
@@ -1044,6 +1047,7 @@ function buildPayload(
       isCritical: Boolean(proc.isCritical),
       estagioCliente: proc.estagioCliente,
       isArchived: Boolean(proc.isArchived),
+      hasArchivedRecord: Boolean(proc.hasArchivedRecord || proc.isArchived),
       valorPago: proc.valorPago,
       valorReembolso: proc.valorReembolso,
       retentionStartAt: toIso(proc.retentionStartAt),

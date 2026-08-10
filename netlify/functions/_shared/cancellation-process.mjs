@@ -335,6 +335,7 @@ export function buildCancellationProcessMap(cancellations, { includeArchived = f
       cancellationRowId: blankToNull(row.id),
       archivedAt: archivedAt || null,
       isArchived: Boolean(archivedAt),
+      hasArchivedRecord: Boolean(archivedAt),
       statusId: blankToNull(row.status_id),
       intencaoAt: intencaoDate,
       pedidoAt: pedidoDate,
@@ -397,12 +398,17 @@ export function buildCancellationProcessMap(cancellations, { includeArchived = f
       continue;
     }
 
-    const better =
-      candidate.stageRank > current.stageRank
-      || (candidate.stageRank === current.stageRank
-        && (candidate.updated > current.updated
-          || (candidate.updated.getTime() === current.updated.getTime()
-            && String(candidate.cancellationRowId || "") > String(current.cancellationRowId || ""))));
+    // Quando o universo inclui histórico arquivado, a linha não arquivada deve
+    // representar o processo atual. O histórico continua marcado separadamente.
+    const better = current.isArchived && !candidate.isArchived
+      ? true
+      : candidate.isArchived && !current.isArchived
+        ? false
+        : candidate.stageRank > current.stageRank
+          || (candidate.stageRank === current.stageRank
+            && (candidate.updated > current.updated
+              || (candidate.updated.getTime() === current.updated.getTime()
+                && String(candidate.cancellationRowId || "") > String(current.cancellationRowId || ""))));
 
     const mergeProcessFields = (primary, secondary) => {
       const hasIntencao = primary.hasIntencao || secondary.hasIntencao;
@@ -463,6 +469,10 @@ export function buildCancellationProcessMap(cancellations, { includeArchived = f
         retentionStartAt: primary.retentionStartAt || secondary.retentionStartAt,
         enteredOffboardingAt: primary.enteredOffboardingAt || secondary.enteredOffboardingAt,
         isCritical: primary.isCritical || secondary.isCritical,
+        hasArchivedRecord: Boolean(
+          primary.hasArchivedRecord || secondary.hasArchivedRecord
+          || primary.isArchived || secondary.isArchived,
+        ),
         exclusiveStageKey: excl.key,
         exclusiveStage: excl.label,
         stageRank: stageRank(excl.key),
@@ -557,6 +567,7 @@ export function buildCancellationProcessMap(cancellations, { includeArchived = f
       isRetido: false,
       hasDesfecho: false,
       hasTratativa: false,
+      hasArchivedRecord: false,
       isCritical: false,
       tratativa: null,
       responsavel: null,

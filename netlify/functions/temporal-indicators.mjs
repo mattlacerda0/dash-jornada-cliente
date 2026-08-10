@@ -856,8 +856,12 @@ export async function computeTemporalIndicatorsPayload() {
     for (const key of months) {
       const record = ensureMonth(subject, key);
       const end = monthEnd(key);
-      const lastActivity = [...subject.activityDates].reverse().find((date) => date <= end);
-      if (lastActivity) record.daysWithoutActivity = Math.max(0, daysBetween(lastActivity, end));
+      // No mês corrente, não projeta inatividade até uma data futura. Como a
+      // atividade mais recente é escolhida entre todas as fontes, esta regra é
+      // equivalente ao menor número de dias sem atividade entre os cenários.
+      const referenceDate = end > now ? now : end;
+      const lastActivity = [...subject.activityDates].reverse().find((date) => date <= referenceDate);
+      if (lastActivity) record.daysWithoutActivity = Math.max(0, daysBetween(lastActivity, referenceDate));
       if (subject.cancellationDate) {
         const cancel = parseDate(subject.cancellationDate);
         if (cancel) {

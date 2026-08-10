@@ -998,7 +998,7 @@ function buildPayload(clients, calendlyRows, manualRows, attendanceRows, implRow
 }
 
 /** Fonte única (config + fetch + regras) reutilizada pelo handler e por /api/assistant-data. */
-export async function computeMeetingsPayload() {
+export async function computeMeetingsPayload(options = {}) {
   const configError = configurationError();
   if (configError) {
     const err = new Error(configError);
@@ -1021,7 +1021,9 @@ export async function computeMeetingsPayload() {
       warnings: [],
       meta: null,
     })),
-    loadMeetingTypesFromCalendly(),
+    options.includeMeetingTypes === false
+      ? Promise.resolve(null)
+      : loadMeetingTypesFromCalendly(),
   ]);
 
   return buildPayload(clients, calendlyRows, manualRows, attendanceRows, implRows, cancellations, airtableIndex, meetingTypes);

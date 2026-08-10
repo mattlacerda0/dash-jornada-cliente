@@ -227,6 +227,7 @@ async function qualityResponse() {
 const server = Bun.serve({
   hostname: "127.0.0.1",
   port: PORT,
+  idleTimeout: 255,
   async fetch(request) {
     const url = new URL(request.url);
     if (url.pathname === "/api/auth-config") return authConfigHandler(request);

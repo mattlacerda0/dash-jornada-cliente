@@ -1780,7 +1780,7 @@ export async function computeStatisticalCrossesPayload(options = {}) {
   const now = new Date();
   const [general, meetings, mechanisms, npsRows] = await Promise.all([
     computeGeneralDataPayload(),
-    computeMeetingsPayload(),
+    computeMeetingsPayload({ includeMeetingTypes: false }),
     computeMechanismsPayload(),
     fetchNpsResponsesForCrosses().catch((error) => {
       console.warn("[Statistical Crosses] NPS fetch failed:", error instanceof Error ? error.message : error);

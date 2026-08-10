@@ -212,7 +212,7 @@ export function verbalizeMetricResult(queryPlan, result) {
     return "Não há mecanismo calculável no recorte atual.";
   }
   if (result.metric === "top_meeting_types") {
-    return `${label}: ${typeof result.value === "string" ? result.value : withUnit(result.value)}. Fonte exclusiva: CSV de tipos de reunião (não altera os demais indicadores de reuniões).`;
+    return `${label}: ${typeof result.value === "string" ? result.value : withUnit(result.value)}. Fonte exclusiva: Business Data · Agendamentos.calendly_eventos (não altera os demais indicadores de reuniões).`;
   }
   if (result.metric === "combined_people_with_mechanisms") {
     const detail = result.value_detail || {};

@@ -356,19 +356,19 @@ export function buildGroupComparativeMatrix(clients) {
   const groups = [
     { id: "active", label: "Ativos", test: (c) => c.isActive && !c.isCancelled },
     { id: "cancelled", label: "Cancelados", test: (c) => !!c.isCancelled },
-    { id: "renewed", label: "Renovados", test: (c) => !!c.hasRenewed },
+    { id: "renewed", label: "Renovados", test: (c) => Number(c.currentCycle) >= 2 },
     { id: "notRenewed", label: "Não renovados", test: (c) => c.currentCycle === 1 },
     { id: "promoter", label: "Promotores", test: (c) => c.npsClass === "promoter" },
     { id: "passive", label: "Neutros", test: (c) => c.npsClass === "passive" },
     { id: "detractor", label: "Detratores", test: (c) => c.npsClass === "detractor" },
-    { id: "highPerf", label: "Alta performance", test: (c) => c.npsClass === "promoter" && c.hasRenewed },
+    { id: "highPerf", label: "Alta performance", test: (c) => c.npsClass === "promoter" && Number(c.currentCycle) >= 2 },
   ];
 
   const variables = [
     { id: "stayDays", label: "Permanência (dias)", kind: "median" },
     { id: "meetingCount", label: "Reuniões", kind: "median" },
     { id: "noShowCount", label: "No-shows", kind: "median" },
-    { id: "mechanismCount", label: "Mecanismos", kind: "median" },
+    { id: "implementedMechanismCount", label: "Mecanismos implementados", kind: "median" },
     { id: "implementationPercent", label: "% implementação", kind: "median" },
     { id: "monthlyIncome", label: "Renda", kind: "median" },
     { id: "liquidityReserve", label: "Reserva", kind: "median" },

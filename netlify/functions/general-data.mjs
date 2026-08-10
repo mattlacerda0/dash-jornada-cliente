@@ -13,6 +13,11 @@ import {
   isMarkedCancelledNoEvidenceStatus,
   isEffectiveCancelledWithoutDateStatus,
 } from "./_shared/analytical-cancellation.mjs";
+import {
+  applyRenewalTenureAdjustment,
+  stayMonthsFromDays,
+  stayRangeFromMonths as stayRangeFromMonthsShared,
+} from "./_shared/client-tenure.mjs";
 
 const CLIENT_SELECT =
   "id,codigo,name,data_inicio_ciclo,data_fim_ciclo,created_at,status,segmentacao,engenheiro_patrimonial,data_churn,ciclo,programa,valor_total_pago,contrato_assinado,davos_contrato_assinado";
@@ -299,7 +304,7 @@ const MEASURE_CONFIG = {
     trimPercent: 5,
     label: "Permanência típica",
     tooltip:
-      "Para clientes ativos e congelados, considera a data atual. Para encerrados, considera apenas registros com data de cancelamento preenchida. A mediana sofre menos influência de valores extremos.",
+      "Para clientes ativos e congelados, considera a data atual. Para encerrados, considera apenas registros com data de cancelamento preenchida. Clientes com ciclo ≥ 2 e permanência base < 365 dias recebem +365 no indicador analítico. A mediana sofre menos influência de valores extremos.",
   },
 };
 
@@ -353,11 +358,9 @@ function daysBetween(start, end) {
 
 function stayRangeFromMonths(months) {
   if (months == null) return INSUFFICIENT_STAY_RANGE;
-  if (months <= 3) return "Até 3 meses";
-  if (months <= 6) return "De 4 a 6 meses";
-  if (months <= 12) return "De 7 a 12 meses";
-  if (months <= 24) return "De 13 a 24 meses";
-  return "Mais de 24 meses";
+  return stayRangeFromMonthsShared(months) === "Dados insuficientes"
+    ? INSUFFICIENT_STAY_RANGE
+    : stayRangeFromMonthsShared(months);
 }
 
 /**
@@ -884,6 +887,11 @@ function buildPayload(clients, cancellations, financialRows, signatureMap, signa
       ? null
       : Number(currentCycleRaw);
     const currentCycle = Number.isFinite(currentCycleNum) ? currentCycleNum : null;
+    const stayDaysBase = stay.stayDays;
+    const stayDaysAdjusted = applyRenewalTenureAdjustment(stayDaysBase, currentCycle);
+    const stayAdjusted = stayDaysAdjusted != null && stayDaysBase != null && stayDaysAdjusted !== stayDaysBase;
+    const stayMonthsAdj = stayMonthsFromDays(stayDaysAdjusted);
+    const stayRangeAdj = stayRangeFromMonths(stayMonthsAdj);
     const cycleEndDate = parseDate(client.data_fim_ciclo);
     const renewalCount =
       currentCycle != null && currentCycle > 0 ? Math.max(currentCycle - 1, 0) : 0;
@@ -896,9 +904,9 @@ function buildPayload(clients, cancellations, financialRows, signatureMap, signa
       contractDate: contractDate ? contractDate.toISOString() : null,
       cycleStartDate: parseDate(client.data_inicio_ciclo)?.toISOString() ?? null,
       cycleEndDate: parseDate(client.data_fim_ciclo)?.toISOString() ?? null,
-      currentCycle: toNumber(client.ciclo),
-      renewalCount: Math.max(0, (toNumber(client.ciclo) ?? 0) - 1),
-      renewed: (toNumber(client.ciclo) ?? 0) > 1,
+      currentCycle,
+      renewalCount,
+      renewed,
       renewalValue: toNumber(client.valor_total_pago),
       contractSigned: toBool(client.contrato_assinado),
       davosContractSigned: toBool(client.davos_contrato_assinado),
@@ -907,9 +915,12 @@ function buildPayload(clients, cancellations, financialRows, signatureMap, signa
       cancellationDate: cancellationDate ? cancellationDate.toISOString() : null,
       cancellationStage,
       hasCancellationProcess,
-      stayDays: stay.stayDays,
-      stayMonths: stay.stayMonths,
-      stayRange: stay.stayRange,
+      stayDaysBase,
+      stayDays: stayDaysAdjusted,
+      stayDaysChronological: stayDaysBase,
+      stayAdjusted,
+      stayMonths: stayMonthsAdj,
+      stayRange: stayRangeAdj,
       stayCalculationStatus: stay.stayCalculationStatus,
       stayUsedCurrentDate: stay.stayUsedCurrentDate,
       stayUsedCreatedAtFallback: usedCreatedFallback,
@@ -917,11 +928,8 @@ function buildPayload(clients, cancellations, financialRows, signatureMap, signa
       status: analyticalStatus,
       analyticalStatus,
       rawStatus,
-      currentCycle,
       cycleStart: contractDate ? contractDate.toISOString() : null,
       cycleEnd: cycleEndDate ? cycleEndDate.toISOString() : null,
-      renewalCount,
-      renewed,
       program: blankToNull(client.programa),
       /** segment = código calculado (null quando dados insuficientes). */
       segment: segmentInfo.segment,

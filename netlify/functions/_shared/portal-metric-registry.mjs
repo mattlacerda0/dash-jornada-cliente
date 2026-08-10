@@ -635,18 +635,18 @@ export const portalMetricRegistry = {
   top_meeting_types: {
     domain: "meetings",
     label: "Tipos de reunião mais frequentes",
-    payloadPath: "meetingTypesFromCsv.byFamily",
+    payloadPath: "meetingTypes.byFamily",
     unit: "meetings",
     aggregation: "top",
     definition:
-      "Distribuição por família a partir do CSV exclusivo do gráfico Reuniões por tipo. Não usa o dataset operacional de reuniões.",
+      "Distribuição por família a partir de Agendamentos.calendly_eventos (Business Data), exclusivo do gráfico Reuniões por tipo. Não usa o dataset operacional de reuniões.",
     aliases: [
       "quais tipos de reuniao sao mais frequentes",
       "quais tipos de reunião são mais frequentes",
       "tipos de reuniao mais frequentes",
       "tipos de reunião mais frequentes",
     ],
-    caveats: ["Fonte exclusiva: CSV de tipos de reunião."],
+    caveats: ["Fonte exclusiva: Business Data · Agendamentos.calendly_eventos (exclui grupo Comercial)."],
   },
   clients_with_zero_noshows: {
     domain: "meetings",

@@ -19,6 +19,10 @@ import {
   isConfirmedCancelledStatus,
 } from "./_shared/analytical-cancellation.mjs";
 import {
+  applyRenewalTenureAdjustment,
+  calculateAnalyticalTenure,
+} from "./_shared/client-tenure.mjs";
+import {
   associationStrength,
   buildContingencyFromGroups,
   chiSquareIndependence,
@@ -247,33 +251,42 @@ export function buildAnalyticalPopulation(generalPayload, meetingsPayload, mecha
     const contractDate = parseDate(g.contractDate);
     const createdAt = parseDate(g.createdAt);
     const hireDate = contractDate || createdAt;
-    // Permanência oficial do eixo SC (America/Sao_Paulo via daysBetween/now):
-    // cancelado com data → cancel − contratação; não cancelado → hoje − contratação.
-    // Cancelado sem data, contratação futura, datas inválidas ou permanência negativa → null.
-    let stayDays = null;
-    if (!hireDate) {
-      bump("missing_hire_for_stay", "Sem data de contratação — permanência excluída");
-    } else if (hireDate.getTime() > now.getTime()) {
-      bump("future_hire_for_stay", "Contratação futura — permanência excluída");
-    } else if (isCancelledWithDate) {
-      stayDays = daysBetween(hireDate, cancellationDate);
-      if (stayDays != null && stayDays < 0) {
-        bump("negative_stay", "Permanência negativa (cancelamento anterior à contratação)");
-        stayDays = null;
-      }
-    } else if (isCancelled) {
-      bump("cancelled_without_date_stay", "Cancelado sem data válida — permanência excluída");
-      stayDays = null;
-    } else {
-      stayDays = daysBetween(hireDate, now);
-      if (stayDays != null && stayDays < 0) {
-        bump("negative_stay_active", "Permanência negativa — excluída");
-        stayDays = null;
-      }
-    }
-
     const currentCycle = parseCycleNumber(g.currentCycle ?? g.ciclo);
     const renewal = renewalFromCycleLocal(currentCycle);
+
+    // Permanência analítica (oficial): base cronológica + ajuste +365 se ciclo≥2 e base<365.
+    // Preferir campos já calculados em Dados Gerais para paridade; senão recalcular via helper.
+    let stayDaysChronological = g.stayDaysChronological ?? g.stayDaysBase ?? null;
+    let stayDays = g.stayDays ?? null;
+    let stayAdjusted = g.stayAdjusted === true;
+    if (stayDaysChronological == null || stayDays == null) {
+      const tenure = calculateAnalyticalTenure({
+        hireDate,
+        cancellationDate,
+        isCancelledWithDate,
+        isCancelled,
+        now,
+        currentCycle,
+      });
+      if (tenure.warning) {
+        const code = tenure.status === "missing_hire" ? "missing_hire_for_stay"
+          : tenure.status === "future_hire" ? "future_hire_for_stay"
+          : tenure.status === "negative_stay" ? "negative_stay"
+          : tenure.status === "missing_cancellation_date" ? "cancelled_without_date_stay"
+          : "invalid_stay";
+        bump(code, tenure.warning);
+      }
+      stayDaysChronological = tenure.stayDaysChronological;
+      stayDays = tenure.stayDays;
+      stayAdjusted = tenure.adjusted === true;
+    } else {
+      // Garantir ajuste único mesmo se a base veio sem ajuste aplicado.
+      const adjusted = applyRenewalTenureAdjustment(stayDaysChronological, currentCycle);
+      if (adjusted != null) {
+        stayDays = adjusted;
+        stayAdjusted = adjusted !== stayDaysChronological;
+      }
+    }
     const engineer = blankToNull(g.engineer) || "Não informado";
     const segment = blankToNull(g.segmentLabel) || blankToNull(g.segment) || "Dados insuficientes";
     const paidPropertiesValue = g.paidPropertiesValue ?? g.patrimony ?? null;
@@ -347,6 +360,9 @@ export function buildAnalyticalPopulation(generalPayload, meetingsPayload, mecha
       cancellationDate: cancellationDate ? cancellationDate.toISOString() : null,
       observedEndDate: (isCancelledWithDate ? cancellationDate : now).toISOString(),
       stayDays,
+      stayDaysBase: stayDaysChronological,
+      stayDaysChronological,
+      stayAdjusted,
       stayBand: stayBand(stayDays),
       segment,
       engineer,
@@ -476,7 +492,7 @@ const NUMERIC_VARS = [
   { id: "renewalCount", label: "Qtd. renovações (ciclo−1)", field: "renewalCount", predictive: true, source: "clients.ciclo" },
   { id: "currentCycle", label: "Ciclo atual", field: "currentCycle", predictive: true, source: "clients.ciclo" },
   { id: "npsScore", label: "Nota NPS (0–10)", field: "npsScore", predictive: true, requireNpsPredictive: true, source: "nps_responses (última válida; preditivo exclui pós-cancelamento)" },
-  { id: "stayDays", label: "Permanência (dias)", field: "stayDays", predictive: false, source: "contratação → cancelamento ou hoje", note: "Para cancelados = tempo até evento; para ativos = censurado. Excluída do AUC (vazamento/censura)." },
+  { id: "stayDays", label: "Permanência (dias)", field: "stayDays", predictive: false, source: "contratação → cancelamento ou hoje (+365 se ciclo≥2 e base<365)", note: "Indicador analítico. Para cancelados = tempo até evento; para ativos = hoje − contratação. Renovados (ciclo≥2) com base < 365 recebem +365. Sobrevivência/cohort usam duração cronológica (sem +365). Excluída do AUC." },
 ];
 
 const CATEGORICAL_VARS = [
@@ -1743,7 +1759,7 @@ function parseFiltersFromRequest(request) {
       correlationMethod: "spearman",
       matrixVars: parseMatrixVars(get("matrixVars")),
       cohortGranularity: cohortGranularity === "quarter" ? "quarter" : "month",
-      cohortPeriod: (get("cohortPeriod") || "since_2026_01").toLowerCase(),
+      cohortPeriod: (get("cohortPeriod") || "since_2025_01").toLowerCase(),
       cohortHireFrom: get("cohortHireFrom") || null,
       cohortHireTo: get("cohortHireTo") || null,
     };
@@ -2015,10 +2031,10 @@ export async function computeStatisticalCrossesPayload(options = {}) {
 
   const cohortGranularity =
     String(filters.cohortGranularity || "month").toLowerCase() === "quarter" ? "quarter" : "month";
-  const cohortPeriod = String(filters.cohortPeriod || "since_2026_01").toLowerCase();
+  const cohortPeriod = String(filters.cohortPeriod || "since_2025_01").toLowerCase();
   let cohortHireFrom = null;
-  if (cohortPeriod === "since_2026_01") cohortHireFrom = "2026-01-01";
-  else if (cohortPeriod === "since_2025_01") cohortHireFrom = "2025-01-01";
+  if (cohortPeriod === "since_2025_01") cohortHireFrom = "2025-01-01";
+  else if (cohortPeriod === "since_2026_01") cohortHireFrom = "2026-01-01";
   else if (cohortPeriod === "last_12_months") {
     const [y, m] = cutoffDate.split("-").map(Number);
     const dt = new Date(Date.UTC(y, m - 1, 1));
@@ -2296,6 +2312,9 @@ export async function computeStatisticalCrossesPayload(options = {}) {
       renewalCount: c.renewalCount,
       hasRenewed: c.hasRenewed,
       stayDays: c.stayDays,
+      stayDaysBase: c.stayDaysBase ?? c.stayDaysChronological ?? null,
+      stayDaysChronological: c.stayDaysChronological ?? c.stayDaysBase ?? null,
+      stayAdjusted: c.stayAdjusted === true,
       meetingCount: c.meetingCount,
       daysSinceLastMeeting: c.daysSinceLastMeeting,
       noShowCount: c.noShowCount,

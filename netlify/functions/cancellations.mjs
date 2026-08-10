@@ -31,12 +31,13 @@ import {
   isIntentionPedidoStatusName,
 } from "./_shared/cancellation-process.mjs";
 import { buildOrEvidenceGroup, statusNameMatches } from "./_shared/or-evidence.mjs";
+import { applyRenewalTenureAdjustment, stayMonthsFromDays } from "./_shared/client-tenure.mjs";
 
 const STATUS_DIM_SELECT = "id,name,color,display_order,status_type,funnel_type,created_at";
 const STATUS_UNKNOWN_LABEL = "Status não informado";
 
 const CLIENT_SELECT =
-  "id,codigo,name,status,data_inicio_ciclo,created_at,engenheiro_patrimonial,segmentacao,motivo_churn,data_churn";
+  "id,codigo,name,status,data_inicio_ciclo,created_at,engenheiro_patrimonial,segmentacao,motivo_churn,data_churn,ciclo";
 const CANCEL_SELECT = CANCELLATION_PROCESS_SELECT;
 const FINANCIAL_SELECT =
   "id,client_id,ultima_renda_mensal,ultimo_aporte,reserva_liquidez,valor_imoveis_quitados,cheque_especial,parcelamento_cartao,credito_pessoal,credito_consignado,created_at,updated_at";
@@ -845,15 +846,20 @@ function buildPayload(
     let daysToCancellation = null;
     let stayMonths = null;
     let stayRange = "Dados insuficientes";
+    const currentCycleRaw = client?.ciclo;
+    const currentCycleNum = currentCycleRaw == null || currentCycleRaw === ""
+      ? null
+      : Number(currentCycleRaw);
+    const currentCycle = Number.isFinite(currentCycleNum) ? currentCycleNum : null;
     if (hasEfetivado && hireDate && cancellationDate) {
-      const days = daysBetween(hireDate, cancellationDate);
-      if (days < 0) {
+      const daysBase = daysBetween(hireDate, cancellationDate);
+      if (daysBase < 0) {
         dataWarnings.push("Cancelamento anterior à contratação");
       } else if (cancellationDate > now) {
         dataWarnings.push("Data de cancelamento futura");
       } else {
-        daysToCancellation = days;
-        stayMonths = Math.floor(days / 30);
+        daysToCancellation = applyRenewalTenureAdjustment(daysBase, currentCycle);
+        stayMonths = stayMonthsFromDays(daysToCancellation);
         stayRange = stayRangeFromMonths(stayMonths);
       }
     } else if (hasEfetivado) {

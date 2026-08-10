@@ -305,7 +305,6 @@ export const NPS_PREDICTORS = [
   { id: "monthlyIncome", label: "Renda mensal", field: "monthlyIncome" },
   { id: "paidPropertiesValue", label: "Patrimônio", field: "paidPropertiesValue" },
   { id: "liquidityReserve", label: "Reserva de liquidez", field: "liquidityReserve" },
-  { id: "mechanismCount", label: "Mecanismos", field: "mechanismCount" },
   { id: "implementedMechanismCount", label: "Mecanismos implementados", field: "implementedMechanismCount" },
   { id: "currentCycle", label: "Ciclo atual", field: "currentCycle" },
   { id: "renewalCount", label: "Renovações", field: "renewalCount" },

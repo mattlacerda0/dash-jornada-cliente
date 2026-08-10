@@ -307,6 +307,29 @@
       min-width:0;
       overflow-x:hidden;
     }
+    #view-meetings .m-types-source{
+      margin:6px 0 0;
+      display:flex;
+      flex-wrap:wrap;
+      align-items:center;
+      gap:6px 8px;
+      font-size:12px;
+      line-height:1.35;
+      color:var(--color-text-muted);
+    }
+    #view-meetings .m-types-source strong{color:var(--color-text);font-weight:600}
+    #view-meetings .m-types-source .help{flex:0 0 auto}
+    #view-meetings .m-types-source-note{
+      margin:6px 0 0;
+      padding:6px 10px;
+      border-radius:8px;
+      border:1px solid rgba(255,255,255,.08);
+      background:rgba(255,255,255,.03);
+      font-size:11.5px;
+      line-height:1.4;
+      color:var(--color-text-muted);
+      max-width:52rem;
+    }
     @media(max-width:780px){
       #view-meetings .meeting-type-row{
         grid-template-columns:minmax(0,1fr) auto;
@@ -2036,7 +2059,11 @@
               <div class="month-chart-head">
                 <div>
                   <h3>Reuniões por tipo</h3>
-                  <p>Distribuição calculada exclusivamente a partir do CSV de tipos de reunião. Fonte exclusiva deste gráfico: arquivo CSV de tipos de reunião.</p>
+                  <p class="m-types-source">
+                    <strong>Fonte: Calendly via Business Data · Comercial excluído</strong>
+                    <span class="help" id="mTypesSourceTip" tabindex="0" title="Fonte exclusiva deste gráfico: Agendamentos.calendly_eventos. Cada event_uuid distinto representa uma reunião. Os tipos de reunião são obtidos diretamente da tabela Agendamentos.calendly_eventos, no projeto Business Data. Reuniões do grupo Comercial são excluídas desta análise.">i</span>
+                  </p>
+                  <p class="m-types-source-note">Fonte exclusiva deste gráfico: dados do Calendly armazenados no Business Data. Este gráfico não utiliza a BASE QV.</p>
                 </div>
                 <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
                   <div class="seg" id="mTypeModeSeg" role="group" aria-label="Modo do gráfico de tipos">
@@ -3665,8 +3692,7 @@
           <!-- CANCELAMENTO -->
           <div class="sc-axis-block" id="scSecCancel">
             <div class="section-head"><div><h2>3. Cancelamento — correlações e associações</h2>
-              <p class="sc-section-note" style="margin:0">Mostra quais variáveis possuem maior relação observada com cancelamento. Valores maiores representam associações mais fortes, não causalidade.</p></div>
-              <span class="export-host" id="scDiffExportHost"></span></div>
+              <p class="sc-section-note" style="margin:0">Mostra quais variáveis possuem maior relação observada com cancelamento. Valores maiores representam associações mais fortes, não causalidade.</p></div></div>
             <h3 style="font-size:14px;margin:12px 0 6px">Matriz de associação com cancelamento</h3>
             <div class="sc-howto"><span class="sc-howto-ico">i</span><div><strong>Como ler este gráfico:</strong> cada linha é um indicador; as colunas mostram Associação, Diferença padronizada, AUC ajustada e Cobertura. Cores mais intensas = relação observada mais forte. <strong>Positivo</strong> = tende a ser maior entre cancelados; <strong>negativo</strong> = menor entre cancelados.</div></div>
             <div class="sc-metric-explain note-muted" id="scStdDiffExplain">
@@ -3675,7 +3701,7 @@
               No cancelamento: positivo = indicador tende a ser maior entre cancelados; negativo = menor entre cancelados.
             </div>
             <p class="note-muted" id="scCancelMatrixSampleNote" style="margin:4px 0 8px"></p>
-            <div class="sc-zoom-bar" data-sc-zoom-for="scCancelMatrixStage">
+            <div class="sc-zoom-bar" data-sc-zoom-for="scCancelMatrixStage" data-sc-fs-title="Cancelamento — correlações e associações">
               <button type="button" data-sc-zoom="in">Zoom +</button>
               <button type="button" data-sc-zoom="out">Zoom −</button>
               <button type="button" data-sc-zoom="fit">Ajustar</button>
@@ -3688,7 +3714,7 @@
               <div id="scCancelMatrixLegend" class="sc-matrix-legend"></div>
             </div>
             <p class="note-muted" id="scCancelMatrixNarration"></p>
-            <details class="sc-data-details"><summary>Ver dados da matriz de cancelamento</summary><div id="scCancelMatrixTable" class="table-wrap"></div></details>
+            <details class="sc-data-details"><summary>Ver dados da matriz de cancelamento <span class="export-host" id="scCancelMatrixExportHost" style="float:right" onclick="event.stopPropagation()"></span></summary><div id="scCancelMatrixTable" class="table-wrap"></div></details>
 
             <h3 style="font-size:14px;margin:16px 0 6px">Diferença entre ativos e cancelados</h3>
             <div class="sc-howto"><span class="sc-howto-ico">i</span><div><strong>Como ler este gráfico:</strong> Compare as barras verdes e vermelhas. Quando a barra vermelha é maior, o valor típico entre cancelados foi maior neste recorte.</div></div>
@@ -3698,9 +3724,9 @@
             </label>
             <div id="scDiffChart" class="sc-chart-host"></div>
             <p class="note-muted" id="scDiffNarration"></p>
-            <details class="sc-data-details"><summary>Ver dados de cancelamento (diferenças)</summary>
+            <details class="sc-data-details"><summary>Ver dados de cancelamento (diferenças) <span class="export-host" id="scDiffExportHost" style="float:right" onclick="event.stopPropagation()"></span></summary>
               <section class="table-panel" style="margin:0;border:0;padding:0;background:transparent">
-                <div class="table-wrap"><table class="sc-diff-table"><thead><tr>
+                <div class="table-wrap"><table class="sc-diff-table" data-export-covered="1"><thead><tr>
                   <th>Indicador</th><th class="num">Mediana ativos</th><th class="num">Mediana cancelados</th><th class="num">Diferença</th><th class="num">Dif. %</th><th>Associação</th><th>Força</th><th class="num">n ativos</th><th class="num">n cancel.</th><th class="num">Cobertura</th><th>Leitura</th>
                 </tr></thead><tbody id="scDiffRows"></tbody></table></div>
                 <div class="empty" id="scDiffEmpty">Não há dados suficientes para este recorte.</div>
@@ -3710,7 +3736,6 @@
             <h3 style="font-size:14px;margin:16px 0 6px">Poder preditivo individual (AUC)</h3>
             <div class="sc-howto"><span class="sc-howto-ico">i</span><div><strong>Como ler este gráfico:</strong> barras mostram o quanto cada indicador, sozinho, separa cancelados de não cancelados. 0,50 ≈ não diferencia · valores próximos de 1 = maior separação. A AUC não é a taxa de acerto de um modelo completo.</div></div>
             <p class="note-muted" id="scAucSampleNote" style="margin:4px 0 8px"></p>
-            <div style="display:flex;justify-content:flex-end;margin:0 0 6px"><span class="export-host" id="scAucExportHost"></span></div>
             <div id="scAucChart" class="sc-chart-host"></div>
             <p class="note-muted" id="scAucNarration"></p>
             <details class="sc-data-details"><summary>Ver metodologia (AUC)</summary>
@@ -3725,27 +3750,26 @@
                 <div class="sc-howto"><span class="sc-howto-ico">i</span><div><strong>Como ler:</strong> mostra relação entre categorias (ex.: segmento) e cancelamento. Valores maiores = associação mais forte observada.</div></div>
                 <div id="scChartCategorical"></div></article>
             </section>
-            <details class="sc-data-details"><summary>Ver dados de AUC</summary>
+            <details class="sc-data-details"><summary>Ver dados de AUC <span class="export-host" id="scAucExportHost" style="float:right" onclick="event.stopPropagation()"></span></summary>
               <section class="table-panel" style="margin:0;border:0;padding:0;background:transparent">
                 <div class="table-wrap"><table><thead><tr><th>Variável</th><th class="num">AUC original</th><th class="num">AUC ajustada</th><th>Direção</th><th class="num">Amostra</th><th class="num">Cobertura</th><th>Status</th><th>Observação</th></tr></thead><tbody id="scAucRows"></tbody></table></div>
                 <div class="empty" id="scAucEmpty" hidden>Não há variáveis elegíveis para AUC neste recorte.</div>
               </section>
             </details>
             <div id="scCancelRankHost" class="sc-chart-host" style="margin-top:12px"></div>
-            <details class="sc-data-details"><summary>Ver ranking completo — cancelamento</summary><div id="scCancelRankTable" class="table-wrap"></div></details>
+            <details class="sc-data-details"><summary>Ver ranking completo — cancelamento <span class="export-host" id="scCancelRankExportHost" style="float:right" onclick="event.stopPropagation()"></span></summary><div id="scCancelRankTable" class="table-wrap"></div></details>
           </div>
 
           <!-- NPS -->
           <div class="sc-axis-block" id="scSecNps">
             <div class="section-head"><div><h2>4. NPS — matriz de correlação</h2>
-              <p class="sc-section-note" style="margin:0">Correlação com a nota NPS e diferença padronizada entre Promotores e Detratores (quando a amostra permite). Associação observada, não causalidade.</p></div>
-              <span class="export-host" id="scNpsCorrExportHost"></span></div>
+              <p class="sc-section-note" style="margin:0">Correlação com a nota NPS e diferença padronizada entre Promotores e Detratores (quando a amostra permite). Associação observada, não causalidade.</p></div></div>
             <div class="sc-howto"><span class="sc-howto-ico">i</span><div><strong>Como ler este gráfico:</strong> colunas = Correlação com NPS, Diferença padronizada e Cobertura. Cores quentes = relação positiva; frias = negativa.</div></div>
             <div class="sc-metric-explain note-muted">
               <strong>Diferença padronizada:</strong> mostra o tamanho da diferença entre os grupos em uma escala comum. Quanto mais distante de zero, maior a diferença observada. Aqui: Promotores vs Detratores.
             </div>
             <p class="note-muted" id="scNpsMatrixSampleNote" style="margin:4px 0 8px"></p>
-            <div class="sc-zoom-bar" data-sc-zoom-for="scNpsMatrixStage">
+            <div class="sc-zoom-bar" data-sc-zoom-for="scNpsMatrixStage" data-sc-fs-title="NPS — matriz de correlação">
               <button type="button" data-sc-zoom="in">Zoom +</button>
               <button type="button" data-sc-zoom="out">Zoom −</button>
               <button type="button" data-sc-zoom="fit">Ajustar</button>
@@ -3758,10 +3782,9 @@
               <div id="scNpsMatrixLegend" class="sc-matrix-legend"></div>
             </div>
             <p class="note-muted" id="scNpsMatrixNarration"></p>
-            <details class="sc-data-details"><summary>Ver dados de NPS (correlações)</summary><div id="scNpsCorrHost"></div></details>
+            <details class="sc-data-details"><summary>Ver dados de NPS (correlações) <span class="export-host" id="scNpsCorrExportHost" style="float:right" onclick="event.stopPropagation()"></span></summary><div id="scNpsCorrHost"></div></details>
             <h3 style="font-size:14px;margin:16px 0 6px">Promotores, Neutros e Detratores</h3>
             <div class="sc-howto"><span class="sc-howto-ico">i</span><div><strong>Como ler:</strong> barras agrupadas por classe NPS. Números acima das barras mostram o percentual. Compare cada classe com as demais. Cobertura NPS baixa reduz a confiança.</div></div>
-            <div style="display:flex;justify-content:flex-end;margin:0 0 6px"><span class="export-host" id="scNpsGroupsExportHost"></span></div>
             <p class="note-muted" id="scNpsGroupsSampleNote" style="margin:4px 0 8px"></p>
             <div id="scNpsGroupsChart" class="sc-chart-host"></div>
             <p class="note-muted" id="scNpsGroupsNarration"></p>
@@ -3769,7 +3792,7 @@
             <details class="sc-data-details"><summary>Ver metodologia (NPS por classe)</summary>
               <p class="note-muted">Diferença padronizada do % cancelado compara cada classe (Promotores / Neutros / Detratores) com as demais. Positivo = cancelamento mais frequente na classe do que no restante.</p>
             </details>
-            <details class="sc-data-details"><summary>Ver dados de NPS por classe</summary>
+            <details class="sc-data-details"><summary>Ver dados de NPS por classe <span class="export-host" id="scNpsGroupsExportHost" style="float:right" onclick="event.stopPropagation()"></span></summary>
               <section class="table-panel" style="margin:0;border:0;padding:0;background:transparent">
                 <div class="table-wrap"><table><thead><tr>
                   <th>Grupo</th><th class="num">Clientes</th><th class="num">%</th><th class="num">Cancelados</th><th class="num">% cancelado</th><th class="num">Permanência</th><th class="num">Reuniões</th><th class="num">No-shows</th><th class="num">Renovados</th><th class="num">% renovado</th><th class="num">Ciclo</th><th class="num">Renda</th>
@@ -3783,11 +3806,10 @@
           <!-- RENOVAÇÃO -->
           <div class="sc-axis-block" id="scSecRenewal">
             <div class="section-head"><div><h2>5. Renovação — matriz de associação</h2>
-              <p class="sc-section-note" style="margin:0">Alvo: ciclo atual &gt; 1. Inclui associação, diferença padronizada (renovados vs não renovados), AUC e cobertura. currentCycle e renewalCount não entram como explicativas.</p></div>
-              <span class="export-host" id="scRenewalDiffExportHost"></span></div>
+              <p class="sc-section-note" style="margin:0">Alvo: ciclo atual &gt; 1. Inclui associação, diferença padronizada (renovados vs não renovados), AUC e cobertura. currentCycle e renewalCount não entram como explicativas.</p></div></div>
             <div class="sc-howto"><span class="sc-howto-ico">i</span><div><strong>Como ler este gráfico:</strong> positivo na diferença padronizada = indicador maior entre renovados; negativo = menor. Associação mostra força da relação observada, sem causalidade.</div></div>
             <p class="note-muted" id="scRenewalMatrixSampleNote" style="margin:4px 0 8px"></p>
-            <div class="sc-zoom-bar" data-sc-zoom-for="scRenewalMatrixStage">
+            <div class="sc-zoom-bar" data-sc-zoom-for="scRenewalMatrixStage" data-sc-fs-title="Renovações — correlações e associações">
               <button type="button" data-sc-zoom="in">Zoom +</button>
               <button type="button" data-sc-zoom="out">Zoom −</button>
               <button type="button" data-sc-zoom="fit">Ajustar</button>
@@ -3811,7 +3833,7 @@
             <p class="note-muted" id="scRenewalDiffSampleNote" style="margin:4px 0 8px"></p>
             <div id="scRenewalDiffChart" class="sc-chart-host"></div>
             <p class="note-muted" id="scRenewalDiffNarration"></p>
-            <details class="sc-data-details"><summary>Ver dados de renovação</summary>
+            <details class="sc-data-details"><summary>Ver dados de renovação <span class="export-host" id="scRenewalDiffExportHost" style="float:right" onclick="event.stopPropagation()"></span></summary>
               <section class="table-panel" style="margin:0;border:0;padding:0;background:transparent">
                 <div class="table-wrap"><table><thead><tr><th>Variável</th><th class="num">Mediana renovados</th><th class="num">Mediana não renovados</th><th class="num">Diferença</th><th>Associação</th><th class="num">Amostra</th><th class="num">Cobertura</th><th>Observação</th></tr></thead><tbody id="scRenewalDiffRows"></tbody></table></div>
                 <div class="empty" id="scRenewalDiffEmpty" hidden>Sem base de ciclo válida no recorte.</div>
@@ -3823,10 +3845,10 @@
           <!-- PERMANÊNCIA -->
           <div class="sc-axis-block" id="scSecTenure">
             <div class="section-head"><div><h2>6. Permanência — matriz de correlação</h2>
-              <p class="sc-section-note" style="margin:0">Permanência em dias: cancelados com data = cancelamento − contratação; demais = hoje − contratação (America/Sao_Paulo). Spearman. A correlação mostra como o indicador varia junto com a permanência. A diferença padronizada compara clientes de maior e menor permanência (alta ≥ mediana vs baixa &lt; mediana). “Reuniões por mês” normaliza o tempo de exposição e não substitui o total de reuniões.</p></div></div>
+              <p class="sc-section-note" style="margin:0">Permanência analítica em dias: cancelados com data = cancelamento − contratação; demais = hoje − contratação (America/Sao_Paulo). Clientes com ciclo ≥ 2 e permanência base &lt; 365 dias recebem +365 no indicador. Spearman. A correlação mostra como o indicador varia junto com a permanência. A diferença padronizada compara clientes de maior e menor permanência (alta ≥ mediana vs baixa &lt; mediana). “Reuniões por mês” normaliza o tempo de exposição e não substitui o total de reuniões.</p></div></div>
             <div class="sc-howto"><span class="sc-howto-ico">i</span><div><strong>Como ler este gráfico:</strong> cada célula mostra a correlação de Spearman com a permanência (em dias), a diferença padronizada (alta vs baixa permanência) e a cobertura. Positiva = tendem a crescer juntos; negativa = um sobe e o outro desce. Não confundir com a curva de sobrevivência.</div></div>
             <p class="note-muted" id="scTenureMatrixSampleNote" style="margin:4px 0 8px"></p>
-            <div class="sc-zoom-bar" data-sc-zoom-for="scTenureMatrixStage">
+            <div class="sc-zoom-bar" data-sc-zoom-for="scTenureMatrixStage" data-sc-fs-title="Permanência — matriz de correlação">
               <button type="button" data-sc-zoom="in">Zoom +</button>
               <button type="button" data-sc-zoom="out">Zoom −</button>
               <button type="button" data-sc-zoom="fit">Ajustar</button>
@@ -3840,7 +3862,7 @@
             </div>
             <p class="note-muted" id="scTenureMatrixNarration"></p>
             <details class="sc-data-details"><summary>Ver metodologia (permanência)</summary>
-              <p class="note-muted">Cancelados com data válida: permanência = data de cancelamento − contratação. Demais: hoje (America/Sao_Paulo) − contratação. Exclui contratação futura, permanência negativa e cancelados sem data. Spearman. Correlações |ρ| ≥ 0,95 são auditadas (possível variável derivada).</p>
+              <p class="note-muted">Cancelados com data válida: permanência base = data de cancelamento − contratação. Demais: hoje (America/Sao_Paulo) − contratação. Se ciclo ≥ 2 e base &lt; 365, o indicador analítico soma +365 uma única vez. Exclui contratação futura, permanência negativa e cancelados sem data. A curva de sobrevivência e o cohort usam duração cronológica real (sem +365). Spearman. Correlações |ρ| ≥ 0,95 são auditadas (possível variável derivada).</p>
             </details>
             <section class="charts sc-charts">
               <article class="chart-card sc-span-all"><h3>Correlações com permanência (Spearman)</h3><div id="scChartTenure"></div></article>
@@ -3864,7 +3886,7 @@
             <div class="sc-group-scale-labels"><span>≤ −0,8</span><span>−0,4</span><span>0</span><span>+0,4</span><span>≥ +0,8</span></div>
           </div>
           <p class="note-muted" id="scGroupMatrixSampleNote" style="margin:4px 0 8px"></p>
-          <div class="sc-zoom-bar" data-sc-zoom-for="scGroupMatrixStage">
+          <div class="sc-zoom-bar" data-sc-zoom-for="scGroupMatrixStage" data-sc-fs-title="Matriz comparativa dos grupos">
             <button type="button" data-sc-zoom="in">Zoom +</button>
             <button type="button" data-sc-zoom="out">Zoom −</button>
             <button type="button" data-sc-zoom="fit">Ajustar</button>
@@ -3874,14 +3896,14 @@
           </div>
           <div id="scGroupMatrixStage" class="sc-zoom-stage"><div class="sc-zoom-inner" id="scGroupMatrixHost"></div></div>
           <p class="note-muted" id="scGroupMatrixNarration"></p>
-          <details class="sc-data-details"><summary>Ver dados da matriz de grupos</summary><div id="scGroupMatrixTable" class="table-wrap"></div></details>
+          <details class="sc-data-details"><summary>Ver dados da matriz de grupos <span class="export-host" id="scGroupExportHost" style="float:right" onclick="event.stopPropagation()"></span></summary><div id="scGroupMatrixTable" class="table-wrap"></div></details>
 
           <div class="section-head" id="scSecPredict"><div><h2>8. Ranking preditivo de cancelamento</h2>
             <p class="sc-section-note" style="margin:0">Mostra quais variáveis mais contribuíram para separar cancelados e não cancelados no modelo de validação. Importância ≠ causalidade.</p></div></div>
           <div class="sc-howto"><span class="sc-howto-ico">i</span><div><strong>Como ler este gráfico:</strong> barras maiores = maior contribuição no teste fora da amostra. Laranja = contribuição positiva observada; azul = negativa. Use a amostra de treino/validação abaixo.</div></div>
           <div id="scPredictMeta" class="note-muted"></div>
           <div id="scPredictChart" class="sc-chart-host"></div>
-          <details class="sc-data-details"><summary>Ver ranking completo (Top 20)</summary><div id="scPredictTable" class="table-wrap"></div></details>
+          <details class="sc-data-details"><summary>Ver ranking completo (Top 20) <span class="export-host" id="scPredictExportHost" style="float:right" onclick="event.stopPropagation()"></span></summary><div id="scPredictTable" class="table-wrap"></div></details>
 
           <div class="section-head" id="scSecRules"><div><h2>9. Combinações de fatores</h2>
             <p class="sc-section-note" style="margin:0">Mostra grupos de condições associados a taxas diferentes de cancelamento.</p></div>
@@ -3896,7 +3918,8 @@
 
           <!-- SOBREVIVÊNCIA -->
           <div class="section-head" id="scSecSurvival"><div><h2>10. Curva de sobrevivência</h2>
-            <p class="sc-section-note" style="margin:0">Estima a chance de o cliente continuar na carteira ao longo do tempo. Cancelamento com data = saída; clientes ainda ativos no fim do período continuam na análise sem serem tratados como cancelados.</p></div></div>
+            <p class="sc-section-note" style="margin:0">Estima a chance de o cliente continuar na carteira ao longo do tempo. Cancelamento com data = saída; clientes ainda ativos no fim do período continuam na análise sem serem tratados como cancelados.</p></div>
+            <span class="export-host" id="scSurvivalExportHost"></span></div>
           <div class="sc-howto"><span class="sc-howto-ico">i</span><div><strong>Como ler:</strong> o eixo vertical é a probabilidade de permanência; o horizontal, dias desde a contratação. Quedas marcam saídas. A tabela abaixo usa os mesmos pontos do eixo (0, 90, 180, 365, 730).</div></div>
           <p class="note-muted" id="scSurvivalSampleNote" style="margin:4px 0 8px"></p>
           <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:0 0 8px">
@@ -3922,19 +3945,19 @@
 
           <!-- COHORT -->
           <div class="section-head" id="scSecCohort"><div><h2>11. Análise de cohort</h2>
-            <p class="sc-section-note" style="margin:0">Cada coluna reúne clientes que começaram no mesmo mês (a partir de jan/2026). Linhas = retenção após 1, 2, 3… meses. Cancelados sem data válida ficam fora. Meses futuros ficam vazios.</p></div>
+            <p class="sc-section-note" style="margin:0">Esta análise acompanha grupos de clientes contratados a partir de janeiro de 2025. Cada coluna representa um mês de contratação e cada linha mostra o percentual da coorte que continuou sem cancelamento ao longo dos meses seguintes. Cancelados sem data válida ficam fora. Meses futuros ficam vazios (—).</p></div>
             <span class="export-host" id="scCohortExportHost"></span></div>
-          <div class="sc-howto"><span class="sc-howto-ico">i</span><div><strong>Como ler este gráfico:</strong> Cada coluna reúne clientes que começaram no mesmo mês. Cada linha mostra o percentual que permaneceu após 1, 2, 3 meses e assim por diante. Cores mais frias representam maior retenção; cores mais quentes representam maior queda.<br/>Os dados vêm da data de contratação do cliente e da primeira data válida de cancelamento efetivado, seguindo a prioridade: churn efetivado, distrato assinado e data de churn do cliente.</div></div>
+          <div class="sc-howto"><span class="sc-howto-ico">i</span><div><strong>Como ler este gráfico:</strong> Cada coluna reúne clientes que começaram no mesmo mês. Cada linha mostra o percentual que permaneceu após 1, 2, 3 meses e assim por diante. Cores mais frias representam maior retenção; cores mais quentes representam maior queda.<br/>A data de cancelamento utiliza, nessa ordem, churn efetivado, distrato assinado e data de churn do cliente.</div></div>
           <p class="note-muted" id="scCohortSampleNote" style="margin:4px 0 8px"></p>
           <section class="filters financial" aria-label="Controles da coorte" style="margin-bottom:10px">
             <label>Tipo<select id="scCohortType"><option value="contract" selected>Retenção contratual</option><option value="challenges" disabled>Desafios 45 dias (indisponível)</option></select></label>
-            <label>Período da cohort<select id="scCohortPeriod" title="Este gráfico usa apenas coortes a partir de jan/2026"><option value="since_2026_01" selected>Desde jan/2026</option></select></label>
+            <label>Período da cohort<select id="scCohortPeriod" title="Este gráfico usa coortes a partir de jan/2025"><option value="since_2025_01" selected>Desde jan/2025</option><option value="since_2026_01">Desde jan/2026</option></select></label>
             <label>Granularidade<select id="scCohortGranularity"><option value="month" selected>Mensal</option><option value="quarter">Trimestral</option></select></label>
             <label>Texto da célula<select id="scCohortCellMode"><option value="pct" selected>Percentual</option><option value="n">Quantidade</option></select></label>
             <label>Tamanho mínimo da coorte<input id="scCohortMinN" type="number" min="1" value="5" style="width:72px"/></label>
           </section>
           <p class="note-muted" id="scChallengeCohortNote"></p>
-          <div class="sc-zoom-bar" data-sc-zoom-for="scCohortStage">
+          <div class="sc-zoom-bar" data-sc-zoom-for="scCohortStage" data-sc-fs-title="Análise de cohort de retenção">
             <button type="button" data-sc-zoom="in">Aumentar zoom</button>
             <button type="button" data-sc-zoom="out">Diminuir zoom</button>
             <button type="button" data-sc-zoom="fit">Ajustar à largura</button>
@@ -3986,7 +4009,7 @@
               <button type="button" class="sc-ms-apply" id="scMsApply">Aplicar</button>
             </div>
           </div>
-          <div class="sc-zoom-bar" data-sc-zoom-for="scMatrixStage">
+          <div class="sc-zoom-bar" data-sc-zoom-for="scMatrixStage" data-sc-fs-title="Matriz geral de relações entre variáveis">
             <button type="button" data-sc-zoom="in">Zoom +</button>
             <button type="button" data-sc-zoom="out">Zoom −</button>
             <button type="button" data-sc-zoom="fit">Ajustar</button>
@@ -3999,7 +4022,7 @@
             <div id="scMatrixLegend" class="sc-matrix-legend" aria-hidden="true"></div>
           </div>
           <div id="scMatrixInsights" class="sc-matrix-insights"></div>
-          <details class="sc-data-details"><summary>Ver dados da matriz geral</summary><div id="scMatrixTableHost" class="table-wrap"></div></details>
+          <details class="sc-data-details"><summary>Ver dados da matriz geral <span class="export-host" id="scGeneralMatrixExportHost" style="float:right" onclick="event.stopPropagation()"></span></summary><div id="scMatrixTableHost" class="table-wrap"></div></details>
           <aside id="scMatrixDrawer" class="sc-matrix-drawer" hidden>
             <button type="button" class="sc-matrix-drawer-close" id="scMatrixDrawerClose" aria-label="Fechar">×</button>
             <div id="scMatrixDrawerBody"></div>
@@ -4010,7 +4033,7 @@
           <div class="sc-howto"><span class="sc-howto-ico" title="Informação">i</span><div><strong>Como ler:</strong> cada linha é um cliente ativo com um ou mais sinais. Use a intensidade e a cobertura dos sinais — não trate como lista de cancelamento futuro.</div></div>
           <div id="scSignalsSummary" class="note-muted"></div>
           <div id="scSignalsChart" class="sc-chart-host"></div>
-          <details class="sc-data-details"><summary>Ver clientes com sinais</summary><div id="scSignalsTable" class="table-wrap"></div></details>
+          <details class="sc-data-details"><summary>Ver clientes com sinais <span class="export-host" id="scSignalsExportHost" style="float:right" onclick="event.stopPropagation()"></span></summary><div id="scSignalsTable" class="table-wrap"></div></details>
 
           <div class="section-head" id="scSecTop"><div><h2>Top clientes — Pharus e Davos</h2>
             <p class="sc-section-note" style="margin:0">Ranking pelo índice exploratório de alta performance (transparente). Não é Health Score oficial.</p></div></div>
@@ -4043,7 +4066,7 @@
             <div class="sc-group-scale-labels"><span>≤ −0,8</span><span>−0,4</span><span>0</span><span>+0,4</span><span>≥ +0,8</span></div>
           </div>
           <p class="note-muted" id="scNpsCompSampleNote" style="margin:4px 0 8px"></p>
-          <div class="sc-zoom-bar" data-sc-zoom-for="scNpsCompStage">
+          <div class="sc-zoom-bar" data-sc-zoom-for="scNpsCompStage" data-sc-fs-title="Matriz comparativa de NPS">
             <button type="button" data-sc-zoom="in">Zoom +</button>
             <button type="button" data-sc-zoom="out">Zoom −</button>
             <button type="button" data-sc-zoom="fit">Ajustar</button>
@@ -4438,10 +4461,10 @@ ${dataRows}
         containerEl.dataset.exportMounted = '1';
         containerEl.innerHTML = `
           <div class="export-wrap">
-            <button type="button" class="btn-export" aria-haspopup="true" aria-expanded="false">Exportar ▾</button>
+            <button type="button" class="btn-export" aria-haspopup="true" aria-expanded="false">Exportar</button>
             <div class="export-menu" hidden>
+              <button type="button" data-format="xlsx">Exportar Excel</button>
               <button type="button" data-format="csv">Exportar CSV</button>
-              <button type="button" data-format="xlsx">Exportar Excel (.xlsx)</button>
             </div>
             <span class="export-msg" hidden></span>
           </div>`;
@@ -6644,6 +6667,15 @@ ${dataRows}
       clone.id = stageId + '__fs';
       clone.style.minHeight = 'min(68vh, 720px)';
       clone.style.width = '100%';
+      clone.dataset.scFsClone = '1';
+      const fsSvg = clone.querySelector('svg');
+      if (fsSvg) {
+        const vb = (fsSvg.getAttribute('viewBox') || '').split(/\s+/).map(Number);
+        if (vb.length === 4 && Number.isFinite(vb[2])) {
+          fsSvg.setAttribute('width', Math.min(vb[2] * 1.2, Math.max(960, body.clientWidth - 48)));
+          fsSvg.style.maxWidth = '100%';
+        }
+      }
       body.appendChild(clone);
       scEnsureZoom(clone.id).scale = scEnsureZoom(stageId).scale || 1;
       scApplyZoom(clone.id);
@@ -6710,7 +6742,13 @@ ${dataRows}
           if (action === 'out') z.scale = Math.max(0.4, (z.scale || 1) / 1.2);
           if (action === 'reset') z.scale = 1;
           if (action === 'fit') z.scale = 1;
-          if (action === 'fs') { scOpenFullscreen(stageId, bar.closest('.sc-axis-block, .section-head')?.querySelector('h2')?.textContent || 'Cohort'); return; }
+          if (action === 'fs') {
+            const fsTitle = bar.getAttribute('data-sc-fs-title')
+              || btn.getAttribute('data-sc-fs-title')
+              || 'Visualização ampliada';
+            scOpenFullscreen(stageId, fsTitle);
+            return;
+          }
           if (action === 'export') { scExportStagePng(stageId); return; }
           scApplyZoom(targetId === stageId + '__fs' ? targetId : stageId);
           if (targetId.endsWith('__fs')) scApplyZoom(targetId);
@@ -6754,6 +6792,29 @@ ${dataRows}
       return { fill, text: lum > 140 ? '#111' : '#f5f5f5' };
     }
 
+    function scSvgWrapLines(text, maxChars, maxLines) {
+      const words = String(text || '').split(/\s+/).filter(Boolean);
+      const lines = [];
+      let cur = '';
+      for (const w of words) {
+        const next = cur ? (cur + ' ' + w) : w;
+        if (next.length > maxChars && cur) {
+          lines.push(cur);
+          cur = w;
+          if (lines.length >= maxLines) break;
+        } else cur = next;
+      }
+      if (lines.length < maxLines && cur) lines.push(cur);
+      return lines.length ? lines : [String(text || '')];
+    }
+    function scSvgMultilineLabel(lines, x, y, opts) {
+      const anchor = opts?.anchor || 'end';
+      const fill = opts?.fill || '#ccc';
+      const fontSize = opts?.fontSize || 10;
+      const lh = opts?.lineHeight || (fontSize + 2);
+      const startY = y - ((lines.length - 1) * lh) / 2;
+      return lines.map((ln, i) => '<text x="' + x + '" y="' + (startY + i * lh) + '" text-anchor="' + anchor + '" font-size="' + fontSize + '" fill="' + fill + '"><title>' + escapeHtml(lines.join(' ')) + '</title>' + escapeHtml(ln) + '</text>').join('');
+    }
     function scRenderAxisHeatmap(matrix, hostId, legendId, narrId, tableId) {
       const host = document.getElementById(hostId);
       const legend = legendId ? document.getElementById(legendId) : null;
@@ -6767,7 +6828,7 @@ ${dataRows}
       }
       const rows = matrix.rows;
       const metrics = matrix.metrics || [];
-      const cellW = 88, cellH = 36, labelW = 170, labelH = 70;
+      const cellW = 92, cellH = 44, labelW = 250, labelH = 86;
       const w = labelW + metrics.length * cellW + 8;
       const h = labelH + rows.length * cellH + 8;
       let cells = '';
@@ -6799,7 +6860,7 @@ ${dataRows}
         });
       });
       const colLabs = metrics.map((m, j) => '<text transform="translate(' + (labelW + j * cellW + cellW / 2) + ',' + (labelH - 10) + ') rotate(-40)" text-anchor="start" font-size="10" fill="#bbb">' + escapeHtml(m.label) + '</text>').join('');
-      const rowLabs = rows.map((r, i) => '<text x="' + (labelW - 8) + '" y="' + (labelH + i * cellH + cellH / 2 + 4) + '" text-anchor="end" font-size="11" fill="#ccc">' + escapeHtml((r.label || r.id).slice(0, 26)) + '</text>').join('');
+      const rowLabs = rows.map((r, i) => scSvgMultilineLabel(scSvgWrapLines(r.label || r.id, 28, 3), labelW - 8, labelH + i * cellH + cellH / 2 + 3, { fontSize: 10, fill: '#ccc' })).join('');
       host.innerHTML = '<svg viewBox="0 0 ' + w + ' ' + h + '" width="' + w + '" height="' + h + '" role="img" aria-label="' + escapeHtml(matrix.title || 'Matriz') + '">' +
         '<rect width="' + w + '" height="' + h + '" fill="#141414"/>' + colLabs + rowLabs + cells + '</svg>';
       host.querySelectorAll('.sc-axis-cell').forEach((g) => {
@@ -6876,7 +6937,7 @@ ${dataRows}
       if (!host) return;
       const list = (rows || []).filter((r) => Number.isFinite(Number(r[valueKey] ?? r.association ?? r.importance))).slice(0, 12);
       if (!list.length) { host.innerHTML = '<div class="empty" style="display:block">Ranking indisponível neste recorte.</div>'; return; }
-      const w = 760, rowH = 28, padL = 200, padR = 70, padT = 12, padB = 12;
+      const w = 820, rowH = 34, padL = 260, padR = 70, padT = 12, padB = 12;
       const h = padT + list.length * rowH + padB;
       const maxAbs = Math.max(...list.map((r) => Math.abs(Number(r[valueKey] ?? r.association ?? r.importance))), 0.01);
       const bars = list.map((r, i) => {
@@ -6884,7 +6945,7 @@ ${dataRows}
         const y = padT + i * rowH;
         const bw = (Math.abs(v) / maxAbs) * (w - padL - padR);
         const fill = v < 0 ? '#3b82f6' : '#f47920';
-        return '<text x="' + (padL - 8) + '" y="' + (y + 14) + '" text-anchor="end" font-size="11" fill="#ccc">' + escapeHtml((r.label || r.id || '').slice(0, 28)) + '</text>' +
+        return scSvgMultilineLabel(scSvgWrapLines(r.label || r.id || '', 32, 2), padL - 8, y + 14, { fontSize: 10, fill: '#ccc' }) +
           '<rect x="' + padL + '" y="' + (y + 4) + '" width="' + Math.max(2, bw) + '" height="14" fill="' + fill + '" rx="2"/>' +
           '<text x="' + (padL + bw + 6) + '" y="' + (y + 15) + '" font-size="10" fill="#ddd">' + v.toFixed(3).replace('.', ',') + '</text>';
       }).join('');
@@ -6903,7 +6964,7 @@ ${dataRows}
         host.innerHTML = '<div class="empty" style="display:block">Matriz comparativa indisponível.</div>';
         return;
       }
-      const cellW = 56, cellH = 36, labelW = 160, labelH = 96;
+      const cellW = 64, cellH = 44, labelW = 240, labelH = 110;
       const w = labelW + m.groups.length * cellW + 8;
       const h = labelH + m.variables.length * cellH + 8;
       const byKey = new Map((m.cells || []).map((c) => [c.varId + '||' + c.groupId, c]));
@@ -6956,7 +7017,7 @@ ${dataRows}
         });
       });
       const colLabs = m.groups.map((g, j) => '<text transform="translate(' + (labelW + j * cellW + cellW / 2) + ',' + (labelH - 8) + ') rotate(-50)" text-anchor="start" font-size="10" fill="#bbb">' + escapeHtml(g.label) + '</text>').join('');
-      const rowLabs = m.variables.map((v, i) => '<text x="' + (labelW - 6) + '" y="' + (labelH + i * cellH + cellH / 2 + 3) + '" text-anchor="end" font-size="10" fill="#ccc">' + escapeHtml(v.label) + '</text>').join('');
+      const rowLabs = m.variables.map((v, i) => scSvgMultilineLabel(scSvgWrapLines(v.label, 28, 3), labelW - 6, labelH + i * cellH + cellH / 2 + 3, { fontSize: 10, fill: '#ccc' })).join('');
       host.innerHTML = '<svg viewBox="0 0 ' + w + ' ' + h + '" width="' + Math.min(w, 960) + '" height="' + Math.min(h, 560) + '"><rect width="' + w + '" height="' + h + '" fill="#141414"/>' + colLabs + rowLabs + cells + '</svg>';
       host.querySelectorAll('.sc-axis-cell').forEach((g) => {
         g.addEventListener('mousemove', (evt) => scShowTip(g.getAttribute('data-tip') || '', evt));
@@ -7128,7 +7189,7 @@ ${dataRows}
         host.innerHTML = '<div class="empty" style="display:block">Matriz NPS indisponível neste recorte.</div>';
         return;
       }
-      const cellW = 56, cellH = 36, labelW = 180, labelH = 88;
+      const cellW = 64, cellH = 42, labelW = 248, labelH = 100;
       const w = labelW + m.groups.length * cellW + 8;
       const h = labelH + m.variables.length * cellH + 8;
       const byKey = new Map((m.cells || []).map((c) => [c.varId + '||' + c.groupId, c]));
@@ -7169,6 +7230,7 @@ ${dataRows}
             '<br/>Cobertura geral do NPS: ' + (m.npsCoverageGeneral != null ? Number(m.npsCoverageGeneral).toFixed(1).replace('.', ',') + '%' : '—') +
             '<br/>Cobertura do indicador nesta classe: ' + (c?.indicatorCoverageInClass != null ? Number(c.indicatorCoverageInClass).toFixed(1).replace('.', ',') + '%' : '—') +
             (c?.npsValidWithIndicator != null ? ('<br/>Clientes com NPS e indicador válidos (referência): ' + fmt.format(c.npsValidWithIndicator)) : '') +
+            (v.id === 'implementedMechanismCount' ? '<br/>Este indicador considera somente mecanismos classificados como implementados.' : '') +
             '<br/>' + escapeHtml(g.label) + ' — ' + escapeHtml(String(dir)) + '.';
           const x = labelW + j * cellW;
           const y = labelH + i * cellH;
@@ -7176,7 +7238,7 @@ ${dataRows}
         });
       });
       const colLabs = m.groups.map((g, j) => '<text transform="translate(' + (labelW + j * cellW + cellW / 2) + ',' + (labelH - 8) + ') rotate(-40)" text-anchor="start" font-size="10" fill="#bbb">' + escapeHtml(g.label) + ' (n=' + g.n + ')</text>').join('');
-      const rowLabs = m.variables.map((v, i) => '<text x="' + (labelW - 6) + '" y="' + (labelH + i * cellH + cellH / 2 + 3) + '" text-anchor="end" font-size="10" fill="#ccc">' + escapeHtml(v.label) + '</text>').join('');
+      const rowLabs = m.variables.map((v, i) => scSvgMultilineLabel(scSvgWrapLines(v.label, 28, 3), labelW - 6, labelH + i * cellH + cellH / 2 + 3, { fontSize: 10, fill: '#ccc' })).join('');
       host.innerHTML = '<svg viewBox="0 0 ' + w + ' ' + h + '" width="' + Math.min(w, 960) + '" height="' + Math.min(h, 640) + '"><rect width="' + w + '" height="' + h + '" fill="#141414"/>' + colLabs + rowLabs + cells + '</svg>';
       host.querySelectorAll('.sc-axis-cell').forEach((g) => {
         g.addEventListener('mousemove', (evt) => scShowTip(g.getAttribute('data-tip') || '', evt));
@@ -7390,8 +7452,8 @@ ${dataRows}
       const vars = m.variables;
       const n = vars.length;
       const cellSize = Math.max(48, Math.min(56, Math.floor(560 / Math.max(n, 1))));
-      const labelW = 120;
-      const labelH = 110;
+      const labelW = 210;
+      const labelH = 150;
       const w = labelW + n * cellSize + 8;
       const h = labelH + n * cellSize + 8;
       const totalClients = p.summary?.analyzedClients ?? (p.clients || []).length ?? 0;
@@ -7426,11 +7488,11 @@ ${dataRows}
       const colLabels = vars.map((v, j) => {
         const x = labelW + j * cellSize + cellSize / 2;
         const y = labelH - 8;
-        return '<text transform="translate(' + x + ',' + y + ') rotate(-55)" text-anchor="start" font-size="10" fill="#bbb">' + escapeHtml((v.label || v.id).slice(0, 18)) + '</text>';
+        return '<text transform="translate(' + x + ',' + y + ') rotate(-55)" text-anchor="start" font-size="9" fill="#bbb"><title>' + escapeHtml(v.label || v.id) + '</title>' + escapeHtml(v.label || v.id) + '</text>';
       }).join('');
       const rowLabels = vars.map((v, i) => {
         const y = labelH + i * cellSize + cellSize / 2 + 3;
-        return '<text x="' + (labelW - 8) + '" y="' + y + '" text-anchor="end" font-size="10" fill="#bbb">' + escapeHtml((v.label || v.id).slice(0, 16)) + '</text>';
+        return scSvgMultilineLabel(scSvgWrapLines(v.label || v.id, 22, 3), labelW - 8, y, { fontSize: 9, fill: '#bbb' });
       }).join('');
       host.innerHTML = '<svg class="sc-matrix-svg" viewBox="0 0 ' + w + ' ' + h + '" width="' + w + '" height="' + h + '" role="img" aria-label="Heatmap de correlação Spearman">' +
         '<rect width="' + w + '" height="' + h + '" fill="#141414"/>' + colLabels + rowLabels + rects + '</svg>';
@@ -7692,16 +7754,15 @@ ${dataRows}
         const nClients = cohorts.reduce((a, c) => a + (c.nStart || 0), 0);
         const meta = cohort.metadata || {};
         const excluded = (meta.skippedCancelledNoDate || 0) + (meta.skippedDuplicate || 0) + (meta.skippedCancelBeforeHire || 0) + (meta.skippedNoHire || 0);
-        scSetCoverage(cohortSample, {
-          valid: nClients,
-          eligible: nClients + excluded,
-          coverage: nClients + excluded > 0 ? (nClients / (nClients + excluded)) * 100 : null,
-          missing: excluded,
-          extra: (cohort.hireFrom ? ('desde ' + cohort.hireFrom + ' · ') : '') +
-            'cancelados sem data: ' + fmt.format(meta.skippedCancelledNoDate || 0) +
-            ' · duplicatas: ' + fmt.format(meta.skippedDuplicate || 0) +
-            ' · cancel. antes da contratação: ' + fmt.format(meta.skippedCancelBeforeHire || 0)
-        });
+        const covPct = nClients + excluded > 0 ? ((nClients / (nClients + excluded)) * 100) : null;
+        cohortSample.innerHTML = '<span class="sc-cov-tip" title="A cobertura mostra quantos clientes possuem datas válidas suficientes para entrar nesta análise.">Clientes elegíveis para cohort: <strong>' +
+          fmt.format(nClients) + '</strong> · Clientes excluídos por ausência/inconsistência de datas: <strong>' +
+          fmt.format(excluded) + '</strong> · Cobertura: <strong>' +
+          (covPct == null ? '—' : covPct.toFixed(1).replace('.', ',') + '%') + '</strong></span>' +
+          '<span class="note-muted"> · ' + (cohort.hireFrom ? ('desde ' + cohort.hireFrom + ' · ') : '') +
+          'cancelados sem data: ' + fmt.format(meta.skippedCancelledNoDate || 0) +
+          ' · duplicatas: ' + fmt.format(meta.skippedDuplicate || 0) +
+          ' · cancel. antes da contratação: ' + fmt.format(meta.skippedCancelBeforeHire || 0) + '</span>';
       }
       const insight = document.querySelector('#scCohortInsight');
       if (insight) {
@@ -8137,30 +8198,53 @@ ${dataRows}
         .slice(0, 1)[0];
       const tenureTop = (p.tenureCorrelations || []).slice(0, 1)[0];
       const npsCov = s.npsPortfolioCoverage;
+      const periodFrom = s.observationPeriod?.from || '—';
+      const periodTo = s.observationPeriod?.to || s.cutoffDate || '—';
+      const periodLabel = periodFrom + ' a ' + periodTo;
       const lowCov = (pct, floor = 40) => pct != null && Number(pct) < floor
         ? ('Este resultado deve ser interpretado com cautela porque menos de ' + Number(pct).toFixed(0) + '% dos clientes possuem o dado necessário.')
         : null;
-      const sampleCoverage = (valid, cov, extra) => {
-        const bits = [];
-        if (valid != null) bits.push('Amostra: ' + fmt.format(valid) + ' clientes');
-        if (cov != null) bits.push('Cobertura: ' + Number(cov).toFixed(1).replace('.', ',') + '%');
-        if (extra) bits.push(extra);
-        bits.push('Período: ' + (s.observationPeriod?.from || '—') + ' → ' + (s.observationPeriod?.to || s.cutoffDate || '—'));
-        bits.push('Fonte: Análises Estatísticas · BASE QV');
-        return bits.join('. ');
+      /** Linhas verticais para o PDF — nunca uma única frase contínua. */
+      const sampleCoverage = ({ amostra, cobertura, extras = [], fonte = 'Análises Estatísticas · BASE QV', periodo } = {}) => {
+        const lines = [];
+        if (amostra != null) lines.push('Amostra: ' + fmt.format(amostra) + ' clientes');
+        (extras || []).forEach((e) => { if (e) lines.push(String(e)); });
+        if (cobertura != null) lines.push('Cobertura: ' + Number(cobertura).toFixed(1).replace('.', ',') + '%');
+        lines.push('Período: ' + (periodo || periodLabel));
+        lines.push('Fonte: ' + fonte);
+        return lines;
+      };
+      const npsSampleLines = () => {
+        const elegiveis = p.npsComparative?.eligiblePopulation ?? s.analyzedClients ?? null;
+        const comNps = p.npsComparative?.clientsWithValidNps
+          ?? p.npsComparative?.referenceN
+          ?? s.npsRespondents
+          ?? null;
+        const cov = p.npsComparative?.npsCoverageGeneral ?? npsCov;
+        const lines = [];
+        if (elegiveis != null) lines.push('Clientes elegíveis: ' + fmt.format(elegiveis));
+        if (comNps != null) lines.push('Clientes com NPS válido: ' + fmt.format(comNps));
+        if (cov != null) lines.push('Cobertura do NPS: ' + Number(cov).toFixed(1).replace('.', ',') + '%');
+        lines.push('Período observado: ' + periodLabel);
+        lines.push('Fonte: Análises Estatísticas · BASE QV');
+        return lines;
       };
       const stories = {
         cancelMatrix: {
-          see: 'O mapa de cancelamento mostra quais indicadores aparecem mais ligados ao cancelamento efetivado neste recorte filtrado.',
+          see: 'Esta análise identifica quais indicadores da jornada aparecem mais ligados ao cancelamento efetivado no recorte filtrado. A pergunta central é: o que costuma ser diferente entre quem cancelou e quem permanece ativo?',
           indicate: topCancel
             ? ('O destaque observado é ' + (topCancel.label || topCancel.id) +
               (topCancel.association != null ? (', com associação ' + Number(topCancel.association).toFixed(2).replace('.', ',')) : '') +
-              (topCancel.stdDiff != null ? (' e diferença padronizada ' + Number(topCancel.stdDiff).toFixed(2).replace('.', ',')) : '') + '.')
-            : ((find(/reuni|contato|cancel/i)?.text) || 'Alguns indicadores diferenciam ativos e cancelados com intensidade distinta.'),
-          interpret: 'Valores positivos sugerem que o indicador tende a ser maior entre cancelados; negativos, menor. Barras e células mais intensas indicam relação observada mais forte. A diferença padronizada coloca a distância entre grupos em escala comparável.',
-          matter: 'Isso ajuda a priorizar o que acompanhar no dia a dia operacional, sem afirmar causa.',
-          limits: 'Associação observada neste recorte — não comprova que o indicador causou o cancelamento. Cobertura desigual entre variáveis reduz a comparabilidade.',
-          sample: sampleCoverage(s.analyzedClients, null, 'Cancelamentos efetivados: ' + fmt.format(s.confirmedCancellations ?? 0)),
+              (topCancel.stdDiff != null ? (' e diferença padronizada ' + Number(topCancel.stdDiff).toFixed(2).replace('.', ',')) : '') +
+              '. Valores positivos sugerem indicador maior entre cancelados; negativos, menor.')
+            : ((find(/reuni|contato|cancel/i)?.text) || 'Alguns indicadores diferenciam ativos e cancelados com intensidade distinta neste recorte.'),
+          interpret: 'Entre os indicadores relacionados às reuniões, clientes cancelados podem apresentar intervalo e tempo desde o último contato diferentes dos ativos. Isso não significa que reuniões mais espaçadas sejam a causa do cancelamento, mas indica que esses indicadores podem ajudar a identificar clientes que estão se afastando da jornada.',
+          matter: 'Isso ajuda a priorizar o que acompanhar no dia a dia operacional — por exemplo, recência de contato e comparecimento — sem tratar o sinal como sentença de churn.',
+          limits: 'Associação observada neste recorte — não comprova que o indicador causou o cancelamento. Cobertura desigual entre variáveis reduz a comparabilidade. Amostras pequenas em alguns indicadores tornam o resultado mais frágil.',
+          sample: sampleCoverage({
+            amostra: s.analyzedClients,
+            extras: ['Cancelamentos efetivados: ' + fmt.format(s.confirmedCancellations ?? 0)],
+          }),
           caveat: lowCov(s.averageCoverage)
         },
         diff: {
@@ -8169,11 +8253,14 @@ ${dataRows}
           interpret: 'Quando a barra vermelha é maior, o valor típico entre cancelados foi maior. Compare também a diferença padronizada na tabela para ver o tamanho relativo da diferença.',
           matter: 'Diferenças grandes sugerem sinais úteis para acompanhamento preventivo de clientes ativos.',
           limits: 'Mediana resume o centro do grupo e não descreve toda a distribuição. Clientes sem o dado do indicador não entram naquele contraste.',
-          sample: scCoveragePlain({
-            valid: (s.activeClients || 0) + (s.confirmedCancellations || 0),
-            eligible: s.analyzedClients,
-            extra: 'Ativos: n = ' + fmt.format(s.activeClients ?? 0) + ' · Cancelados: n = ' + fmt.format(s.confirmedCancellations ?? 0)
-          }) + '. ' + sampleCoverage(null, s.averageCoverage),
+          sample: sampleCoverage({
+            amostra: (s.activeClients || 0) + (s.confirmedCancellations || 0),
+            cobertura: s.averageCoverage,
+            extras: [
+              'Ativos: n = ' + fmt.format(s.activeClients ?? 0),
+              'Cancelados: n = ' + fmt.format(s.confirmedCancellations ?? 0),
+            ],
+          }),
           caveat: null
         },
         auc: {
@@ -8182,19 +8269,19 @@ ${dataRows}
           interpret: 'Barras maiores à direita de 0,50 indicam maior poder de separação univariado. A métrica não é a taxa de acerto de um modelo completo.',
           matter: 'Serve para priorizar variáveis candidatas a monitoramento.',
           limits: 'Sinais fortes devem ser revisados para garantir que não usam informação só disponível após o cancelamento.',
-          sample: sampleCoverage(s.analyzedClients, s.averageCoverage),
+          sample: sampleCoverage({ amostra: s.analyzedClients, cobertura: s.averageCoverage }),
           caveat: null
         },
         nps: {
-          see: 'Este mapa relaciona a nota NPS com outros indicadores da jornada e, quando possível, a diferença padronizada entre Promotores e Detratores.',
-          indicate: (find(/nps|promo|detrat/i)?.text) || 'Alguns indicadores acompanham a nota de satisfação neste recorte.',
-          interpret: 'Correlação positiva: o indicador tende a crescer com a nota. Negativa: tende a cair quando a nota sobe. A diferença padronizada compara Promotores e Detratores em escala comum.',
-          matter: 'Ajuda a entender o contexto dos clientes mais e menos satisfeitos e a relação com reuniões, renovação e cancelamento.',
+          see: 'Esta análise relaciona a nota NPS com outros indicadores da jornada e, quando possível, compara Promotores e Detratores. A pergunta é: o que acompanha a satisfação declarada?',
+          indicate: (find(/nps|promo|detrat/i)?.text) || 'Alguns indicadores acompanham a nota de satisfação neste recorte, com intensidade distinta entre classes.',
+          interpret: 'A análise de NPS deve ser interpretada com cautela porque apenas uma parcela da base possui resposta válida. Entre os clientes que responderam, foram observadas diferenças de comportamento entre Promotores, Neutros e Detratores. Esses resultados descrevem o grupo respondente e não devem ser generalizados automaticamente para toda a carteira.',
+          matter: 'Ajuda a entender o contexto dos clientes mais e menos satisfeitos e a relação com reuniões, renovação e cancelamento, sempre condicionada à cobertura.',
           limits: npsCov != null && Number(npsCov) < 30
-            ? ('Cobertura de NPS em torno de ' + String(npsCov).replace('.', ',') + '% — tratar como sinal inicial.')
+            ? ('Cobertura de NPS em torno de ' + String(npsCov).replace('.', ',') + '% — tratar como sinal inicial do grupo respondente.')
             : 'Poucas respostas NPS reduzem a confiança da comparação entre classes.',
-          sample: sampleCoverage(s.npsRespondents ?? null, npsCov, 'Clientes com NPS válido na carteira'),
-          caveat: lowCov(npsCov, 30)
+          sample: npsSampleLines(),
+          caveat: 'Como poucos clientes possuem NPS válido, os resultados representam apenas o grupo respondente.'
         },
         npsComp: {
           see: 'A matriz compara Promotores, Neutros e Detratores com a referência geral dos clientes que têm NPS válido no recorte. As células mostram só a cor da diferença padronizada.',
@@ -8202,12 +8289,8 @@ ${dataRows}
           interpret: 'Azul: abaixo da referência. Cinza: semelhante. Laranja/vermelho: acima. A intensidade segue a diferença padronizada. Valores completos ficam no tooltip da tela.',
           matter: 'Ajuda a descrever o perfil das classes de satisfação sem misturar unidades diferentes nas células.',
           limits: 'A análise de NPS utiliza somente clientes com resposta válida. Como a cobertura representa uma parcela reduzida da base, os resultados devem ser lidos como sinais do grupo respondente, e não como representação completa de todos os clientes.',
-          sample: sampleCoverage(
-            p.npsComparative?.clientsWithValidNps ?? p.npsComparative?.referenceN,
-            p.npsComparative?.npsCoverageGeneral ?? npsCov,
-            'Elegíveis no recorte: ' + fmt.format(p.npsComparative?.eligiblePopulation ?? s.analyzedClients ?? 0)
-          ),
-          caveat: lowCov(p.npsComparative?.npsCoverageGeneral ?? npsCov, 40)
+          sample: npsSampleLines(),
+          caveat: 'Como poucos clientes possuem NPS válido, os resultados representam apenas o grupo respondente.'
         },
         npsGroups: {
           see: 'Comparamos Promotores, Neutros e Detratores em cancelamento e renovação.',
@@ -8215,7 +8298,7 @@ ${dataRows}
           interpret: 'Compare a altura das barras de % cancelado e % renovado entre classes. Diferenças padronizadas complementam a leitura percentual.',
           matter: 'Útil para comunicação e priorização de cuidado.',
           limits: 'Classes com poucos respondentes são frágeis. NPS baixo na carteira limita generalização.',
-          sample: sampleCoverage(null, npsCov),
+          sample: npsSampleLines(),
           caveat: lowCov(npsCov, 30)
         },
         renewal: {
@@ -8224,22 +8307,25 @@ ${dataRows}
           interpret: 'Positivo: indicador tende a ser maior entre renovados. Negativo: menor entre renovados. A diferença padronizada compara renovados e não renovados.',
           matter: 'Ajuda a descrever o perfil de quem permanece e renova.',
           limits: 'Não afirma que o indicador causou a renovação. Ciclo e permanência podem estar correlacionados por construção.',
-          sample: sampleCoverage(s.analyzedClients, null, 'Renovados: ' + fmt.format(s.renewedClients ?? 0)),
+          sample: sampleCoverage({
+            amostra: s.analyzedClients,
+            extras: ['Renovados: ' + fmt.format(s.renewedClients ?? 0)],
+          }),
           caveat: null
         },
         tenure: {
-          see: 'Este mapa relaciona a permanência em dias com outros indicadores. Permanência: cancelados com data = cancelamento − contratação; demais = hoje − contratação (America/Sao_Paulo).',
+          see: 'Esta análise relaciona a permanência analítica em dias com outros indicadores. Permanência base: cancelados com data = cancelamento − contratação; demais = hoje − contratação (America/Sao_Paulo). Clientes renovados com base menor que 365 dias recebem +365 no indicador analítico.',
           indicate: tenureTop?.interpretation
             || (tenureTop ? ((tenureTop.label || tenureTop.id) + ' com ρ = ' + Number(tenureTop.rho ?? tenureTop.association).toFixed(2).replace('.', ',')) : null)
             || 'Alguns fatores acompanham tempos de permanência maiores ou menores neste recorte.',
-          interpret: 'Correlação positiva: indicador e permanência tendem a crescer juntos. Negativa: um sobe e o outro desce — por exemplo, mais dias desde a última reunião com menor permanência (ou o inverso). Total de reuniões acumula com o tempo; reuniões por mês normaliza a exposição.',
-          matter: 'Complementa a leitura de retenção e ajuda a separar acúmulo versus frequência.',
-          limits: 'Leitura descritiva; diferente da análise de evento de cancelamento. Clientes sem o dado do indicador não entram naquele ρ.',
-          sample: sampleCoverage(
-            tenureTop?.stayPoolN ?? s.analyzedClients,
-            tenureTop?.coveragePercent ?? tenureTop?.coverage,
-            tenureTop?.stdDiffGroups || 'Grupos: alta vs baixa permanência (mediana)'
-          ),
+          interpret: 'A análise de permanência mostra como diferentes comportamentos aparecem associados ao tempo que o cliente permanece na jornada. É importante diferenciar quantidade total de reuniões e frequência mensal, pois clientes antigos tiveram mais tempo para acumular reuniões. Correlação positiva: indicador e permanência tendem a crescer juntos; negativa: sentidos opostos.',
+          matter: 'Complementa a leitura de retenção e ajuda a separar acúmulo versus frequência no acompanhamento operacional.',
+          limits: 'Leitura descritiva; diferente da análise de evento de cancelamento. Clientes sem o dado do indicador não entram naquele ρ. A curva de sobrevivência e o cohort usam duração cronológica real, sem o ajuste +365.',
+          sample: sampleCoverage({
+            amostra: tenureTop?.stayPoolN ?? s.analyzedClients,
+            cobertura: tenureTop?.coveragePercent ?? tenureTop?.coverage,
+            extras: [tenureTop?.stdDiffGroups || 'Grupos: alta vs baixa permanência (mediana)'],
+          }),
           caveat: tenureTop?.coveragePercent != null ? lowCov(tenureTop.coveragePercent) : null
         },
         survival: {
@@ -8248,23 +8334,30 @@ ${dataRows}
           interpret: 'O eixo Y é a probabilidade de permanência; o X, dias desde a contratação. Ticks 0, 90, 180, 365 e 730 marcam marcos. A tabela de risco mostra quantos ainda estavam sob observação em cada marco.',
           matter: 'Ajuda a planejar acompanhamento em marcos como 3, 6 e 12 meses.',
           limits: 'Clientes ainda ativos no fim do período continuam na análise sem serem tratados como cancelados (censura). Cancelados sem data válida ficam fora.',
-          sample: sampleCoverage(p.survival?.overall?.nStart, null, 'Eventos: ' + fmt.format(p.survival?.overall?.events ?? 0) + ' · Sem evento: ' + fmt.format(p.survival?.overall?.censored ?? 0)),
+          sample: sampleCoverage({
+            amostra: p.survival?.overall?.nStart,
+            extras: [
+              'Eventos: ' + fmt.format(p.survival?.overall?.events ?? 0),
+              'Sem evento: ' + fmt.format(p.survival?.overall?.censored ?? 0),
+            ],
+          }),
           caveat: null
         },
         cohort: {
-          see: 'Cada coluna reúne clientes que começaram no mesmo mês (desde jan/2026). As linhas mostram quantos seguem na carteira depois de 1, 2, 3 meses…',
+          see: 'Esta análise acompanha grupos de clientes contratados a partir de janeiro de 2025. Cada coluna representa um mês de contratação e cada linha mostra o percentual da coorte que continuou sem cancelamento ao longo dos meses seguintes.',
           indicate: (document.querySelector('#scCohortInsight')?.innerText || document.querySelector('#scCohortNote')?.textContent || 'Cores mais frias sugerem retenção maior; cores mais quentes, queda maior.'),
-          interpret: 'Mês 0 = 100% da coorte. Em cada mês de vida, o percentual é dos clientes ainda sem cancelamento efetivado até o fim daquele mês. Períodos futuros aparecem como “—” e nunca como 0%.',
-          matter: 'Permite ver se coortes recentes estão retendo melhor ou pior ao longo do tempo.',
-          limits: 'Coortes recentes ainda não têm tempo suficiente para comparar 6 ou 12 meses. Datas de cancelamento seguem churn efetivado → distrato assinado → data_churn do cliente.',
-          sample: sampleCoverage(
-            p.cohort?.metadata?.clientsWithHire,
-            null,
-            'Exclusões: sem contratação ' + fmt.format(p.cohort?.metadata?.skippedNoHire || 0) +
-              ', cancel. sem data ' + fmt.format(p.cohort?.metadata?.skippedCancelledNoDate || 0) +
-              ', duplicatas ' + fmt.format(p.cohort?.metadata?.skippedDuplicate || 0) +
-              ', cancel. antes da contratação ' + fmt.format(p.cohort?.metadata?.skippedCancelBeforeHire || 0)
-          ),
+          interpret: 'Mês 0 = 100% da coorte. Em cada mês de vida, o percentual é dos clientes ainda sem cancelamento efetivado até o fim daquele mês. Períodos futuros aparecem como “—” e nunca como 0%. A data de cancelamento utiliza, nessa ordem, churn efetivado, distrato assinado e data de churn do cliente.',
+          matter: 'Permite ver se coortes recentes estão retendo melhor ou pior ao longo do tempo e planejar acompanhamento em marcos.',
+          limits: 'Coortes recentes ainda não têm tempo suficiente para comparar 6 ou 12 meses. O ajuste analítico de +365 dias na permanência não altera datas reais do cohort.',
+          sample: sampleCoverage({
+            amostra: p.cohort?.metadata?.clientsWithHire,
+            extras: [
+              'Exclusões sem contratação: ' + fmt.format(p.cohort?.metadata?.skippedNoHire || 0),
+              'Cancel. sem data: ' + fmt.format(p.cohort?.metadata?.skippedCancelledNoDate || 0),
+              'Duplicatas: ' + fmt.format(p.cohort?.metadata?.skippedDuplicate || 0),
+              'Cancel. antes da contratação: ' + fmt.format(p.cohort?.metadata?.skippedCancelBeforeHire || 0),
+            ],
+          }),
           caveat: null
         },
         predict: {
@@ -8273,7 +8366,10 @@ ${dataRows}
           interpret: 'Barras maiores = maior importância no modelo de validação. Direção e AUC univariada complementam a leitura.',
           matter: 'Orienta o que merece validação operacional — não é prova de causa.',
           limits: 'Importância do modelo não deve ser lida como causalidade. Amostra de treino/validação limita estabilidade.',
-          sample: sampleCoverage(p.predictiveModel?.sample?.train, null, 'Validação n = ' + fmt.format(p.predictiveModel?.sample?.test ?? 0)),
+          sample: sampleCoverage({
+            amostra: p.predictiveModel?.sample?.train,
+            extras: ['Validação n = ' + fmt.format(p.predictiveModel?.sample?.test ?? 0)],
+          }),
           caveat: null
         },
         groups: {
@@ -8282,7 +8378,9 @@ ${dataRows}
           interpret: 'Passe o mouse (na tela) ou use a tabela de dados para ver valor do grupo, referência, diferenças e cobertura. Células sem número evitam comparar unidades diferentes de forma enganosa.',
           matter: 'Permite ver padrões relativos entre segmentos sem confundir escalas.',
           limits: 'Grupos podem se sobrepor. Diferença padronizada exige amostra mínima por célula.',
-          sample: sampleCoverage(p.groupComparative?.referenceN || p.exploratory?.groupComparative?.referenceN, null),
+          sample: sampleCoverage({
+            amostra: p.groupComparative?.referenceN || p.exploratory?.groupComparative?.referenceN,
+          }),
           caveat: null
         },
         generalMatrix: {
@@ -8291,11 +8389,22 @@ ${dataRows}
           interpret: 'Exemplo: 0,60 indica relação positiva relevante; −0,40 indica variação em sentidos opostos. Spearman ordena os valores e não exige linha reta.',
           matter: 'Ajuda a mapear quais indicadores caminham juntos na carteira filtrada.',
           limits: 'Correlação não significa que um indicador causou o outro. Pares com baixa cobertura devem ser lidos com cautela.',
-          sample: sampleCoverage(s.analyzedClients, null, 'Método fixo: Spearman'),
+          sample: sampleCoverage({
+            amostra: s.analyzedClients,
+            extras: ['Método fixo: Spearman'],
+          }),
           caveat: null
         }
       };
-      return stories[key] || { see: '', indicate: '', interpret: '', matter: '', limits: 'Associação observada, não causalidade.', sample: sampleCoverage(s.analyzedClients), caveat: null };
+      return stories[key] || {
+        see: '',
+        indicate: '',
+        interpret: '',
+        matter: '',
+        limits: 'Associação observada, não causalidade.',
+        sample: sampleCoverage({ amostra: s.analyzedClients }),
+        caveat: null
+      };
     }
 
     function scSetExportBtn(state, label) {
@@ -8353,11 +8462,12 @@ ${dataRows}
         let orient = 'portrait';
         let pageW = doc.internal.pageSize.getWidth();
         let pageH = doc.internal.pageSize.getHeight();
-        const margin = 14;
-        const footerH = 12;
-        const headerH = 10;
+        const margin = 15;
+        const footerH = 14;
+        const headerH = 12;
         let y = margin + headerH;
         let pageHasContent = false;
+        if (typeof doc.setCharSpace === 'function') doc.setCharSpace(0);
         const pdfDebug = !!(window.SC_PDF_DEBUG || (typeof localStorage !== 'undefined' && localStorage.getItem('scPdfDebug') === '1'));
         const pageLog = [];
         const logBreak = (reason, extra = {}) => {
@@ -8383,7 +8493,8 @@ ${dataRows}
           pageW = doc.internal.pageSize.getWidth();
           pageH = doc.internal.pageSize.getHeight();
         };
-        const remainingHeight = () => Math.max(0, pageH - footerH - y - 4);
+        const pageBottomLimit = () => pageH - footerH - 4;
+        const remainingHeight = () => Math.max(0, pageBottomLimit() - y);
 
         /** Cria página só se a atual já tem conteúdo (evita páginas em branco). */
         const newPage = (orientation, reason = 'newPage') => {
@@ -8443,6 +8554,53 @@ ${dataRows}
           }
         };
 
+        const contentWidth = () => Math.max(40, pageW - margin * 2);
+        const lineHFor = (size) => Math.max(4.8, Number(size) * 0.48);
+
+        /**
+         * Helper único de escrita PDF.
+         * - Quebra com splitTextToSize(contentWidth)
+         * - Renderiza linha a linha (sem justify / sem maxWidth no text → evita letter-spacing estranho)
+         * - Continua em nova página quando a linha não cabe
+         * - Nunca usa pageWidth bruto
+         */
+        const writeText = (text, opts = {}) => {
+          if (text == null || text === '') return 0;
+          const size = opts.size || 10;
+          const style = opts.bold ? 'bold' : (opts.italic ? 'italic' : 'normal');
+          const color = opts.color || [45, 45, 45];
+          const gapAfter = opts.gapAfter != null ? opts.gapAfter : 2.2;
+          const keepWithNext = opts.keepWithNext || 0;
+          if (typeof doc.setCharSpace === 'function') doc.setCharSpace(0);
+          doc.setFont('helvetica', style);
+          doc.setFontSize(size);
+          if (Array.isArray(color)) doc.setTextColor(color[0], color[1], color[2]);
+          else doc.setTextColor(Number(color) || 45);
+          const maxW = opts.maxWidth != null ? opts.maxWidth : contentWidth();
+          const x = opts.x != null ? opts.x : margin;
+          const lh = opts.lineHeight || lineHFor(size);
+          const chunks = Array.isArray(text)
+            ? text.map((t) => String(t ?? '')).filter((t) => t.length)
+            : String(text).split(/\n+/).map((t) => t.trim()).filter((t) => t.length);
+          let written = 0;
+          let isFirstLine = true;
+          chunks.forEach((chunk) => {
+            const lines = doc.splitTextToSize(chunk, maxW);
+            lines.forEach((line) => {
+              const need = lh + (isFirstLine ? keepWithNext : 0);
+              ensureSpace(need, opts.orientation);
+              doc.text(String(line), x, y);
+              y += lh;
+              written += lh;
+              isFirstLine = false;
+              markContent(opts.mark || 'text');
+            });
+          });
+          y += gapAfter;
+          written += gapAfter;
+          return written;
+        };
+
         const paintBrandLine = () => {
           doc.setDrawColor(244, 121, 32);
           doc.setLineWidth(0.8);
@@ -8452,74 +8610,77 @@ ${dataRows}
         };
         const h1 = (t) => {
           ensureSpace(18);
-          doc.setFont('helvetica', 'bold');
-          doc.setFontSize(18);
-          doc.setTextColor(24, 24, 24);
-          doc.text(t, margin, y);
-          y += 7;
-          markContent('h1:' + t);
+          writeText(t, { size: 18, bold: true, color: [24, 24, 24], gapAfter: 3, keepWithNext: 8, mark: 'h1' });
           paintBrandLine();
         };
         const h2 = (t) => {
           ensureSpace(16);
-          doc.setFont('helvetica', 'bold');
-          doc.setFontSize(13);
-          doc.setTextColor(30, 30, 30);
-          doc.text(t, margin, y);
-          y += 6;
+          writeText(t, { size: 13, bold: true, color: [30, 30, 30], gapAfter: 2, keepWithNext: 6, mark: 'h2' });
           doc.setDrawColor(230, 230, 230);
           doc.setLineWidth(0.3);
           doc.line(margin, y, pageW - margin, y);
           y += 4;
-          markContent('h2:' + t);
         };
-        const para = (t, opts = {}) => {
-          if (!t) return;
-          doc.setFont('helvetica', opts.bold ? 'bold' : 'normal');
-          doc.setFontSize(opts.size || 10);
-          doc.setTextColor(opts.color || 45);
-          const lines = doc.splitTextToSize(String(t), pageW - margin * 2);
-          ensureSpace(lines.length * 4.8 + 2);
-          doc.text(lines, margin, y);
-          y += lines.length * 4.8 + 2;
-          markContent('para');
-        };
-        const label = (t) => {
-          doc.setFont('helvetica', 'bold');
-          doc.setFontSize(9);
-          doc.setTextColor(244, 121, 32);
-          ensureSpace(6);
-          doc.text(String(t).toUpperCase(), margin, y);
-          y += 4.5;
-          markContent('label');
-        };
+        const para = (t, opts = {}) => writeText(t, {
+          size: opts.size || 10.5,
+          bold: opts.bold,
+          color: opts.color || [45, 45, 45],
+          gapAfter: opts.gapAfter != null ? opts.gapAfter : 2.6,
+          mark: 'para'
+        });
+        const label = (t) => writeText(String(t).toUpperCase(), {
+          size: 9,
+          bold: true,
+          color: [244, 121, 32],
+          gapAfter: 1.8,
+          keepWithNext: 10,
+          mark: 'label'
+        });
+        const secondary = (t) => writeText(t, {
+          size: 9,
+          color: [70, 70, 70],
+          gapAfter: 1.3,
+          mark: 'secondary'
+        });
         const card = (title, value, subtitle) => {
-          ensureSpace(20);
+          ensureSpace(22);
+          const boxH = 18;
           doc.setFillColor(248, 248, 248);
           doc.setDrawColor(230, 230, 230);
-          doc.roundedRect(margin, y - 4, pageW - margin * 2, 16, 2, 2, 'FD');
+          doc.roundedRect(margin, y, contentWidth(), boxH, 2, 2, 'FD');
           doc.setFont('helvetica', 'bold');
           doc.setFontSize(9);
-          doc.setTextColor(100);
-          doc.text(title, margin + 3, y + 1);
+          doc.setTextColor(100, 100, 100);
+          if (typeof doc.setCharSpace === 'function') doc.setCharSpace(0);
+          doc.text(String(title), margin + 3, y + 5);
           doc.setFontSize(13);
-          doc.setTextColor(20);
-          doc.text(String(value), margin + 3, y + 8);
+          doc.setTextColor(20, 20, 20);
+          doc.text(String(value), margin + 3, y + 12);
           if (subtitle) {
             doc.setFont('helvetica', 'normal');
             doc.setFontSize(8);
-            doc.setTextColor(110);
-            doc.text(subtitle, margin + 55, y + 8);
+            doc.setTextColor(110, 110, 110);
+            const subLines = doc.splitTextToSize(String(subtitle), Math.max(40, contentWidth() - 62));
+            doc.text(subLines[0] || '', margin + 55, y + 12);
           }
-          y += 18;
+          y += boxH + 4;
           markContent('card:' + title);
         };
         const bulletSafe = (arr) => { (arr || []).forEach((line) => para('• ' + line)); };
+
+        const topAssocLines = (rows, valueKey = 'association', n = 3) => {
+          const list = (rows || []).filter((r) => r[valueKey] != null && Number.isFinite(Number(r[valueKey])));
+          const pos = [...list].filter((r) => Number(r[valueKey]) > 0).sort((a, b) => Math.abs(Number(b[valueKey])) - Math.abs(Number(a[valueKey]))).slice(0, n);
+          const neg = [...list].filter((r) => Number(r[valueKey]) < 0).sort((a, b) => Math.abs(Number(b[valueKey])) - Math.abs(Number(a[valueKey]))).slice(0, n);
+          const fmtR = (r) => (r.label || r.id) + ' (' + Number(r[valueKey]).toFixed(2).replace('.', ',') + ')';
+          return { pos: pos.map(fmtR), neg: neg.map(fmtR) };
+        };
+
         const storyBlock = (story) => {
           if (!story) return;
-          label('O que o gráfico mostra');
+          label('O que foi analisado');
           para(story.see);
-          label('O principal resultado');
+          label('Principais resultados');
           para(story.indicate);
           if (story.interpret) {
             label('Como interpretar');
@@ -8533,17 +8694,30 @@ ${dataRows}
           }
           if (story.sample) {
             label('Amostra e cobertura');
-            para(story.sample);
+            const sampleLines = Array.isArray(story.sample)
+              ? story.sample
+              : String(story.sample).split(/\.\s+/).map((s) => s.trim()).filter(Boolean);
+            sampleLines.forEach((line) => secondary(line));
+            y += 1.5;
           }
           if (story.caveat) {
-            doc.setFont('helvetica', 'italic');
-            doc.setFontSize(8.5);
-            doc.setTextColor(110);
-            const lines = doc.splitTextToSize(story.caveat, pageW - margin * 2);
-            ensureSpace(lines.length * 4 + 2);
-            doc.text(lines, margin, y);
-            y += lines.length * 4 + 3;
-            markContent('caveat');
+            writeText(story.caveat, {
+              size: 8.5,
+              italic: true,
+              color: [110, 110, 110],
+              gapAfter: 3.2,
+              mark: 'caveat'
+            });
+          }
+        };
+
+        const addTextAnalysis = ({ title, storyKey, extraBullets }) => {
+          beginSection('portrait', 36, 'analysis:' + storyKey);
+          h2(title);
+          storyBlock(scBuildChartStory(storyKey, p));
+          if (extraBullets?.length) {
+            label('Destaques adicionais dos dados');
+            bulletSafe(extraBullets);
           }
         };
 
@@ -8553,16 +8727,14 @@ ${dataRows}
           const svg = scPickSvg(sel);
           const captured = await scSvgToPngDataUrl(svg, 2.5);
 
-          // Altura provisória do gráfico (já limitado à página) — sem forçar nova página “fantasma”
           ensureOrientation(want, 'chart-orient:' + storyKey);
-          const maxW = pageW - margin * 2;
+          const maxW = contentWidth();
           const maxChartH = pageH * (landscape ? 0.68 : Math.max(maxHRatio, 0.45));
-          const headH = 110;
+          const headH = 90;
           const chartH = captured?.dataUrl
             ? scFitImageMm(captured.width, captured.height, maxW, maxChartH).h
             : 12;
           const need = headH + chartH + 5;
-          // Só quebra se a página atual já tem conteúdo e o bloco não cabe
           if (need > remainingHeight() && pageHasContent) {
             newPage(want, 'chart-block:' + storyKey);
           }
@@ -8591,19 +8763,24 @@ ${dataRows}
 
         // CAPA
         y = margin + 20;
-        doc.setFont('helvetica', 'bold');
-        doc.setFontSize(22);
-        doc.setTextColor(20);
-        doc.text('Análises Estatísticas', margin, y);
-        y += 10;
-        markContent('cover-title');
-        doc.setFontSize(12);
-        doc.setTextColor(244, 121, 32);
-        doc.text('Jornada do Cliente · BASE QV', margin, y);
-        y += 8;
+        writeText('Análises Estatísticas', {
+          size: 22,
+          bold: true,
+          color: [20, 20, 20],
+          gapAfter: 4,
+          keepWithNext: 6,
+          mark: 'cover-title'
+        });
+        writeText('Jornada do Cliente · BASE QV', {
+          size: 12,
+          bold: true,
+          color: [244, 121, 32],
+          gapAfter: 4,
+          mark: 'cover-sub'
+        });
         paintBrandLine();
         para('Relatório gerado em ' + new Date().toLocaleString('pt-BR') + '.');
-        para('Período observado: ' + (s.observationPeriod?.from || '—') + ' → ' + (s.observationPeriod?.to || s.cutoffDate || '—') + '.');
+        secondary('Período observado: ' + (s.observationPeriod?.from || '—') + ' a ' + (s.observationPeriod?.to || s.cutoffDate || '—'));
         label('Filtros aplicados');
         scHumanFilters(p).forEach((line) => para('• ' + line));
         y += 2;
@@ -8618,43 +8795,110 @@ ${dataRows}
         h1('Principais descobertas');
         para('Leitura simples do que os dados mostram neste recorte. Números vêm das análises já calculadas — sem inventar conclusões.');
         (p.simpleInsights || p.discoveries || []).slice(0, 10).forEach((d, i) => {
-          ensureSpace(22);
-          doc.setFillColor(252, 252, 252);
-          doc.setDrawColor(235, 235, 235);
-          doc.roundedRect(margin, y - 3, pageW - margin * 2, 18, 2, 2, 'FD');
-          doc.setFont('helvetica', 'bold');
-          doc.setFontSize(10);
-          doc.setTextColor(20);
-          doc.text((i + 1) + '. ' + (d.title || 'Descoberta'), margin + 3, y + 2);
-          doc.setFont('helvetica', 'normal');
-          doc.setFontSize(9);
-          doc.setTextColor(60);
+          const title = (i + 1) + '. ' + (d.title || 'Descoberta');
           const body = (d.text || '') + (d.primaryValue ? ('  ·  Número principal: ' + d.primaryValue) : '');
-          const lines = doc.splitTextToSize(body, pageW - margin * 2 - 6);
-          doc.text(lines.slice(0, 2), margin + 3, y + 8);
-          y += 20;
-          markContent('discovery');
+          writeText(title, { size: 10.5, bold: true, color: [20, 20, 20], gapAfter: 1.2, keepWithNext: 8, mark: 'discovery-title' });
+          writeText(body, { size: 9, color: [60, 60, 60], gapAfter: 2.2, mark: 'discovery-body' });
           if (d.lowConfidence || /cobertura|cautela/i.test(d.caveat || '')) {
-            para('Atenção: cobertura ou amostra limitada neste ponto.');
+            secondary('Atenção: cobertura ou amostra limitada neste ponto.');
           }
+          y += 1.5;
         });
 
-        await addChartBlock({ title: 'Cancelamento — mapa de relações', sel: '#scCancelMatrixHost', storyKey: 'cancelMatrix', landscape: true, maxHRatio: 0.55 });
+        const cancelRows = p.axisMatrices?.cancellation?.rows || p.activeVsCancelled || [];
+        const cancelTop = topAssocLines(cancelRows, 'association', 3);
+        const npsRows = p.axisMatrices?.nps?.rows || [];
+        const npsTop = topAssocLines(npsRows, 'association', 3);
+        const renewalRows = p.axisMatrices?.renewal?.rows || p.renewedVsNotRenewed || [];
+        const renewalTop = topAssocLines(renewalRows, 'association', 3);
+        const tenureRows = p.axisMatrices?.tenure?.rows || p.tenureCorrelations || [];
+        const tenureTop = topAssocLines(tenureRows, 'association', 3);
+        const corrCells = (p.correlationMatrix?.cells || []).filter((c) => c.idA !== c.idB && c.value != null);
+        const corrSorted = [...corrCells].sort((a, b) => Math.abs(Number(b.value)) - Math.abs(Number(a.value)));
+        const corrPos = corrSorted.filter((c) => Number(c.value) > 0).slice(0, 3)
+          .map((c) => (c.labelA || c.idA) + ' × ' + (c.labelB || c.idB) + ' (' + Number(c.value).toFixed(2).replace('.', ',') + ')');
+        const corrNeg = corrSorted.filter((c) => Number(c.value) < 0).slice(0, 3)
+          .map((c) => (c.labelA || c.idA) + ' × ' + (c.labelB || c.idB) + ' (' + Number(c.value).toFixed(2).replace('.', ',') + ')');
+
+        beginSection('portrait', 40, 'base-analitica');
+        h1('Base analítica e população');
+        para('Esta seção resume quem entra na análise após os filtros aplicados. Cada cliente conta uma única vez, com regras oficiais de cancelamento, ciclo e NPS.');
+        secondary('Clientes analisados: ' + fmt.format(s.analyzedClients ?? 0));
+        secondary('Ativos: ' + fmt.format(s.activeClients ?? 0));
+        secondary('Cancelamentos efetivados: ' + fmt.format(s.confirmedCancellations ?? 0));
+        secondary('Renovados (ciclo ≥ 2): ' + fmt.format(s.renewedClients ?? 0));
+        para('A cobertura média dos indicadores e a cobertura de NPS condicionam a força das conclusões. Quando a cobertura é baixa, os resultados descrevem apenas a parcela com dado válido.');
+
+        addTextAnalysis({
+          title: 'Indicadores mais relacionados ao cancelamento',
+          storyKey: 'cancelMatrix',
+          extraBullets: [
+            ...(cancelTop.pos.length ? ['Associações positivas mais fortes: ' + cancelTop.pos.join('; ') + '.'] : []),
+            ...(cancelTop.neg.length ? ['Associações negativas mais fortes: ' + cancelTop.neg.join('; ') + '.'] : []),
+            'Entre os indicadores relacionados às reuniões, clientes cancelados podem apresentar intervalo e tempo desde o último contato diferentes dos ativos. Isso não prova causa, mas ajuda a identificar afastamento da jornada.'
+          ]
+        });
+
         await addChartBlock({ title: 'Ativos vs cancelados', sel: '#scDiffChart', storyKey: 'diff', landscape: false, maxHRatio: 0.5 });
-        await addChartBlock({ title: 'Quanto cada indicador separa os grupos', sel: '#scAucChart', storyKey: 'auc', landscape: false, maxHRatio: 0.5 });
-        await addChartBlock({ title: 'NPS — relações com a satisfação', sel: '#scNpsMatrixHost', storyKey: 'nps', landscape: true });
+        await addChartBlock({ title: 'Poder preditivo individual (AUC)', sel: '#scAucChart', storyKey: 'auc', landscape: false, maxHRatio: 0.5 });
+
+        addTextAnalysis({
+          title: 'Indicadores mais relacionados à nota NPS',
+          storyKey: 'nps',
+          extraBullets: [
+            ...(npsTop.pos.length ? ['Relações positivas com a nota: ' + npsTop.pos.join('; ') + '.'] : []),
+            ...(npsTop.neg.length ? ['Relações negativas com a nota: ' + npsTop.neg.join('; ') + '.'] : []),
+            'A análise de NPS deve ser interpretada com cautela porque apenas uma parcela da base possui resposta válida. Os resultados descrevem o grupo respondente e não devem ser generalizados automaticamente para toda a carteira.'
+          ]
+        });
+
         await addChartBlock({ title: 'Promotores, Neutros e Detratores', sel: '#scNpsGroupsChart', storyKey: 'npsGroups' });
-        await addChartBlock({ title: 'Matriz comparativa NPS', sel: '#scNpsCompHost', storyKey: 'npsComp', landscape: true, maxHRatio: 0.65 });
-        await addChartBlock({ title: 'Renovação — relações observadas', sel: '#scRenewalMatrixHost', storyKey: 'renewal', landscape: true });
-        await addChartBlock({ title: 'Permanência — relações observadas', sel: '#scTenureMatrixHost', storyKey: 'tenure', landscape: true });
-        await addChartBlock({ title: 'Permanência ao longo do tempo', sel: '#scSurvivalChart', storyKey: 'survival', landscape: false, maxHRatio: 0.48 });
-        await addChartBlock({ title: 'Retenção por mês de entrada', sel: '#scCohortHost', storyKey: 'cohort', landscape: true, maxHRatio: 0.7 });
-        await addChartBlock({ title: 'Matriz geral (Spearman)', sel: '#scMatrixHost', storyKey: 'generalMatrix', landscape: true, maxHRatio: 0.6 });
+
+        addTextAnalysis({
+          title: 'Comparativo entre classes de NPS',
+          storyKey: 'npsComp',
+          extraBullets: [
+            'As diferenças padronizadas comparam cada classe à referência dos clientes com NPS válido. Azul indica valores abaixo da referência; laranja/vermelho, acima.'
+          ]
+        });
+
+        addTextAnalysis({
+          title: 'Indicadores mais relacionados às renovações',
+          storyKey: 'renewal',
+          extraBullets: [
+            ...(renewalTop.pos.length ? ['Mais presentes entre renovados: ' + renewalTop.pos.join('; ') + '.'] : []),
+            ...(renewalTop.neg.length ? ['Mais presentes entre não renovados: ' + renewalTop.neg.join('; ') + '.'] : []),
+            'Renovação considera ciclo atual ≥ 2. Associação observada não comprova que o indicador causou a renovação.'
+          ]
+        });
+
+        addTextAnalysis({
+          title: 'Indicadores mais relacionados ao tempo de permanência',
+          storyKey: 'tenure',
+          extraBullets: [
+            ...(tenureTop.pos.length ? ['Crescem junto com a permanência: ' + tenureTop.pos.join('; ') + '.'] : []),
+            ...(tenureTop.neg.length ? ['Tendem a acompanhar menor permanência: ' + tenureTop.neg.join('; ') + '.'] : []),
+            'A análise de permanência mostra como diferentes comportamentos aparecem associados ao tempo na jornada. É importante diferenciar quantidade total de reuniões e frequência mensal, pois clientes antigos tiveram mais tempo para acumular reuniões.'
+          ]
+        });
+
+        await addChartBlock({ title: 'Curva de sobrevivência', sel: '#scSurvivalChart', storyKey: 'survival', landscape: false, maxHRatio: 0.48 });
+        await addChartBlock({ title: 'Análise de cohort de retenção', sel: '#scCohortHost', storyKey: 'cohort', landscape: true, maxHRatio: 0.7 });
+
+        addTextAnalysis({
+          title: 'Relações gerais entre variáveis',
+          storyKey: 'generalMatrix',
+          extraBullets: [
+            ...(corrPos.length ? ['Pares com correlação positiva mais forte: ' + corrPos.join('; ') + '.'] : []),
+            ...(corrNeg.length ? ['Pares com correlação negativa mais forte: ' + corrNeg.join('; ') + '.'] : []),
+            'Correlação de Spearman descreve associação de ordenação; não implica causalidade.'
+          ]
+        });
 
         beginSection('portrait', 36, 'sinais-ativos');
         h2('Clientes ativos com sinais de atenção');
-        para('Alguns clientes ainda ativos apresentam combinações que, neste recorte, aparecem mais entre cancelados. Isso não significa que esses clientes vão cancelar.');
-        bulletSafe((p.activeRiskSignals?.signalStats || []).slice(0, 6).map((s) => s.label + ': ' + s.activeClientsWithSignal + ' ativos · taxa observada ' + (s.observedRatePct ?? '—') + '%'));
+        para('Alguns clientes ainda ativos apresentam combinações que, neste recorte, aparecem mais entre cancelados. Isso não significa que esses clientes vão cancelar; trata-se de um alerta exploratório para acompanhamento.');
+        bulletSafe((p.activeRiskSignals?.signalStats || []).slice(0, 6).map((sg) => sg.label + ': ' + sg.activeClientsWithSignal + ' ativos · taxa observada ' + (sg.observedRatePct ?? '—') + '%'));
 
         h2('Alta performance e destaques');
         (p.highPerformance?.groups || []).forEach((g) => {
@@ -8663,14 +8907,37 @@ ${dataRows}
         para('Top Pharus: ' + ((p.topClients?.pharus?.rows || []).slice(0, 5).map((r) => r.clientName).join(', ') || '—'));
         para('Top Davos: ' + ((p.topClients?.davos?.rows || []).slice(0, 5).map((r) => r.clientName).join(', ') || '—'));
 
-        await addChartBlock({ title: 'Prioridades do modelo de validação', sel: '#scPredictChart', storyKey: 'predict' });
-        await addChartBlock({ title: 'Matriz comparativa dos grupos', sel: '#scGroupMatrixHost', storyKey: 'groups', landscape: true });
+        await addChartBlock({ title: 'Ranking preditivo de cancelamento', sel: '#scPredictChart', storyKey: 'predict' });
+
+        beginSection('portrait', 30, 'combinacoes');
+        h2('Combinações de fatores');
+        para('Algumas combinações de condições aparecem associadas a taxas de cancelamento diferentes da média do recorte. Lift alto indica concentração de eventos acima da referência, sempre com suporte mínimo de amostra.');
+        bulletSafe((p.riskRules || p.exploratory?.riskRules || []).slice(0, 6).map((r) =>
+          (r.label || r.rule || 'Combinação') + ': amostra ' + (r.n ?? r.sample ?? '—') +
+          ', taxa observada ' + (r.observedRatePct ?? r.ratePct ?? '—') + '%' +
+          (r.lift != null ? (', lift ' + Number(r.lift).toFixed(2).replace('.', ',')) : '')
+        ));
+
+        addTextAnalysis({
+          title: 'Comparativo entre grupos da carteira',
+          storyKey: 'groups',
+          extraBullets: [
+            'Grupos incluem ativos, cancelados, renovados, não renovados e classes de NPS. Cada leitura compara o grupo à referência geral do recorte filtrado.'
+          ]
+        });
+
+        beginSection('portrait', 40, 'cobertura-qualidade');
+        h1('Cobertura e qualidade dos dados');
+        para('A qualidade das conclusões depende da cobertura de cada indicador. Valores ausentes não entram no cálculo daquela métrica e podem enviesar comparações se a falta de dado não for aleatória.');
+        secondary('Cobertura NPS na carteira: ' + (s.npsPortfolioCoverage != null ? String(s.npsPortfolioCoverage).replace('.', ',') + '%' : '—'));
+        secondary('Clientes analisados no recorte: ' + fmt.format(s.analyzedClients ?? 0));
 
         beginSection('portrait', 40, 'apendice');
-        h1('Apêndice técnico');
+        h1('Metodologia');
         para('Esta parte é opcional. A leitura principal do relatório usa linguagem simples; abaixo estão os métodos.');
-        para('Métodos: correlação de Spearman (matriz geral), associação numérica–binária, associação entre categorias, separação individual (AUC), mediana, cobertura, renovação por ciclo, curva de permanência com clientes ainda ativos até a data de corte, retenção por coorte e modelo regularizado com teste fora da amostra.');
-        para('A matriz geral utiliza apenas Spearman. A análise de NPS utiliza somente clientes com resposta válida; cobertura baixa indica que os resultados representam o grupo respondente, não toda a base.');
+        para('Para clientes com dois ou mais ciclos cuja permanência calculada seja inferior a 365 dias, o indicador analítico de permanência adiciona 365 dias ao valor calculado. Essa regra é aplicada aos indicadores de permanência, mas não modifica datas reais utilizadas em análises temporais como sobrevivência e cohort.');
+        para('Métodos: correlação de Spearman, associação numérica–binária, associação entre categorias, separação individual (AUC), mediana, cobertura, renovação por ciclo, curva de permanência com clientes ainda ativos até a data de corte, retenção por coorte e modelo regularizado com teste fora da amostra. Matrizes visuais da tela web não são reproduzidas neste PDF; seus resultados alimentam as interpretações textuais.');
+        para('A análise de NPS utiliza somente clientes com resposta válida; cobertura baixa indica que os resultados representam o grupo respondente, não toda a base.');
         para('Renovação: cliente renovado quando o ciclo atual é maior que 1.');
         para('Cobertura: percentual de clientes com informação válida.');
         para('Cliente ainda ativo na data de corte permanece na curva de permanência sem ser tratado como cancelado.');
@@ -8698,6 +8965,7 @@ ${dataRows}
           doc.setPage(i);
           const w = doc.internal.pageSize.getWidth();
           const h = doc.internal.pageSize.getHeight();
+          if (typeof doc.setCharSpace === 'function') doc.setCharSpace(0);
           doc.setFont('helvetica', 'normal');
           doc.setFontSize(8);
           doc.setTextColor(120);
@@ -8706,7 +8974,9 @@ ${dataRows}
           doc.setLineWidth(0.4);
           doc.line(margin, 10, w - margin, 10);
           doc.setTextColor(130);
-          doc.text('Fonte: BASE QV · ' + new Date().toLocaleDateString('pt-BR') + ' · Associações não comprovam causalidade.', margin, h - 6);
+          const foot = 'Fonte: BASE QV · ' + new Date().toLocaleDateString('pt-BR') + ' · Associações não comprovam causalidade.';
+          const footLines = doc.splitTextToSize(foot, Math.max(40, w - margin * 2 - 28));
+          doc.text(footLines[0] || foot, margin, h - 6);
           doc.text('Página ' + i + ' de ' + pages, w - margin, h - 6, { align: 'right' });
         }
 
@@ -9029,7 +9299,7 @@ ${dataRows}
         if (scFilters.cancelTo?.value) params.set('cancelTo', scFilters.cancelTo.value);
         const cohortGran = document.querySelector('#scCohortGranularity')?.value || 'month';
         params.set('cohortGranularity', cohortGran);
-        const cohortPeriod = document.querySelector('#scCohortPeriod')?.value || 'since_2026_01';
+        const cohortPeriod = document.querySelector('#scCohortPeriod')?.value || 'since_2025_01';
         params.set('cohortPeriod', cohortPeriod);
         if (scState.matrixVarIds?.length) params.set('matrixVars', scState.matrixVarIds.join(','));
         const response = await apiFetch(`${endpoint}?${params}`, {
@@ -11517,16 +11787,71 @@ ${dataRows}
         .sort((a, b) => b.count - a.count || a.label.localeCompare(b.label, 'pt-BR'));
     }
 
-    function renderMeetingTypesChart(filteredMeetings = []) {
+    function meetingTypeEventInPeriod(e) {
+      const start = e?.startTime ? new Date(e.startTime) : null;
+      if (!start || Number.isNaN(start.getTime())) return false;
+      const from = periodStart();
+      const to = periodEnd();
+      if (from && start < from) return false;
+      if (to && start > to) return false;
+      return true;
+    }
+
+    function meetingTypesPeriodActive() {
+      return Boolean(
+        (mFilters.period && mFilters.period.value !== 'all')
+        || mFilters.from?.value
+        || mFilters.to?.value
+      );
+    }
+
+    function getMeetingTypeEventsForChart() {
+      const src = meetingsState.payload?.meetingTypes || meetingsState.payload?.meetingTypesFromCsv;
+      const events = Array.isArray(src?.events) ? src.events : [];
+      if (!meetingTypesPeriodActive()) return events;
+      return events.filter(meetingTypeEventInPeriod);
+    }
+
+    function renderMeetingTypesChart() {
       const el = document.querySelector('#mChartTypes');
       if (!el) return;
-      const csv = meetingsState.payload?.meetingTypesFromCsv;
+      const src = meetingsState.payload?.meetingTypes || meetingsState.payload?.meetingTypesFromCsv;
       const mode = meetingsState.typeMode === 'raw' ? 'raw' : 'family';
-      const all = hasActiveMeetingFilters()
-        ? calculateMeetingTypeDistribution(filteredMeetings)
-        : (mode === 'raw' ? (csv?.byRaw || []) : (csv?.byFamily || []));
-      if (!csv?.available && !all.length) {
-        el.innerHTML = '<div class="empty" style="display:block">CSV de tipos de reunião indisponível</div>';
+      const tipBtn = document.querySelector('#mTypesSourceTip');
+      if (tipBtn) {
+        const meta = src?.metadata || {};
+        tipBtn.title = [
+          'Fonte exclusiva deste gráfico: Agendamentos.calendly_eventos. Cada event_uuid distinto representa uma reunião.',
+          'Os tipos de reunião são obtidos diretamente da tabela Agendamentos.calendly_eventos, no projeto Business Data. Reuniões do grupo Comercial são excluídas desta análise.',
+          'Este gráfico não utiliza a BASE QV.',
+          meta.rowCount != null ? `Linhas lidas: ${meta.rowCount}` : null,
+          meta.distinctEventUuids != null ? `event_uuid distintos: ${meta.distinctEventUuids}` : null,
+          meta.excludedCommercial != null ? `Excluídos Comercial: ${meta.excludedCommercial}` : null,
+          meta.missingGroup != null ? `Sem group_name: ${meta.missingGroup}` : null,
+          meta.missingType != null ? `Sem tipo: ${meta.missingType}` : null,
+          meta.eligibleEvents != null ? `Elegíveis: ${meta.eligibleEvents}` : null,
+        ].filter(Boolean).join(' ');
+      }
+      let all;
+      if (src?.available && Array.isArray(src.events) && src.events.length) {
+        const events = getMeetingTypeEventsForChart().map((e) => ({
+          title: e.rawEventType || e.title,
+          rawEventType: e.rawEventType || e.title,
+          startTime: e.startTime,
+          canceled: e.canceled === true,
+          attendanceStatus: e.canceled === true || e.attendanceStatus === 'cancelada' ? 'cancelada' : 'desconhecido',
+        }));
+        if (meetingTypesPeriodActive()) {
+          all = calculateMeetingTypeDistribution(events);
+        } else {
+          all = mode === 'raw' ? (src.byRaw || []) : (src.byFamily || []);
+          if (!all.length) all = calculateMeetingTypeDistribution(events);
+        }
+      } else {
+        all = [];
+      }
+      if (!src?.available && !all.length) {
+        el.innerHTML = '<div class="empty" style="display:block">Tipos de reunião indisponíveis (Business Data · Agendamentos.calendly_eventos)</div>';
         return;
       }
       const limit = mode === 'raw' ? 10 : 8;
@@ -11534,14 +11859,14 @@ ${dataRows}
       const max = Math.max(...list.map((i) => i.count), 1);
       el.innerHTML = list.map((i) => {
         const width = Math.max(0, Math.min(100, (i.count / max) * 100));
-        const tip = `${i.label}: ${fmt.format(i.count)} · ${pct(i.percent)} · Fonte: ${hasActiveMeetingFilters() ? 'reuniões filtradas' : 'CSV de tipos de reunião'}`;
+        const tip = `${i.label}: ${fmt.format(i.count)} · ${pct(i.percent)} · Fonte: Calendly via Business Data`;
         return `<div class="meeting-type-row" tabindex="0" data-tip-text="${escapeHtml(tip)}">
           <div class="meeting-type-tip" role="tooltip">${escapeHtml(tip)}</div>
           <div class="meeting-type-label" title="${escapeHtml(i.label)}">${escapeHtml(i.label)}</div>
           <div class="meeting-type-track"><div class="meeting-type-fill" style="width:${width}%"></div></div>
           <div class="meeting-type-value">${fmt.format(i.count)} · ${pct(i.percent)}</div>
         </div>`;
-      }).join('') || '<div class="empty" style="display:block">Sem tipos no CSV</div>';
+      }).join('') || '<div class="empty" style="display:block">Sem tipos de reunião no recorte</div>';
       el.querySelectorAll('.meeting-type-row').forEach((row) => {
         row.addEventListener('click', (ev) => {
           if (!window.matchMedia('(hover: none)').matches) return;
@@ -11654,7 +11979,7 @@ ${dataRows}
         ? meetingsState.payload.metadata.noShowFrequencyUniverse
         : data.length;
       renderMonthChart(meetings);
-      renderMeetingTypesChart(meetings);
+      renderMeetingTypesChart();
       document.querySelector('#mChartStatus').innerHTML = donut(dist.attendanceStatus || []);
       document.querySelector('#mChartFreq').innerHTML = hBars(dist.meetingFrequency || []);
       document.querySelector('#mChartDays').innerHTML = hBars(dist.daysSinceLastMeeting || []);
@@ -17537,6 +17862,71 @@ ${dataRows}
       };
     }
 
+    function getScCancelMatrixExportPayload() {
+      const rows = scState.payload?.axisMatrices?.cancellation?.rows || [];
+      return {
+        filename: PortalTableExport.exportFilename('cruzamentos-matriz-cancelamento'),
+        sheetName: 'Matriz cancelamento',
+        columns: [
+          { key: 'label', label: 'Indicador', value: (r) => r.label || r.id || '—' },
+          { key: 'association', label: 'Associação', value: (r) => r.association ?? '—' },
+          { key: 'stdDiff', label: 'Diferença padronizada', value: (r) => r.stdDiff ?? '—' },
+          { key: 'aucAdjusted', label: 'AUC ajustada', value: (r) => r.aucAdjusted ?? r.auc ?? '—' },
+          { key: 'n', label: 'Amostra', value: (r) => r.n ?? '—' },
+          { key: 'coverage', label: 'Cobertura', value: (r) => r.coveragePercent ?? r.coverage ?? '—' }
+        ],
+        rows
+      };
+    }
+    function getScCancelRankExportPayload() {
+      const rows = scState.payload?.discoveryRankings?.cancellation || scState.payload?.axisMatrices?.cancellation?.rows || [];
+      return {
+        filename: PortalTableExport.exportFilename('cruzamentos-ranking-cancelamento'),
+        sheetName: 'Ranking cancelamento',
+        columns: [
+          { key: 'label', label: 'Indicador', value: (r) => r.label || r.id || '—' },
+          { key: 'association', label: 'Associação', value: (r) => r.association ?? r.importance ?? '—' },
+          { key: 'n', label: 'Amostra', value: (r) => r.n ?? '—' },
+          { key: 'coverage', label: 'Cobertura', value: (r) => r.coveragePercent ?? r.coverage ?? '—' }
+        ],
+        rows
+      };
+    }
+    function getScGeneralMatrixExportPayload() {
+      const cells = (scState.payload?.correlationMatrix?.cells || []).filter((c) => c.idA !== c.idB);
+      return {
+        filename: PortalTableExport.exportFilename('cruzamentos-matriz-geral'),
+        sheetName: 'Matriz geral',
+        columns: [
+          { key: 'a', label: 'Variável A', value: (r) => r.labelA || r.idA || '—' },
+          { key: 'b', label: 'Variável B', value: (r) => r.labelB || r.idB || '—' },
+          { key: 'value', label: 'Spearman', value: (r) => r.value ?? '—' },
+          { key: 'n', label: 'Amostra', value: (r) => r.n ?? '—' },
+          { key: 'coverage', label: 'Cobertura', value: (r) => r.coveragePercent ?? '—' }
+        ],
+        rows: cells
+      };
+    }
+    function getScSignalsExportPayload() {
+      const rows = scState.payload?.activeRiskSignals?.clients || scState.payload?.activeRiskSignals?.rows || [];
+      if (rows.length) {
+        return {
+          filename: PortalTableExport.exportFilename('cruzamentos-sinais-ativos'),
+          sheetName: 'Sinais ativos',
+          columns: [
+            { key: 'clientName', label: 'Cliente', value: (r) => r.clientName || r.name || '—' },
+            { key: 'clientCode', label: 'Código', value: (r) => r.clientCode || r.code || '—' },
+            { key: 'engineer', label: 'EP', value: (r) => r.engineer || '—' },
+            { key: 'signals', label: 'Sinais', value: (r) => Array.isArray(r.signals) ? r.signals.join('; ') : (r.signalLabels || '—') },
+            { key: 'score', label: 'Intensidade', value: (r) => r.score ?? r.intensity ?? '—' }
+          ],
+          rows
+        };
+      }
+      const table = document.querySelector('#scSignalsTable table');
+      if (table) return getDomTableExportPayload(table);
+      return { filename: PortalTableExport.exportFilename('cruzamentos-sinais-ativos'), sheetName: 'Sinais', columns: [], rows: [] };
+    }
     function getScDiffExportPayload() {
       const rows = getScVisibleDiffs();
       return {
@@ -17605,6 +17995,76 @@ ${dataRows}
       };
     }
 
+    function getScNpsCorrExportPayload() {
+      const rows = scState.payload?.axisMatrices?.nps?.rows || scState.payload?.npsCorrelations || [];
+      return {
+        filename: PortalTableExport.exportFilename('cruzamentos-nps-correlacoes'),
+        sheetName: 'NPS correlacoes',
+        columns: [
+          { key: 'label', label: 'Indicador', value: (r) => r.label || r.id || '—' },
+          { key: 'association', label: 'Spearman', value: (r) => r.association ?? r.spearman ?? r.rho ?? '—' },
+          { key: 'stdDiff', label: 'Diferença padronizada', value: (r) => r.stdDiff ?? '—' },
+          { key: 'n', label: 'Amostra', value: (r) => r.n ?? '—' },
+          { key: 'coverage', label: 'Cobertura', value: (r) => r.coveragePercent ?? r.coverage ?? '—' }
+        ],
+        rows
+      };
+    }
+    function getScGroupExportPayload() {
+      const m = scState.payload?.groupComparative || scState.payload?.exploratory?.groupComparative;
+      const rows = (m?.cells || []).map((c) => ({
+        indicator: c.labelRow || c.varId,
+        group: c.labelCol || c.groupId,
+        value: c.value,
+        reference: c.reference,
+        standardized: c.standardized,
+        coverage: c.coveragePercent,
+        n: c.n
+      }));
+      return {
+        filename: PortalTableExport.exportFilename('cruzamentos-matriz-grupos'),
+        sheetName: 'Matriz grupos',
+        columns: [
+          { key: 'indicator', label: 'Indicador' },
+          { key: 'group', label: 'Grupo' },
+          { key: 'value', label: 'Valor do grupo' },
+          { key: 'reference', label: 'Referência geral' },
+          { key: 'standardized', label: 'Diferença padronizada' },
+          { key: 'coverage', label: 'Cobertura' },
+          { key: 'n', label: 'Amostra' }
+        ],
+        rows
+      };
+    }
+    function getScPredictExportPayload() {
+      const rows = scState.payload?.predictiveModel?.ranking || scState.payload?.exploratory?.predictiveModel?.ranking || [];
+      return {
+        filename: PortalTableExport.exportFilename('cruzamentos-ranking-preditivo'),
+        sheetName: 'Ranking preditivo',
+        columns: [
+          { key: 'label', label: 'Variável', value: (r) => r.label || r.id || '—' },
+          { key: 'importance', label: 'Importância', value: (r) => r.importance ?? r.coef ?? '—' },
+          { key: 'direction', label: 'Direção', value: (r) => r.direction || '—' },
+          { key: 'note', label: 'Observação', value: (r) => r.note || r.reason || '—' }
+        ],
+        rows
+      };
+    }
+    function getScSurvivalExportPayload() {
+      const curve = scState.payload?.survival?.overall?.curve || scState.payload?.survival?.curve || [];
+      return {
+        filename: PortalTableExport.exportFilename('cruzamentos-sobrevivencia'),
+        sheetName: 'Sobrevivencia',
+        columns: [
+          { key: 'time', label: 'Tempo (dias)', value: (r) => r.time ?? r.t ?? '—' },
+          { key: 'survival', label: 'Prob. permanência', value: (r) => r.survival ?? r.s ?? '—' },
+          { key: 'atRisk', label: 'Em risco', value: (r) => r.atRisk ?? r.nAtRisk ?? '—' },
+          { key: 'events', label: 'Eventos', value: (r) => r.events ?? r.d ?? '—' },
+          { key: 'censored', label: 'Censurados', value: (r) => r.censored ?? r.c ?? '—' }
+        ],
+        rows: curve
+      };
+    }
     function getScNpsGroupsExportPayload() {
       const rows = scState.payload?.npsGroups || [];
       return {
@@ -17713,12 +18173,19 @@ ${dataRows}
         ['#exRankingExportHost', getExplorationRankingExportPayload],
         ['#exRulesExportHost', getExplorationRulesExportPayload],
         ['#scDiffExportHost', getScDiffExportPayload],
+        ['#scCancelMatrixExportHost', getScCancelMatrixExportPayload],
+        ['#scCancelRankExportHost', getScCancelRankExportPayload],
         ['#scAucExportHost', getScAucExportPayload],
-        ['#scNpsCorrExportHost', getScNpsGroupsExportPayload],
+        ['#scNpsCorrExportHost', getScNpsCorrExportPayload],
         ['#scNpsGroupsExportHost', getScNpsGroupsExportPayload],
         ['#scRenewalDiffExportHost', getScRenewalDiffExportPayload],
+        ['#scGroupExportHost', getScGroupExportPayload],
+        ['#scPredictExportHost', getScPredictExportPayload],
         ['#scRulesExportHost', getExplorationRulesExportPayload],
+        ['#scSurvivalExportHost', getScSurvivalExportPayload],
         ['#scCohortExportHost', getScCohortExportPayload],
+        ['#scGeneralMatrixExportHost', getScGeneralMatrixExportPayload],
+        ['#scSignalsExportHost', getScSignalsExportPayload],
         ['#scExportPharusHost', () => getScTopExportPayload('pharus')],
         ['#scExportDavosHost', () => getScTopExportPayload('davos')],
         ['#scExcludedExportHost', getScExcludedExportPayload],
@@ -17728,6 +18195,22 @@ ${dataRows}
       mounts.forEach(([sel, fn]) => PortalTableExport.mountExportButton(document.querySelector(sel), fn));
     }
     function getScCohortExportPayload() {
+      const cohort = scState.payload?.cohort;
+      if (cohort?.cells?.length) {
+        return {
+          filename: PortalTableExport.exportFilename('cruzamentos-cohort'),
+          sheetName: 'Cohort',
+          columns: [
+            { key: 'cohort', label: 'Coorte', value: (r) => r.cohortLabel || r.cohortKey || r.cohort || '—' },
+            { key: 'age', label: 'Idade (meses)', value: (r) => r.age ?? '—' },
+            { key: 'retainedPct', label: 'Retenção %', value: (r) => r.retainedPct ?? (r.observable === false ? '—' : '—') },
+            { key: 'retainedN', label: 'Retidos', value: (r) => r.retainedN ?? r.nRetained ?? '—' },
+            { key: 'nStart', label: 'Início coorte', value: (r) => r.nStart ?? '—' },
+            { key: 'observable', label: 'Observável', value: (r) => r.observable === false ? 'não' : 'sim' }
+          ],
+          rows: cohort.cells
+        };
+      }
       const table = document.querySelector('#scCohortTableHost table');
       if (table) return getDomTableExportPayload(table);
       return { filename: PortalTableExport.exportFilename('cohort'), sheetName: 'Cohort', columns: [], rows: [] };
@@ -17759,7 +18242,7 @@ ${dataRows}
         key: `column_${index + 1}`,
         label: th.textContent.replace(/\?/g, '').trim() || `Coluna ${index + 1}`,
       }));
-      const rows = [...table.querySelectorAll('tbody tr')].filter((tr) => tr.offsetParent !== null).map((tr) => {
+      const rows = [...table.querySelectorAll('tbody tr')].map((tr) => {
         const row = {};
         [...tr.children].forEach((cell, index) => { row[`column_${index + 1}`] = cell.textContent.replace(/\s+/g, ' ').trim(); });
         return row;
@@ -17770,8 +18253,12 @@ ${dataRows}
     }
     function mountMissingTableExports(root = document) {
       root.querySelectorAll?.('table:not([data-export-covered])').forEach((table) => {
+        if (table.closest('#view-statistical-crosses')) {
+          table.dataset.exportCovered = '1';
+          return;
+        }
         const panel = table.closest('.table-panel,.chart-card,.indicator-matrix');
-        const existingHost = panel?.querySelector('.export-host');
+        const existingHost = panel?.querySelector('.export-host') || table.closest('.view')?.querySelector('.export-host');
         if (existingHost) {
           table.dataset.exportCovered = '1';
           return;

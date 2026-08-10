@@ -13,7 +13,7 @@ import {
 import {
   normalizeMeetingEventType,
 } from "./_shared/meeting-event-type.mjs";
-import { loadMeetingTypesFromCsv } from "./_shared/meeting-types-csv.mjs";
+import { loadMeetingTypesFromCalendly } from "./_shared/meeting-types-calendly.mjs";
 
 const CLIENT_SELECT =
   "id,codigo,name,status,engenheiro_patrimonial,data_inicio_ciclo,created_at,cpf,cpf_digits,email,phone,phone_digits,data_churn";
@@ -444,7 +444,7 @@ export function buildNoShowFrequency(clientRows) {
   });
 }
 
-function buildPayload(clients, calendlyRows, manualRows, attendanceRows, implRows, cancellations = [], airtableIndex = null) {
+function buildPayload(clients, calendlyRows, manualRows, attendanceRows, implRows, cancellations = [], airtableIndex = null, meetingTypes = null) {
   const qualityWarnings = [
     "crm_meetings excluído da consolidação (somente lead_id, sem vínculo confiável com clients.id).",
     "Status observados em meeting_attendance.status: compareceu, nao_compareceu, pendente, remarcado. Nenhuma categoria de cancelamento encontrada; cancelamentos não entram na taxa de comparecimento.",
@@ -852,7 +852,19 @@ function buildPayload(clients, calendlyRows, manualRows, attendanceRows, implRow
     ? Math.round((attendedClassifiable / classifiablePast.length) * 1000) / 10
     : null;
 
-  const meetingTypesFromCsv = loadMeetingTypesFromCsv();
+  const meetingTypesPayload = meetingTypes || {
+    available: false,
+    byFamily: [],
+    byRaw: [],
+    events: [],
+    original: [],
+    consolidated: [],
+    totalEvents: 0,
+    excludedCommercial: 0,
+    missingGroup: 0,
+    source: "Business Data · Agendamentos.calendly_eventos",
+    metadata: { source: "Business Data · Agendamentos.calendly_eventos", message: "Tipos de reunião não carregados." },
+  };
 
   const daysSinceValues = clientRows.map((c) => c.daysSinceLastMeeting).filter((v) => v != null && v >= 0);
   const intervalValues = clientRows
@@ -950,7 +962,9 @@ function buildPayload(clients, calendlyRows, manualRows, attendanceRows, implRow
     summary,
     distributions,
     noShowFrequency,
-    meetingTypesFromCsv,
+    meetingTypes: meetingTypesPayload,
+    // alias legado do chatbot — mesma fonte Calendly (não CSV)
+    meetingTypesFromCsv: meetingTypesPayload,
     clients: clientRows,
     metadata: {
       source: "BASE QV",
@@ -961,11 +975,10 @@ function buildPayload(clients, calendlyRows, manualRows, attendanceRows, implRow
       intervalPrimaryMetric: "averageIntervalDays",
       intervalPrimaryDefinition: "Média aritmética dos intervalos positivos entre reuniões válidas consecutivas (compareceu).",
       noShowSource: "public.meeting_attendance.status",
-      csvNoShowCoverage: meetingTypesFromCsv?.metadata?.csvNoShowCoverage ?? 0,
-      csvReference: "filtered-event-data-from-20250731-to-20260730.csv (somente gráfico de tipos; não é fonte de no-show nem de KPIs)",
-      meetingTypesChartSource: "csv",
+      meetingTypesChartSource: "Business Data · Agendamentos.calendly_eventos",
       meetingTypesChartNote:
-        "O gráfico Reuniões por tipo usa exclusivamente o CSV de tipos; os demais indicadores usam BASE QV.",
+        "O gráfico Reuniões por tipo usa exclusivamente Agendamentos.calendly_eventos (Business Data); os demais indicadores usam BASE QV.",
+      meetingTypesTransport: meetingTypesPayload?.metadata?.transport || null,
       attendanceRateFormula: "1 - (noShows / (totalMeetings - futureMeetings - cancelledMeetings))",
       eventTypeSourceOperational: "client_meetings.event_name / manual_meetings.title",
     },
@@ -992,7 +1005,7 @@ export async function computeMeetingsPayload() {
     err.code = "config";
     throw err;
   }
-  const [clients, calendlyRows, manualRows, attendanceRows, implRows, cancellations, airtableIndex] = await Promise.all([
+  const [clients, calendlyRows, manualRows, attendanceRows, implRows, cancellations, airtableIndex, meetingTypes] = await Promise.all([
     fetchAll("clients", CLIENT_SELECT),
     fetchAll("client_meetings", CALENDLY_SELECT),
     fetchAll("manual_meetings", MANUAL_SELECT),
@@ -1008,9 +1021,10 @@ export async function computeMeetingsPayload() {
       warnings: [],
       meta: null,
     })),
+    loadMeetingTypesFromCalendly(),
   ]);
 
-  return buildPayload(clients, calendlyRows, manualRows, attendanceRows, implRows, cancellations, airtableIndex);
+  return buildPayload(clients, calendlyRows, manualRows, attendanceRows, implRows, cancellations, airtableIndex, meetingTypes);
 }
 
 export default async (request) => {

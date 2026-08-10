@@ -424,7 +424,6 @@ export function buildNpsComparativeMatrix(clients) {
     { id: "lastContribution", label: "Aporte", kind: "median" },
     { id: "liquidityReserve", label: "Reserva", kind: "median" },
     { id: "paidPropertiesValue", label: "Patrimônio", kind: "median" },
-    { id: "mechanismCount", label: "Mecanismos", kind: "median" },
     { id: "implementedMechanismCount", label: "Mecanismos implementados", kind: "median" },
     { id: "meetingCount", label: "Reuniões", kind: "median" },
     { id: "averageIntervalDays", label: "Intervalo médio", kind: "median" },

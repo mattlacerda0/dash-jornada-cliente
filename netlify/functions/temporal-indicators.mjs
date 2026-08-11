@@ -8,7 +8,7 @@ import {
 import { fetchPharusDemoIdentities, filterPharusDemoRows, isPharusDemoEmail } from "./_shared/pharus-demo-filter.mjs";
 
 const CLIENT_SELECT =
-  "id,codigo,name,email,phone,cpf_digits,phone_digits,linked_user_id,status,engenheiro_patrimonial,data_inicio_ciclo,created_at,data_churn";
+  "id,codigo,name,email,phone,cpf_digits,phone_digits,linked_user_id,status,engenheiro_patrimonial,programa,data_inicio_ciclo,created_at,data_churn";
 const CANCEL_SELECT = ANALYTICAL_CANCEL_SELECT;
 const MEETINGS_SELECT = "id,client_id,calendly_event_uri,event_name,start_time,end_time";
 const MANUAL_MEETINGS_SELECT = "id,client_id,title,start_time,end_time,google_event_id";
@@ -182,6 +182,7 @@ function ensureSubject(subjects, id, seed = {}) {
       name: seed.name || seed.email || subjectId,
       email: seed.email || "",
       engineer: seed.engineer || "Nao informado",
+      program: seed.program || null,
       status: seed.status || "Nao informado",
       source: seed.source || "BASE QV",
       cancellationDate: seed.cancellationDate || null,
@@ -196,7 +197,7 @@ function ensureSubject(subjects, id, seed = {}) {
   } else {
     const item = subjects.get(subjectId);
     item.source = mergeSourceLabels(item.source, seed.source);
-    for (const key of ["code", "name", "email", "engineer", "status", "cancellationDate"]) {
+    for (const key of ["code", "name", "email", "engineer", "program", "status", "cancellationDate"]) {
       if ((!item[key] || item[key] === "Nao informado" || item[key] === item.subjectId) && seed[key]) item[key] = seed[key];
     }
   }
@@ -212,6 +213,7 @@ function ensureMonth(subject, key) {
       name: subject.name,
       email: subject.email,
       engineer: subject.engineer,
+      program: subject.program,
       status: subject.status,
       source: subject.source,
       month: key,
@@ -519,6 +521,7 @@ function buildPreCancellationAnalysis(rows, subjects) {
         name: subject.name,
         email: subject.email,
         engineer: subject.engineer,
+        program: subject.program,
         cancellationDate: subject.cancellationDate,
         signalCount: subjectSignals.length,
         signals: subjectSignals.map((key) => signals.find((signal) => signal.key === key)?.label || key),
@@ -626,6 +629,7 @@ function buildActiveRiskAnalysis(rows, subjects, months) {
       name: subject.name,
       email: subject.email,
       engineer: subject.engineer,
+      program: subject.program,
       status: subject.status,
       signalCount: keys.length,
       signals: keys.map((key) => definitions.find((item) => item.key === key)?.label || key),
@@ -698,6 +702,7 @@ export async function computeTemporalIndicatorsPayload() {
       code: blankToNull(client.codigo) || "",
       name: blankToNull(client.name) || String(client.id),
       engineer: blankToNull(client.engenheiro_patrimonial) || "Nao informado",
+      program: blankToNull(client.programa),
       status: analyticalStatus,
       rawStatus: blankToNull(client.status) || "Nao informado",
       source: "BASE QV",
@@ -730,6 +735,7 @@ export async function computeTemporalIndicatorsPayload() {
     const subject = ensureSubject(subjects, canonicalClientId, {
       clientId: canonicalClientId,
       source: pharusCrosswalk.byUserId.has(pharusUserId) ? "BASE QV + App Pharus" : "App Pharus",
+      program: pharusCrosswalk.byUserId.has(pharusUserId) ? null : "Pharus",
       name: profile.name || profile.email || pharusUserId,
       email: profile.email || "",
     });
@@ -835,6 +841,7 @@ export async function computeTemporalIndicatorsPayload() {
     name: subject.name,
     email: subject.email,
     engineer: subject.engineer,
+    program: subject.program,
     status: subject.status,
     source: subject.source,
     cancellationDate: subject.cancellationDate,

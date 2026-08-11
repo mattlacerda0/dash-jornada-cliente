@@ -16,7 +16,7 @@ import {
 import { loadMeetingTypesFromCalendly } from "./_shared/meeting-types-calendly.mjs";
 
 const CLIENT_SELECT =
-  "id,codigo,name,status,engenheiro_patrimonial,data_inicio_ciclo,created_at,cpf,cpf_digits,email,phone,phone_digits,data_churn";
+  "id,codigo,name,status,engenheiro_patrimonial,programa,data_inicio_ciclo,created_at,cpf,cpf_digits,email,phone,phone_digits,data_churn";
 const CALENDLY_SELECT =
   "id,client_id,calendly_event_uri,event_name,start_time,end_time,host_email,manually_linked";
 const MANUAL_SELECT =
@@ -665,6 +665,7 @@ function buildPayload(clients, calendlyRows, manualRows, attendanceRows, implRow
       clientCode: blankToNull(client.codigo),
       clientName: blankToNull(client.name) || "Não informado",
       engineer: labelOrUnknown(client.engenheiro_patrimonial),
+      program: blankToNull(client.programa),
       rawStatus: blankToNull(client.status),
       analyticalStatus,
       clientStatus: analyticalStatus,

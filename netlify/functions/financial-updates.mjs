@@ -7,7 +7,7 @@ import {
 } from "./_shared/analytical-cancellation.mjs";
 
 const CLIENT_SELECT =
-  "id,codigo,name,status,engenheiro_patrimonial,data_churn";
+  "id,codigo,name,status,engenheiro_patrimonial,programa,data_churn";
 const FINANCIAL_SELECT =
   "id,client_id,reserva_liquidez,ultima_renda_mensal,ultimo_aporte,possui_imovel,possui_carro,possui_consorcio,created_at,updated_at";
 const CANCEL_SELECT = ANALYTICAL_CANCEL_SELECT;
@@ -555,6 +555,7 @@ function buildPayload(clients, financialRows, cancellations) {
       clientName: blankToNull(client.name) || "Não informado",
       analyticalStatus,
       engineer: blankToNull(client.engenheiro_patrimonial) || "Não informado",
+      program: blankToNull(client.programa),
       hasFinancialData,
       hasPostCreationUpdate,
       financialRecordId: financial ? blankToNull(financial.id) : null,

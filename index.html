@@ -34,7 +34,8 @@
     .alert-item p{margin:3px 0;font-size:12px;color:var(--color-text-muted);line-height:1.35}
     .alert-item code{font-size:11px;color:var(--color-text)}
     .btn{height:40px;align-self:end;border:1px solid var(--color-border-strong);border-radius:var(--radius-md);background:transparent;color:var(--color-text);padding:0 16px;cursor:pointer}.btn:hover{border-color:var(--color-primary);background:var(--color-primary-tint)}.btn:disabled{opacity:.55;cursor:wait}.btn.primary{background:var(--color-primary);border-color:var(--color-primary);color:#17110d;font-weight:600}
-    .filters{position:sticky;top:80px;z-index:8;margin:24px 0;background:rgba(26,26,26,.94);backdrop-filter:blur(12px);border:1px solid var(--color-border);border-radius:var(--radius-lg);padding:16px;display:grid;grid-template-columns:1.4fr repeat(3,1fr) auto;gap:12px;box-shadow:var(--shadow-card)}
+    .filters{position:relative;z-index:8;margin:24px 0;background:rgba(26,26,26,.94);backdrop-filter:blur(12px);border:1px solid var(--color-border);border-radius:var(--radius-lg);padding:16px;display:grid;grid-template-columns:1.4fr repeat(3,1fr) auto;gap:12px;box-shadow:var(--shadow-card)}
+    .filters.is-sticky{position:sticky;top:76px;z-index:36;box-shadow:var(--shadow-md)}
     .filters.general{grid-template-columns:repeat(4,minmax(0,1fr));}
     .status-filter-block{display:grid;gap:6px}
     .status-filter-row{display:flex;gap:8px;align-items:stretch;flex-wrap:wrap}
@@ -1647,6 +1648,32 @@
       #view-ep .ep-dual-bar-val{text-align:left}
     }
 
+    /* Controles globais do portal */
+    .embedded-global-filter{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:0 0 12px;margin:0 0 2px;border-bottom:1px solid var(--color-border)}
+    .global-filter-main,.global-filter-actions{display:flex;align-items:center;gap:12px;min-width:0}
+    .global-filter-title{display:grid;gap:2px;min-width:130px}
+    .global-filter-title strong{font-size:12px;color:var(--color-text);letter-spacing:0}
+    .global-filter-title span,.global-filter-summary{font-size:11px;color:var(--color-text-muted)}
+    .global-program-options{display:inline-flex;align-items:center;gap:4px;padding:3px;border:1px solid var(--color-border);border-radius:var(--radius-md);background:var(--color-surface-2)}
+    .global-program-options label{position:relative;display:inline-flex;align-items:center;min-height:32px;padding:0 11px;border-radius:6px;color:var(--color-text-muted);font-size:12px;font-weight:600;cursor:pointer}
+    .global-program-options input{position:absolute;opacity:0;pointer-events:none}
+    .global-program-options label:has(input:checked){background:var(--color-primary-soft);color:#ffc093;box-shadow:inset 0 0 0 1px rgba(244,121,32,.35)}
+    .global-filter-pin{display:inline-flex;align-items:center;gap:8px;color:var(--color-text-muted);font-size:12px;cursor:pointer;white-space:nowrap}
+    .global-filter-pin input{accent-color:var(--color-primary)}
+    .page-up-btn{position:fixed;right:24px;bottom:152px;z-index:72;min-width:92px;height:42px;padding:0 15px;display:flex;align-items:center;justify-content:center;gap:8px;border:1px solid var(--color-primary);border-radius:999px;background:var(--color-primary);color:#17110d;font-size:14px;font-weight:700;line-height:1;box-shadow:0 10px 28px rgba(0,0,0,.4);cursor:pointer;opacity:0;visibility:hidden;pointer-events:none;transform:translateY(8px);transition:opacity .18s ease,transform .18s ease,filter .18s ease}
+    .page-up-btn.show{opacity:1;visibility:visible;pointer-events:auto;transform:translateY(0)}
+    .page-up-btn:hover{filter:brightness(1.08)}
+    .qv-line-chart{width:100%;min-height:250px;overflow-x:auto}
+    .qv-line-chart svg{display:block;width:100%;min-width:620px;height:auto;overflow:visible}
+    .qv-line-legend{display:flex;gap:16px;flex-wrap:wrap;margin:8px 0 0;color:var(--color-text-muted);font-size:11px}
+    .qv-line-legend span{display:inline-flex;align-items:center;gap:6px}.qv-line-legend i{width:16px;height:3px;border-radius:999px}
+    .risk-band-note{margin:8px 0 0;color:var(--color-text-muted);font-size:11px;line-height:1.4}
+    .intensity-legend{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 10px}
+    .intensity-legend span{display:inline-flex;align-items:center;gap:6px;padding:5px 8px;border:1px solid var(--color-border);border-radius:6px;background:var(--color-surface-2);font-size:11px;color:var(--color-text-muted)}
+    .intensity-legend b,.intensity-legend strong{color:var(--color-text)}
+    @media(max-width:900px){.embedded-global-filter{align-items:flex-start;flex-direction:column}.global-filter-main,.global-filter-actions{width:100%;flex-wrap:wrap}.global-filter-actions{justify-content:space-between}.filters.is-sticky{top:58px}}
+    @media(max-width:520px){.global-program-options{width:100%}.global-program-options label{flex:1;justify-content:center}.page-up-btn{right:16px;bottom:148px;min-width:42px;width:42px;padding:0}.page-up-btn span{display:none}}
+
     </style>
 </head>
 <body data-auth="loading">
@@ -2060,11 +2087,7 @@
                   <button type="button" data-month-range="12">Últimos 12 meses</button>
                 </div>
               </div>
-              <div class="month-legend">
-                <span><i class="lg-sch"></i> Cinza-azulado = reuniões agendadas</span>
-                <span><i class="lg-done"></i> Laranja = reuniões realizadas</span>
-                <span class="month-count" id="mMonthCount"></span>
-              </div>
+              <div class="month-legend"><span class="month-count" id="mMonthCount"></span></div>
               <div id="mChartMonths"></div>
             </article>
             <article class="chart-card"><h3>Status das reuniões</h3><p>Presença consolidada</p><div id="mChartStatus"></div></article>
@@ -3017,7 +3040,7 @@
 
           <section class="filters general" aria-label="Filtros de pesquisa de satisfação">
             <label>Busca<input id="xSearch" placeholder="Cliente, e-mail ou ID" /></label>
-            <label>Programa<select id="xProgram"><option value="all">Todos</option><option value="Pharus">Pharus</option><option value="Davos">Davos</option><option value="unknown">Não identificado</option></select></label>
+            <select id="xProgram" hidden aria-hidden="true"><option value="all">Todos</option><option value="Pharus">Pharus</option><option value="Davos">Davos</option><option value="unknown">Não identificado</option></select>
             <label>Classificação NPS<select id="xNpsClass"><option value="all">Todas</option><option value="Promotor">Promotores</option><option value="Neutro">Neutros</option><option value="Detrator">Detratores</option><option value="none">Sem NPS</option></select></label>
             <label>Possui CSAT<select id="xCsat"><option value="all">Todos</option><option value="yes">Sim</option><option value="no">Não</option></select></label>
             <label>Último NPS<select id="xNpsRange"><option value="all">Todas as notas</option><option value="9-10">9-10</option><option value="7-8">7-8</option><option value="0-6">0-6</option><option value="none">Sem nota</option></select></label>
@@ -3107,7 +3130,7 @@
               <div class="pagination"><div id="tRecencyPageInfo"></div><div><button class="btn" id="tRecencyPrev" type="button">Anterior</button><button class="btn" id="tRecencyNext" type="button">Próxima</button></div></div>
             </article>
             <article class="chart-card"><h3>Dias sem atividade</h3><p>Média do menor intervalo entre as atividades conhecidas de cada cliente</p><div id="tInactivityChart"></div></article>
-            <article class="chart-card"><h3>Risco de cancelamento</h3><p>Clientes ativos · maior período sem atividade observado na janela móvel de 90 dias</p><div id="tRiskChart"></div></article>
+            <article class="chart-card"><h3>Risco pré-cancelamento</h3><p>Clientes ativos por faixa exclusiva de dias desde a atividade mais recente conhecida</p><div id="tRiskChart"></div><div class="risk-band-note">Cada cliente aparece uma única vez: 0–30, 31–60, 61–90, 91–365 ou acima de 365 dias.</div></article>
           </section>
 
           <div class="section-head"><div><h2>Análise de Clientes Cancelados</h2><p>Sinais observados nas janelas anteriores à data confirmada de cancelamento.</p></div></div>
@@ -3487,6 +3510,19 @@
               <p>Média de reuniões válidas por cliente</p>
               <div id="epChartFrequency"></div>
               <button class="btn engineers-toggle" id="epToggleFreqAll" type="button">Ver todos</button>
+            </article>
+            <article class="chart-card ep-span-all">
+              <div class="month-chart-head">
+                <div>
+                  <h3>Reuniões por mês <span class="help" tabindex="0" data-tip="Soma das reuniões válidas dos clientes vinculados aos EPs no recorte selecionado, agrupada pelo mês da reunião.">?</span></h3>
+                  <p>Evolução mensal das reuniões válidas da carteira filtrada</p>
+                </div>
+                <div class="seg" id="epMeetingMonthRangeSeg" role="group" aria-label="Período do gráfico mensal de reuniões por EP">
+                  <button type="button" data-ep-month-range="6" class="active">Últimos 6 meses</button>
+                  <button type="button" data-ep-month-range="12">Últimos 12 meses</button>
+                </div>
+              </div>
+              <div id="epChartMeetingsMonthly"></div>
             </article>
           </section>
 
@@ -4041,6 +4077,12 @@
           <div class="section-head" id="scSecSignals"><div><h2>Clientes ativos com sinais detectados</h2>
             <p class="sc-section-note" style="margin:0">Clientes ainda ativos com padrões associados ao cancelamento. Não é previsão certa de churn.</p></div></div>
           <div class="sc-howto"><span class="sc-howto-ico" title="Informação">i</span><div><strong>Como ler:</strong> cada linha é um cliente ativo com um ou mais sinais. Use a intensidade e a cobertura dos sinais — não trate como lista de cancelamento futuro.</div></div>
+          <div class="intensity-legend" aria-label="Legenda da intensidade dos sinais">
+            <span><strong>Baixa:</strong> 1 sinal</span>
+            <span><strong>Média:</strong> 2 sinais</span>
+            <span><strong>Alta:</strong> 3 ou mais sinais</span>
+            <span>A intensidade resume a quantidade de sinais simultâneos; não é probabilidade de cancelamento.</span>
+          </div>
           <div id="scSignalsSummary" class="note-muted"></div>
           <div id="scSignalsChart" class="sc-chart-host"></div>
           <details class="sc-data-details"><summary>Ver clientes com sinais <span class="export-host" id="scSignalsExportHost" style="float:right" onclick="event.stopPropagation()"></span></summary><div id="scSignalsTable" class="table-wrap"></div></details>
@@ -4181,6 +4223,8 @@
   </div>
   </div>
 
+  <button class="page-up-btn" id="pageUpButton" type="button" title="Voltar ao início da página" aria-label="Voltar ao início da página"><b aria-hidden="true">↑</b><span>Topo</span></button>
+
   <div class="modal-backdrop" id="drawer" aria-hidden="true">
     <aside class="drawer" role="dialog" aria-modal="true" aria-labelledby="drawerTitle">
       <button class="btn" id="drawerClose" type="button" style="float:right">Fechar</button>
@@ -4290,6 +4334,184 @@
       if (status >= 500) return 'Não foi possível consultar a base de dados.';
       return payload?.error || 'Não foi possível carregar os dados.';
     }
+
+    const globalProgramState = { selected: new Set(['Pharus', 'Davos']) };
+    function globalProgramTokens(row) {
+      const raw = row?.program ?? row?.programa ?? row?.programLabel ?? row?.programs ?? row?.sourceProgram ?? null;
+      const values = Array.isArray(raw) ? raw : String(raw || '').split(/[;,|+]/);
+      const tokens = new Set(values.map((value) => {
+        const text = String(value || '').trim().toLowerCase();
+        if (/davos/.test(text)) return 'Davos';
+        if (/pharus/.test(text)) return 'Pharus';
+        return null;
+      }).filter(Boolean));
+      const source = String(row?.source || row?.database || '').toLowerCase();
+      if (/app\s*pharus|qvtqufdivpbmubooawdm/.test(source)) tokens.add('Pharus');
+      if (!tokens.size) {
+        const relatedIds = new Set([
+          row?.clientId,
+          row?.primaryClientId,
+          ...(Array.isArray(row?.clients) ? row.clients.map((client) => client?.clientId || client?.id) : [])
+        ].filter(Boolean).map(String));
+        if (relatedIds.size) {
+          (generalState?.payload?.clients || []).forEach((client) => {
+            if (!relatedIds.has(String(client?.clientId || client?.id || ''))) return;
+            const program = String(client?.program ?? client?.programa ?? '').toLowerCase();
+            if (program.includes('davos')) tokens.add('Davos');
+            if (program.includes('pharus')) tokens.add('Pharus');
+          });
+        }
+      }
+      return tokens;
+    }
+    function globalProgramMatches(row) {
+      const selected = globalProgramState.selected;
+      if (selected.size !== 1) return true;
+      const tokens = globalProgramTokens(row);
+      return tokens.has([...selected][0]);
+    }
+    function globalProgramQueryValue() {
+      return globalProgramState.selected.size === 1 ? [...globalProgramState.selected][0] : 'all';
+    }
+    function globalProgramFilterActive() { return globalProgramState.selected.size === 1; }
+    function qvLineChart(items, series, options = {}) {
+      const rows = (items || []).slice().sort((a, b) => String(a.month || a.key || '').localeCompare(String(b.month || b.key || '')));
+      if (!rows.length) return '<div class="empty" style="display:block">Sem meses históricos para exibir.</div>';
+      const width = Math.max(660, rows.length * 78);
+      const height = 270, left = 54, right = 24, top = 24, bottom = 50;
+      const plotW = width - left - right, plotH = height - top - bottom;
+      const max = Math.max(...rows.flatMap((row) => series.map((s) => Number(row[s.key]) || 0)), 1);
+      const x = (index) => left + (rows.length === 1 ? plotW / 2 : index * plotW / (rows.length - 1));
+      const y = (value) => top + plotH - (Number(value || 0) / max) * plotH;
+      const ticks = [0, .25, .5, .75, 1].map((ratio) => {
+        const value = Math.round(max * ratio);
+        const yy = y(value);
+        return `<line x1="${left}" y1="${yy}" x2="${width-right}" y2="${yy}" stroke="#303030"/><text x="${left-8}" y="${yy+4}" text-anchor="end" fill="#8f8f8f" font-size="10">${fmt.format(value)}</text>`;
+      }).join('');
+      const lines = series.map((s) => {
+        const points = rows.map((row, index) => `${x(index)},${y(row[s.key])}`).join(' ');
+        const dots = rows.map((row, index) => {
+          const value = Number(row[s.key]) || 0;
+          const tip = `${options.label?.(row) || row.label || row.month}: ${s.label} ${fmt.format(value)}`;
+          return `<circle cx="${x(index)}" cy="${y(value)}" r="4" fill="${s.color}" stroke="#151515" stroke-width="2"><title>${escapeHtml(tip)}</title></circle>`;
+        }).join('');
+        return `<polyline points="${points}" fill="none" stroke="${s.color}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>${dots}`;
+      }).join('');
+      const labels = rows.map((row, index) => `<text x="${x(index)}" y="${height-20}" text-anchor="middle" fill="#aaa" font-size="10">${escapeHtml(options.label?.(row) || row.label || row.month || '')}</text>`).join('');
+      const legend = `<div class="qv-line-legend">${series.map((s) => `<span><i style="background:${s.color}"></i>${escapeHtml(s.label)}</span>`).join('')}</div>`;
+      return `<div class="qv-line-chart"><svg viewBox="0 0 ${width} ${height}" role="img" aria-label="${escapeHtml(options.ariaLabel || 'Evolução mensal')}">${ticks}<line x1="${left}" y1="${top}" x2="${left}" y2="${height-bottom}" stroke="#555"/><line x1="${left}" y1="${height-bottom}" x2="${width-right}" y2="${height-bottom}" stroke="#555"/>${lines}${labels}</svg></div>${legend}`;
+    }
+
+    function syncGlobalProgramControls() {
+      document.querySelectorAll('[data-global-program="Pharus"]').forEach((input) => { input.checked = globalProgramState.selected.has('Pharus'); });
+      document.querySelectorAll('[data-global-program="Davos"]').forEach((input) => { input.checked = globalProgramState.selected.has('Davos'); });
+      document.querySelectorAll('[data-global-program-summary]').forEach((summary) => {
+        summary.textContent = globalProgramState.selected.size === 2 ? 'Todos os programas' : [...globalProgramState.selected].join(' + ');
+      });
+    }
+    function mountGlobalFiltersIntoViews() {
+      document.querySelectorAll('.view').forEach((view) => {
+        const filters = view.querySelector('section.filters');
+        if (!filters || filters.querySelector('.embedded-global-filter')) return;
+        const control = document.createElement('div');
+        control.className = 'embedded-global-filter';
+        control.setAttribute('aria-label', 'Filtros globais de programa');
+        control.innerHTML = `
+          <div class="global-filter-main">
+            <div class="global-filter-title"><strong>Programa</strong><span>Aplica-se a cartões, gráficos e tabelas desta tela</span></div>
+            <div class="global-program-options" role="group" aria-label="Selecionar um ou mais programas">
+              <label><input type="checkbox" data-global-program="Pharus" value="Pharus" checked /><span>Pharus</span></label>
+              <label><input type="checkbox" data-global-program="Davos" value="Davos" checked /><span>Davos</span></label>
+            </div>
+          </div>
+          <div class="global-filter-actions">
+            <span class="global-filter-summary" data-global-program-summary>Todos os programas</span>
+            <label class="global-filter-pin" title="Mantém este painel de filtros visível durante a rolagem"><input type="checkbox" data-global-sticky /> Fixar filtros ao rolar</label>
+          </div>`;
+        filters.prepend(control);
+      });
+    }
+    function rerenderForGlobalPrograms() {
+      if (typeof renderGeneral === 'function' && typeof generalState !== 'undefined' && generalState.payload) renderGeneral();
+      if (typeof renderOnboarding === 'function' && typeof onboardingState !== 'undefined' && onboardingState.payload) renderOnboarding();
+      if (typeof renderPlan === 'function' && typeof planState !== 'undefined' && planState.payload) renderPlan();
+      if (typeof renderMeetings === 'function' && typeof meetingsState !== 'undefined' && meetingsState.payload) renderMeetings();
+      if (typeof renderMechanisms === 'function' && typeof mechanismsState !== 'undefined' && mechanismsState.payload) renderMechanisms();
+      if (typeof renderPlatform === 'function' && typeof platformState !== 'undefined' && platformState.payload) renderPlatform();
+      if (typeof renderFinancial === 'function' && typeof financialState !== 'undefined' && financialState.payload) renderFinancial();
+      if (typeof renderSupport === 'function' && typeof supportState !== 'undefined' && supportState.payload) renderSupport();
+      if (typeof satisfactionState !== 'undefined' && satisfactionState.payload && typeof loadSatisfaction === 'function') {
+        const localProgram = document.querySelector('#xProgram');
+        if (localProgram) localProgram.value = globalProgramQueryValue();
+        loadSatisfaction();
+      }
+      if (typeof renderCancellations === 'function' && typeof cancellationsState !== 'undefined' && cancellationsState.payload) renderCancellations();
+      if (typeof renderRenewal === 'function' && typeof renewalState !== 'undefined' && renewalState.payload) renderRenewal();
+      if (typeof renderTemporal === 'function' && typeof temporalState !== 'undefined' && temporalState.payload) renderTemporal();
+      if (typeof renderEpPerformance === 'function' && typeof epState !== 'undefined' && epState.payload) renderEpPerformance();
+      if (typeof loadStatisticalCrosses === 'function' && typeof scState !== 'undefined' && scState.payload) loadStatisticalCrosses();
+      if (typeof renderQualityMatrices === 'function') renderQualityMatrices();
+    }
+    function initGlobalControls() {
+      mountGlobalFiltersIntoViews();
+      const inputs = [...document.querySelectorAll('[data-global-program]')];
+      inputs.forEach((input) => input.addEventListener('change', () => {
+        const program = input.dataset.globalProgram;
+        if (input.checked) globalProgramState.selected.add(program);
+        else globalProgramState.selected.delete(program);
+        const checked = [...globalProgramState.selected];
+        if (!checked.length) {
+          globalProgramState.selected.add(program);
+          input.checked = true;
+          syncGlobalProgramControls();
+          return;
+        }
+        syncGlobalProgramControls();
+        rerenderForGlobalPrograms();
+      }));
+      const stickyInputs = [...document.querySelectorAll('[data-global-sticky]')];
+      const setSticky = (enabled) => {
+        document.querySelectorAll('section.filters').forEach((panel) => panel.classList.toggle('is-sticky', enabled));
+        stickyInputs.forEach((checkbox) => { checkbox.checked = enabled; });
+        localStorage.setItem('qv-global-filters-sticky', enabled ? '1' : '0');
+      };
+      stickyInputs.forEach((sticky) => sticky.addEventListener('change', () => {
+        setSticky(sticky.checked);
+      }));
+      if (localStorage.getItem('qv-global-filters-sticky') === '1') {
+        setSticky(true);
+      } else {
+        setSticky(false);
+      }
+      const pageUp = document.querySelector('#pageUpButton');
+      const scrollRoots = () => [
+        document.scrollingElement,
+        document.documentElement,
+        document.body,
+        document.querySelector('main'),
+        document.querySelector('.layout')
+      ].filter((root, index, all) => root && all.indexOf(root) === index);
+      const currentScrollTop = () => Math.max(window.scrollY || 0, ...scrollRoots().map((root) => Number(root.scrollTop) || 0));
+      const updatePageUp = () => pageUp?.classList.toggle('show', currentScrollTop() > 180);
+      window.addEventListener('scroll', updatePageUp, { passive: true });
+      document.addEventListener('scroll', updatePageUp, { passive: true, capture: true });
+      pageUp?.addEventListener('click', () => {
+        scrollRoots().forEach((root) => {
+          if (typeof root.scrollTo === 'function') root.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+          root.scrollTop = 0;
+        });
+        window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+        document.querySelector('#portal-root')?.scrollIntoView?.({ block: 'start', behavior: 'auto' });
+        requestAnimationFrame(() => {
+          scrollRoots().forEach((root) => { root.scrollTop = 0; });
+          window.scrollTo(0, 0);
+          updatePageUp();
+        });
+      });
+      updatePageUp();
+      syncGlobalProgramControls();
+    }
+    initGlobalControls();
 
     /* -------- PortalTableExport -------- */
     const PortalTableExport = (() => {
@@ -4467,7 +4689,9 @@ ${dataRows}
       }
 
       function mountExportButton(containerEl, getExportPayload) {
-        if (!containerEl || containerEl.dataset.exportMounted) return;
+        if (!containerEl) return;
+        if (containerEl.dataset.exportMounted && containerEl.querySelectorAll(':scope > .export-wrap').length === 1) return;
+        containerEl.replaceChildren();
         containerEl.dataset.exportMounted = '1';
         containerEl.innerHTML = `
           <div class="export-wrap">
@@ -5149,7 +5373,8 @@ ${dataRows}
       showAllPortfolio: false,
       portfolioSort: 'total',
       showAllCoverage: false,
-      showAllFreq: false
+      showAllFreq: false,
+      meetingMonthRange: 6
     };
     const epFilters = {
       status: document.querySelector('#epStatusFilter'),
@@ -5263,7 +5488,8 @@ ${dataRows}
     }
     function epFiltersActive() {
       return Boolean(
-        epHasEngineerFilter()
+        globalProgramFilterActive()
+        || epHasEngineerFilter()
         || epFilters.status?.value !== 'all'
         || epFilters.segment?.value !== 'all'
         || epFilters.hireFrom?.value
@@ -5623,7 +5849,7 @@ ${dataRows}
         : null;
 
       return engineers.map((raw) => {
-        let clients = Array.isArray(raw.clients) ? raw.clients.slice() : [];
+        let clients = Array.isArray(raw.clients) ? raw.clients.filter(globalProgramMatches) : [];
         if (status === 'active') clients = clients.filter((c) => c.analyticalStatus === 'Ativo');
         if (status === 'frozen') clients = clients.filter((c) => c.analyticalStatus === 'Congelado');
         if (status === 'cancelled') clients = clients.filter((c) => c.cancelled || c.analyticalStatus === 'Cancelado' || c.analyticalStatus === 'Cancelado efetivado sem data' || c.analyticalStatus === 'Cancelado confirmado');
@@ -6003,6 +6229,28 @@ ${dataRows}
       setOrHtml('#epChartFrequency', epRenderFrequencyGrouped(named, epState.showAllFreq));
       epSyncChartToggle('#epToggleFreqAll', epState.showAllFreq, named.length);
 
+      const monthlyMeetings = new Map();
+      named.flatMap((engineer) => engineer.clients || []).forEach((client) => {
+        (client.meetingDates || []).forEach((iso) => {
+          const date = new Date(iso);
+          if (Number.isNaN(date.getTime())) return;
+          const key = `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, '0')}`;
+          monthlyMeetings.set(key, (monthlyMeetings.get(key) || 0) + 1);
+        });
+      });
+      const monthlyMeetingRows = [...monthlyMeetings.entries()]
+        .sort(([a], [b]) => a.localeCompare(b))
+        .slice(-epState.meetingMonthRange)
+        .map(([month, meetings]) => ({ month, meetings }));
+      document.querySelectorAll('#epMeetingMonthRangeSeg [data-ep-month-range]').forEach((button) => {
+        const activeRange = Number(button.dataset.epMonthRange) === Number(epState.meetingMonthRange);
+        button.classList.toggle('active', activeRange);
+        button.setAttribute('aria-pressed', activeRange ? 'true' : 'false');
+      });
+      setOrHtml('#epChartMeetingsMonthly', qvLineChart(monthlyMeetingRows, [
+        { key: 'meetings', label: 'Reuniões', color: '#f47920' }
+      ], { label: (row) => formatMonthLabel(row.month), ariaLabel: 'Reuniões válidas por mês na carteira dos engenheiros patrimoniais' }));
+
       setOrHtml('#epNpsStrip', `<span><strong>Nota média geral</strong> ${typeof npsMeanDisplay === 'number' ? epScoreFmt(npsMeanDisplay) : escapeHtml(String(npsMeanDisplay))}</span><span class="sep">·</span><span><strong>Respondentes</strong> ${fmt.format(npsRespondentsDisplay)}</span><span class="sep">·</span><span><strong>Cobertura</strong> ${npsCoverageDisplay == null ? '—' : epFmtPct(npsCoverageDisplay)}</span>`);
       const npsSortSel = document.querySelector('#epNpsSort');
       if (npsSortSel && npsSortSel.value) epState.npsSort = npsSortSel.value;
@@ -6259,6 +6507,12 @@ ${dataRows}
     });
     document.querySelector('#epToggleFreqAll')?.addEventListener('click', () => {
       epState.showAllFreq = !epState.showAllFreq;
+      renderEpPerformance();
+    });
+    document.querySelector('#epMeetingMonthRangeSeg')?.addEventListener('click', (event) => {
+      const button = event.target.closest('[data-ep-month-range]');
+      if (!button) return;
+      epState.meetingMonthRange = Number(button.dataset.epMonthRange) === 12 ? 12 : 6;
       renderEpPerformance();
     });
     document.querySelector('#epNpsSort')?.addEventListener('change', (e) => {
@@ -8653,8 +8907,17 @@ ${dataRows}
           mark: 'secondary'
         });
         const card = (title, value, subtitle) => {
-          ensureSpace(22);
-          const boxH = 18;
+          const innerW = Math.max(34, contentWidth() - 6);
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(9);
+          const titleLines = doc.splitTextToSize(String(title), innerW);
+          doc.setFontSize(13);
+          const valueLines = doc.splitTextToSize(String(value), innerW);
+          doc.setFont('helvetica', 'normal');
+          doc.setFontSize(8);
+          const subtitleLines = subtitle ? doc.splitTextToSize(String(subtitle), innerW) : [];
+          const boxH = Math.max(22, 5 + titleLines.length * 4 + valueLines.length * 5.2 + subtitleLines.length * 3.6 + 4);
+          ensureSpace(boxH + 4);
           doc.setFillColor(248, 248, 248);
           doc.setDrawColor(230, 230, 230);
           doc.roundedRect(margin, y, contentWidth(), boxH, 2, 2, 'FD');
@@ -8662,18 +8925,21 @@ ${dataRows}
           doc.setFontSize(9);
           doc.setTextColor(100, 100, 100);
           if (typeof doc.setCharSpace === 'function') doc.setCharSpace(0);
-          doc.text(String(title), margin + 3, y + 5);
+          let cardY = y + 5;
+          doc.text(titleLines, margin + 3, cardY);
+          cardY += titleLines.length * 4 + 1;
           doc.setFontSize(13);
           doc.setTextColor(20, 20, 20);
-          doc.text(String(value), margin + 3, y + 12);
+          doc.text(valueLines, margin + 3, cardY);
+          cardY += valueLines.length * 5.2 + 1;
           if (subtitle) {
             doc.setFont('helvetica', 'normal');
             doc.setFontSize(8);
             doc.setTextColor(110, 110, 110);
-            const subLines = doc.splitTextToSize(String(subtitle), Math.max(40, contentWidth() - 62));
-            doc.text(subLines[0] || '', margin + 55, y + 12);
+            doc.text(subtitleLines, margin + 3, cardY);
           }
           y += boxH + 4;
+          markContent('card');
           markContent('card:' + title);
         };
         const bulletSafe = (arr) => { (arr || []).forEach((line) => para('• ' + line)); };
@@ -9307,6 +9573,7 @@ ${dataRows}
         if (scFilters.hireTo?.value) params.set('hireTo', scFilters.hireTo.value);
         if (scFilters.cancelFrom?.value) params.set('cancelFrom', scFilters.cancelFrom.value);
         if (scFilters.cancelTo?.value) params.set('cancelTo', scFilters.cancelTo.value);
+        if (globalProgramFilterActive()) params.set('programs', globalProgramQueryValue());
         const cohortGran = document.querySelector('#scCohortGranularity')?.value || 'month';
         params.set('cohortGranularity', cohortGran);
         const cohortPeriod = document.querySelector('#scCohortPeriod')?.value || 'since_2025_01';
@@ -10503,6 +10770,7 @@ ${dataRows}
       const clients = generalState.payload?.clients || [];
       const q = gFilters.search.value.trim().toLowerCase();
       return clients.filter(c => {
+        if (!globalProgramMatches(c)) return false;
         if (!matchesClientStatusFilter(c, generalState.statusFilter)) return false;
         if (gFilters.segment.value !== 'all' && segmentLabelOf(c) !== gFilters.segment.value) return false;
         if (gFilters.engineer.value !== 'all' && c.engineer !== gFilters.engineer.value) return false;
@@ -10985,6 +11253,7 @@ ${dataRows}
       const clients = planState.payload?.clients || [];
       const q = pFilters.search.value.trim().toLowerCase();
       return clients.filter(c => {
+        if (!globalProgramMatches(c)) return false;
         if (pFilters.source.value !== 'all' && c.source !== pFilters.source.value) return false;
         if (pFilters.delivered.value === 'yes' && !c.planDelivered) return false;
         if (pFilters.delivered.value === 'no' && c.planDelivered) return false;
@@ -11011,14 +11280,27 @@ ${dataRows}
     function renderPlan() {
       if (!planState.payload) return;
       const payload = planState.payload;
-      const summary = payload.summary || {};
       const data = filteredPlanClients();
+      const approvalDays = data.map((client) => Number(client.daysToApproval)).filter((value) => Number.isFinite(value) && value >= 0).sort((a, b) => a - b);
+      const medianApprovalDays = approvalDays.length
+        ? (approvalDays.length % 2 ? approvalDays[(approvalDays.length - 1) / 2] : (approvalDays[approvalDays.length / 2 - 1] + approvalDays[approvalDays.length / 2]) / 2)
+        : null;
+      const summary = {
+        totalClients: data.length,
+        baseQvClients: new Set(data.filter((client) => String(client.source || '').toLowerCase().includes('qv')).map((client) => client.clientId)).size,
+        planApproved: data.filter((client) => client.planApproved).length,
+        averageDaysToApproval: medianApprovalDays,
+        deliveredClients: data.filter((client) => client.planDelivered).length,
+        revisedLater: data.filter((client) => client.revisedLater).length
+      };
       document.querySelector('#pKpis').innerHTML = `
         <article class="metric highlight"><div class="metric-label">Clientes BASE QV</div><div class="metric-value">${fmt.format(summary.baseQvClients || 0)}</div><div class="metric-note">Distinct clients.id</div></article>
         <article class="metric"><div class="metric-label">Plano aprovado</div><div class="metric-value">${fmt.format(summary.planApproved || 0)}</div><div class="metric-note">Clientes distintos · proxy, não aprovação formal</div></article>
         <article class="metric"><div class="metric-label">Dias até aprovação ${portalMetricTip('Proxy: diferença não negativa entre a data de contratação e a última reunião cujo event_name contém Central de Inteligência. Não representa aprovação formal.', 'Dias até aprovação')}</div><div class="metric-value">${dayValue(summary.averageDaysToApproval)}</div><div class="metric-note">Proxy: contratação → última reunião Central</div></article>`;
 
-      document.querySelector('#pSourceChart').innerHTML = hBars((payload.sources?.databases || []).map(db => ({ label: db.source, count: db.clientCount || 0, percent: (summary.totalClients ? (db.clientCount || 0) / summary.totalClients * 100 : 0) })));
+      const sourceCounts = new Map();
+      data.forEach((client) => sourceCounts.set(client.source || 'Não informado', (sourceCounts.get(client.source || 'Não informado') || 0) + 1));
+      document.querySelector('#pSourceChart').innerHTML = hBars([...sourceCounts.entries()].map(([label, count]) => ({ label, count, percent: summary.totalClients ? count / summary.totalClients * 100 : 0 })));
       document.querySelector('#pStatusChart').innerHTML = hBars([
         { label: 'Plano entregue', count: summary.deliveredClients || 0, percent: summary.totalClients ? (summary.deliveredClients || 0) / summary.totalClients * 100 : 0 },
         { label: 'Revisado posteriormente', count: summary.revisedLater || 0, percent: summary.totalClients ? (summary.revisedLater || 0) / summary.totalClients * 100 : 0 },
@@ -11106,6 +11388,7 @@ ${dataRows}
       const clients = onboardingState.payload?.clients || [];
       const q = jFilters.search.value.trim().toLowerCase();
       return clients.filter(c => {
+        if (!globalProgramMatches(c)) return false;
         if (jFilters.status.value !== 'all' && c.status !== jFilters.status.value) return false;
         if (jFilters.engineer.value !== 'all' && c.engineer !== jFilters.engineer.value) return false;
         if (jFilters.completion.value === 'complete' && !c.completedOnboarding) return false;
@@ -11131,8 +11414,55 @@ ${dataRows}
     function renderOnboarding() {
       if (!onboardingState.payload) return;
       const payload = onboardingState.payload;
-      const summary = payload.summary || {};
       const data = filteredOnboardingClients();
+      let summary = payload.summary || {};
+      let distributions = payload.distributions || {};
+      if (globalProgramFilterActive()) {
+        const medianOf = (values) => {
+          const sorted = values.map(Number).filter((value) => Number.isFinite(value) && value >= 0).sort((a, b) => a - b);
+          if (!sorted.length) return null;
+          return sorted.length % 2 ? sorted[(sorted.length - 1) / 2] : (sorted[sorted.length / 2 - 1] + sorted[sorted.length / 2]) / 2;
+        };
+        const comparable = data.filter((row) => row.totalOnboardingDays != null && row.daysToFirstMeeting != null && row.daysToPlanDelivery != null
+          && row.totalOnboardingDays <= row.daysToFirstMeeting
+          && row.totalOnboardingDays <= row.daysToPlanDelivery
+          && row.daysToFirstMeeting <= row.daysToPlanDelivery);
+        const implemented = data.filter((row) => row.daysToFirstImplementation != null);
+        const rangeLabel = (value) => value == null ? 'Sem base' : value <= 7 ? '0-7 dias' : value <= 15 ? '8-15 dias' : value <= 30 ? '16-30 dias' : value <= 60 ? '31-60 dias' : value <= 90 ? '61-90 dias' : 'Mais de 90 dias';
+        const rangeDistribution = (source, key) => {
+          const labels = ['0-7 dias', '8-15 dias', '16-30 dias', '31-60 dias', '61-90 dias', 'Mais de 90 dias'];
+          return labels.map((label) => {
+            const count = source.filter((row) => rangeLabel(row[key]) === label).length;
+            return { label, count, percent: source.length ? count / source.length * 100 : 0 };
+          });
+        };
+        const completed = data.filter((row) => row.completedOnboarding).length;
+        summary = {
+          ...summary,
+          totalClients: data.length,
+          completedOnboarding: completed,
+          openOnboarding: data.length - completed,
+          completionBaseClients: data.length,
+          completedPercent: data.length ? completed / data.length * 100 : 0,
+          averageTotalOnboardingDays: medianOf(comparable.map((row) => row.totalOnboardingDays)),
+          averageFirstMeetingDays: medianOf(comparable.map((row) => row.daysToFirstMeeting)),
+          averagePlanDeliveryDays: medianOf(comparable.map((row) => row.daysToPlanDelivery)),
+          averageFirstImplementationDays: medianOf(implemented.map((row) => row.daysToFirstImplementation)),
+          journeyKpiComparableClients: comparable.length,
+          firstImplementationCount: implemented.length
+        };
+        distributions = {
+          ...distributions,
+          firstMeetingRanges: rangeDistribution(comparable, 'daysToFirstMeeting'),
+          planDeliveryRanges: rangeDistribution(comparable, 'daysToPlanDelivery'),
+          totalOnboardingRanges: rangeDistribution(comparable, 'totalOnboardingDays'),
+          firstImplementationRanges: rangeDistribution(implemented, 'daysToFirstImplementation'),
+          completion: [
+            { label: 'Sim', count: completed, percent: data.length ? completed / data.length * 100 : 0 },
+            { label: 'Não', count: data.length - completed, percent: data.length ? (data.length - completed) / data.length * 100 : 0 }
+          ]
+        };
+      }
       const onboardingTooltip = [
         `Mesma coorte cronológica de ${fmt.format(summary.journeyKpiComparableClients || 0)} clientes usada nos cartões de onboarding, primeira reunião e entrega do plano.`,
         `Data inicial: clients.data_inicio_ciclo, com fallback clients.created_at.`,
@@ -11168,11 +11498,11 @@ ${dataRows}
       if (planHelp) planHelp.dataset.tip = planDeliveryTooltip;
       if (onboardingHelp) onboardingHelp.dataset.tip = onboardingTooltip;
 
-      document.querySelector('#jFirstMeetingChart').innerHTML = donut(payload.distributions?.firstMeetingRanges || []);
-      document.querySelector('#jPlanDeliveryChart').innerHTML = donut(payload.distributions?.planDeliveryRanges || []);
-      document.querySelector('#jFirstImplementationChart').innerHTML = donut(payload.distributions?.firstImplementationRanges || []);
-      document.querySelector('#jTotalOnboardingChart').innerHTML = donut(payload.distributions?.totalOnboardingRanges || []);
-      document.querySelector('#jCompletionChart').innerHTML = donut(payload.distributions?.completion || []);
+      document.querySelector('#jFirstMeetingChart').innerHTML = donut(distributions.firstMeetingRanges || []);
+      document.querySelector('#jPlanDeliveryChart').innerHTML = donut(distributions.planDeliveryRanges || []);
+      document.querySelector('#jFirstImplementationChart').innerHTML = donut(distributions.firstImplementationRanges || []);
+      document.querySelector('#jTotalOnboardingChart').innerHTML = donut(distributions.totalOnboardingRanges || []);
+      document.querySelector('#jCompletionChart').innerHTML = donut(distributions.completion || []);
 
       const pages = Math.max(1, Math.ceil(data.length / onboardingState.pageSize));
       if (onboardingState.page > pages) onboardingState.page = pages;
@@ -11325,6 +11655,7 @@ ${dataRows}
     }
     function hasActiveMeetingFilters() {
       return Boolean(
+        globalProgramFilterActive() ||
         mFilters.search.value.trim() ||
         (mFilters.clientStatus?.value && mFilters.clientStatus.value !== 'all') ||
         mFilters.engineer.value !== 'all' ||
@@ -11542,34 +11873,15 @@ ${dataRows}
       else if (shown < limit || total < limit) countEl.textContent = `Exibindo ${shown} meses disponíveis`;
       else countEl.textContent = `Exibindo os ${limit} meses mais recentes`;
     }
-    function monthBars(items) {
-      const max = Math.max(...items.map(i => i.scheduled), 1);
-      const useScroll = String(meetingsState.monthRange) === '12' && items.length > 6;
-      if (!items.length) return '<div class="empty" style="display:block">Sem meses históricos para exibir.</div>';
-      return `<div class="month-bars${useScroll ? ' scroll' : ''}" data-month-rows="${items.length}">${items.map(i => {
-        const schW = i.scheduled > 0 ? Math.max(4, (i.scheduled / max) * 100) : 0;
-        const doneW = i.completed > 0 ? Math.max(4, Math.min(100, (i.completed / max) * 100)) : 0;
-        const rateText = i.completionRate == null ? '—' : pct(i.completionRate);
-        const values = `${fmt.format(i.scheduled)} ag. · ${fmt.format(i.completed)} real. · <b>${rateText}</b>`;
-        const tip = `${formatMonthLabel(i.month)} | Agendadas: ${fmt.format(i.scheduled)} | Realizadas: ${fmt.format(i.completed)} | Taxa: ${rateText} | No-shows: ${fmt.format(i.noShows)}`;
-        return `<div class="month-row" title="${escapeHtml(tip)}">
-          <div class="month-label">${escapeHtml(formatMonthLabel(i.month))}</div>
-          <div class="month-dual">
-            <div class="month-line"><em>Agend.</em><div class="month-track"><span class="fill-sch" style="width:${schW}%"></span></div></div>
-            <div class="month-line"><em>Realiz.</em><div class="month-track"><span class="fill-done" style="width:${doneW}%"></span></div></div>
-          </div>
-          <div class="month-val">${values}</div>
-        </div>`;
-      }).join('')}</div>`;
-    }
     function renderMonthChart(meetings) {
       rebuildMonthsAll(meetings);
       const visible = deriveVisibleMonths();
       syncMonthRangeButtons();
       const el = document.querySelector('#mChartMonths');
-      if (el) el.innerHTML = monthBars(visible);
-      const bars = el?.querySelector('.month-bars');
-      if (bars) bars.scrollTop = 0;
+      if (el) el.innerHTML = qvLineChart(visible, [
+        { key: 'scheduled', label: 'Agendadas', color: '#69a8ff' },
+        { key: 'completed', label: 'Realizadas', color: '#f47920' }
+      ], { label: (row) => formatMonthLabel(row.month), ariaLabel: 'Reuniões agendadas e realizadas por mês' });
     }
 
     /** Fonte única filtrada do dashboard Reuniões. */
@@ -11578,6 +11890,7 @@ ${dataRows}
       const q = mFilters.search.value.trim().toLowerCase();
       const periodActive = mFilters.period.value !== 'all';
       return source.filter(c => {
+        if (!globalProgramMatches(c)) return false;
         const meetings = clientMeetingsInPeriod(c);
         if (mFilters.clientStatus?.value && mFilters.clientStatus.value !== 'all'
           && !matchesClientStatusFilter(c.analyticalStatus || c.clientStatus || c, mFilters.clientStatus.value)) {
@@ -12274,6 +12587,7 @@ ${dataRows}
       const clients = mechanismsState.payload?.clients || [];
       const q = kFilters.search.value.trim().toLowerCase();
       return clients.filter(c => {
+        if (!globalProgramMatches(c)) return false;
         if (!matchesClientStatusFilter(c.clientStatus || c, mechanismsState.clientStatusFilter)) return false;
         if (kFilters.segment?.value && kFilters.segment.value !== 'all' && c.segment !== kFilters.segment.value) return false;
         if (kFilters.engineer.value !== 'all' && c.engineer !== kFilters.engineer.value) return false;
@@ -13710,6 +14024,7 @@ ${dataRows}
       const clients = platformState.payload?.clients || [];
       const q = uFilters.search.value.trim().toLowerCase();
       return clients.filter(c => {
+        if (!globalProgramMatches(c)) return false;
         if (uFilters.logged.value === 'yes' && !c.realizedLogin) return false;
         if (uFilters.logged.value === 'no' && c.realizedLogin) return false;
         const days = c.daysSinceLastAccess;
@@ -13738,9 +14053,22 @@ ${dataRows}
       if (!platformState.payload) return;
       const payload = platformState.payload;
       const rows = filteredPlatformClients();
-      const summary = payload.summary || {};
-      const total = summary.totalUsers || 0;
-      const usersWithLogin = summary.usersWithLogin || 0;
+      const medianValue = (values) => {
+        const sorted = values.map(Number).filter(Number.isFinite).sort((a, b) => a - b);
+        if (!sorted.length) return null;
+        return sorted.length % 2 ? sorted[(sorted.length - 1) / 2] : (sorted[sorted.length / 2 - 1] + sorted[sorted.length / 2]) / 2;
+      };
+      const total = rows.length;
+      const usersWithLogin = rows.filter((client) => client.realizedLogin).length;
+      const summary = {
+        totalUsers: total,
+        usersWithLogin,
+        loginCoverage: total ? usersWithLogin / total * 100 : 0,
+        totalLogins: rows.reduce((sum, client) => sum + (Number(client.totalLogins) || 0), 0),
+        averageLoginsPerMonth: rows.length ? rows.reduce((sum, client) => sum + (Number(client.loginsPerMonth) || 0), 0) / rows.length : null,
+        typicalDaysSinceLastAccess: medianValue(rows.map((client) => client.daysSinceLastAccess)),
+        averageDaysBetweenAccesses: medianValue(rows.map((client) => client.averageDaysBetweenAccesses))
+      };
       document.querySelector('#uKpis').innerHTML = `
         <article class="metric highlight"><div class="metric-label">Usuários App Pharus</div><div class="metric-value">${fmt.format(total)}</div><div class="metric-note">Distinct user_id em metrics.events.metadata</div></article>
         <article class="metric highlight"><div class="metric-label">Realizaram login</div><div class="metric-value">${fmt.format(usersWithLogin)}</div><div class="metric-note">${pct(summary.loginCoverage || 0)} da base App Pharus</div></article>
@@ -13751,14 +14079,16 @@ ${dataRows}
         <article class="metric"><div class="metric-label">Tempo médio de sessão</div><div class="metric-value">Sem Dados</div><div class="metric-note">Sem base confiável</div></article>`;
       const loginDist = [{ label: 'Sim', count: usersWithLogin, percent: total ? usersWithLogin / total * 100 : 0 }, { label: 'Não', count: Math.max(0, total - usersWithLogin), percent: total ? (total - usersWithLogin) / total * 100 : 0 }];
       const lastDist = ['0-7 dias', '8-30 dias', '31-90 dias', 'Mais de 90 dias', 'Sem acesso'].map(label => {
-        const count = (payload.clients || []).filter(c => accessRange(c.daysSinceLastAccess) === label).length;
+        const count = rows.filter(c => accessRange(c.daysSinceLastAccess) === label).length;
         return { label, count, percent: total ? count / total * 100 : 0 };
       });
       const monthlyDist = ['Sem login', 'Até 1/mês', '1-3/mês', '4-7/mês', '8+/mês'].map(label => {
-        const count = (payload.clients || []).filter(c => monthlyLoginRange(c.loginsPerMonth) === label).length;
+        const count = rows.filter(c => monthlyLoginRange(c.loginsPerMonth) === label).length;
         return { label, count, percent: total ? count / total * 100 : 0 };
       });
-      const sourceDist = (payload.sources?.databases || []).map(db => ({ label: db.source, count: db.userCount || 0, percent: total ? (db.userCount || 0) / total * 100 : 0 }));
+      const sourceCounts = new Map();
+      rows.forEach((client) => sourceCounts.set(client.source || 'App Pharus', (sourceCounts.get(client.source || 'App Pharus') || 0) + 1));
+      const sourceDist = [...sourceCounts.entries()].map(([label, count]) => ({ label, count, percent: total ? count / total * 100 : 0 }));
       document.querySelector('#uChartLogin').innerHTML = donut(loginDist);
       document.querySelector('#uChartLast').innerHTML = hBars(lastDist);
       document.querySelector('#uChartMonthly').innerHTML = hBars(monthlyDist);
@@ -13850,6 +14180,7 @@ ${dataRows}
       const clients = satisfactionState.payload?.clients || [];
       const q = xFilters.search.value.trim().toLowerCase();
       return clients.filter(c => {
+        if (!globalProgramMatches(c)) return false;
         const cls = npsClass(c.latestNps);
         const programs = Array.isArray(c.programs) ? c.programs : [];
         if (xFilters.program.value === 'unknown' && programs.length) return false;
@@ -14040,6 +14371,7 @@ ${dataRows}
       const rows = temporalState.payload?.clients || [];
       const q = (tFilters.search?.value || '').trim().toLowerCase();
       return rows.filter(row => {
+        if (!globalProgramMatches(row)) return false;
         if (!temporalSourceMatches(row.source)) return false;
         if (tFilters.month?.value !== 'all' && row.month !== tFilters.month.value) return false;
         if (tFilters.cancelWindow?.value === 'none' && row.cancellationDate) return false;
@@ -14292,26 +14624,28 @@ ${dataRows}
         label: row.label,
         days: row.averageDaysWithoutActivity == null ? null : Math.round(row.averageDaysWithoutActivity),
       })));
-      const riskMonthKeys = [...new Set(rows.map((row) => row.month).filter(Boolean))].sort().slice(-3);
       const riskByClient = new Map();
-      rows.filter((row) => riskMonthKeys.includes(row.month)
-        && String(row.status || '').toLocaleLowerCase('pt-BR').includes('ativo')
-        && !row.cancellationDate
-        && row.daysWithoutActivity != null
-      ).forEach((row) => {
-        const id = String(row.subjectId || row.clientId || '');
-        if (!id) return;
+      filteredTemporalActiveClients().forEach((row) => {
+        const id = String(row.clientId || row.subjectId || '');
+        const days = Number(row.daysWithoutActivity);
+        if (!id || !Number.isFinite(days) || days < 0) return;
         const current = riskByClient.get(id);
-        if (!current || Number(row.daysWithoutActivity) > Number(current.daysWithoutActivity)) riskByClient.set(id, row);
+        if (!current || days > current.daysSinceAnyActivity) riskByClient.set(id, { ...row, daysSinceAnyActivity: days });
       });
-      const riskRows = [...riskByClient.values()]
-        .filter((row) => Number(row.daysWithoutActivity) >= 30)
-        .sort((a, b) => Number(b.daysWithoutActivity || 0) - Number(a.daysWithoutActivity || 0))
-        .slice(0, 8)
-        .map(row => ({ label: row.name || row.clientId, days: Number(row.daysWithoutActivity) || 0 }));
-      document.querySelector('#tRiskChart').innerHTML = riskRows.length
-        ? temporalDaysBars(riskRows)
-        : '<div class="empty" style="display:block">Sem clientes ativos com 30+ dias sem atividade na janela.</div>';
+      const riskClients = [...riskByClient.values()];
+      const riskBands = [
+        { label: 'Até 30 dias', test: (days) => days <= 30 },
+        { label: '31–60 dias', test: (days) => days >= 31 && days <= 60 },
+        { label: '61–90 dias', test: (days) => days >= 61 && days <= 90 },
+        { label: '91–365 dias', test: (days) => days >= 91 && days <= 365 },
+        { label: 'Mais de 365 dias', test: (days) => days > 365 }
+      ].map((band) => {
+        const count = riskClients.filter((row) => band.test(row.daysSinceAnyActivity)).length;
+        return { label: band.label, count, percent: riskClients.length ? count / riskClients.length * 100 : 0 };
+      });
+      document.querySelector('#tRiskChart').innerHTML = riskClients.length
+        ? hBars(riskBands, riskClients.length)
+        : '<div class="empty" style="display:block">Sem clientes ativos com sinais e recência calculável no recorte.</div>';
       renderTemporalPreCancellation(payload.preCancellation || {}, rows);
       const activeSource = payload.activeRisk || {};
       const activeClients = filteredTemporalActiveClients();
@@ -14467,6 +14801,7 @@ ${dataRows}
       const clients = financialState.payload?.clients || [];
       const q = fFilters.search.value.trim().toLowerCase();
       return clients.filter(c => {
+        if (!globalProgramMatches(c)) return false;
         if (!matchesClientStatusFilter(c, financialState.clientStatusFilter)) return false;
         if (fFilters.engineer.value !== 'all' && c.engineer !== fFilters.engineer.value) return false;
         if (fFilters.hasData.value === 'yes' && !c.hasFinancialData) return false;
@@ -14901,6 +15236,7 @@ ${dataRows}
       return `<span class="badge ${S_PRIORITY_BADGE[label] || 'unavailable'}">${escapeHtml(label || 'Não informado')}</span>`;
     }
     function supportHasActiveFilters() {
+      if (globalProgramFilterActive()) return true;
       if ((sFilters.search?.value || '').trim()) return true;
       if (sFilters.openedFrom?.value || sFilters.openedTo?.value) return true;
       return ['requester', 'priority', 'type', 'area', 'ticketStatus', 'identified']
@@ -14911,6 +15247,7 @@ ${dataRows}
       const tickets = supportState.payload?.tickets || supportState.payload?.rows || [];
       const q = (sFilters.search?.value || '').trim().toLowerCase();
       return tickets.filter((t) => {
+        if (!globalProgramMatches(t)) return false;
         if (sFilters.priority?.value && sFilters.priority.value !== 'all' && t.priority !== sFilters.priority.value) return false;
         if (sFilters.type?.value && sFilters.type.value !== 'all' && t.type !== sFilters.type.value) return false;
         if (sFilters.area?.value && sFilters.area.value !== 'all' && normalizeSupportAreaChart(t.areaChart || t.area) !== sFilters.area.value) return false;
@@ -15773,6 +16110,7 @@ ${dataRows}
       const clients = cancellationsState.payload?.clients || [];
       const q = (cFilters.search?.value || '').trim().toLowerCase();
       return clients.filter(c => {
+        if (!globalProgramMatches(c)) return false;
         if (cFilters.category?.value !== 'all' && cancellationReasonCategoryOf(c) !== cFilters.category.value) return false;
         if (cFilters.reason?.value !== 'all') {
           const reasonVal = c.reasonRaw || c.reason;
@@ -15820,6 +16158,7 @@ ${dataRows}
       const q = (cFilters.search?.value || '').trim().toLowerCase();
       const stage = cFilters.stage?.value || 'all';
       return clients.filter(c => {
+        if (!globalProgramMatches(c)) return false;
         if (stage === 'intencao_pedido' && !c.hasIntentionOrPedido && !(c.hasIntencao || c.hasPedido)) return false;
         if (stage === 'intencao' && !c.hasIntencao) return false;
         if (stage === 'pedido' && !c.hasPedido) return false;
@@ -16596,6 +16935,7 @@ ${dataRows}
           clientCode: client.clientCode,
           clientName: client.clientName || 'Não informado',
           engineer: client.engineer || 'Não informado',
+          program: client.program || null,
           status: client.status || client.analyticalStatus || 'Não informado',
           currentCycle,
           renewed: currentCycle != null ? currentCycle > 1 : null,
@@ -16641,6 +16981,7 @@ ${dataRows}
       const clients = renewalState.payload?.clients || [];
       const q = (rFilters.search?.value || '').trim().toLowerCase();
       return clients.filter(c => {
+        if (!globalProgramMatches(c)) return false;
         if (q && !`${c.clientName} ${c.clientCode} ${c.clientId} ${c.engineer}`.toLowerCase().includes(q)) return false;
         if (rFilters.engineer?.value !== 'all' && c.engineer !== rFilters.engineer.value) return false;
         if (rFilters.renewed?.value === 'yes' && c.renewed !== true) return false;
@@ -16651,8 +16992,16 @@ ${dataRows}
     }
     function renderRenewal() {
       if (!renewalState.payload) return;
-      const summary = renewalState.payload.summary || {};
       const rows = filteredRenewalClients();
+      const renewedClients = rows.filter((row) => row.renewed === true).length;
+      const summary = {
+        totalClients: rows.length,
+        renewedClients,
+        notRenewedClients: rows.length - renewedClients,
+        renewedPercent: rows.length ? renewedClients / rows.length * 100 : 0,
+        totalRenewals: rows.reduce((sum, row) => sum + (row.renewalCount || 0), 0),
+        maxCycle: rows.reduce((max, row) => Math.max(max, row.currentCycle || 0), 0)
+      };
       document.querySelector('#rKpis').innerHTML = `
         <article class="metric highlight"><div class="metric-label">Renovaram</div><div class="metric-value">${fmt.format(summary.renewedClients || 0)}</div><div class="metric-note">${pct(summary.renewedPercent || 0)} - Ciclo > 1</div></article>
         <article class="metric"><div class="metric-label">Quantidade de renovações</div><div class="metric-value">${fmt.format(summary.totalRenewals || 0)}</div><div class="metric-note">Ciclo atual menos 1 por cliente</div></article>
@@ -16890,6 +17239,7 @@ ${dataRows}
       const q = (perfFilters.search?.value || '').trim().toLowerCase();
       const band = perfFilters.cancelBand?.value || 'all';
       return (performanceState.payload?.rows || []).filter(row => {
+        if (!globalProgramMatches(row)) return false;
         if (q && !row.engineer.toLowerCase().includes(q)) return false;
         if (band === 'low' && row.churnRate > 10) return false;
         if (band === 'medium' && (row.churnRate <= 10 || row.churnRate > 25)) return false;
@@ -18330,7 +18680,7 @@ ${dataRows}
           return;
         }
         const panel = table.closest('.table-panel,.chart-card,.indicator-matrix');
-        const existingHost = panel?.querySelector('.export-host') || table.closest('.view')?.querySelector('.export-host');
+        const existingHost = panel?.querySelector(':scope > .section-head .export-host, :scope > .export-host');
         if (existingHost) {
           table.dataset.exportCovered = '1';
           return;

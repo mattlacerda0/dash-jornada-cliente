@@ -6,7 +6,7 @@ import {
 } from "./_shared/first-meeting-fallback.mjs";
 
 const CLIENT_SELECT =
-  "id,codigo,name,data_inicio_ciclo,created_at,status,engenheiro_patrimonial,cpf,cpf_digits,email,phone,phone_digits";
+  "id,codigo,name,data_inicio_ciclo,created_at,status,engenheiro_patrimonial,programa,cpf,cpf_digits,email,phone,phone_digits";
 const PHARUS_EVENTS_SELECT = "*";
 
 function configurationError() {
@@ -434,6 +434,7 @@ async function buildPayload() {
       clientName: blankToNull(client.name) || "Não informado",
       status: blankToNull(client.status) || "Não informado",
       engineer: blankToNull(client.engenheiro_patrimonial) || "Não informado",
+      program: blankToNull(client.programa),
       contractDate: contractDate?.toISOString() || null,
       firstMeetingDate: firstMeeting?.toISOString() || null,
       firstFinancialDataDate: firstFinancialData?.toISOString() || null,

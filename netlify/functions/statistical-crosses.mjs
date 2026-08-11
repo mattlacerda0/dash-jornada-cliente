@@ -430,8 +430,12 @@ function applyPopulationFilters(clients, filters = {}, now = new Date()) {
   const cycleFilter = filters.currentCycle != null && filters.currentCycle !== "" && filters.currentCycle !== "all"
     ? parseCycleNumber(filters.currentCycle)
     : null;
+  const programs = new Set((Array.isArray(filters.programs) ? filters.programs : [])
+    .map((value) => String(value || "").trim().toLowerCase())
+    .filter(Boolean));
 
   return clients.filter((c) => {
+    if (programs.size && !programs.has(String(c.program || "").trim().toLowerCase())) return false;
     if (filters.status && filters.status !== "all") {
       if (filters.status === "active" && !c.isActive) return false;
       if (filters.status === "cancelled" && !c.isCancelled) return false;
@@ -1762,6 +1766,7 @@ function parseFiltersFromRequest(request) {
       cohortPeriod: (get("cohortPeriod") || "since_2025_01").toLowerCase(),
       cohortHireFrom: get("cohortHireFrom") || null,
       cohortHireTo: get("cohortHireTo") || null,
+      programs: (get("programs") || "").split(",").map((value) => value.trim()).filter(Boolean),
     };
   } catch {
     return { status: "active_cancelled", minSample: MIN_GROUP };

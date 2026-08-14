@@ -1069,6 +1069,27 @@ def cancellations_payload():
     return json.loads(result.stdout)
 
 
+def satisfaction_payload(query_string=""):
+    """Pesquisa de satisfacao com filtros de programa e trimestre."""
+    env = os.environ.copy()
+    env["PORTAL_INTERNAL_DATA_RUN"] = "1"
+    if query_string:
+        env["PORTAL_REQUEST_QUERY"] = query_string.lstrip("?")
+    result = subprocess.run(
+        [NODE_EXECUTABLE, str(ROOT / "run_satisfaction_api.mjs")],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        env=env,
+        timeout=300,
+    )
+    if result.returncode != 0:
+        detail = (result.stderr or result.stdout or "falha ao gerar satisfaction").strip()
+        raise RuntimeError(detail[:240])
+    return json.loads(result.stdout)
+
+
 def temporal_indicators_payload():
     """Reaproveita a consolidacao dos indicadores temporais da Netlify Function."""
     env = os.environ.copy()
@@ -1218,6 +1239,7 @@ class Handler(SimpleHTTPRequestHandler):
             "/api/pharus-ep-meetings": ("pharus-ep-meetings", pharus_ep_meetings_payload, "Não foi possível consolidar as reuniões do App Pharus"),
             "/api/statistical-crosses": ("statistical-crosses", statistical_crosses_payload, "Não foi possível consolidar os cruzamentos estatísticos"),
             "/api/cancellations": ("cancellations", cancellations_payload, "Não foi possível consolidar os cancelamentos"),
+            "/api/satisfaction": ("satisfaction", satisfaction_payload, "Nao foi possivel consolidar a pesquisa de satisfacao"),
             "/api/temporal-indicators": ("temporal-indicators", temporal_indicators_payload, "Nao foi possivel consolidar os indicadores temporais"),
         }
         if path in protected:
@@ -1229,7 +1251,7 @@ class Handler(SimpleHTTPRequestHandler):
             label, producer, err_msg = protected[path]
             started = datetime.now(timezone.utc)
             try:
-                if path == "/api/statistical-crosses":
+                if path in ("/api/statistical-crosses", "/api/satisfaction"):
                     qs = urlparse(self.path).query or ""
                     send_json(self, 200, producer(qs))
                 else:

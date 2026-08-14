@@ -354,7 +354,20 @@ export function buildEpPerformanceFromPayloads(generalPayload, meetingsPayload, 
   const programsByClientId = cycleAudit?.programsByClientId || {};
 
   const { rows: npsConsolidated, meta: npsMeta } = dedupeNpsResponses(options.npsRows || []);
+  const npsQuarterKey = (value) => {
+    const date = parseDate(value);
+    return date ? `${date.getUTCFullYear()} T${Math.floor(date.getUTCMonth() / 3) + 1}` : null;
+  };
+  const latestNpsQuarter = npsConsolidated
+    .map((row) => npsQuarterKey(row.submittedAt || row.createdAt))
+    .filter(Boolean)
+    .sort()
+    .at(-1) || null;
+  const npsQuarterRows = latestNpsQuarter
+    ? npsConsolidated.filter((row) => npsQuarterKey(row.submittedAt || row.createdAt) === latestNpsQuarter)
+    : [];
   const npsByClient = new Map(npsConsolidated.map((r) => [r.clientId, r]));
+  const npsQuarterByClient = new Map(npsQuarterRows.map((r) => [r.clientId, r]));
 
   const mechanismsByClient = new Map(
     (Array.isArray(options.mechanismsPayload?.clients) ? options.mechanismsPayload.clients : []).map((c) => [
@@ -508,6 +521,7 @@ export function buildEpPerformanceFromPayloads(generalPayload, meetingsPayload, 
     }
 
     const npsRow = npsByClient.get(clientId);
+    const npsQuarterRow = npsQuarterByClient.get(clientId);
     if (npsRow && engineerIsBlank(engineer)) {
       npsThemeMessages.push(`Cliente ${clientId} com NPS sem EP informado.`);
     }
@@ -533,6 +547,8 @@ export function buildEpPerformanceFromPayloads(generalPayload, meetingsPayload, 
       hireDate: client.acquisitionDate || client.hireDate || client.contractDate || cycleStart,
       npsScore: npsRow?.score ?? null,
       npsSubmittedAt: npsRow?.submittedAt ?? null,
+      npsQuarterScore: npsQuarterRow?.score ?? null,
+      npsQuarterSubmittedAt: npsQuarterRow?.submittedAt ?? null,
       implementedMechanisms,
       implementedMechanismDetails: implDetails,
       hasImplementedMechanism: implementedMechanisms > 0,
@@ -607,6 +623,8 @@ export function buildEpPerformanceFromPayloads(generalPayload, meetingsPayload, 
 
       const npsScores = clients.map((c) => c.npsScore).filter((n) => n != null && Number.isFinite(Number(n)));
       const npsBreakdown = computeNpsBreakdown(npsScores);
+      const npsQuarterScores = clients.map((c) => c.npsQuarterScore).filter((n) => n != null && Number.isFinite(Number(n)));
+      const npsQuarterBreakdown = computeNpsBreakdown(npsQuarterScores);
       const npsSample = npsSampleBadge(npsBreakdown.responses);
       const npsEligible = npsBreakdown.responses >= NPS_MIN_RESPONSES_PER_EP;
       const npsRespondentClients = npsBreakdown.responses;
@@ -686,6 +704,8 @@ export function buildEpPerformanceFromPayloads(generalPayload, meetingsPayload, 
         npsMeanScore: npsBreakdown.responses > 0 ? npsBreakdown.meanScore : null,
         npsRespondentClients,
         npsResponses: npsRespondentClients,
+        npsQuarter: npsQuarterBreakdown.responses > 0 ? npsQuarterBreakdown.nps : null,
+        npsQuarterResponses: npsQuarterBreakdown.responses,
         npsCoverage,
         npsPortfolioCoverage: npsCoverage,
         npsPromoters: npsBreakdown.promoters,
@@ -1007,6 +1027,7 @@ export function buildEpPerformanceFromPayloads(generalPayload, meetingsPayload, 
 
   return {
     generatedAt: new Date().toISOString(),
+    latestNpsQuarter,
     source: "BASE QV",
     attribution: "current_engineer_only",
     attributionNote:

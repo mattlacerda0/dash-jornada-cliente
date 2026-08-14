@@ -7,6 +7,7 @@ import {
   resolveAnalyticalStatus,
 } from "./_shared/analytical-cancellation.mjs";
 import { matchPharusToBaseQv } from "./_shared/identity-match.mjs";
+import { excludedClientIds, filterExcludedClients } from "./_shared/data-exclusions.mjs";
 
 const CLIENT_SELECT =
   "id,codigo,name,status,engenheiro_patrimonial,data_inicio_ciclo,created_at,data_churn,email,phone,cpf,cpf_digits,phone_digits";
@@ -1036,13 +1037,19 @@ export async function computeMechanismsPayload() {
     err.code = "config";
     throw err;
   }
-  const [clients, cmRows, mechanisms, cancellations, financialRows] = await Promise.all([
+  const [clientsRaw, cmRowsRaw, mechanisms, cancellationsRaw, financialRowsRaw] = await Promise.all([
     fetchAll("clients", CLIENT_SELECT),
     fetchAll("client_mecanismos", CM_SELECT, "client_id.asc"),
     fetchAll("mecanismos", MEC_SELECT),
     fetchAll("cancellations", CANCEL_SELECT),
     fetchAll("client_financial_data", FINANCIAL_SELECT),
   ]);
+  const clients = filterExcludedClients(clientsRaw);
+  const removedIds = excludedClientIds(clientsRaw);
+  const keepClient = (row) => !removedIds.has(String(row?.client_id || ""));
+  const cmRows = cmRowsRaw.filter(keepClient);
+  const cancellations = cancellationsRaw.filter(keepClient);
+  const financialRows = financialRowsRaw.filter(keepClient);
   const payload = buildPayload(clients, cmRows, mechanisms, cancellations, financialRows);
 
   // Cobertura cruzada BASE QV × App Pharus (pessoas, não mecanismos)

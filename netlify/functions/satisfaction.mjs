@@ -1,5 +1,6 @@
 import { requireCorporateAuth } from "./_shared/auth.mjs";
 import { dataConfigurationError, getDataEnv } from "./_shared/env.mjs";
+import { excludedClientIds, filterExcludedClients, isExcludedClient } from "./_shared/data-exclusions.mjs";
 
 const USED_FIELDS = [
   { table: "nps_responses", column: "id", role: "npsResponseId" },
@@ -53,6 +54,98 @@ function average(values) {
 
 function monthKey(date) {
   return `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, "0")}`;
+}
+
+function quarterKey(date) {
+  return `${date.getUTCFullYear()} T${Math.floor(date.getUTCMonth() / 3) + 1}`;
+}
+
+function npsClassLabel(score) {
+  if (score == null || !Number.isFinite(Number(score))) return null;
+  if (Number(score) >= 9) return "Promotor";
+  if (Number(score) >= 7) return "Neutro";
+  return "Detrator";
+}
+
+function latestNpsPerClient(rows) {
+  const latest = new Map();
+  for (const row of rows) {
+    const clientId = blankToNull(row.client_id);
+    const date = parseDate(row.created_at);
+    if (!clientId || !date) continue;
+    const current = latest.get(clientId);
+    if (!current || date > parseDate(current.created_at)) latest.set(clientId, row);
+  }
+  return [...latest.values()];
+}
+
+function buildNpsQuarterly(rows) {
+  const buckets = new Map();
+  for (const row of rows) {
+    const date = parseDate(row.created_at);
+    if (!date) continue;
+    const quarter = quarterKey(date);
+    if (!buckets.has(quarter)) buckets.set(quarter, []);
+    buckets.get(quarter).push(row);
+  }
+  return [...buckets.entries()].sort(([a], [b]) => a.localeCompare(b)).map(([quarter, quarterRows]) => {
+    const clientRows = latestNpsPerClient(quarterRows);
+    const scores = clientRows.map((row) => npsScore(row.score)).filter((score) => score != null);
+    return {
+      quarter, label: quarter, responses: quarterRows.length, distinctClients: clientRows.length,
+      nps: calcNps(scores),
+      promoters: scores.filter((score) => score >= 9).length,
+      neutrals: scores.filter((score) => score >= 7 && score <= 8).length,
+      detractors: scores.filter((score) => score <= 6).length,
+    };
+  });
+}
+
+function buildNpsTransitions(rows, clientMap) {
+  const byClientQuarter = new Map();
+  for (const row of rows) {
+    const clientId = blankToNull(row.client_id);
+    const date = parseDate(row.created_at);
+    if (!clientId || !date) continue;
+    const quarter = quarterKey(date);
+    const key = `${clientId}|${quarter}`;
+    const current = byClientQuarter.get(key);
+    if (!current || date > parseDate(current.created_at)) byClientQuarter.set(key, row);
+  }
+  const histories = new Map();
+  for (const [key, row] of byClientQuarter) {
+    const separator = key.lastIndexOf("|");
+    const clientId = key.slice(0, separator);
+    const quarter = key.slice(separator + 1);
+    if (!histories.has(clientId)) histories.set(clientId, []);
+    histories.get(clientId).push({ quarter, row });
+  }
+  const transitions = [];
+  for (const [clientId, history] of histories) {
+    history.sort((a, b) => a.quarter.localeCompare(b.quarter));
+    for (let index = 1; index < history.length; index += 1) {
+      const previous = history[index - 1];
+      const current = history[index];
+      const fromClass = npsClassLabel(previous.row.score);
+      const toClass = npsClassLabel(current.row.score);
+      if (!fromClass || !toClass || fromClass === toClass) continue;
+      const client = clientMap.get(clientId) || {};
+      transitions.push({
+        clientId,
+        clientName: client.name || current.row.client_name || "Não informado",
+        clientEmail: client.email || current.row.client_email || "Não informado",
+        engineer: client.engenheiro_patrimonial || "Não informado",
+        program: client.programa || "Não identificado",
+        fromQuarter: previous.quarter,
+        toQuarter: current.quarter,
+        fromClass,
+        toClass,
+        fromScore: npsScore(previous.row.score),
+        toScore: npsScore(current.row.score),
+      });
+    }
+  }
+  return transitions;
 }
 
 function npsScore(score) {
@@ -279,13 +372,17 @@ export default async function handler(request) {
   try {
     const requestUrl = new URL(request.url);
     const programFilter = requestUrl.searchParams.get("program") || "all";
+    const quarterFilter = requestUrl.searchParams.get("quarter") || "latest";
     const [rawNpsRows, rawCsatRows, npsSends, clientRows] = await Promise.all([
       fetchAll("nps_responses", "id,typeform_response_id,typeform_form_id,client_id,client_name,client_email,tipo_de_forms,score,comment,raw_payload,created_at", "created_at.asc"),
       fetchAll("csat_responses", "id,typeform_response_id,form_response_id,typeform_form_id,client_id,client_name,client_email,tipo_de_forms,score,comment,raw_payload,created_at,meeting_date", "created_at.asc"),
       fetchAll("nps_sends", "id,client_id,sent_at,created_at", "created_at.asc"),
-      fetchAll("clients", "id,programa", "id.asc"),
+      fetchAll("clients", "id,name,email,engenheiro_patrimonial,programa", "id.asc"),
     ]);
-    const clientPrograms = buildClientProgramMap(clientRows);
+    const removedIds = excludedClientIds(clientRows);
+    const cleanClientRows = filterExcludedClients(clientRows);
+    const clientPrograms = buildClientProgramMap(cleanClientRows);
+    const clientMap = new Map(cleanClientRows.map((client) => [String(client.id), client]));
 
     const matchesProgram = (row) => {
       const program = resolvedProgram(row, clientPrograms);
@@ -293,15 +390,26 @@ export default async function handler(request) {
       if (programFilter === "unknown") return !program;
       return program === programFilter;
     };
-    const filteredRawNpsRows = rawNpsRows.filter(matchesProgram);
-    const filteredRawCsatRows = rawCsatRows.filter(matchesProgram);
-    const npsRows = dedupeByKey(filteredRawNpsRows, ["typeform_response_id", "id"]).filter((row) => npsScore(row.score) != null);
-    const csatRows = dedupeByKey(filteredRawCsatRows.filter(isCsat), ["typeform_response_id", "form_response_id", "id"]).filter((row) => csatScore(row.score) != null);
+    const filteredRawNpsRows = rawNpsRows.filter((row) => matchesProgram(row) && !removedIds.has(String(row.client_id || "")) && !isExcludedClient(row));
+    const filteredRawCsatRows = rawCsatRows.filter((row) => matchesProgram(row) && !removedIds.has(String(row.client_id || "")) && !isExcludedClient(row));
+    const allNpsRows = dedupeByKey(filteredRawNpsRows, ["typeform_response_id", "id"]).filter((row) => npsScore(row.score) != null);
+    const npsQuarterly = buildNpsQuarterly(allNpsRows);
+    const selectedQuarter = quarterFilter === "latest" ? (npsQuarterly.at(-1)?.quarter || null) : quarterFilter;
+    const npsRows = latestNpsPerClient(allNpsRows.filter((row) => {
+      const date = parseDate(row.created_at);
+      return date && selectedQuarter && quarterKey(date) === selectedQuarter;
+    }));
+    const allCsatRows = dedupeByKey(filteredRawCsatRows.filter(isCsat), ["typeform_response_id", "form_response_id", "id"]).filter((row) => csatScore(row.score) != null);
+    const csatRows = allCsatRows.filter((row) => {
+      const date = parseDate(row.created_at);
+      return date && selectedQuarter && quarterKey(date) === selectedQuarter;
+    });
     const npsScores = npsRows.map((row) => npsScore(row.score)).filter((score) => score != null);
     const csatScores = csatRows.map((row) => csatScore(row.score)).filter((score) => score != null);
     const latestNps = [...npsRows].sort((a, b) => parseDate(b.created_at) - parseDate(a.created_at))[0] || null;
     const latestNpsScore = latestNps ? npsScore(latestNps.score) : null;
-    const npsMonthly = buildNpsMonthly(npsRows);
+    const npsMonthly = buildNpsMonthly(allNpsRows);
+    const npsTransitions = buildNpsTransitions(allNpsRows, clientMap);
     const totalNpsResponses = npsRows.length;
     const totalCsatResponses = csatRows.length;
     const totalNpsSends = programFilter === "all" ? npsSends.length : 0;
@@ -336,6 +444,7 @@ export default async function handler(request) {
         generatedAt: new Date().toISOString(),
         filters: {
           program: programFilter,
+          quarter: selectedQuarter,
         },
         summary,
         distributions: {
@@ -349,7 +458,9 @@ export default async function handler(request) {
             { label: "Não satisfeitos (1-4)", count: Math.max(0, totalCsatResponses - satisfiedCsat), percent: pct(Math.max(0, totalCsatResponses - satisfiedCsat), totalCsatResponses) },
           ],
           npsMonthly,
+          npsQuarterly,
         },
+        npsTransitions,
         clients,
         indicators: [
           indicator("NPS", "Sim", totalNpsResponses, totalNpsResponses, "Promotores% - Detratores% usando nps_responses.score."),

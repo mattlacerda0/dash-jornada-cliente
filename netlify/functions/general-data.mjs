@@ -18,6 +18,7 @@ import {
   stayMonthsFromDays,
   stayRangeFromMonths as stayRangeFromMonthsShared,
 } from "./_shared/client-tenure.mjs";
+import { excludedClientIds, filterExcludedClients } from "./_shared/data-exclusions.mjs";
 
 const CLIENT_SELECT =
   "id,codigo,name,data_inicio_ciclo,data_fim_ciclo,created_at,status,segmentacao,engenheiro_patrimonial,data_churn,ciclo,programa,valor_total_pago,contrato_assinado,davos_contrato_assinado";
@@ -1188,15 +1189,19 @@ export async function computeGeneralDataPayload() {
     err.code = "config";
     throw err;
   }
-  const [clients, cancellations, financialRows, signatureResult] = await Promise.all([
+  const [clientsRaw, cancellations, financialRowsRaw, signatureResult] = await Promise.all([
     fetchAll("clients", CLIENT_SELECT),
     fetchAll("cancellations", CANCEL_SELECT),
     fetchAll("client_financial_data", FINANCIAL_SELECT),
     fetchSignatureMap(),
   ]);
+  const removedIds = excludedClientIds(clientsRaw);
+  const clients = filterExcludedClients(clientsRaw);
+  const financialRows = financialRowsRaw.filter((row) => !removedIds.has(String(row.client_id || "")));
+  const filteredCancellations = cancellations.filter((row) => !removedIds.has(String(row.client_id || "")));
   return buildPayload(
     clients,
-    cancellations,
+    filteredCancellations,
     financialRows,
     signatureResult.map,
     {

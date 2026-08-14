@@ -32,12 +32,13 @@ import {
 } from "./_shared/cancellation-process.mjs";
 import { buildOrEvidenceGroup, statusNameMatches } from "./_shared/or-evidence.mjs";
 import { applyRenewalTenureAdjustment, stayMonthsFromDays } from "./_shared/client-tenure.mjs";
+import { excludedClientIds, filterExcludedClients } from "./_shared/data-exclusions.mjs";
 
 const STATUS_DIM_SELECT = "id,name,color,display_order,status_type,funnel_type,created_at";
 const STATUS_UNKNOWN_LABEL = "Status não informado";
 
 const CLIENT_SELECT =
-  "id,codigo,name,status,data_inicio_ciclo,created_at,engenheiro_patrimonial,segmentacao,motivo_churn,data_churn,ciclo";
+  "id,codigo,name,email,status,data_inicio_ciclo,created_at,engenheiro_patrimonial,segmentacao,motivo_churn,data_churn,ciclo";
 const CANCEL_SELECT = CANCELLATION_PROCESS_SELECT;
 const FINANCIAL_SELECT =
   "id,client_id,ultima_renda_mensal,ultimo_aporte,reserva_liquidez,valor_imoveis_quitados,cheque_especial,parcelamento_cartao,credito_pessoal,credito_consignado,created_at,updated_at";
@@ -1212,6 +1213,23 @@ function buildPayload(
 
   const byReasonCategoryEfetivado = distributionFrom(efetivados, (r) => r.reasonCategory || r.category);
   const topReasonCategory = byReasonCategoryEfetivado[0]?.label || null;
+  const cancellationReasonsBySemester = (() => {
+    const semesters = new Map();
+    for (const row of efetivados) {
+      const date = parseFlexibleDate(row.cancellationDate);
+      if (!date) continue;
+      const semester = `${date.getUTCFullYear()} S${date.getUTCMonth() < 6 ? 1 : 2}`;
+      if (!semesters.has(semester)) semesters.set(semester, []);
+      semesters.get(semester).push(row);
+    }
+    return [...semesters.entries()]
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([semester, semesterRows]) => ({
+        semester,
+        total: semesterRows.length,
+        reasons: distributionFrom(semesterRows, (row) => row.reasonCategory || row.category),
+      }));
+  })();
 
   const stayStats = robustStats(efetivados.map((r) => r.daysToCancellation));
   const meetingStats = robustStats(efetivados.map((r) => r.meetingsBeforeCancellation));
@@ -1518,6 +1536,7 @@ function buildPayload(
       byReason: distributionFrom(efetivados, (r) => (r.hasReason ? r.reason : null)),
       byCategory: byReasonCategoryEfetivado,
       byReasonCategory: byReasonCategoryEfetivado,
+      byReasonSemester: cancellationReasonsBySemester,
       byReasonCategoryByStage: {
         all: distributionFrom(rows, (r) => r.reasonCategory || r.category),
         intencao: distributionFrom(
@@ -1587,7 +1606,7 @@ export async function computeCancellationsPayload() {
     err.code = "config";
     throw err;
   }
-  const [clients, cancellations, financialRows, calendlyRows, manualRows, attendanceRows, statusRows] =
+  const [clientsRaw, cancellationsRaw, financialRowsRaw, calendlyRowsRaw, manualRowsRaw, attendanceRows, statusRows] =
     await Promise.all([
       fetchAll("clients", CLIENT_SELECT),
       fetchAll("cancellations", CANCEL_SELECT),
@@ -1597,6 +1616,13 @@ export async function computeCancellationsPayload() {
       fetchAll("meeting_attendance", ATTENDANCE_SELECT),
       fetchAll("cancellation_statuses", STATUS_DIM_SELECT, "display_order.asc"),
     ]);
+  const clients = filterExcludedClients(clientsRaw);
+  const removedIds = excludedClientIds(clientsRaw);
+  const keepClient = (row) => !removedIds.has(String(row?.client_id || ""));
+  const cancellations = cancellationsRaw.filter(keepClient);
+  const financialRows = financialRowsRaw.filter(keepClient);
+  const calendlyRows = calendlyRowsRaw.filter(keepClient);
+  const manualRows = manualRowsRaw.filter(keepClient);
   return buildPayload(
     clients,
     cancellations,

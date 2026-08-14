@@ -14,6 +14,7 @@ import {
   normalizeMeetingEventType,
 } from "./_shared/meeting-event-type.mjs";
 import { loadMeetingTypesFromCalendly } from "./_shared/meeting-types-calendly.mjs";
+import { excludedClientIds, filterExcludedClients } from "./_shared/data-exclusions.mjs";
 
 const CLIENT_SELECT =
   "id,codigo,name,status,engenheiro_patrimonial,programa,data_inicio_ciclo,created_at,cpf,cpf_digits,email,phone,phone_digits,data_churn";
@@ -1006,7 +1007,7 @@ export async function computeMeetingsPayload(options = {}) {
     err.code = "config";
     throw err;
   }
-  const [clients, calendlyRows, manualRows, attendanceRows, implRows, cancellations, airtableIndex, meetingTypes] = await Promise.all([
+  const [clientsRaw, calendlyRowsRaw, manualRowsRaw, attendanceRows, implRowsRaw, cancellationsRaw, airtableIndex, meetingTypes] = await Promise.all([
     fetchAll("clients", CLIENT_SELECT),
     fetchAll("client_meetings", CALENDLY_SELECT),
     fetchAll("manual_meetings", MANUAL_SELECT),
@@ -1026,6 +1027,14 @@ export async function computeMeetingsPayload(options = {}) {
       ? Promise.resolve(null)
       : loadMeetingTypesFromCalendly(),
   ]);
+
+  const clients = filterExcludedClients(clientsRaw);
+  const removedIds = excludedClientIds(clientsRaw);
+  const keepClient = (row) => !removedIds.has(String(row?.client_id || ""));
+  const calendlyRows = calendlyRowsRaw.filter(keepClient);
+  const manualRows = manualRowsRaw.filter(keepClient);
+  const implRows = implRowsRaw.filter(keepClient);
+  const cancellations = cancellationsRaw.filter(keepClient);
 
   return buildPayload(clients, calendlyRows, manualRows, attendanceRows, implRows, cancellations, airtableIndex, meetingTypes);
 }

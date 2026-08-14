@@ -5,12 +5,14 @@ import {
   buildAnalyticalCancellationMap,
   resolveAnalyticalStatus,
 } from "./_shared/analytical-cancellation.mjs";
+import { excludedClientIds, filterExcludedClients } from "./_shared/data-exclusions.mjs";
 
 const CLIENT_SELECT =
-  "id,codigo,name,status,engenheiro_patrimonial,programa,data_churn";
+  "id,codigo,name,email,status,engenheiro_patrimonial,programa,data_churn";
 const FINANCIAL_SELECT =
   "id,client_id,reserva_liquidez,ultima_renda_mensal,ultimo_aporte,possui_imovel,possui_carro,possui_consorcio,created_at,updated_at";
 const CANCEL_SELECT = ANALYTICAL_CANCEL_SELECT;
+const MEETING_SELECT = "id,client_id,event_name,start_time";
 
 const USED_FIELDS = [
   { table: "clients", column: "id", role: "clientId" },
@@ -220,6 +222,61 @@ function average(nums) {
   return Math.round((nums.reduce((a, b) => a + b, 0) / nums.length) * 10) / 10;
 }
 
+function median(nums) {
+  if (!nums.length) return null;
+  const sorted = [...nums].sort((a, b) => a - b);
+  const middle = Math.floor(sorted.length / 2);
+  return sorted.length % 2 ? sorted[middle] : round1((sorted[middle - 1] + sorted[middle]) / 2);
+}
+
+function fold(value) {
+  return String(value || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+}
+
+function financialToActivationSummary(clients, financialRows, meetingRows) {
+  const allowedIds = new Set(clients.map((client) => String(client.id)));
+  const firstFinancial = new Map();
+  const activations = new Map();
+  for (const row of financialRows) {
+    const clientId = String(row.client_id || "");
+    const date = parseDate(row.created_at);
+    if (!allowedIds.has(clientId) || !date) continue;
+    if (!firstFinancial.has(clientId) || date < firstFinancial.get(clientId)) firstFinancial.set(clientId, date);
+  }
+  for (const row of meetingRows) {
+    const clientId = String(row.client_id || "");
+    const date = parseDate(row.start_time);
+    if (!allowedIds.has(clientId) || !date || !fold(row.event_name).includes("ativacao das engrenagens")) continue;
+    if (!activations.has(clientId)) activations.set(clientId, []);
+    activations.get(clientId).push(date);
+  }
+  const days = [];
+  const byClient = {};
+  let clientsWithBothSources = 0;
+  let negativePairs = 0;
+  for (const [clientId, financialDate] of firstFinancial) {
+    const meetings = (activations.get(clientId) || []).sort((a, b) => a - b);
+    if (!meetings.length) continue;
+    clientsWithBothSources += 1;
+    if (meetings[0] < financialDate) negativePairs += 1;
+    const firstValid = meetings.find((date) => date >= financialDate);
+    if (firstValid) {
+      const value = daysBetween(financialDate, firstValid);
+      days.push(value);
+      byClient[clientId] = value;
+    }
+  }
+  return {
+    medianDays: median(days),
+    averageDays: average(days),
+    sampleSize: days.length,
+    clientsWithBothSources,
+    excludedNegativePairs: negativePairs,
+    byClient,
+    rule: "primeira reunião de Ativação das Engrenagens em/apos a primeira client_financial_data.created_at",
+  };
+}
+
 function percentile(sorted, p) {
   if (!sorted.length) return null;
   if (sorted.length === 1) return sorted[0];
@@ -415,12 +472,13 @@ function buildMonthSeries(rows, now, monthsBack) {
   }));
 }
 
-function buildPayload(clients, financialRows, cancellations) {
+function buildPayload(clients, financialRows, cancellations, meetingRows = []) {
   const now = new Date();
   const today = startOfDay(now);
   const { map: cancelMap } = buildAnalyticalCancellationMap(cancellations, clients);
   const { byClient, counts, multiples, rowsWithoutClientId } = buildFinancialMap(financialRows);
   const timestampAudit = auditFinancialTimestamps(financialRows);
+  const financialToActivation = financialToActivationSummary(clients, financialRows, meetingRows);
   const clientIds = new Set(clients.map((c) => String(c.id)));
 
   const qualityWarnings = [];
@@ -575,6 +633,7 @@ function buildPayload(clients, financialRows, cancellations) {
       filledFinancialFields,
       totalFinancialFields: TOTAL_FINANCIAL_FIELDS,
       recencyBand: recencyBand(daysSinceFinancialUpdate, hasFinancialData, hasPostCreationUpdate),
+      daysFinancialToActivation: financialToActivation.byClient[clientId] ?? null,
       dataWarnings,
     });
   }
@@ -676,6 +735,7 @@ function buildPayload(clients, financialRows, cancellations) {
       note:
         "Atualização = updated_at > created_at. A criação inicial não conta. Sem histórico de eventos: o indicador reflete clientes com registro alterado após a criação.",
       updateRule: "updated_at > created_at",
+      financialToActivation,
     },
     distributions: {
       updateRecency,
@@ -726,12 +786,17 @@ export async function computeFinancialUpdatesPayload() {
     throw err;
   }
   await probeFinancialTable();
-  const [{ rows: financialRows, warnings: fetchWarnings }, clients, cancellations] = await Promise.all([
+  const [{ rows: financialRowsRaw, warnings: fetchWarnings }, clientsRaw, cancellations, meetingRowsRaw] = await Promise.all([
     fetchFinancialRowsResilient(),
     fetchAll("clients", CLIENT_SELECT),
     fetchAll("cancellations", CANCEL_SELECT),
+    fetchAll("client_meetings", MEETING_SELECT, "start_time.asc"),
   ]);
-  const payload = buildPayload(clients, financialRows, cancellations);
+  const removedIds = excludedClientIds(clientsRaw);
+  const clients = filterExcludedClients(clientsRaw);
+  const financialRows = financialRowsRaw.filter((row) => !removedIds.has(String(row.client_id || "")));
+  const meetingRows = meetingRowsRaw.filter((row) => !removedIds.has(String(row.client_id || "")));
+  const payload = buildPayload(clients, financialRows, cancellations, meetingRows);
   if (fetchWarnings.length) {
     payload.warnings = [...(payload.warnings || []), ...fetchWarnings];
     payload.quality = payload.quality || {};

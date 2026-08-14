@@ -1,5 +1,6 @@
 import { getPharusSupabaseClient } from "./_shared/env.mjs";
 import { fetchPharusDemoIdentities, filterPharusDemoRows } from "./_shared/pharus-demo-filter.mjs";
+import { excludedClientIds, filterExcludedClients } from "./_shared/data-exclusions.mjs";
 import {
   applyFirstMeetingFallbackToClientRows,
   loadAirtableFirstMeetingIndex,
@@ -353,7 +354,7 @@ function transitionDurations(journeysByClient, stagesById) {
 
 async function buildPayload() {
   const warnings = [];
-  const [clients, airtableIndex, ...sourceEntries] = await Promise.all([
+  const [clientsRaw, airtableIndex, ...sourceEntries] = await Promise.all([
     fetchAll("clients", CLIENT_SELECT),
     loadAirtableFirstMeetingIndex().catch((err) => ({
       available: false,
@@ -366,6 +367,13 @@ async function buildPayload() {
     fetchAllSafe("client_mecanismos"),
     fetchAllSafe("journey_stages"),
   ]);
+  const clients = filterExcludedClients(clientsRaw);
+  const removedIds = excludedClientIds(clientsRaw);
+  for (let index = 0; index < 4; index += 1) {
+    if (Array.isArray(sourceEntries[index])) {
+      sourceEntries[index] = sourceEntries[index].filter((row) => !removedIds.has(String(row?.client_id || "")));
+    }
+  }
   const sourceResults = {
     client_meetings: sourceEntries[0],
     client_journeys: sourceEntries[1],

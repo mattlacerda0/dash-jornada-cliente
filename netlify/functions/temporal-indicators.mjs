@@ -1,4 +1,5 @@
 import { requireCorporateAuth } from "./_shared/auth.mjs";
+import { excludedClientIds, filterExcludedClients, isExcludedClient } from "./_shared/data-exclusions.mjs";
 import { dataConfigurationError, getDataEnv, getPharusEnv, getPharusSupabaseClient } from "./_shared/env.mjs";
 import {
   ANALYTICAL_CANCEL_SELECT,
@@ -666,14 +667,14 @@ export async function computeTemporalIndicatorsPayload() {
   const months = buildMonthWindow(12);
   const monthSet = new Set(months);
   const [
-    clients,
-    cancellations,
-    clientMeetings,
-    manualMeetings,
+    clientsRaw,
+    cancellationsRaw,
+    clientMeetingsRaw,
+    manualMeetingsRaw,
     attendanceRows,
-    mechanisms,
-    financialRows,
-    npsRows,
+    mechanismsRaw,
+    financialRowsRaw,
+    npsRowsRaw,
     pharusEvents,
     pharusPersonalRows,
     pharusAuthRows,
@@ -690,6 +691,16 @@ export async function computeTemporalIndicatorsPayload() {
     fetchPharusPersonalInfo(warnings),
     fetchPharusAuthUsers(warnings),
   ]);
+
+  const clients = filterExcludedClients(clientsRaw);
+  const removedIds = excludedClientIds(clientsRaw);
+  const keepClient = (row) => !removedIds.has(String(row?.client_id || ""));
+  const cancellations = cancellationsRaw.filter(keepClient);
+  const clientMeetings = clientMeetingsRaw.filter(keepClient);
+  const manualMeetings = manualMeetingsRaw.filter(keepClient);
+  const mechanisms = mechanismsRaw.filter(keepClient);
+  const financialRows = financialRowsRaw.filter(keepClient);
+  const npsRows = npsRowsRaw.filter((row) => keepClient(row) && !isExcludedClient(row));
 
   const { map: cancelMap } = buildAnalyticalCancellationMap(cancellations, clients);
 
@@ -714,7 +725,7 @@ export async function computeTemporalIndicatorsPayload() {
 
   const pharusDemoIdentities = await fetchPharusDemoIdentities(warnings);
   const eligiblePharusEvents = filterPharusDemoRows(pharusEvents, pharusDemoIdentities, ["user_id", "userId", "client_id", "distinct_id", "profile_id", "person_id"]);
-  const eligiblePharusPersonalRows = filterPharusDemoRows(pharusPersonalRows, pharusDemoIdentities);
+  const eligiblePharusPersonalRows = filterExcludedClients(filterPharusDemoRows(pharusPersonalRows, pharusDemoIdentities));
   const eligiblePharusAuthRows = (pharusAuthRows || []).filter((row) => !isPharusDemoEmail(row?.email));
   const pharusProfiles = buildPharusProfileMap(eligiblePharusPersonalRows, eligiblePharusAuthRows);
   const pharusCrosswalk = buildPharusClientCrosswalk(clients, pharusProfiles);

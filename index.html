@@ -1589,6 +1589,7 @@
     #view-ep .ep-nps-sort{display:flex;flex-direction:column;gap:4px;flex:0 1 200px;min-width:0;font-size:12px;color:var(--color-text-muted)}
     #view-ep .ep-nps-sort select{width:100%;max-width:100%;box-sizing:border-box}
     #view-ep .ep-nps-list{width:100%;min-width:0;max-height:min(520px,60vh);overflow-x:hidden;overflow-y:auto;padding-right:4px;padding-bottom:12px;scrollbar-width:thin}
+    #view-ep .ep-dual-list{display:grid;gap:14px;margin-top:16px}#view-ep .ep-dual-row{display:grid;grid-template-columns:minmax(160px,240px) minmax(0,1fr);gap:16px;align-items:start}#view-ep .ep-dual-name{font-size:12px;font-weight:700;color:var(--color-text);padding-top:2px}#view-ep .ep-dual-bars{display:grid;gap:7px}#view-ep .ep-dual-line{display:grid;grid-template-columns:72px minmax(0,1fr) 132px;gap:10px;align-items:center;font-size:11px;color:var(--color-text-muted)}#view-ep .ep-dual-track{height:8px;border:1px solid var(--color-border);background:var(--color-surface-2);overflow:hidden}#view-ep .ep-dual-track span{display:block;height:100%;background:var(--color-primary)}#view-ep .ep-dual-line.nps .ep-dual-track span{background:var(--color-info)}#view-ep .ep-dual-value{text-align:right;color:var(--color-text);white-space:nowrap}#view-ep .ep-mechanism-donut .donut-wrap{justify-content:flex-start}
     #view-ep .ep-nps-row{display:grid;grid-template-columns:minmax(220px,1fr) minmax(240px,2fr) minmax(170px,auto);align-items:center;gap:12px;width:100%;min-width:0;margin:10px 0;box-sizing:border-box}
     #view-ep .ep-nps-identification,#view-ep .ep-nps-bar,#view-ep .ep-nps-value{min-width:0}
     #view-ep .ep-nps-name{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;color:var(--color-text-muted);line-height:1.35}
@@ -1729,7 +1730,7 @@
         <button type="button" data-nav="platform"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="12" rx="2"/><path d="M8 20h8"/><path d="M12 16v4"/><rect x="15" y="10" width="6" height="10" rx="1.5"/></svg></span>Uso da Plataforma</button>
         <button type="button" data-nav="financial"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M16 8h-5a2.5 2.5 0 0 0 0 5h2a2.5 2.5 0 0 1 0 5H8"/><path d="M12 6v2"/><path d="M12 16v2"/></svg></span>Atualização Financeira</button>
         <button type="button" class="nav-disabled" data-nav="engagement" aria-disabled="true"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"/><path d="M8 9h8"/><path d="M8 13h5"/></svg></span>Engajamento <span class="help" tabindex="0" data-tip="Tela indisponível: as fontes atuais não têm dados suficientes e confiáveis para calcular os indicadores de engajamento.">?</span></button>
-        <button type="button" data-nav="support"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 14v-3a9 9 0 0 1 18 0v3"/><path d="M21 16v2a2 2 0 0 1-2 2h-1"/><path d="M3 14a2 2 0 0 0 2 2h1v-4H5a2 2 0 0 0-2 2Z"/><path d="M21 14a2 2 0 0 1-2 2h-1v-4h1a2 2 0 0 1 2 2Z"/><path d="M9 18h4a2 2 0 0 1 2 2v0a2 2 0 0 1-2 2h-1"/></svg></span>Atendimento</button>
+        <button type="button" data-nav="support"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 14v-3a9 9 0 0 1 18 0v3"/><path d="M21 16v2a2 2 0 0 1-2 2h-1"/><path d="M3 14a2 2 0 0 0 2 2h1v-4H5a2 2 0 0 0-2 2Z"/><path d="M21 14a2 2 0 0 1-2 2h-1v-4h1a2 2 0 0 1 2 2Z"/><path d="M9 18h4a2 2 0 0 1 2 2v0a2 2 0 0 1-2 2h-1"/></svg></span>Acionamentos</button>
         <button type="button" data-nav="satisfaction"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 2 2.9 6 6.6.9-4.8 4.7 1.1 6.6L12 17.1l-5.8 3.1 1.1-6.6-4.8-4.7 6.6-.9z"/></svg></span>Pesquisa de Satisfação</button>
         <button type="button" data-nav="cancellations"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="m17 8 5 5"/><path d="m22 8-5 5"/></svg></span>Cancelamento (clientes cancelados)</button>
         <button type="button" data-nav="renewal"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 0 1 15.4-6.4L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15.4 6.4L3 16"/><path d="M3 21v-5h5"/></svg></span>Renovação</button>
@@ -2717,7 +2718,7 @@
           <header class="page-header">
             <div>
               <div class="eyebrow">Business Data · research.acionamentos — identificação via v_acionamentos_tratados</div>
-              <h1>Atendimento</h1>
+              <h1>Acionamentos</h1>
               <p>Acionamentos operacionais com área, tipo, prioridade e vínculo de clientes tratados.</p>
             </div>
             <div class="status-actions">
@@ -2960,6 +2961,11 @@
               <div id="cChartReason"></div>
             </article>
             <article class="chart-card cancel-span-all">
+              <h3>Principais motivos por semestre <span class="help" title="Cancelamentos efetivados agrupados pelo semestre da data analítica de cancelamento e pela categoria do motivo.">?</span></h3>
+              <p>Comparação semestral dos motivos registrados na BASE QV.</p>
+              <div id="cChartReasonSemester"></div>
+            </article>
+            <article class="chart-card cancel-span-all">
               <h3>Intenções e cancelamentos efetivados por mês <span class="help" tabindex="0" role="button" aria-label="Sobre as datas do gráfico mensal" data-tip="Intenções usam a data da intenção; efetivados usam a data analítica confirmada (churn_efetivado_at, distrato_assinado_at ou data_churn). Séries independentes — a diferença não é taxa de conversão.">?</span></h3>
               <p>Últimos 12 meses · intenções vs efetivados (datas distintas)</p>
               <div id="cChartMonths"></div>
@@ -3041,6 +3047,7 @@
           <section class="filters general" aria-label="Filtros de pesquisa de satisfação">
             <label>Busca<input id="xSearch" placeholder="Cliente, e-mail ou ID" /></label>
             <select id="xProgram" hidden aria-hidden="true"><option value="all">Todos</option><option value="Pharus">Pharus</option><option value="Davos">Davos</option><option value="unknown">Não identificado</option></select>
+            <label>Trimestre<select id="xQuarter"><option value="latest">Mais recente</option></select></label>
             <label>Classificação NPS<select id="xNpsClass"><option value="all">Todas</option><option value="Promotor">Promotores</option><option value="Neutro">Neutros</option><option value="Detrator">Detratores</option><option value="none">Sem NPS</option></select></label>
             <label>Possui CSAT<select id="xCsat"><option value="all">Todos</option><option value="yes">Sim</option><option value="no">Não</option></select></label>
             <label>Último NPS<select id="xNpsRange"><option value="all">Todas as notas</option><option value="9-10">9-10</option><option value="7-8">7-8</option><option value="0-6">0-6</option><option value="none">Sem nota</option></select></label>
@@ -3053,7 +3060,21 @@
           <section class="charts">
             <article class="chart-card"><h3>Classificação NPS</h3><p>Promotores, neutros e detratores</p><div id="xChartNps"></div></article>
             <article class="chart-card"><h3>CSAT</h3><p>Satisfeitos com nota 5; notas acima de 5 são tratadas como 5</p><div id="xChartCsat"></div></article>
-            <article class="chart-card" style="grid-column:1/-1"><h3>Evolução do NPS</h3><p>NPS mensal calculado por data da resposta</p><div id="xChartNpsMonthly"></div></article>
+            <article class="chart-card" style="grid-column:1/-1"><h3>Evolução trimestral do NPS</h3><p>Uma resposta por cliente em cada trimestre; em duplicidades, prevalece a última resposta.</p><div id="xChartNpsQuarterly"></div></article>
+          </section>
+
+          <section class="table-panel">
+            <div class="section-head" style="margin:0">
+              <div><h2>Mudanças de classificação NPS</h2><p>Clientes que mudaram entre Detrator, Neutro e Promotor de um trimestre para o seguinte disponível.</p></div>
+              <span class="counter" id="xTransitionsCounter"></span>
+            </div>
+            <div class="table-wrap">
+              <table id="xTransitionsTable">
+                <thead><tr><th>Cliente</th><th>Programa</th><th>EP</th><th>Trimestre anterior</th><th>Classe anterior</th><th>Trimestre atual</th><th>Classe atual</th></tr></thead>
+                <tbody id="xTransitionRows"></tbody>
+              </table>
+            </div>
+            <div class="empty" id="xTransitionsEmpty">Ainda não há clientes com respostas em trimestres distintos e mudança de classificação.</div>
           </section>
 
           <section class="table-panel">
@@ -3479,6 +3500,11 @@
           <div class="section-head"><div><h2>Carteira e status</h2><p>Composição da carteira por EP — sem ranking de desempenho.</p></div></div>
           <section class="charts ep-charts">
             <article class="chart-card ep-span-all">
+              <h3>Reuniões e NPS do trimestre por EP <span class="help" tabindex="0" data-tip="Reuniões válidas da carteira e NPS do trimestre mais recente. O NPS usa a última resposta de cada cliente no trimestre e é atribuído ao EP atual.">?</span></h3>
+              <p>Volume de reuniões e NPS trimestral; NPS com menos de 10 respostas é sinalizado como amostra pequena.</p>
+              <div id="epChartMeetingsNpsQuarter"></div>
+            </article>
+            <article class="chart-card ep-span-all">
               <h3>Carteira por EP
                 <span class="help" tabindex="0" data-tip="Cada barra representa a composição da carteira atual do EP. Cancelados efetivados consideram churn efetivado, distrato assinado ou data_churn.">?</span>
               </h3>
@@ -3558,13 +3584,13 @@
           <div class="section-head"><div><h2>Mecanismos utilizados por EP</h2><p>Composição dos mecanismos na carteira de cada Engenheiro Patrimonial.</p></div></div>
           <section class="charts ep-charts">
             <article class="chart-card ep-span-all">
-              <h3>Mecanismos utilizados por EP</h3>
+              <h3>Composição dos mecanismos utilizados por EP</h3>
               <p>
                 <label style="display:inline">Engenheiro Patrimonial
                   <select id="epMechAdvisorSelect"><option value="">Selecione um EP</option></select>
                 </label>
               </p>
-              <div id="epChartMechByAdvisor"></div>
+              <div id="epChartMechByAdvisor" class="ep-mechanism-donut"></div>
             </article>
           </section>
           <div class="section-head"><div><h2>Renovações por ciclo</h2><p>Renovações são calculadas por ciclo: ciclo atual menos 1.
@@ -4203,7 +4229,7 @@
             <article class="chart-card"><h3>Atualização Financeira</h3><p>Indicadores novos da tela financeira</p><div class="indicator-matrix" id="qFinancialMatrix"></div></article>
             <article class="chart-card"><h3>Engajamento</h3><p>Indicadores de respostas, interações e pesquisas</p><div class="indicator-matrix" id="qEngagementMatrix"></div></article>
             <article class="chart-card"><h3>Uso da Plataforma</h3><p>Indicadores calculados pelo App Pharus</p><div class="indicator-matrix" id="qPlatformMatrix"></div></article>
-            <article class="chart-card"><h3>Atendimento</h3><p>Indicadores de acionamentos em research.acionamentos</p><div class="indicator-matrix" id="qSupportMatrix"></div></article>
+            <article class="chart-card"><h3>Acionamentos</h3><p>Indicadores de acionamentos em research.acionamentos</p><div class="indicator-matrix" id="qSupportMatrix"></div></article>
             <article class="chart-card"><h3>Cancelamento</h3><p>Indicadores da BASE QV (sem App Pharus nesta versão)</p><div class="indicator-matrix" id="qCancellationsMatrix"></div></article>
             <article class="chart-card"><h3>Pesquisa de Satisfação</h3><p>NPS, CSAT e evolução temporal</p><div class="indicator-matrix" id="qSatisfactionMatrix"></div></article>
             <article class="chart-card"><h3>Renovação</h3><p>Indicadores parciais por ciclo do cliente</p><div class="indicator-matrix" id="qRenewalMatrix"></div></article>
@@ -6230,10 +6256,13 @@ ${dataRows}
       epSyncChartToggle('#epToggleFreqAll', epState.showAllFreq, named.length);
 
       const monthlyMeetings = new Map();
+      const meetingsCutoff = new Date();
+      meetingsCutoff.setUTCMonth(meetingsCutoff.getUTCMonth() + 3, 0);
+      meetingsCutoff.setUTCHours(23, 59, 59, 999);
       named.flatMap((engineer) => engineer.clients || []).forEach((client) => {
         (client.meetingDates || []).forEach((iso) => {
           const date = new Date(iso);
-          if (Number.isNaN(date.getTime())) return;
+          if (Number.isNaN(date.getTime()) || date > meetingsCutoff) return;
           const key = `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, '0')}`;
           monthlyMeetings.set(key, (monthlyMeetings.get(key) || 0) + 1);
         });
@@ -6250,6 +6279,16 @@ ${dataRows}
       setOrHtml('#epChartMeetingsMonthly', qvLineChart(monthlyMeetingRows, [
         { key: 'meetings', label: 'Reuniões', color: '#f47920' }
       ], { label: (row) => formatMonthLabel(row.month), ariaLabel: 'Reuniões válidas por mês na carteira dos engenheiros patrimoniais' }));
+
+      const meetingNpsRows = [...named].sort((a, b) => (b.totalMeetings || 0) - (a.totalMeetings || 0)).slice(0, 15);
+      const maxMeetings = Math.max(...meetingNpsRows.map((row) => row.totalMeetings || 0), 1);
+      setOrHtml('#epChartMeetingsNpsQuarter', meetingNpsRows.length ? `<div class="ep-dual-list">${meetingNpsRows.map((row) => {
+        const npsValue = row.npsQuarter == null ? null : Number(row.npsQuarter);
+        const responses = Number(row.npsQuarterResponses || 0);
+        const npsWidth = npsValue == null ? 0 : Math.min(100, Math.abs(npsValue));
+        const npsLabel = npsValue == null ? 'Sem dado' : `${fmt.format(npsValue)} · ${fmt.format(responses)} resp.${responses < 10 ? ' · amostra pequena' : ''}`;
+        return `<div class="ep-dual-row"><div class="ep-dual-name">${escapeHtml(row.engineer)}</div><div class="ep-dual-bars"><div class="ep-dual-line"><span>Reuniões</span><div class="ep-dual-track"><span style="width:${((row.totalMeetings || 0) / maxMeetings) * 100}%"></span></div><strong class="ep-dual-value">${fmt.format(row.totalMeetings || 0)}</strong></div><div class="ep-dual-line nps"><span>NPS ${escapeHtml(epState.payload.latestNpsQuarter || '')}</span><div class="ep-dual-track"><span style="width:${npsWidth}%;${npsValue != null && npsValue < 0 ? 'background:var(--color-danger)' : ''}"></span></div><strong class="ep-dual-value">${escapeHtml(npsLabel)}</strong></div></div></div>`;
+      }).join('')}</div>` : epEmptyBlock());
 
       setOrHtml('#epNpsStrip', `<span><strong>Nota média geral</strong> ${typeof npsMeanDisplay === 'number' ? epScoreFmt(npsMeanDisplay) : escapeHtml(String(npsMeanDisplay))}</span><span class="sep">·</span><span><strong>Respondentes</strong> ${fmt.format(npsRespondentsDisplay)}</span><span class="sep">·</span><span><strong>Cobertura</strong> ${npsCoverageDisplay == null ? '—' : epFmtPct(npsCoverageDisplay)}</span>`);
       const npsSortSel = document.querySelector('#epNpsSort');
@@ -6279,11 +6318,11 @@ ${dataRows}
       } else if (!mechDetail.length) {
         setOrHtml('#epChartMechByAdvisor', epEmptyBlock());
       } else {
-        const maxM = Math.max(...mechDetail.map((m) => m.clients ?? 0), 1);
-        setOrHtml('#epChartMechByAdvisor', mechDetail.map((m) => {
-          const val = `${fmt.format(m.clients ?? 0)} clientes · ${epFmtPct(m.percentage ?? epPct(m.clients, selectedMech?.clientsWithMechanism))}`;
-          return `<div class="hbar" title="${escapeHtml(m.mechanismName || m.name || '—')}: ${escapeHtml(val)}"><div class="hbar-label">${escapeHtml(m.mechanismName || m.name || '—')}</div><div class="hbar-track"><span style="width:${((m.clients ?? 0) / maxM) * 100}%"></span></div><div class="hbar-val">${val}</div></div>`;
-        }).join(''));
+        const totalUses = mechDetail.reduce((sum, mechanism) => sum + Number(mechanism.implementations ?? mechanism.clients ?? 0), 0);
+        setOrHtml('#epChartMechByAdvisor', donut(mechDetail.map((mechanism) => {
+          const count = Number(mechanism.implementations ?? mechanism.clients ?? 0);
+          return { label: mechanism.mechanismName || mechanism.name || 'Não informado', count, percent: totalUses ? count / totalUses * 100 : 0 };
+        })));
       }
 
       const cycleAudit = epState.payload.cycleAudit || {};
@@ -10166,7 +10205,7 @@ ${dataRows}
         { indicator: 'Último NPS', viability: 'Sim', metric: 'Última resposta por created_at desc' },
         { indicator: 'CSAT', viability: 'Sim', metric: 'csat_responses.score filtrando tipo_de_forms = CSAT; notas > 5 viram 5; satisfeito = 5' },
         { indicator: 'CES', viability: 'Sem dado', metric: 'Sem campo/tabela estruturada de CES' },
-        { indicator: 'Evolução do NPS ao longo do tempo', viability: 'Sim', metric: 'NPS mensal por nps_responses.created_at' },
+        { indicator: 'Evolução do NPS ao longo do tempo', viability: 'Sim', metric: 'NPS trimestral; última resposta por cliente em cada trimestre, usando nps_responses.created_at' },
       ], 'BASE QV'));
       renderViabilityMatrix(document.querySelector('#qTemporalMatrix'), indicatorRowsFromPayload(temporalState.payload, [
         { indicator: 'Logins', viability: 'Sim', metric: 'App Pharus metrics.events por user_id e mês' },
@@ -14166,6 +14205,7 @@ ${dataRows}
     const xFilters = {
       search: document.querySelector('#xSearch'),
       program: document.querySelector('#xProgram'),
+      quarter: document.querySelector('#xQuarter'),
       npsClass: document.querySelector('#xNpsClass'),
       csat: document.querySelector('#xCsat'),
       npsRange: document.querySelector('#xNpsRange')
@@ -14220,6 +14260,19 @@ ${dataRows}
         </div>`;
       }).join('');
     }
+    function renderNpsQuarterly(items) {
+      if (!items?.length) return '<div class="empty" style="display:block">Sem histórico trimestral de NPS.</div>';
+      return items.map(item => {
+        const value = Number(item.nps || 0);
+        const width = Math.max(2, Math.min(100, Math.abs(value)));
+        const color = value < 0 ? 'var(--color-danger)' : 'var(--color-primary)';
+        return `<div class="hbar" title="${escapeHtml(item.label || item.quarter)}: NPS ${fmt.format(value)} · ${fmt.format(item.distinctClients || 0)} clientes">
+          <div class="hbar-label">${escapeHtml(item.label || item.quarter)}</div>
+          <div class="hbar-track"><span style="width:${width}%;background:${color}"></span></div>
+          <div class="hbar-val">NPS ${fmt.format(value)} · ${fmt.format(item.distinctClients || 0)} clientes</div>
+        </div>`;
+      }).join('');
+    }
     function renderSatisfaction() {
       if (!satisfactionState.payload) return;
       const payload = satisfactionState.payload;
@@ -14236,7 +14289,15 @@ ${dataRows}
         <article class="metric"><div class="metric-label">Clientes com feedback</div><div class="metric-value">${fmt.format(summary.totalClientsWithFeedback || 0)}</div><div class="metric-note">NPS ou CSAT vinculado</div></article>`;
       document.querySelector('#xChartNps').innerHTML = donut(payload.distributions?.npsClassification || []);
       document.querySelector('#xChartCsat').innerHTML = donut(payload.distributions?.csatSatisfaction || []);
-      document.querySelector('#xChartNpsMonthly').innerHTML = renderNpsMonthly(payload.distributions?.npsMonthly || []);
+      document.querySelector('#xChartNpsQuarterly').innerHTML = renderNpsQuarterly(payload.distributions?.npsQuarterly || []);
+      const transitions = payload.npsTransitions || [];
+      document.querySelector('#xTransitionRows').innerHTML = transitions.map(row => `<tr>
+        <td>${escapeHtml(row.clientName || 'Não informado')}</td><td>${escapeHtml(row.program || 'Não identificado')}</td><td>${escapeHtml(row.engineer || 'Não informado')}</td>
+        <td>${escapeHtml(row.fromQuarter)}</td><td>${escapeHtml(row.fromClass)} (${fmt.format(row.fromScore)})</td>
+        <td>${escapeHtml(row.toQuarter)}</td><td>${escapeHtml(row.toClass)} (${fmt.format(row.toScore)})</td>
+      </tr>`).join('');
+      document.querySelector('#xTransitionsCounter').textContent = `${fmt.format(transitions.length)} mudanças`;
+      document.querySelector('#xTransitionsEmpty').style.display = transitions.length ? 'none' : 'block';
       const pages = Math.max(1, Math.ceil(rows.length / satisfactionState.pageSize));
       if (satisfactionState.page > pages) satisfactionState.page = pages;
       const start = (satisfactionState.page - 1) * satisfactionState.pageSize;
@@ -14268,11 +14329,19 @@ ${dataRows}
       status.textContent = '● Atualizando dados'; status.style.color = 'var(--color-warning)';
       try {
         const program = encodeURIComponent(xFilters.program?.value || 'all');
-        const response = await apiFetch(`/api/satisfaction?program=${program}&t=${Date.now()}`, { cache: 'no-store' });
+        const quarter = encodeURIComponent(xFilters.quarter?.value || 'latest');
+        const response = await apiFetch(`/api/satisfaction?program=${program}&quarter=${quarter}&t=${Date.now()}`, { cache: 'no-store' });
         const payload = await response.json().catch(() => ({}));
         if (requestId !== satisfactionState.requestId) return;
         if (!response.ok) throw Object.assign(new Error(friendlyApiError(response.status, payload)), { status: response.status, payload });
         satisfactionState.payload = payload;
+        const quarterSelect = xFilters.quarter;
+        if (quarterSelect) {
+          const current = payload.filters?.quarter || quarterSelect.value || 'latest';
+          const quarters = payload.distributions?.npsQuarterly || [];
+          quarterSelect.innerHTML = `<option value="latest">Mais recente</option>${quarters.map(item => `<option value="${escapeHtml(item.quarter)}">${escapeHtml(item.label || item.quarter)}</option>`).join('')}`;
+          quarterSelect.value = current;
+        }
         satisfactionState.page = 1;
         renderSatisfaction();
         renderQualityMatrices();
@@ -14295,7 +14364,7 @@ ${dataRows}
     }
     Object.entries(xFilters).forEach(([key, el]) => el?.addEventListener('input', () => {
       satisfactionState.page = 1;
-      if (key === 'program') {
+      if (key === 'program' || key === 'quarter') {
         satisfactionState.payload = null;
         loadSatisfaction();
         return;
@@ -14305,6 +14374,7 @@ ${dataRows}
     document.querySelector('#xClear')?.addEventListener('click', () => {
       xFilters.search.value = '';
       xFilters.program.value = 'all';
+      xFilters.quarter.value = 'latest';
       xFilters.npsClass.value = 'all';
       xFilters.csat.value = 'all';
       xFilters.npsRange.value = 'all';
@@ -14832,6 +14902,8 @@ ${dataRows}
       const days = withFinancial.map(r => r.daysSinceFinancialUpdate).filter(d => d != null && Number.isFinite(d) && d >= 0).sort((a, b) => a - b);
       const median = days.length ? (days.length % 2 ? days[(days.length - 1) / 2] : (days[days.length / 2 - 1] + days[days.length / 2]) / 2) : null;
       const average = days.length ? days.reduce((a, b) => a + b, 0) / days.length : null;
+      const activationDays = rows.map(r => r.daysFinancialToActivation).filter(d => d != null && Number.isFinite(d) && d >= 0).sort((a, b) => a - b);
+      const activationMedian = activationDays.length ? (activationDays.length % 2 ? activationDays[(activationDays.length - 1) / 2] : (activationDays[activationDays.length / 2 - 1] + activationDays[activationDays.length / 2]) / 2) : null;
       const p = (n, d) => d ? Math.round((n / d) * 1000) / 10 : 0;
       return {
         totalClients,
@@ -14845,7 +14917,9 @@ ${dataRows}
         medianDaysSinceUpdate: median == null ? null : Math.round(median * 10) / 10,
         averageDaysSinceUpdate: average == null ? null : Math.round(average * 10) / 10,
         outdatedOver90Days,
-        outdatedOver90DaysPercent: p(outdatedOver90Days, clientsWithFinancialData)
+        outdatedOver90DaysPercent: p(outdatedOver90Days, clientsWithFinancialData),
+        medianDaysFinancialToActivation: activationMedian,
+        financialToActivationSample: activationDays.length
       };
     }
 
@@ -14999,7 +15073,8 @@ ${dataRows}
         <article class="metric"><div class="metric-label">Clientes com registro alterado após a criação <span class="help" title="Somente registros com updated_at posterior a created_at. A criação inicial não conta.">?</span></div><div class="metric-value">${fmtSafe(summary.clientsWithPostCreationUpdate ?? summary.totalFinancialUpdates)}</div><div class="metric-note">Regra: updated_at &gt; created_at</div></article>
         <article class="metric"><div class="metric-label">Atualizados nos últimos 30 dias <span class="help" title="Clientes com updated_at &gt; created_at e atualização nos últimos 30 dias.">?</span></div><div class="metric-value">${fmtSafe(summary.updatedLast30Days)}</div><div class="metric-note">${pctSafe(summary.updatedLast30DaysPercentOfFinancial)} com dados financeiros</div></article>
         <article class="metric"><div class="metric-label">Recência média da atualização <span class="help" title="Mediana de dias desde a última atualização válida (updated_at &gt; created_at). Sem atualização válida = sem valor.">?</span></div><div class="metric-value">${summary.medianDaysSinceUpdate == null ? '—' : fmtSafe(Math.round(summary.medianDaysSinceUpdate)) + ' d'}</div><div class="metric-note">Mediana · média ${summary.averageDaysSinceUpdate == null ? '—' : fmtSafe(Math.round(summary.averageDaysSinceUpdate))} dias</div></article>
-        <article class="metric"><div class="metric-label">Clientes com dados desatualizados <span class="help" title="Clientes com atualização válida há mais de 90 dias.">?</span></div><div class="metric-value">${fmtSafe(summary.outdatedOver90Days)}</div><div class="metric-note">${pctSafe(summary.outdatedOver90DaysPercent)} com dados financeiros</div></article>`;
+        <article class="metric"><div class="metric-label">Clientes com dados desatualizados <span class="help" title="Clientes com atualização válida há mais de 90 dias.">?</span></div><div class="metric-value">${fmtSafe(summary.outdatedOver90Days)}</div><div class="metric-note">${pctSafe(summary.outdatedOver90DaysPercent)} com dados financeiros</div></article>
+        <article class="metric highlight"><div class="metric-label">Tempo até ativação das engrenagens <span class="help" title="Mediana de dias entre a primeira inclusão em client_financial_data e a primeira reunião posterior cujo event_name contém Ativação das Engrenagens. Datas negativas são excluídas.">?</span></div><div class="metric-value">${summary.medianDaysFinancialToActivation == null ? 'Sem dado' : fmtSafe(Math.round(summary.medianDaysFinancialToActivation)) + ' d'}</div><div class="metric-note">${fmtSafe(summary.financialToActivationSample)} clientes com sequência válida</div></article>`;
 
       const note = document.querySelector('#fHistoryNote');
       if (note) {
@@ -15192,7 +15267,7 @@ ${dataRows}
       if (client) openFinancialDrawer(client);
     });
 
-    /* ===================== Atendimento (Support) — research.acionamentos + v_acionamentos_tratados ===================== */
+    /* ===================== Acionamentos (Support) — research.acionamentos + v_acionamentos_tratados ===================== */
     const supportState = {
       payload: null, page: 1, pageSize: 25, sortKey: 'openedAt', sortDir: 'desc',
       loading: false, requestId: 0
@@ -16647,6 +16722,8 @@ ${dataRows}
       const reasonItems = reasonByStage[stage] || reasonByStage.efetivado || dist.byReasonCategory || [];
       setHtml('#cChartReason', hBars(reasonItems));
       setText('#cChartReasonSub', `Categoria analítica · etapa: ${stageSubLabels[stage] || stageSubLabels.efetivado}`);
+      const semesterGroups = dist.byReasonSemester || [];
+      setHtml('#cChartReasonSemester', semesterGroups.length ? `<div class="cancel-window-grid">${semesterGroups.map(group => `<section class="cancel-window-card"><div class="cancel-window-title"><strong>${escapeHtml(group.semester)}</strong><span>${fmt.format(group.total || 0)} cancelamentos</span></div>${hBars((group.reasons || []).slice(0, 6))}</section>`).join('')}</div>` : '<div class="empty" style="display:block">Sem cancelamentos com data e motivo para comparação semestral.</div>');
 
       const estagioDist = dist.byEstagioCliente || {};
       const estagioItems = stage === 'efetivado' && estagioDist.efetivado
@@ -18047,7 +18124,7 @@ ${dataRows}
       ));
       return {
         filename: PortalTableExport.exportFilename('atendimento-acionamentos'),
-        sheetName: 'Atendimento',
+        sheetName: 'Acionamentos',
         columns: [
           { key: 'openedAt', label: 'Data', value: (r) => dateBR(r.openedAt) },
           { key: 'title', label: 'Título', value: (r) => r.title || 'Não informado' },

@@ -140,8 +140,8 @@ assert.equal(median([]), null);
       {
         clientId: "1",
         meetings: [
-          { startTime: "2026-02-01T10:00:00Z", meetingDateStatus: "ok" },
-          { startTime: "2026-03-01T10:00:00Z", meetingDateStatus: "ok" },
+          { meetingId: "m1", startTime: "2026-02-01T10:00:00Z", hostEmail: "ana@quartavia.com.br", meetingDateStatus: "ok" },
+          { meetingId: "m2", startTime: "2026-03-01T10:00:00Z", hostEmail: "ana@quartavia.com.br", meetingDateStatus: "ok" },
         ],
       },
       { clientId: "2", meetings: [{ startTime: "2025-12-01T10:00:00Z", meetingDateStatus: "ok" }] },
@@ -157,6 +157,10 @@ assert.equal(median([]), null);
   ];
   const payload = buildEpPerformanceFromPayloads(general, meetings, {
     npsRows,
+    csatRows: [
+      { id: "c1", client_id: "1", score: 5, meeting_date: "01/02/2026 (Domingo)", created_at: "2026-02-01T14:00:00Z", tipo_de_forms: "CSAT" },
+      { id: "c2", client_id: "3", score: 4, meeting_date: "2026-03-15T12:00:00Z", created_at: "2026-03-15T14:00:00Z", tipo_de_forms: "CSAT" },
+    ],
     mechanismsPayload: {
       clients: [
         {
@@ -188,6 +192,12 @@ assert.equal(median([]), null);
   assert.ok(ana.npsMeanScore != null);
   assert.equal(ana.npsPromoters, 2);
   assert.equal(ana.npsDetractors, 1);
+  assert.equal(payload.latestCsatQuarter, "2026 T1");
+  assert.equal(ana.meetingsQuarter, 2);
+  assert.equal(ana.csatAverage, 4.5);
+  assert.equal(ana.csatResponses, 2);
+  assert.equal(ana.csatDirectResponses, 1);
+  assert.equal(ana.csatFallbackResponses, 1);
   assert.equal(ana.renewedClients, 2);
   assert.equal(ana.totalRenewals, 3);
   assert.equal(ana.clientsWithImplementedMechanisms, 2);

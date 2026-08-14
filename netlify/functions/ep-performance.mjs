@@ -54,8 +54,194 @@ function blankToNull(v) {
 
 function parseDate(value) {
   if (!value) return null;
+  if (typeof value === "string") {
+    const brazilianDate = value.trim().match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+    if (brazilianDate) {
+      const [, day, month, year] = brazilianDate;
+      const parsed = new Date(Date.UTC(Number(year), Number(month) - 1, Number(day), 12));
+      return Number.isNaN(parsed.getTime()) ? null : parsed;
+    }
+  }
   const d = value instanceof Date ? value : new Date(value);
   return Number.isNaN(d.getTime()) ? null : d;
+}
+
+function normalizeIdentity(value) {
+  return String(value || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, "");
+}
+
+function quarterKey(value) {
+  const date = parseDate(value);
+  return date ? `${date.getUTCFullYear()} T${Math.floor(date.getUTCMonth() / 3) + 1}` : null;
+}
+
+function saoPauloDayKey(value) {
+  const date = parseDate(value);
+  if (!date) return null;
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/Sao_Paulo",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(date);
+  const values = Object.fromEntries(parts.map((part) => [part.type, part.value]));
+  return `${values.year}-${values.month}-${values.day}`;
+}
+
+function csatScore(value) {
+  const score = Number(value);
+  if (!Number.isFinite(score) || score < 0) return null;
+  return Math.min(5, score);
+}
+
+function isCsatRow(row) {
+  return normalizeIdentity(row?.tipo_de_forms).includes("csat") && csatScore(row?.score) != null;
+}
+
+function dedupeCsatRows(rows) {
+  const seen = new Set();
+  return (Array.isArray(rows) ? rows : []).filter((row) => {
+    if (!isCsatRow(row)) return false;
+    const key = String(row.typeform_response_id || row.form_response_id || row.id || "").trim();
+    if (!key || seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+function engineerResolver(engineers) {
+  const candidates = [...new Set(engineers.filter((name) => !engineerIsBlank(name)))].map((name) => {
+    const words = String(name).trim().split(/\s+/).filter(Boolean);
+    return {
+      name,
+      full: normalizeIdentity(name),
+      firstLast: normalizeIdentity(words.length > 1 ? `${words[0]}${words.at(-1)}` : words[0]),
+    };
+  });
+  return (email) => {
+    const local = normalizeIdentity(String(email || "").split("@")[0]);
+    if (!local) return null;
+    const matches = candidates.filter((candidate) => candidate.full === local || candidate.firstLast === local);
+    return matches.length === 1 ? matches[0].name : null;
+  };
+}
+
+function buildMeetingsCsatQuarter(generalClients, meetingsPayload, rawCsatRows) {
+  const currentEngineerByClient = new Map();
+  const engineerNames = [];
+  for (const client of generalClients) {
+    const clientId = String(client.clientId || client.id || "");
+    const engineer = blankToNull(client.engineer) || "Não informado";
+    if (clientId) currentEngineerByClient.set(clientId, engineer);
+    engineerNames.push(engineer);
+  }
+  const resolveHostEngineer = engineerResolver(engineerNames);
+  const meetings = [];
+  for (const client of Array.isArray(meetingsPayload?.clients) ? meetingsPayload.clients : []) {
+    const clientId = String(client.clientId || "");
+    for (const meeting of Array.isArray(client.meetings) ? client.meetings : []) {
+      if (!meeting?.startTime || meeting.meetingDateStatus === "before_client_entry" || meeting.meetingDateStatus === "invalid") continue;
+      const hostEngineer = resolveHostEngineer(meeting.hostEmail);
+      meetings.push({
+        clientId,
+        meetingId: meeting.meetingId || null,
+        startTime: meeting.startTime,
+        quarter: quarterKey(meeting.startTime),
+        day: saoPauloDayKey(meeting.startTime),
+        engineer: hostEngineer || currentEngineerByClient.get(clientId) || "Não informado",
+        attribution: hostEngineer ? "meeting_host" : "current_client_engineer",
+      });
+    }
+  }
+
+  const csatRows = dedupeCsatRows(rawCsatRows);
+  const currentQuarter = quarterKey(new Date());
+  const latestQuarter = csatRows
+    .map((row) => quarterKey(row.created_at || row.meeting_date))
+    .filter((quarter) => quarter && (!currentQuarter || quarter <= currentQuarter))
+    .sort()
+    .at(-1)
+    || meetings.map((meeting) => meeting.quarter).filter((quarter) => quarter && (!currentQuarter || quarter <= currentQuarter)).sort().at(-1)
+    || null;
+  const quarterMeetings = meetings.filter((meeting) => meeting.quarter === latestQuarter);
+  const meetingsByClientDay = new Map();
+  for (const meeting of quarterMeetings) {
+    const key = `${meeting.clientId}|${meeting.day}`;
+    if (!meetingsByClientDay.has(key)) meetingsByClientDay.set(key, []);
+    meetingsByClientDay.get(key).push(meeting);
+  }
+
+  const byEngineer = new Map();
+  const bucketFor = (engineer) => {
+    const key = engineer || "Não informado";
+    if (!byEngineer.has(key)) {
+      byEngineer.set(key, {
+        engineer: key,
+        meetings: 0,
+        meetingsAttributedByHost: 0,
+        meetingsAttributedByCurrentEngineer: 0,
+        scores: [],
+        directResponses: 0,
+        fallbackResponses: 0,
+        ambiguousResponses: 0,
+      });
+    }
+    return byEngineer.get(key);
+  };
+
+  for (const meeting of quarterMeetings) {
+    const bucket = bucketFor(meeting.engineer);
+    bucket.meetings += 1;
+    if (meeting.attribution === "meeting_host") bucket.meetingsAttributedByHost += 1;
+    else bucket.meetingsAttributedByCurrentEngineer += 1;
+  }
+
+  for (const row of csatRows) {
+    const responseDate = row.meeting_date || row.created_at;
+    if (quarterKey(row.created_at || row.meeting_date) !== latestQuarter) continue;
+    const clientId = String(row.client_id || "");
+    const candidates = meetingsByClientDay.get(`${clientId}|${saoPauloDayKey(responseDate)}`) || [];
+    const hostEngineers = [...new Set(candidates.filter((m) => m.attribution === "meeting_host").map((m) => m.engineer))];
+    const directEngineer = hostEngineers.length === 1 ? hostEngineers[0] : null;
+    const engineer = directEngineer || currentEngineerByClient.get(clientId) || "Não informado";
+    const bucket = bucketFor(engineer);
+    bucket.scores.push(csatScore(row.score));
+    if (directEngineer && candidates.length === 1) bucket.directResponses += 1;
+    else {
+      bucket.fallbackResponses += 1;
+      if (candidates.length > 1 || hostEngineers.length > 1) bucket.ambiguousResponses += 1;
+    }
+  }
+
+  const rows = [...byEngineer.values()]
+    .map((bucket) => ({
+      engineer: bucket.engineer,
+      meetingsQuarter: bucket.meetings,
+      meetingsAttributedByHost: bucket.meetingsAttributedByHost,
+      meetingsAttributedByCurrentEngineer: bucket.meetingsAttributedByCurrentEngineer,
+      csatAverage: bucket.scores.length ? round1(bucket.scores.reduce((sum, value) => sum + value, 0) / bucket.scores.length) : null,
+      csatResponses: bucket.scores.length,
+      csatDirectResponses: bucket.directResponses,
+      csatFallbackResponses: bucket.fallbackResponses,
+      csatAmbiguousResponses: bucket.ambiguousResponses,
+      csatCoverage: bucket.meetings ? Math.min(100, pct(bucket.scores.length, bucket.meetings)) : null,
+    }))
+    .sort((a, b) => b.meetingsQuarter - a.meetingsQuarter || a.engineer.localeCompare(b.engineer, "pt-BR"));
+  return {
+    quarter: latestQuarter,
+    rows,
+    methodology: {
+      meetingKey: "client_meetings.id",
+      csatKeyAvailable: false,
+      csatJoin: "client_id + data da reunião em America/Sao_Paulo",
+      directAttribution: "client_meetings.host_email associado ao nome do EP",
+      fallbackAttribution: "clients.engenheiro_patrimonial atual",
+    },
+  };
 }
 
 function inPeriod(iso, from, to) {
@@ -377,6 +563,8 @@ export function buildEpPerformanceFromPayloads(generalPayload, meetingsPayload, 
   );
 
   const generalClients = Array.isArray(generalPayload?.clients) ? generalPayload.clients : [];
+  const meetingsCsatQuarter = buildMeetingsCsatQuarter(generalClients, meetingsPayload, options.csatRows || []);
+  const meetingsCsatByEngineer = new Map(meetingsCsatQuarter.rows.map((row) => [row.engineer, row]));
   const meetingByClient = new Map(
     (Array.isArray(meetingsPayload?.clients) ? meetingsPayload.clients : []).map((c) => [
       String(c.clientId),
@@ -706,6 +894,15 @@ export function buildEpPerformanceFromPayloads(generalPayload, meetingsPayload, 
         npsResponses: npsRespondentClients,
         npsQuarter: npsQuarterBreakdown.responses > 0 ? npsQuarterBreakdown.nps : null,
         npsQuarterResponses: npsQuarterBreakdown.responses,
+        ...(meetingsCsatByEngineer.get(bucket.engineer) || {
+          meetingsQuarter: 0,
+          csatAverage: null,
+          csatResponses: 0,
+          csatDirectResponses: 0,
+          csatFallbackResponses: 0,
+          csatAmbiguousResponses: 0,
+          csatCoverage: null,
+        }),
         npsCoverage,
         npsPortfolioCoverage: npsCoverage,
         npsPromoters: npsBreakdown.promoters,
@@ -865,6 +1062,20 @@ export function buildEpPerformanceFromPayloads(generalPayload, meetingsPayload, 
       reason: overallNps.responses
         ? "NPS oficial 0–10; join ao EP atual; média da nota não é NPS."
         : "Sem respostas válidas",
+    },
+    {
+      id: "csat_meetings_ep",
+      label: "CSAT trimestral das reuniões por EP",
+      status: meetingsCsatQuarter.rows.some((row) => row.csatResponses > 0) ? "partial" : "unavailable",
+      available: meetingsCsatQuarter.rows.some((row) => row.csatResponses > 0),
+      source: "BASE QV",
+      table: "csat_responses + client_meetings + clients",
+      columns: ["client_id", "meeting_date", "score", "created_at", "start_time", "host_email", "engenheiro_patrimonial"],
+      coverage: pct(
+        meetingsCsatQuarter.rows.reduce((sum, row) => sum + row.csatResponses, 0),
+        meetingsCsatQuarter.rows.reduce((sum, row) => sum + row.meetingsQuarter, 0),
+      ),
+      reason: "Vínculo direto por client_id + data e host_email; fallback identificado pelo EP atual quando não há reunião única associável.",
     },
     {
       id: "meetings_qv",
@@ -1028,6 +1239,7 @@ export function buildEpPerformanceFromPayloads(generalPayload, meetingsPayload, 
   return {
     generatedAt: new Date().toISOString(),
     latestNpsQuarter,
+    latestCsatQuarter: meetingsCsatQuarter.quarter,
     source: "BASE QV",
     attribution: "current_engineer_only",
     attributionNote:
@@ -1042,6 +1254,7 @@ export function buildEpPerformanceFromPayloads(generalPayload, meetingsPayload, 
       cycleView: "public.vw_clients_ciclo_churn (complementary churn/program only)",
       npsSource: "nps_responses",
       mechanismSource: "client_mecanismos",
+      meetingsCsatQuarter: meetingsCsatQuarter.methodology,
     },
     cancellationMetric: {
       id: "cancelled_share_of_portfolio",
@@ -1107,6 +1320,7 @@ export function buildEpPerformanceFromPayloads(generalPayload, meetingsPayload, 
     byAdvisor: engineers,
     engineers,
     npsByAdvisor,
+    meetingsCsatByAdvisor: meetingsCsatQuarter.rows,
     mechanismsByAdvisor,
     mechanismsMatrix,
     renewalsByAdvisor,
@@ -1226,6 +1440,11 @@ export function buildEpPerformanceFromPayloads(generalPayload, meetingsPayload, 
         { schema: "public", table: "nps_responses", column: "score" },
         { schema: "public", table: "nps_responses", column: "client_id" },
         { schema: "public", table: "nps_responses", column: "submitted_at" },
+        { schema: "public", table: "csat_responses", column: "client_id" },
+        { schema: "public", table: "csat_responses", column: "meeting_date" },
+        { schema: "public", table: "csat_responses", column: "score" },
+        { schema: "public", table: "csat_responses", column: "created_at" },
+        { schema: "public", table: "client_meetings", column: "host_email" },
         { schema: "public", table: "client_mecanismos", column: "status" },
         { schema: "public", table: "client_mecanismos", column: "implemented_at" },
         { schema: "public", table: "clients", column: "ciclo" },
@@ -1279,6 +1498,40 @@ async function fetchNpsResponses() {
   return rows;
 }
 
+async function fetchCsatResponses() {
+  const pageSize = 1000;
+  let offset = 0;
+  const rows = [];
+  const key = process.env.DATA_SUPABASE_SERVICE_ROLE_KEY;
+  const base = process.env.DATA_SUPABASE_URL;
+  while (true) {
+    const url = new URL("/rest/v1/csat_responses", base);
+    url.searchParams.set(
+      "select",
+      "id,typeform_response_id,form_response_id,client_id,tipo_de_forms,score,created_at,meeting_date",
+    );
+    url.searchParams.set("order", "created_at.desc");
+    const response = await fetch(url, {
+      headers: {
+        apikey: key,
+        Authorization: `Bearer ${key}`,
+        "Accept-Profile": "public",
+        Range: `${offset}-${offset + pageSize - 1}`,
+      },
+    });
+    if (!response.ok) {
+      const text = await response.text();
+      throw new Error(`csat_responses: HTTP ${response.status} ${text.slice(0, 160)}`);
+    }
+    const batch = await response.json();
+    rows.push(...batch);
+    if (batch.length < pageSize) break;
+    offset += pageSize;
+    if (offset > 200000) break;
+  }
+  return rows;
+}
+
 export async function computeEpPerformancePayload(options = {}) {
   const cfg = dataConfigurationError();
   if (cfg) {
@@ -1287,12 +1540,16 @@ export async function computeEpPerformancePayload(options = {}) {
     throw err;
   }
 
-  const [generalPayloadRaw, meetingsPayload, npsRows, mechanismsPayload, cycleAuditRaw, cycleMap] =
+  const [generalPayloadRaw, meetingsPayload, npsRows, csatRows, mechanismsPayload, cycleAuditRaw, cycleMap] =
     await Promise.all([
     computeGeneralDataPayload(),
     computeMeetingsPayload(),
     fetchNpsResponses().catch((error) => {
       console.warn("[EP Performance] NPS fetch failed:", error instanceof Error ? error.message : error);
+      return [];
+    }),
+    fetchCsatResponses().catch((error) => {
+      console.warn("[EP Performance] CSAT fetch failed:", error instanceof Error ? error.message : error);
       return [];
     }),
     computeMechanismsPayload().catch((error) => {
@@ -1318,6 +1575,7 @@ export async function computeEpPerformancePayload(options = {}) {
   const payload = buildEpPerformanceFromPayloads(generalPayload, meetingsPayload, {
     ...options,
     npsRows,
+    csatRows,
     mechanismsPayload,
     cycleAudit,
   });
@@ -1332,6 +1590,19 @@ export async function computeEpPerformancePayload(options = {}) {
         note: "Falha ou ausência ao carregar nps_responses nesta execução.",
       },
     };
+  }
+
+  if (!csatRows?.length) {
+    payload.warnings = [
+      ...(payload.warnings || []),
+      {
+        code: "csat_fetch_failed",
+        severity: "warning",
+        label: "CSAT trimestral indisponível",
+        message: "Não foi possível carregar csat_responses nesta execução.",
+      },
+    ];
+    payload.qualityWarnings = payload.warnings;
   }
 
   if (!mechanismsPayload) {

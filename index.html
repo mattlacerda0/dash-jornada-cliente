@@ -1589,7 +1589,7 @@
     #view-ep .ep-nps-sort{display:flex;flex-direction:column;gap:4px;flex:0 1 200px;min-width:0;font-size:12px;color:var(--color-text-muted)}
     #view-ep .ep-nps-sort select{width:100%;max-width:100%;box-sizing:border-box}
     #view-ep .ep-nps-list{width:100%;min-width:0;max-height:min(520px,60vh);overflow-x:hidden;overflow-y:auto;padding-right:4px;padding-bottom:12px;scrollbar-width:thin}
-    #view-ep .ep-dual-list{display:grid;gap:14px;margin-top:16px}#view-ep .ep-dual-row{display:grid;grid-template-columns:minmax(160px,240px) minmax(0,1fr);gap:16px;align-items:start}#view-ep .ep-dual-name{font-size:12px;font-weight:700;color:var(--color-text);padding-top:2px}#view-ep .ep-dual-bars{display:grid;gap:7px}#view-ep .ep-dual-line{display:grid;grid-template-columns:72px minmax(0,1fr) 132px;gap:10px;align-items:center;font-size:11px;color:var(--color-text-muted)}#view-ep .ep-dual-track{height:8px;border:1px solid var(--color-border);background:var(--color-surface-2);overflow:hidden}#view-ep .ep-dual-track span{display:block;height:100%;background:var(--color-primary)}#view-ep .ep-dual-line.nps .ep-dual-track span{background:var(--color-info)}#view-ep .ep-dual-value{text-align:right;color:var(--color-text);white-space:nowrap}#view-ep .ep-mechanism-donut .donut-wrap{justify-content:flex-start}
+    #view-ep .ep-dual-list{display:grid;gap:14px;margin-top:16px}#view-ep .ep-dual-row{display:grid;grid-template-columns:minmax(160px,240px) minmax(0,1fr);gap:16px;align-items:start}#view-ep .ep-dual-name{font-size:12px;font-weight:700;color:var(--color-text);padding-top:2px}#view-ep .ep-dual-bars{display:grid;gap:7px}#view-ep .ep-dual-line{display:grid;grid-template-columns:72px minmax(0,1fr) 190px;gap:10px;align-items:center;font-size:11px;color:var(--color-text-muted)}#view-ep .ep-dual-track{height:8px;border:1px solid var(--color-border);background:var(--color-surface-2);overflow:hidden}#view-ep .ep-dual-track span{display:block;height:100%;background:var(--color-primary)}#view-ep .ep-dual-line.nps .ep-dual-track span,#view-ep .ep-dual-line.csat .ep-dual-track span{background:var(--color-info)}#view-ep .ep-dual-value{text-align:right;color:var(--color-text);white-space:nowrap}#view-ep .ep-mechanism-donut .donut-wrap{justify-content:flex-start}
     #view-ep .ep-nps-row{display:grid;grid-template-columns:minmax(220px,1fr) minmax(240px,2fr) minmax(170px,auto);align-items:center;gap:12px;width:100%;min-width:0;margin:10px 0;box-sizing:border-box}
     #view-ep .ep-nps-identification,#view-ep .ep-nps-bar,#view-ep .ep-nps-value{min-width:0}
     #view-ep .ep-nps-name{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;color:var(--color-text-muted);line-height:1.35}
@@ -1633,6 +1633,9 @@
       #view-ep .filters.financial .ep-ms-wrap{grid-column:1/-1}
       #view-ep .ep-group-row{grid-template-columns:1fr;gap:6px}
       #view-ep .ep-group-name{white-space:normal}
+      #view-ep .ep-dual-row{grid-template-columns:1fr;gap:8px}
+      #view-ep .ep-dual-line{grid-template-columns:64px minmax(0,1fr);gap:7px}
+      #view-ep .ep-dual-value{grid-column:2;text-align:left;white-space:normal}
       #view-ep .ep-dual-bar{grid-template-columns:minmax(70px,100px) minmax(0,1fr) auto}
       #view-ep .ep-stack-row{
         grid-template-columns:1fr;
@@ -3500,9 +3503,9 @@
           <div class="section-head"><div><h2>Carteira e status</h2><p>Composição da carteira por EP — sem ranking de desempenho.</p></div></div>
           <section class="charts ep-charts">
             <article class="chart-card ep-span-all">
-              <h3>Reuniões e NPS do trimestre por EP <span class="help" tabindex="0" data-tip="Reuniões válidas da carteira e NPS do trimestre mais recente. O NPS usa a última resposta de cada cliente no trimestre e é atribuído ao EP atual.">?</span></h3>
-              <p>Volume de reuniões e NPS trimestral; NPS com menos de 10 respostas é sinalizado como amostra pequena.</p>
-              <div id="epChartMeetingsNpsQuarter"></div>
+              <h3>Reuniões e CSAT do trimestre por EP <span class="help" tabindex="0" data-tip="Reuniões e CSAT do mesmo trimestre. O vínculo direto usa client_id + data da reunião e o host_email da ocorrência; quando isso não é possível, o EP atual do cliente é usado como fallback e contabilizado.">?</span></h3>
+              <p>Volume de reuniões e nota média CSAT (1–5), com quantidade de respostas, cobertura e sinalização de amostra pequena.</p>
+              <div id="epChartMeetingsCsatQuarter"></div>
             </article>
             <article class="chart-card ep-span-all">
               <h3>Carteira por EP
@@ -6280,14 +6283,19 @@ ${dataRows}
         { key: 'meetings', label: 'Reuniões', color: '#f47920' }
       ], { label: (row) => formatMonthLabel(row.month), ariaLabel: 'Reuniões válidas por mês na carteira dos engenheiros patrimoniais' }));
 
-      const meetingNpsRows = [...named].sort((a, b) => (b.totalMeetings || 0) - (a.totalMeetings || 0)).slice(0, 15);
-      const maxMeetings = Math.max(...meetingNpsRows.map((row) => row.totalMeetings || 0), 1);
-      setOrHtml('#epChartMeetingsNpsQuarter', meetingNpsRows.length ? `<div class="ep-dual-list">${meetingNpsRows.map((row) => {
-        const npsValue = row.npsQuarter == null ? null : Number(row.npsQuarter);
-        const responses = Number(row.npsQuarterResponses || 0);
-        const npsWidth = npsValue == null ? 0 : Math.min(100, Math.abs(npsValue));
-        const npsLabel = npsValue == null ? 'Sem dado' : `${fmt.format(npsValue)} · ${fmt.format(responses)} resp.${responses < 10 ? ' · amostra pequena' : ''}`;
-        return `<div class="ep-dual-row"><div class="ep-dual-name">${escapeHtml(row.engineer)}</div><div class="ep-dual-bars"><div class="ep-dual-line"><span>Reuniões</span><div class="ep-dual-track"><span style="width:${((row.totalMeetings || 0) / maxMeetings) * 100}%"></span></div><strong class="ep-dual-value">${fmt.format(row.totalMeetings || 0)}</strong></div><div class="ep-dual-line nps"><span>NPS ${escapeHtml(epState.payload.latestNpsQuarter || '')}</span><div class="ep-dual-track"><span style="width:${npsWidth}%;${npsValue != null && npsValue < 0 ? 'background:var(--color-danger)' : ''}"></span></div><strong class="ep-dual-value">${escapeHtml(npsLabel)}</strong></div></div></div>`;
+      const meetingCsatRows = [...named].sort((a, b) => (b.meetingsQuarter || 0) - (a.meetingsQuarter || 0)).slice(0, 15);
+      const maxMeetings = Math.max(...meetingCsatRows.map((row) => row.meetingsQuarter || 0), 1);
+      setOrHtml('#epChartMeetingsCsatQuarter', meetingCsatRows.length ? `<div class="ep-dual-list">${meetingCsatRows.map((row) => {
+        const csatValue = row.csatAverage == null ? null : Number(row.csatAverage);
+        const responses = Number(row.csatResponses || 0);
+        const coverage = row.csatCoverage == null ? null : Number(row.csatCoverage);
+        const direct = Number(row.csatDirectResponses || 0);
+        const fallback = Number(row.csatFallbackResponses || 0);
+        const ambiguous = Number(row.csatAmbiguousResponses || 0);
+        const csatWidth = csatValue == null ? 0 : Math.min(100, Math.max(0, csatValue / 5 * 100));
+        const csatLabel = csatValue == null ? 'Sem dado' : `${fmt.format(csatValue)} · ${fmt.format(responses)} resp. · ${coverage == null ? '—' : epFmtPct(coverage)}${responses < 10 ? ' · amostra pequena' : ''}`;
+        const detail = `Vínculo direto: ${fmt.format(direct)}; fallback por EP atual: ${fmt.format(fallback)}; ambíguas: ${fmt.format(ambiguous)}.`;
+        return `<div class="ep-dual-row"><div class="ep-dual-name">${escapeHtml(row.engineer)}</div><div class="ep-dual-bars"><div class="ep-dual-line"><span>Reuniões</span><div class="ep-dual-track"><span style="width:${((row.meetingsQuarter || 0) / maxMeetings) * 100}%"></span></div><strong class="ep-dual-value">${fmt.format(row.meetingsQuarter || 0)}</strong></div><div class="ep-dual-line csat" title="${escapeHtml(detail)}"><span>CSAT ${escapeHtml(epState.payload.latestCsatQuarter || '')}</span><div class="ep-dual-track"><span style="width:${csatWidth}%"></span></div><strong class="ep-dual-value">${escapeHtml(csatLabel)}</strong></div></div></div>`;
       }).join('')}</div>` : epEmptyBlock());
 
       setOrHtml('#epNpsStrip', `<span><strong>Nota média geral</strong> ${typeof npsMeanDisplay === 'number' ? epScoreFmt(npsMeanDisplay) : escapeHtml(String(npsMeanDisplay))}</span><span class="sep">·</span><span><strong>Respondentes</strong> ${fmt.format(npsRespondentsDisplay)}</span><span class="sep">·</span><span><strong>Cobertura</strong> ${npsCoverageDisplay == null ? '—' : epFmtPct(npsCoverageDisplay)}</span>`);
@@ -18190,7 +18198,11 @@ ${dataRows}
         { key: 'clientsWithoutMeeting', label: 'Sem reunião', value: (r) => fmt.format(r.clientsWithoutMeeting) },
         { key: 'npsMeanScore', label: 'Nota média NPS', value: (r) => r.npsMeanScore ?? '—' },
         { key: 'nps', label: 'NPS', value: (r) => !r.npsEligible && r.nps == null ? '—' : (r.nps ?? '—') },
-        { key: 'npsCoverage', label: 'Cobertura NPS', value: (r) => epFmtPct(r.npsCoverage) }
+        { key: 'npsCoverage', label: 'Cobertura NPS', value: (r) => epFmtPct(r.npsCoverage) },
+        { key: 'meetingsQuarter', label: 'Reuniões no trimestre CSAT', value: (r) => fmt.format(r.meetingsQuarter || 0) },
+        { key: 'csatAverage', label: 'CSAT médio trimestral', value: (r) => r.csatAverage == null ? '—' : epScoreFmt(r.csatAverage) },
+        { key: 'csatResponses', label: 'Respostas CSAT', value: (r) => fmt.format(r.csatResponses || 0) },
+        { key: 'csatCoverage', label: 'Cobertura CSAT', value: (r) => epFmtPct(r.csatCoverage) }
       ];
       if (showMechCols) {
         columns.push(

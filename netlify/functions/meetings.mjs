@@ -705,6 +705,7 @@ function buildPayload(clients, calendlyRows, manualRows, attendanceRows, implRow
           normalizedLabel: typeInfo.normalizedLabel,
           startTime: m.startTime,
           endTime: m.endTime,
+          hostEmail: m.hostEmail,
           attendanceStatus: m.attendanceStatus,
           rescheduled: m.rescheduled,
           recordingUrl: m.recordingUrl,

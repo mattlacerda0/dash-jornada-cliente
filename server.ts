@@ -289,6 +289,17 @@ const server = Bun.serve({
         return new Response(file, { headers: { "Content-Type": type } });
       }
     }
+    if (url.pathname === "/favicon.ico") {
+      const file = Bun.file(`${ROOT}/favicon.ico`);
+      if (await file.exists()) {
+        return new Response(file, {
+          headers: {
+            "Content-Type": "image/x-icon",
+            "Cache-Control": "public, max-age=86400",
+          },
+        });
+      }
+    }
     if (url.pathname === "/executive.html") {
       return Response.redirect(`${url.origin}/#executive`, 302);
     }

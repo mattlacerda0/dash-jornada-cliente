@@ -15,6 +15,10 @@
                        "use":  "@vercel/node"
                    },
                    {
+                       "src":  "api/ai-analysis.js",
+                       "use":  "@vercel/node"
+                   },
+                   {
                        "src":  "js/*.mjs",
                        "use":  "@vercel/static"
                    },
@@ -114,7 +118,7 @@
                    },
                    {
                        "src":  "/api/ai-analysis",
-                       "dest":  "/api/quality.js?fn=ai-analysis"
+                       "dest":  "/api/ai-analysis.js"
                    },
                    {
                        "src":  "/api/(.*)",

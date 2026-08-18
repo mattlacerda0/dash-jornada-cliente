@@ -236,5 +236,5 @@ export function geminiConfigurationError() {
 export function isExecutiveGeminiEnabled() {
   const raw = String(process.env.AI_ANALYSIS_GEMINI_ENABLED ?? "").trim().toLowerCase();
   if (raw === "false" || raw === "0" || raw === "off" || raw === "no") return false;
-  return true;
+  return Boolean(getGeminiEnv().apiKey);
 }

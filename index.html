@@ -6109,12 +6109,15 @@ ${dataRows}
         );
       }
 
-      function renderGenericError() {
+      function renderGenericError(payload, httpStatus) {
         setModalMode('error');
         setStamp('Indisponível');
+        const detail = payload?.error
+          || (httpStatus === 404 ? 'A rota de análise ainda não está publicada neste ambiente.' : '')
+          || (httpStatus >= 500 ? 'O servidor demorou ou falhou ao gerar a análise.' : '');
         renderState(
           'Não foi possível gerar a análise agora.',
-          ['Os indicadores da página continuam disponíveis normalmente.'],
+          [detail, 'Os indicadores da página continuam disponíveis normalmente.'].filter(Boolean),
           retryBtn(),
         );
       }
@@ -6296,7 +6299,7 @@ ${dataRows}
         if (kind === 'rate_limited') renderRateLimit();
         else if (kind === 'not_configured') renderNotConfigured();
         else if (kind === 'unsupported') renderUnsupported();
-        else renderGenericError();
+        else renderGenericError(payload, httpStatus);
       }
 
       function fixtureName() {

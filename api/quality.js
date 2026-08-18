@@ -1,6 +1,6 @@
 const { sendResponse } = require("./_adapter.cjs");
 
-module.exports = async function handler(req, res) {
+async function handler(req, res) {
   const url = new URL(req.url || "/api/quality", `https://${req.headers.host || "localhost"}`);
   const routeName = url.searchParams.get("fn") || url.pathname.split("/").filter(Boolean).pop() || "quality";
 
@@ -29,7 +29,22 @@ module.exports = async function handler(req, res) {
   };
 
   const loadRoute = routes[routeName] || routes.quality;
-  const { default: fn } = await loadRoute();
+  try {
+    const { default: fn } = await loadRoute();
+    return sendResponse(fn, req, res);
+  } catch (error) {
+    console.error("[quality]", routeName, error instanceof Error ? error.stack || error.message : error);
+    if (res.headersSent) return;
+    res.statusCode = 500;
+    res.setHeader("Content-Type", "application/json; charset=utf-8");
+    res.setHeader("Cache-Control", "no-store");
+    res.end(JSON.stringify({
+      success: false,
+      code: "internal_error",
+      error: "Não foi possível processar a requisição.",
+    }));
+  }
+}
 
-  return sendResponse(fn, req, res);
-};
+handler.maxDuration = 60;
+module.exports = handler;

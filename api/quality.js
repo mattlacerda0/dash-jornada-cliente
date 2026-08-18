@@ -23,6 +23,8 @@ module.exports = async function handler(req, res) {
     "pharus-ep-meetings": () => import("../netlify/functions/pharus-ep-meetings.mjs"),
     "statistical-crosses": () => import("../netlify/functions/statistical-crosses.mjs"),
     "temporal-indicators": () => import("../netlify/functions/temporal-indicators.mjs"),
+    "executive-summary": () => import("../netlify/functions/executive-summary.mjs"),
+    "portal-snapshot": () => import("../netlify/functions/portal-snapshot.mjs"),
   };
 
   const loadRoute = routes[routeName] || routes.quality;

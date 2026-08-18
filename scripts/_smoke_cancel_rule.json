@@ -1,29 +1,29 @@
 {
-  "effective": 453,
-  "intentionsOrOrders": 155,
-  "activeIntention": 75,
-  "orders": 124,
-  "intentions": 155,
-  "inProcess": 89,
-  "withoutDate": 7,
+  "effective": 468,
+  "intentionsOrOrders": 237,
+  "activeIntention": 83,
+  "orders": 169,
+  "intentions": 237,
+  "inProcess": 157,
+  "withoutDate": 8,
   "archived": 210,
   "audit": {
     "onlyChurnEfetivadoAt": 2,
-    "onlyDistratoAssinadoAt": 0,
-    "onlyDistratoTextSigned": 7,
-    "onlyClientDataChurn": 392,
+    "onlyDistratoAssinadoAt": 1,
+    "onlyDistratoTextSigned": 8,
+    "onlyClientDataChurn": 405,
     "multipleSources": 52,
-    "effectiveWithoutConfirmedDate": 7,
-    "totalDistinct": 453,
-    "cancellationsConfirmed": 61,
-    "clientsDataChurn": 401,
-    "overlapCancelAndDataChurn": 9,
+    "effectiveWithoutConfirmedDate": 8,
+    "totalDistinct": 468,
+    "cancellationsConfirmed": 63,
+    "clientsDataChurn": 415,
+    "overlapCancelAndDataChurn": 10,
     "dateDivergence": {
       "sameDay": 0,
       "upTo1Day": 1,
-      "over1Day": 7,
-      "maxDiffDays": 62,
-      "clientsAffected": 8
+      "over1Day": 8,
+      "maxDiffDays": 64,
+      "clientsAffected": 9
     }
   },
   "stages": [
@@ -48,8 +48,8 @@
     {
       "label": "Offboarding",
       "key": "offboarding",
-      "count": 89,
-      "percent": 16.4,
+      "count": 157,
+      "percent": 25.1,
       "exclusive": true,
       "rule": "Etapa atual exclusiva: efetivado > offboarding > retenção > intenção/pedido > nenhuma.",
       "universe": "Clientes no processo de cancelamento (não arquivados por padrão)."
@@ -57,8 +57,8 @@
     {
       "label": "Cancelamento efetivado",
       "key": "efetivado",
-      "count": 453,
-      "percent": 83.6,
+      "count": 468,
+      "percent": 74.9,
       "exclusive": true,
       "rule": "Etapa atual exclusiva: efetivado > offboarding > retenção > intenção/pedido > nenhuma.",
       "universe": "Clientes no processo de cancelamento (não arquivados por padrão)."
@@ -76,42 +76,42 @@
   "segmentTop": [
     [
       "PRINCIPAL",
-      198
+      237
     ],
     [
       "APEX",
-      195
+      217
     ],
     [
       "DEBTS",
-      49
+      55
     ],
     [
       "PRIVATE",
-      46
+      52
     ],
     [
       "OVER",
-      33
+      38
     ],
     [
       "Dados insuficientes",
-      21
+      26
     ]
   ],
-  "insuficientes": 21,
+  "insuficientes": 26,
   "situations": [
     [
       "Cancelamento efetivado com data",
-      446
+      460
     ],
     [
       "Em offboarding",
-      89
+      157
     ],
     [
       "Cancelamento efetivado sem data",
-      7
+      8
     ]
   ],
   "monthSample": [
@@ -119,27 +119,27 @@
       "month": "2026-06",
       "label": "2026-06",
       "intentions": 30,
-      "effective": 113,
-      "effectiveCancellations": 113,
-      "difference": -83,
+      "effective": 112,
+      "effectiveCancellations": 112,
+      "difference": -82,
       "note": "Séries independentes por data; não é taxa de conversão do mesmo cliente."
     },
     {
       "month": "2026-07",
       "label": "2026-07",
       "intentions": 36,
-      "effective": 97,
-      "effectiveCancellations": 97,
-      "difference": -61,
+      "effective": 100,
+      "effectiveCancellations": 100,
+      "difference": -64,
       "note": "Séries independentes por data; não é taxa de conversão do mesmo cliente."
     },
     {
       "month": "2026-08",
       "label": "2026-08",
-      "intentions": 0,
-      "effective": 0,
-      "effectiveCancellations": 0,
-      "difference": 0,
+      "intentions": 10,
+      "effective": 12,
+      "effectiveCancellations": 12,
+      "difference": -2,
       "note": "Séries independentes por data; não é taxa de conversão do mesmo cliente."
     }
   ],

@@ -36,6 +36,51 @@ const CYCLE_VIEW = "vw_clients_ciclo_churn";
 const CYCLE_SELECT =
   "client_id,programa,status,data_inicio_ciclo,fl_churn,data_churn_consolidada";
 
+function csatScoreOf(score) {
+  const value = Number(score);
+  if (!Number.isFinite(value) || value < 1) return null;
+  return Math.min(value, 5);
+}
+
+function isCsatRow(row) {
+  return String(row?.tipo_de_forms || "")
+    .normalize("NFD")
+    .replace(/\p{M}/gu, "")
+    .toLowerCase()
+    .includes("csat");
+}
+
+function dedupeCsatResponses(rows) {
+  const best = new Map();
+  for (const row of rows || []) {
+    if (!isCsatRow(row)) continue;
+    const clientId = row?.client_id != null ? String(row.client_id) : "";
+    if (!clientId) continue;
+    const score = csatScoreOf(row.score);
+    if (score == null) continue;
+    const submittedMs = row.submitted_at ? new Date(row.submitted_at).getTime() : NaN;
+    const createdMs = row.created_at ? new Date(row.created_at).getTime() : NaN;
+    const sortSubmitted = Number.isFinite(submittedMs) ? submittedMs : -1;
+    const sortCreated = Number.isFinite(createdMs) ? createdMs : -1;
+    const cur = best.get(clientId);
+    const better =
+      !cur
+      || sortSubmitted > cur.submittedMs
+      || (sortSubmitted === cur.submittedMs && sortCreated >= cur.createdMs);
+    if (better) {
+      best.set(clientId, {
+        clientId,
+        score,
+        submittedAt: row.submitted_at || null,
+        createdAt: row.created_at || null,
+        submittedMs: sortSubmitted,
+        createdMs: sortCreated,
+      });
+    }
+  }
+  return [...best.values()];
+}
+
 function pct(n, d) {
   if (d == null || d <= 0 || n == null) return null;
   return Math.round((n / d) * 1000) / 10;
@@ -554,6 +599,7 @@ export function buildEpPerformanceFromPayloads(generalPayload, meetingsPayload, 
     : [];
   const npsByClient = new Map(npsConsolidated.map((r) => [r.clientId, r]));
   const npsQuarterByClient = new Map(npsQuarterRows.map((r) => [r.clientId, r]));
+  const csatByClient = new Map(dedupeCsatResponses(options.csatRows || []).map((r) => [r.clientId, r]));
 
   const mechanismsByClient = new Map(
     (Array.isArray(options.mechanismsPayload?.clients) ? options.mechanismsPayload.clients : []).map((c) => [
@@ -710,6 +756,7 @@ export function buildEpPerformanceFromPayloads(generalPayload, meetingsPayload, 
 
     const npsRow = npsByClient.get(clientId);
     const npsQuarterRow = npsQuarterByClient.get(clientId);
+    const csatRow = csatByClient.get(clientId);
     if (npsRow && engineerIsBlank(engineer)) {
       npsThemeMessages.push(`Cliente ${clientId} com NPS sem EP informado.`);
     }
@@ -737,6 +784,8 @@ export function buildEpPerformanceFromPayloads(generalPayload, meetingsPayload, 
       npsSubmittedAt: npsRow?.submittedAt ?? null,
       npsQuarterScore: npsQuarterRow?.score ?? null,
       npsQuarterSubmittedAt: npsQuarterRow?.submittedAt ?? null,
+      csatScore: csatRow?.score ?? null,
+      csatSubmittedAt: csatRow?.submittedAt ?? csatRow?.createdAt ?? null,
       implementedMechanisms,
       implementedMechanismDetails: implDetails,
       hasImplementedMechanism: implementedMechanisms > 0,
@@ -817,6 +866,13 @@ export function buildEpPerformanceFromPayloads(generalPayload, meetingsPayload, 
       const npsEligible = npsBreakdown.responses >= NPS_MIN_RESPONSES_PER_EP;
       const npsRespondentClients = npsBreakdown.responses;
       const npsCoverage = pct(npsRespondentClients, totalClients);
+
+      const csatScores = clients.map((c) => c.csatScore).filter((n) => n != null && Number.isFinite(Number(n)));
+      const csatResponses = csatScores.length;
+      const csatAverage = csatResponses
+        ? round1(csatScores.reduce((a, b) => a + b, 0) / csatResponses)
+        : null;
+      const csatCoverage = pct(csatResponses, totalClients);
 
       const mechAgg = aggregateMechanismsForClients(clients);
       const {
@@ -913,6 +969,9 @@ export function buildEpPerformanceFromPayloads(generalPayload, meetingsPayload, 
         npsSampleStatus: npsSample.code,
         npsEligible,
         npsSampleSmall: npsBreakdown.responses > 0 && !npsEligible,
+        csatAverage,
+        csatResponses,
+        csatCoverage,
         implementedMechanisms,
         clientsWithImplementedMechanisms,
         avgImplementedPerPortfolioClient,
@@ -1464,52 +1523,15 @@ export function buildEpPerformanceFromPayloads(generalPayload, meetingsPayload, 
   };
 }
 
-async function fetchNpsResponses() {
+async function fetchSurveyTable(table, select) {
   const pageSize = 1000;
   let offset = 0;
   const rows = [];
   const key = process.env.DATA_SUPABASE_SERVICE_ROLE_KEY;
   const base = process.env.DATA_SUPABASE_URL;
   while (true) {
-    const url = new URL("/rest/v1/nps_responses", base);
-    url.searchParams.set(
-      "select",
-      "id,client_id,score,submitted_at,tipo_de_forms,created_at",
-    );
-    url.searchParams.set("order", "submitted_at.desc");
-    const response = await fetch(url, {
-      headers: {
-        apikey: key,
-        Authorization: `Bearer ${key}`,
-        "Accept-Profile": "public",
-        Range: `${offset}-${offset + pageSize - 1}`,
-      },
-    });
-    if (!response.ok) {
-      const text = await response.text();
-      throw new Error(`nps_responses: HTTP ${response.status} ${text.slice(0, 160)}`);
-    }
-    const batch = await response.json();
-    rows.push(...batch);
-    if (batch.length < pageSize) break;
-    offset += pageSize;
-    if (offset > 200000) break;
-  }
-  return rows;
-}
-
-async function fetchCsatResponses() {
-  const pageSize = 1000;
-  let offset = 0;
-  const rows = [];
-  const key = process.env.DATA_SUPABASE_SERVICE_ROLE_KEY;
-  const base = process.env.DATA_SUPABASE_URL;
-  while (true) {
-    const url = new URL("/rest/v1/csat_responses", base);
-    url.searchParams.set(
-      "select",
-      "id,typeform_response_id,form_response_id,client_id,tipo_de_forms,score,created_at,meeting_date",
-    );
+    const url = new URL(`/rest/v1/${table}`, base);
+    url.searchParams.set("select", select);
     url.searchParams.set("order", "created_at.desc");
     const response = await fetch(url, {
       headers: {
@@ -1521,7 +1543,7 @@ async function fetchCsatResponses() {
     });
     if (!response.ok) {
       const text = await response.text();
-      throw new Error(`csat_responses: HTTP ${response.status} ${text.slice(0, 160)}`);
+      throw new Error(`${table}: HTTP ${response.status} ${text.slice(0, 160)}`);
     }
     const batch = await response.json();
     rows.push(...batch);
@@ -1530,6 +1552,17 @@ async function fetchCsatResponses() {
     if (offset > 200000) break;
   }
   return rows;
+}
+
+async function fetchNpsResponses() {
+  return fetchSurveyTable("nps_responses", "id,client_id,score,submitted_at,tipo_de_forms,created_at");
+}
+
+async function fetchCsatResponses() {
+  return fetchSurveyTable(
+    "csat_responses",
+    "id,typeform_response_id,form_response_id,client_id,tipo_de_forms,score,created_at,meeting_date",
+  );
 }
 
 export async function computeEpPerformancePayload(options = {}) {

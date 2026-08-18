@@ -81,3 +81,18 @@
   from = "/api/assistant-data"
   to = "/.netlify/functions/assistant-data"
   status = 200
+
+[[redirects]]
+  from = "/api/executive-summary"
+  to = "/.netlify/functions/executive-summary"
+  status = 200
+
+[[redirects]]
+  from = "/api/portal-snapshot"
+  to = "/.netlify/functions/portal-snapshot"
+  status = 200
+
+[[redirects]]
+  from = "/api/portal-snapshot/refresh"
+  to = "/.netlify/functions/portal-snapshot"
+  status = 200

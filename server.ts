@@ -60,6 +60,8 @@ const qualityHandler = (await import("./netlify/functions/quality.mjs")).default
 const authConfigHandler = (await import("./netlify/functions/auth-config.mjs")).default;
 const platformUsageHandler = (await import("./netlify/functions/platform-usage.mjs")).default;
 const temporalIndicatorsHandler = (await import("./netlify/functions/temporal-indicators.mjs")).default;
+const executiveSummaryHandler = (await import("./netlify/functions/executive-summary.mjs")).default;
+const portalSnapshotHandler = (await import("./netlify/functions/portal-snapshot.mjs")).default;
 
 const PORT = Number(Bun.env.PORT || 4173);
 
@@ -242,6 +244,10 @@ const server = Bun.serve({
     if (url.pathname === "/api/engagement") return engagementHandler(request);
     if (url.pathname === "/api/platform-usage") return platformUsageHandler(request);
     if (url.pathname === "/api/temporal-indicators") return temporalIndicatorsHandler(request);
+    if (url.pathname === "/api/executive-summary") return executiveSummaryHandler(request);
+    if (url.pathname === "/api/portal-snapshot" || url.pathname === "/api/portal-snapshot/refresh") {
+      return portalSnapshotHandler(request);
+    }
     if (url.pathname === "/api/support") return supportHandler(request);
     if (url.pathname === "/api/cancellations") return cancellationsHandler(request);
     if (url.pathname === "/api/satisfaction") return satisfactionHandler(request);
@@ -261,6 +267,23 @@ const server = Bun.serve({
           : 'application/octet-stream';
         return new Response(file, { headers: { 'Content-Type': type } });
       }
+    }
+    if (url.pathname.startsWith("/assets/")) {
+      const file = Bun.file(`${ROOT}${url.pathname}`);
+      if (await file.exists()) {
+        const type = url.pathname.endsWith(".png") ? "image/png" : "application/octet-stream";
+        return new Response(file, { headers: { "Content-Type": type } });
+      }
+    }
+    if (url.pathname.startsWith("/data/")) {
+      const file = Bun.file(`${ROOT}${url.pathname}`);
+      if (await file.exists()) {
+        const type = url.pathname.endsWith(".json") ? "application/json; charset=utf-8" : "application/octet-stream";
+        return new Response(file, { headers: { "Content-Type": type } });
+      }
+    }
+    if (url.pathname === "/executive.html") {
+      return Response.redirect(`${url.origin}/#executive`, 302);
     }
     if (url.pathname !== "/" && url.pathname !== "/index.html") return new Response("Não encontrado", { status: 404 });
     return new Response(Bun.file(`${ROOT}/index.html`), { headers: { "Content-Type": "text/html; charset=utf-8" } });

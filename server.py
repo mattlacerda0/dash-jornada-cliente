@@ -1109,6 +1109,49 @@ def temporal_indicators_payload():
     return json.loads(result.stdout)
 
 
+def executive_summary_payload():
+    """Consolida o resumo executivo (one page CEO) via Node."""
+    env = os.environ.copy()
+    env["PORTAL_INTERNAL_DATA_RUN"] = "1"
+    result = subprocess.run(
+        [NODE_EXECUTABLE, str(ROOT / "run_executive_summary_api.mjs")],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        env=env,
+        timeout=360,
+    )
+    if result.returncode != 0:
+        detail = (result.stderr or result.stdout or "falha ao gerar executive-summary").strip()
+        raise RuntimeError(detail[:240])
+    return json.loads(result.stdout)
+
+
+def portal_snapshot_payload(refresh=False):
+    """Lê ou regenera o snapshot consolidado do portal via Node."""
+    env = os.environ.copy()
+    env["PORTAL_INTERNAL_DATA_RUN"] = "1"
+    cmd = [NODE_EXECUTABLE, str(ROOT / "run_portal_snapshot_api.mjs")]
+    if refresh:
+        cmd.append("--refresh")
+    result = subprocess.run(
+        cmd,
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        env=env,
+        timeout=900,
+    )
+    if result.returncode != 0:
+        detail = (result.stderr or result.stdout or "falha ao gerar portal-snapshot").strip()
+        if '"code":"portal_snapshot_refresh_in_progress"' in detail or "portal_snapshot_refresh_in_progress" in detail:
+            raise RuntimeError("portal_snapshot_refresh_in_progress")
+        raise RuntimeError(detail[:240])
+    return json.loads(result.stdout)
+
+
 def platform_usage_payload():
     """Reaproveita a consolidação do Netlify Function via Node (fonte única)."""
     env = os.environ.copy()
@@ -1241,6 +1284,8 @@ class Handler(SimpleHTTPRequestHandler):
             "/api/cancellations": ("cancellations", cancellations_payload, "Não foi possível consolidar os cancelamentos"),
             "/api/satisfaction": ("satisfaction", satisfaction_payload, "Nao foi possivel consolidar a pesquisa de satisfacao"),
             "/api/temporal-indicators": ("temporal-indicators", temporal_indicators_payload, "Nao foi possivel consolidar os indicadores temporais"),
+            "/api/executive-summary": ("executive-summary", executive_summary_payload, "Não foi possível consolidar o resumo executivo"),
+            "/api/portal-snapshot": ("portal-snapshot", portal_snapshot_payload, "Não foi possível carregar o snapshot do portal"),
         }
         if path in protected:
             denied = require_corporate_auth(self)
@@ -1342,6 +1387,34 @@ class Handler(SimpleHTTPRequestHandler):
             self.send_header("Content-Length", str(len(body_bytes)))
             self.end_headers()
             self.wfile.write(body_bytes)
+            return
+
+        if path == "/api/portal-snapshot/refresh":
+            denied = require_corporate_auth(self)
+            if denied:
+                status, payload = denied
+                send_json(self, status, payload)
+                return
+            started = datetime.now(timezone.utc)
+            try:
+                send_json(self, 200, portal_snapshot_payload(refresh=True))
+                elapsed_ms = int((datetime.now(timezone.utc) - started).total_seconds() * 1000)
+                print(f"[portal-snapshot] endpoint={path} status=200 ms={elapsed_ms}")
+            except Exception as exc:
+                elapsed_ms = int((datetime.now(timezone.utc) - started).total_seconds() * 1000)
+                message = str(exc)
+                if "portal_snapshot_refresh_in_progress" in message:
+                    print(f"[portal-snapshot] endpoint={path} status=409 ms={elapsed_ms}")
+                    send_json(self, 409, {
+                        "error": "Uma atualização do portal já está em andamento.",
+                        "code": "portal_snapshot_refresh_in_progress",
+                    })
+                    return
+                print(f"[portal-snapshot] endpoint={path} status=500 ms={elapsed_ms} message={message[:200]}")
+                send_json(self, 500, {
+                    "error": "Não foi possível regenerar o snapshot do portal.",
+                    "code": "portal_snapshot_refresh_failed",
+                })
             return
 
         send_json(self, 404, {"error": "Não encontrado.", "code": "not_found"})

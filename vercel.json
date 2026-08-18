@@ -101,6 +101,18 @@
                        "dest":  "/api/quality.js?fn=temporal-indicators"
                    },
                    {
+                       "src":  "/api/executive-summary",
+                       "dest":  "/api/quality.js?fn=executive-summary"
+                   },
+                   {
+                       "src":  "/api/portal-snapshot/refresh",
+                       "dest":  "/api/quality.js?fn=portal-snapshot"
+                   },
+                   {
+                       "src":  "/api/portal-snapshot",
+                       "dest":  "/api/quality.js?fn=portal-snapshot"
+                   },
+                   {
                        "src":  "/api/(.*)",
                        "dest":  "/api/$1.js"
                    },
@@ -111,6 +123,18 @@
                    {
                        "src":  "/favicon.ico",
                        "dest":  "/favicon.ico"
+                   },
+                   {
+                       "src":  "/executive.html",
+                       "dest":  "/executive.html"
+                   },
+                   {
+                       "src":  "/assets/(.*)",
+                       "dest":  "/assets/$1"
+                   },
+                   {
+                       "src":  "/data/(.*)",
+                       "dest":  "/data/$1"
                    },
                    {
                        "src":  "/(.*)",

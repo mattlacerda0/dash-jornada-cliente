@@ -38,7 +38,7 @@ const STATUS_DIM_SELECT = "id,name,color,display_order,status_type,funnel_type,c
 const STATUS_UNKNOWN_LABEL = "Status não informado";
 
 const CLIENT_SELECT =
-  "id,codigo,name,email,status,data_inicio_ciclo,created_at,engenheiro_patrimonial,segmentacao,motivo_churn,data_churn,ciclo";
+  "id,codigo,name,email,status,data_inicio_ciclo,data_fim_ciclo,created_at,engenheiro_patrimonial,segmentacao,motivo_churn,data_churn,ciclo,programa";
 const CANCEL_SELECT = CANCELLATION_PROCESS_SELECT;
 const FINANCIAL_SELECT =
   "id,client_id,ultima_renda_mensal,ultimo_aporte,reserva_liquidez,valor_imoveis_quitados,cheque_especial,parcelamento_cartao,credito_pessoal,credito_consignado,created_at,updated_at";
@@ -97,6 +97,8 @@ const USED_FIELDS = [
   { schema: "public", table: "cancellations", column: "valor_a_reembolsar", role: "financial" },
   { schema: "public", table: "clients", column: "id", role: "clientId" },
   { schema: "public", table: "clients", column: "data_inicio_ciclo", role: "hireDate" },
+  { schema: "public", table: "clients", column: "data_fim_ciclo", role: "cycleEndDate" },
+  { schema: "public", table: "clients", column: "programa", role: "program" },
   { schema: "public", table: "clients", column: "created_at", role: "hireFallback" },
   { schema: "public", table: "clients", column: "engenheiro_patrimonial", role: "engineer" },
   { schema: "public", table: "client_financial_data", column: "updated_at", role: "financialUpdate" },
@@ -846,6 +848,10 @@ function buildPayload(
     const createdAt = client ? parseFlexibleDate(client.created_at) : null;
     const hireDate = hireCycle || createdAt;
     const hireSource = hireCycle ? "data_inicio_ciclo" : createdAt ? "created_at" : null;
+    const cycleEndDate = client ? parseFlexibleDate(client.data_fim_ciclo) : null;
+    const cancellationTiming = hasEfetivado && cancellationDate && cycleEndDate
+      ? (cancellationDate < cycleEndDate ? "Antes do fim do ciclo" : "Não renovação")
+      : "Sem dado";
 
     let daysToCancellation = null;
     let stayMonths = null;
@@ -1000,6 +1006,7 @@ function buildPayload(
       clientCode: blankToNull(client?.codigo) || "Não informado",
       clientName: blankToNull(client?.name) || "Não informado",
       engineer: normalizeLabel(client?.engenheiro_patrimonial).label,
+      program: blankToNull(client?.programa),
       segment: segmentLabel,
       analyticalStatus: clientAnalyticalStatus,
       exclusiveStage: exclusiveRecalc.label,
@@ -1034,6 +1041,8 @@ function buildPayload(
       distratoText: proc.distratoText || null,
       hireDate: toIso(hireDate),
       hireDateSource: hireSource,
+      cycleEndDate: toIso(cycleEndDate),
+      cancellationTiming,
       daysToCancellation,
       stayMonths,
       stayRange,
@@ -1213,6 +1222,10 @@ function buildPayload(
 
   const byReasonCategoryEfetivado = distributionFrom(efetivados, (r) => r.reasonCategory || r.category);
   const topReasonCategory = byReasonCategoryEfetivado[0]?.label || null;
+  const secondReasonCategory = byReasonCategoryEfetivado[1]?.label || topReasonCategory;
+  const efetivadoReasons = distributionFrom(efetivados.filter((r) => r.hasReason), (r) => r.reason);
+  const topReason = efetivadoReasons[0]?.label || null;
+  const secondReason = efetivadoReasons[1]?.label || topReason;
   const cancellationReasonsBySemester = (() => {
     const semesters = new Map();
     for (const row of efetivados) {
@@ -1487,8 +1500,9 @@ function buildPayload(
         withoutReasonPercent: pct(efetivadoWithoutReason, effectiveCancellations || 1),
       },
       topReasonCategory,
-      topReason:
-        distributionFrom(efetivados.filter((r) => r.hasReason), (r) => r.reason)[0]?.label || null,
+      secondReasonCategory,
+      topReason,
+      secondReason,
       othersReasonCategoryCount: othersCount,
       notInformedReasonCategoryCount: notInformedCount,
       medianDaysToCancellation: stayStats.median,

@@ -2,6 +2,7 @@ import { requireCorporateAuth } from "./_shared/auth.mjs";
 import { buildPortalSnapshot } from "./_shared/portal-snapshot-builder.mjs";
 import {
   acquireRefreshLock,
+  isServerlessRuntime,
   readLockInfo,
   readPortalSnapshot,
   releaseRefreshLock,
@@ -31,6 +32,15 @@ export default async function handler(request) {
   }
 
   if (request.method === "POST") {
+    if (isServerlessRuntime()) {
+      return json(
+        {
+          error: "No ambiente serverless o snapshot unificado não é persistido. O portal atualiza cada aba pelas APIs.",
+          code: "portal_snapshot_serverless_unsupported",
+        },
+        501,
+      );
+    }
     const acquired = await acquireRefreshLock();
     if (!acquired) {
       const lock = await readLockInfo();

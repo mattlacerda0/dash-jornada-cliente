@@ -19308,6 +19308,64 @@ ${dataRows}
       return false;
     }
 
+    const PORTAL_SNAPSHOT_TAB_APIS = [
+      ['general', '/api/general-data'],
+      ['onboarding', '/api/onboarding'],
+      ['plan', '/api/patrimonial-plan'],
+      ['meetings', '/api/meetings'],
+      ['mechanisms', '/api/mechanisms'],
+      ['pharusMechanisms', '/api/pharus-mechanisms'],
+      ['financial', '/api/financial-updates'],
+      ['engagement', '/api/engagement'],
+      ['platform', '/api/platform-usage'],
+      ['support', '/api/support'],
+      ['cancellations', '/api/cancellations'],
+      ['satisfaction', '/api/satisfaction?program=all'],
+      ['temporal', '/api/temporal-indicators'],
+      ['epPerformance', '/api/ep-performance'],
+      ['statisticalCrosses', '/api/statistical-crosses'],
+      ['quality', '/api/quality'],
+      ['executive', '/api/executive-summary'],
+    ];
+
+    async function fetchPortalSnapshotFromTabApis() {
+      const snapshot = {
+        meta: {
+          version: 1,
+          generatedAt: new Date().toISOString(),
+          source: 'tab-apis',
+          keys: [],
+        },
+      };
+      const batchSize = 3;
+      for (let i = 0; i < PORTAL_SNAPSHOT_TAB_APIS.length; i += batchSize) {
+        const batch = PORTAL_SNAPSHOT_TAB_APIS.slice(i, i + batchSize);
+        const results = await Promise.allSettled(batch.map(async ([key, path]) => {
+          const response = await apiFetch(`${path}${path.includes('?') ? '&' : '?'}t=${Date.now()}`, { cache: 'no-store' });
+          const body = await response.json().catch(() => ({}));
+          if (!response.ok) {
+            const err = new Error(body.error || path);
+            err.status = response.status;
+            throw err;
+          }
+          return [key, body];
+        }));
+        for (const result of results) {
+          if (result.status !== 'fulfilled') {
+            console.warn('[Portal Snapshot] aba não atualizada', result.reason);
+            continue;
+          }
+          const [key, body] = result.value;
+          snapshot[key] = body;
+          snapshot.meta.keys.push(key);
+        }
+      }
+      if (!snapshot.meta.keys.length) {
+        throw new Error('Não foi possível atualizar os dados do portal.');
+      }
+      return snapshot;
+    }
+
     async function runPortalSnapshotRefresh({ background = false, hadStale = false } = {}) {
       if (portalSnapshotState.refreshPromise) return portalSnapshotState.refreshPromise;
 
@@ -19327,22 +19385,34 @@ ${dataRows}
         const previousGeneratedAt = portalSnapshotState.meta?.generatedAt || null;
 
         try {
-          const response = await apiFetch('/api/portal-snapshot/refresh', { method: 'POST' });
-          const snapshot = await response.json().catch(() => ({}));
+          let snapshot = null;
+          try {
+            const response = await apiFetch('/api/portal-snapshot/refresh', { method: 'POST' });
+            const payload = await response.json().catch(() => ({}));
 
-          if (response.status === 409) {
-            if (background) {
-              await pollPortalSnapshotUntilFresh(previousGeneratedAt);
+            if (response.status === 409) {
+              if (background) {
+                await pollPortalSnapshotUntilFresh(previousGeneratedAt);
+                return;
+              }
+              console.warn('[Portal Snapshot] atualização já em andamento');
+              syncPortalUpdatingIndicator(false);
               return;
             }
-            console.warn('[Portal Snapshot] atualização já em andamento');
-            syncPortalUpdatingIndicator(false);
-            return;
+
+            if (response.ok) {
+              snapshot = payload;
+            } else if (![404, 501, 500, 413].includes(response.status) && payload.code !== 'portal_snapshot_serverless_unsupported') {
+              throw new Error(payload.error || payload.detail || 'Falha ao atualizar snapshot do portal.');
+            }
+          } catch (error) {
+            if (error?.code === 'AUTH_REQUIRED' || error?.message === 'AUTH_REQUIRED') throw error;
+            if (!snapshot) {
+              console.warn('[Portal Snapshot] refresh unificado indisponível, atualizando por aba', error instanceof Error ? error.message : error);
+            }
           }
 
-          if (!response.ok) {
-            throw new Error(snapshot.error || snapshot.detail || 'Falha ao atualizar snapshot do portal.');
-          }
+          if (!snapshot) snapshot = await fetchPortalSnapshotFromTabApis();
 
           hydratePortalSnapshot(snapshot);
           writePortalSnapshotCache(snapshot);
@@ -19351,8 +19421,10 @@ ${dataRows}
           if (error?.code === 'AUTH_REQUIRED' || error?.message === 'AUTH_REQUIRED') return;
           console.error('[Portal Snapshot] refresh failed', error);
           syncPortalUpdatingIndicator(false);
-          if (!background) {
-            alert(error.message || 'Não foi possível atualizar os dados do portal.');
+          const el = getViewUpdatedElement();
+          if (el && !background) {
+            el.textContent = 'Não foi possível atualizar agora. Tente de novo.';
+            el.classList.add('portal-updating-label');
           }
         } finally {
           portalSnapshotState.refreshing = false;

@@ -7,6 +7,10 @@ export const SNAPSHOT_PATH = resolve(ROOT, "data", "portal-snapshot.json");
 export const LOCK_PATH = resolve(ROOT, "data", ".portal-snapshot.lock");
 export const LOCK_MAX_AGE_MS = 15 * 60 * 1000;
 
+export function isServerlessRuntime() {
+  return Boolean(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME);
+}
+
 let memoryLock = false;
 
 export function isRefreshLocked() {
@@ -35,12 +39,16 @@ export async function acquireRefreshLock() {
   }
 
   memoryLock = true;
-  await mkdir(dirname(LOCK_PATH), { recursive: true });
-  await writeFile(
-    LOCK_PATH,
-    JSON.stringify({ startedAt: new Date().toISOString(), pid: process.pid }),
-    "utf8",
-  );
+  try {
+    await mkdir(dirname(LOCK_PATH), { recursive: true });
+    await writeFile(
+      LOCK_PATH,
+      JSON.stringify({ startedAt: new Date().toISOString(), pid: process.pid }),
+      "utf8",
+    );
+  } catch (error) {
+    if (!isServerlessRuntime()) throw error;
+  }
   return true;
 }
 
@@ -64,7 +72,6 @@ export async function readPortalSnapshot() {
 }
 
 export async function writePortalSnapshot(snapshot) {
-  await mkdir(dirname(SNAPSHOT_PATH), { recursive: true });
   const payload = {
     ...snapshot,
     meta: {
@@ -73,7 +80,13 @@ export async function writePortalSnapshot(snapshot) {
       version: snapshot.meta?.version || 1,
     },
   };
-  await writeFile(SNAPSHOT_PATH, `${JSON.stringify(payload)}\n`, "utf8");
+  try {
+    await mkdir(dirname(SNAPSHOT_PATH), { recursive: true });
+    await writeFile(SNAPSHOT_PATH, `${JSON.stringify(payload)}\n`, "utf8");
+  } catch (error) {
+    if (!isServerlessRuntime()) throw error;
+    payload.meta = { ...payload.meta, persisted: false };
+  }
   return payload;
 }
 

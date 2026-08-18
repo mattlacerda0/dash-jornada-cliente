@@ -113,6 +113,10 @@
                        "dest":  "/api/quality.js?fn=portal-snapshot"
                    },
                    {
+                       "src":  "/api/ai-analysis",
+                       "dest":  "/api/quality.js?fn=ai-analysis"
+                   },
+                   {
                        "src":  "/api/(.*)",
                        "dest":  "/api/$1.js"
                    },

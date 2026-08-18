@@ -211,30 +211,56 @@ function distributionOrdered(items, keyFn, orderedLabels) {
   }));
 }
 
+function parseContentRangeTotal(contentRange, fallbackLength) {
+  const match = String(contentRange || "").match(/\/(\d+)\s*$/);
+  return match ? Number(match[1]) : fallbackLength;
+}
+
+async function fetchPage(table, select, order, offset, pageSize, extraHeaders = {}) {
+  const key = process.env.DATA_SUPABASE_SERVICE_ROLE_KEY;
+  const url = new URL(`/rest/v1/${table}`, process.env.DATA_SUPABASE_URL);
+  url.searchParams.set("select", select);
+  url.searchParams.set("order", order);
+  const response = await fetch(url, {
+    headers: {
+      apikey: key,
+      Authorization: `Bearer ${key}`,
+      "Accept-Profile": "public",
+      Range: `${offset}-${offset + pageSize - 1}`,
+      ...extraHeaders,
+    },
+  });
+  if (!response.ok) throw new Error(`${table}: HTTP ${response.status}`);
+  const batch = await response.json();
+  return { batch, contentRange: response.headers.get("content-range") || "" };
+}
+
 async function fetchAll(table, select, order = "id.asc") {
   const pageSize = 1000;
-  let offset = 0;
-  const rows = [];
-  const key = process.env.DATA_SUPABASE_SERVICE_ROLE_KEY;
-  while (true) {
-    const url = new URL(`/rest/v1/${table}`, process.env.DATA_SUPABASE_URL);
-    url.searchParams.set("select", select);
-    url.searchParams.set("order", order);
-    const response = await fetch(url, {
-      headers: {
-        apikey: key,
-        Authorization: `Bearer ${key}`,
-        "Accept-Profile": "public",
-        Range: `${offset}-${offset + pageSize - 1}`,
-      },
-    });
-    if (!response.ok) throw new Error(`${table}: HTTP ${response.status}`);
-    const batch = await response.json();
-    rows.push(...batch);
-    if (batch.length < pageSize) break;
-    offset += pageSize;
-    if (offset > 200000) break;
+  const first = await fetchPage(table, select, order, 0, pageSize, { Prefer: "count=exact" });
+  const rows = [...first.batch];
+  if (first.batch.length < pageSize) return rows;
+
+  const total = parseContentRangeTotal(first.contentRange, first.batch.length);
+  const offsets = [];
+  for (let offset = pageSize; offset < total && offset <= 200000; offset += pageSize) {
+    offsets.push(offset);
   }
+  if (!offsets.length) {
+    let offset = pageSize;
+    while (offset <= 200000) {
+      const page = await fetchPage(table, select, order, offset, pageSize);
+      rows.push(...page.batch);
+      if (page.batch.length < pageSize) break;
+      offset += pageSize;
+    }
+    return rows;
+  }
+
+  const rest = await Promise.all(
+    offsets.map((offset) => fetchPage(table, select, order, offset, pageSize)),
+  );
+  for (const page of rest) rows.push(...page.batch);
   return rows;
 }
 
@@ -1037,12 +1063,17 @@ export async function computeMechanismsPayload() {
     err.code = "config";
     throw err;
   }
-  const [clientsRaw, cmRowsRaw, mechanisms, cancellationsRaw, financialRowsRaw] = await Promise.all([
+  const pharusPromise = import("./pharus-mechanisms.mjs")
+    .then((mod) => mod.computePharusMechanismsPayload())
+    .catch((err) => ({ __pharusError: err }));
+
+  const [clientsRaw, cmRowsRaw, mechanisms, cancellationsRaw, financialRowsRaw, pharus] = await Promise.all([
     fetchAll("clients", CLIENT_SELECT),
     fetchAll("client_mecanismos", CM_SELECT, "client_id.asc"),
     fetchAll("mecanismos", MEC_SELECT),
     fetchAll("cancellations", CANCEL_SELECT),
     fetchAll("client_financial_data", FINANCIAL_SELECT),
+    pharusPromise,
   ]);
   const clients = filterExcludedClients(clientsRaw);
   const removedIds = excludedClientIds(clientsRaw);
@@ -1057,8 +1088,7 @@ export async function computeMechanismsPayload() {
   let crossSourceRows = [];
   let crossSourceWarnings = null;
   try {
-    const { computePharusMechanismsPayload } = await import("./pharus-mechanisms.mjs");
-    const pharus = await computePharusMechanismsPayload();
+    if (pharus?.__pharusError) throw pharus.__pharusError;
     if (pharus?.available !== false && pharus?.success !== false) {
       const qvWithMech = (payload.clients || []).map((c) => ({
         id: c.clientId,
@@ -1080,13 +1110,15 @@ export async function computeMechanismsPayload() {
         row.phone = raw.phone || raw.phone_digits || row.phone;
       }
       const mechCountByUser = new Map();
+      const sampleByUser = new Map();
       for (const r of pharus.rows || []) {
         const uid = String(r.userId || "");
         if (!uid) continue;
         mechCountByUser.set(uid, (mechCountByUser.get(uid) || 0) + 1);
+        if (!sampleByUser.has(uid)) sampleByUser.set(uid, r);
       }
       const pharusUsers = [...mechCountByUser.entries()].map(([userId, mechanismCount]) => {
-        const sample = (pharus.rows || []).find((r) => String(r.userId) === userId) || {};
+        const sample = sampleByUser.get(userId) || {};
         return {
           userId,
           name: sample.userName,

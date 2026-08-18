@@ -9,16 +9,22 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    :root{--color-bg:#0d0d0d;--color-surface:#1a1a1a;--color-surface-2:#222;--color-border:#303030;--color-border-strong:#444;--color-primary:#f47920;--color-primary-soft:rgba(244,121,32,.13);--color-primary-tint:rgba(244,121,32,.08);--color-text:#f7f7f7;--color-text-muted:#b7b7b7;--color-text-subtle:#818181;--color-success:#42c985;--color-warning:#f6bd4b;--color-danger:#ef6b73;--color-info:#69a8ff;--radius-md:8px;--radius-lg:12px;--radius-xl:16px;--space-1:4px;--space-2:8px;--space-3:12px;--space-4:16px;--space-5:24px;--space-6:32px;--shadow-card:0 14px 34px rgba(0,0,0,.18)}
+    :root{--color-bg:#0d0d0d;--color-surface:#1a1a1a;--color-surface-2:#222;--color-border:#303030;--color-border-strong:#444;--color-primary:#f47920;--color-primary-soft:rgba(244,121,32,.13);--color-primary-tint:rgba(244,121,32,.08);--color-text:#f7f7f7;--color-text-muted:#b7b7b7;--color-text-subtle:#818181;--color-success:#42c985;--color-warning:#f6bd4b;--color-danger:#ef6b73;--color-info:#69a8ff;--color-ai-gold:#d4b45a;--color-ai-gold-bright:#f0d78c;--color-ai-gold-deep:#8f6f28;--color-ai-gold-ink:#16120a;--color-ai-gold-glow:rgba(212,180,90,.32);--radius-md:8px;--radius-lg:12px;--radius-xl:16px;--space-1:4px;--space-2:8px;--space-3:12px;--space-4:16px;--space-5:24px;--space-6:32px;--shadow-card:0 14px 34px rgba(0,0,0,.18)}
     *{box-sizing:border-box}body{margin:0;background:var(--color-bg);color:var(--color-text);font-family:Inter,system-ui,sans-serif;line-height:1.5;color-scheme:dark}button,input,select{font:inherit}
     .topbar{position:sticky;top:0;z-index:10;height:64px;border-bottom:1px solid var(--color-border);background:rgba(13,13,13,.88);backdrop-filter:blur(14px);display:flex;align-items:center;padding:0 28px}
-    .brand{display:flex;align-items:center;gap:12px;font-weight:700}.brand-mark{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;flex-shrink:0;background:var(--color-primary);color:#111;font-size:12px;font-weight:800;letter-spacing:0}.brand span:last-child{color:var(--color-text-muted);font-weight:500}
+    .brand{display:flex;align-items:center;gap:12px;font-weight:700}
+    .brand-mark{width:30px;height:30px;border-radius:8px;display:block;object-fit:contain;flex-shrink:0;background:#111;padding:2px}
+    .brand span:last-child{color:var(--color-text-muted);font-weight:500}
     .layout{display:grid;grid-template-columns:238px minmax(0,1fr);min-height:calc(100vh - 64px)}
     .sidebar{border-right:1px solid var(--color-border);padding:24px 16px;background:#111}
     .sidebar-label,.eyebrow{font-size:11px;letter-spacing:.11em;text-transform:uppercase;color:var(--color-text-subtle);font-weight:700}
     .nav{display:grid;gap:6px;margin-top:12px}.nav button{display:flex;align-items:center;gap:10px;width:100%;border:0;background:transparent;color:var(--color-text-muted);padding:10px 12px;border-radius:var(--radius-md);text-align:left;cursor:pointer}.nav button:hover{background:var(--color-surface-2);color:var(--color-text)}.nav button.active{background:var(--color-primary-soft);color:#ffab6f}.nav button[disabled]{opacity:.42;cursor:not-allowed}.nav button.nav-disabled{opacity:.55;cursor:not-allowed}.nav button.nav-disabled:hover{background:transparent;color:var(--color-text-muted)}.nav button.nav-disabled .help{margin-left:auto;opacity:1}.nav-icon{width:18px;height:18px;flex:0 0 18px;display:inline-flex;align-items:center;justify-content:center;color:currentColor}.nav-icon svg{width:100%;height:100%;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.soon{margin-left:auto;font-size:9px;text-transform:uppercase;color:var(--color-text-subtle)}
     main{min-width:0;padding:32px}.container{max-width:1450px;margin:0 auto}.view{display:none}.view.active{display:block}
     .page-header{display:flex;justify-content:space-between;gap:24px;align-items:flex-start}.page-header h1{font-size:30px;line-height:1.2;margin:5px 0 8px}.page-header p{margin:0;color:var(--color-text-muted);max-width:720px}
+    .page-header > div:first-child{min-width:0;flex:1 1 auto}
+    .page-header-title-row{display:flex;align-items:center;justify-content:flex-start;gap:10px 12px;flex-wrap:wrap;width:fit-content;max-width:100%;min-width:0}
+    .page-header-title-row h1{flex:0 1 auto;width:auto;max-width:100%;min-width:0;overflow-wrap:anywhere;margin:5px 0 8px}
+    .page-header-title-row .btn-ai-analysis{flex:0 0 auto;margin:2px 0 8px}
     .status{font-size:12px;color:var(--color-text-muted);text-align:right}.status b{display:block;font-weight:600;margin-bottom:3px}
     .portal-alert--warning,.badge.sample-small,#gDataAlert,#epMethodAlert,#epSourceAlert,[id$="SourceAlert"]{display:none!important}
     .portal-updating-label{color:var(--color-warning);font-style:italic}
@@ -62,7 +68,15 @@
     @media(max-width:1100px){#gKpis1.summary{grid-template-columns:repeat(2,minmax(0,1fr))}}
     @media(max-width:780px){#gKpis1.summary{grid-template-columns:1fr}}
     .metric,.field-card,.table-panel,.chart-card{background:linear-gradient(145deg,var(--color-surface),#171717);border:1px solid var(--color-border);border-radius:var(--radius-lg);box-shadow:var(--shadow-card)}
-    .metric{padding:18px}.metric.highlight{border-top:2px solid var(--color-primary)}
+    .metric{padding:18px}
+    .metric.highlight,
+    .kpi-card--highlight,
+    .metric.kpi-primary,
+    .metric.kpi-effective{
+      border:1px solid rgba(244,121,32,.36);
+      box-shadow:0 0 0 1px rgba(244,121,32,.08),0 10px 26px rgba(244,121,32,.10),0 0 22px rgba(244,121,32,.12);
+      background:linear-gradient(165deg,rgba(244,121,32,.09),transparent 46%),linear-gradient(145deg,var(--color-surface),#171717);
+    }
     .metric-label{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--color-text-subtle);font-weight:700;display:flex;align-items:center;gap:6px}
     .metric-value{font-size:30px;font-weight:700;margin:7px 0 2px}.metric-note{font-size:12px;color:var(--color-text-muted)}
     .help{cursor:help;color:var(--color-text-subtle);border:1px solid var(--color-border);border-radius:999px;width:16px;height:16px;display:inline-grid;place-items:center;font-size:10px;position:relative}
@@ -107,9 +121,8 @@
     .kpi-block-label:first-of-type{margin-top:4px}
     /* Mecanismos BASE QV: destaque laranja */
     #view-mechanisms .metric.kpi-primary{
-      border-color:rgba(244,121,32,.42);
-      border-top:2px solid var(--color-primary);
-      background:linear-gradient(180deg,var(--color-primary-tint),transparent);
+      border-color:rgba(244,121,32,.36);
+      background:linear-gradient(165deg,rgba(244,121,32,.09),transparent 46%),linear-gradient(145deg,var(--color-surface),#171717);
     }
     #view-mechanisms .metric.kpi-secondary{
       border-color:var(--color-border);
@@ -117,7 +130,6 @@
       opacity:1;
     }
     #view-mechanisms .metric.kpi-secondary .metric-value{font-size:26px}
-    #view-mechanisms .metric.highlight{border-top-color:var(--color-primary)}
     /* Visão consolidada + App Pharus: destaque azul */
     #view-mechanisms #kKpisCombined .metric.kpi-blue,
     #view-mechanisms .pharus-section .metric.kpi-primary{
@@ -362,10 +374,9 @@
       #view-meetings .meeting-type-value{grid-area:value}
     }
     #view-cancellations .metric.kpi-effective{
-      border:1px solid rgba(244,121,32,.55);
-      box-shadow:0 0 0 1px rgba(244,121,32,.12),0 0 24px rgba(244,121,32,.18);
-      border-top:2px solid var(--color-primary);
-      background:linear-gradient(180deg,rgba(244,121,32,.14),rgba(26,26,26,.92));
+      border:1px solid rgba(244,121,32,.40);
+      box-shadow:0 0 0 1px rgba(244,121,32,.08),0 10px 26px rgba(244,121,32,.12),0 0 22px rgba(244,121,32,.12);
+      background:linear-gradient(165deg,rgba(244,121,32,.10),transparent 46%),linear-gradient(145deg,var(--color-surface),#171717);
     }
     #view-cancellations .metric.kpi-effective .metric-label{color:#f0b07a}
     #view-cancellations .metric.kpi-effective .metric-value{color:#ffc796;font-size:36px}
@@ -391,10 +402,9 @@
       top:8px;right:8px;width:28px;height:28px
     }
     #view-cancellations .metric.kpi-primary{
-      border-color:rgba(244,121,32,.45);
-      border-top:2px solid var(--color-primary);
-      background:linear-gradient(165deg,rgba(244,121,32,.14),var(--color-surface) 58%);
-      box-shadow:0 0 0 1px rgba(244,121,32,.12),0 10px 28px rgba(244,121,32,.12),var(--shadow-card);
+      border-color:rgba(244,121,32,.36);
+      background:linear-gradient(165deg,rgba(244,121,32,.09),transparent 46%),linear-gradient(145deg,var(--color-surface),#171717);
+      box-shadow:0 0 0 1px rgba(244,121,32,.08),0 10px 26px rgba(244,121,32,.10),0 0 22px rgba(244,121,32,.12);
     }
     #view-cancellations .metric.kpi-primary .metric-label{color:#f0b07a}
     #view-cancellations .metric.kpi-primary .metric-value{color:#ffc796;font-size:34px}
@@ -707,6 +717,7 @@
       pointer-events:none;
       transition:opacity .18s ease,transform .18s ease,max-height .18s ease,margin .18s ease,padding .18s ease,border .18s ease;
     }
+    .view .portal-alert{display:none!important}
     @media (prefers-reduced-motion:reduce){
       .portal-alert.portal-alert--closing,
       .portal-alert.is-dismissing{transition:none;transform:none}
@@ -801,9 +812,8 @@
       #sChartPeriod .support-period-scroll.is-compact{overflow-x:auto}
     }
     #view-support .metric.kpi-primary{
-      border-color:rgba(244,121,32,.45);
-      border-top:2px solid var(--color-primary);
-      background:linear-gradient(165deg,rgba(244,121,32,.14),var(--color-surface) 58%);
+      border-color:rgba(244,121,32,.36);
+      background:linear-gradient(165deg,rgba(244,121,32,.09),transparent 46%),linear-gradient(145deg,var(--color-surface),#171717);
     }
     #view-support .metric.kpi-primary .metric-label{color:#f0b07a}
     #view-support .metric.kpi-primary .metric-value{color:#ffc796;font-size:34px}
@@ -997,15 +1007,16 @@
       .auth-card h1{font-size:20px}
     }
     /* -------- Assistente da Jornada (chatbot) -------- */
-    .asst-launcher{position:fixed;right:24px;bottom:24px;z-index:60;display:inline-flex;align-items:center;gap:10px;height:48px;padding:0 18px;border-radius:999px;border:1px solid var(--color-primary);background:linear-gradient(145deg,#f47920,#d9660f);color:#17110d;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;box-shadow:0 8px 22px rgba(0,0,0,.32);transition:transform .18s ease,box-shadow .18s ease,filter .18s ease}
-    .asst-launcher:hover{transform:translateY(-2px);box-shadow:0 12px 28px rgba(0,0,0,.4);filter:brightness(1.04)}
-    .asst-launcher:focus-visible{outline:3px solid var(--color-primary-soft);outline-offset:2px}
-    .asst-launcher-icon{width:22px;height:22px;flex-shrink:0}
-    .asst-launcher-label{white-space:nowrap;line-height:1}
+    .asst-launcher{position:fixed;right:24px;bottom:24px;z-index:60;display:inline-flex;align-items:center;gap:10px;height:48px;padding:0 18px;border-radius:999px;border:1px solid #e8c97a;background:linear-gradient(145deg,#f3dd9a,#d4b45a 52%,#c49a3e);color:var(--color-ai-gold-ink);font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 8px 22px rgba(0,0,0,.32),0 0 22px var(--color-ai-gold-glow);overflow:hidden;isolation:isolate;transition:transform .18s ease,box-shadow .18s ease,filter .18s ease}
+    .asst-launcher::after{content:"";position:absolute;top:-30%;bottom:-30%;left:0;width:38%;background:linear-gradient(105deg,transparent 10%,rgba(255,248,220,.28) 38%,rgba(255,255,255,.55) 50%,rgba(240,215,140,.18) 62%,transparent 88%);transform:translateX(-180%) skewX(-18deg);animation:aiGoldSheen 6.4s ease-in-out infinite;pointer-events:none;z-index:1}
+    .asst-launcher:hover{transform:translateY(-2px);box-shadow:0 12px 28px rgba(0,0,0,.4),0 0 28px var(--color-ai-gold-glow);filter:brightness(1.05)}
+    .asst-launcher:focus-visible{outline:3px solid var(--color-ai-gold-glow);outline-offset:2px}
+    .asst-launcher-icon{width:22px;height:22px;flex-shrink:0;position:relative;z-index:2}
+    .asst-launcher-label{white-space:nowrap;line-height:1;position:relative;z-index:2}
     /* Painel aberto: esconde o launcher (sem dois controles de fechar) */
     .asst-launcher[aria-expanded="true"]{opacity:0;visibility:hidden;pointer-events:none;transform:translateY(8px)}
     .asst-launcher.asst-pulse{animation:asstLauncherPulse 1.4s ease-in-out 2}
-    @keyframes asstLauncherPulse{0%,100%{box-shadow:0 8px 22px rgba(0,0,0,.32)}50%{box-shadow:0 8px 22px rgba(0,0,0,.32),0 0 0 8px rgba(244,121,32,.22)}}
+    @keyframes asstLauncherPulse{0%,100%{box-shadow:0 8px 22px rgba(0,0,0,.32),0 0 18px var(--color-ai-gold-glow)}50%{box-shadow:0 8px 22px rgba(0,0,0,.32),0 0 0 8px rgba(212,180,90,.22)}}
     /* Balão de descoberta */
     .asst-hint{position:fixed;right:24px;bottom:84px;z-index:61;max-width:264px;display:flex;align-items:flex-start;gap:10px;background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-md);box-shadow:var(--shadow-card);padding:12px 12px 12px 14px;opacity:0;transform:translateY(6px);transition:opacity .2s ease,transform .2s ease}
     .asst-hint.show{opacity:1;transform:translateY(0)}
@@ -1013,13 +1024,14 @@
     .asst-hint-text strong{font-size:13px;color:var(--color-text)}
     .asst-hint-text span{color:var(--color-text-muted)}
     .asst-hint-close{flex-shrink:0;width:22px;height:22px;border-radius:6px;border:1px solid var(--color-border);background:transparent;color:var(--color-text-muted);cursor:pointer;font-size:11px;line-height:1;display:flex;align-items:center;justify-content:center}
-    .asst-hint-close:hover{border-color:var(--color-primary);color:var(--color-text)}
-    .asst-hint-close:focus-visible{outline:2px solid var(--color-primary);outline-offset:1px}
+    .asst-hint-close:hover{border-color:var(--color-ai-gold);color:var(--color-text)}
+    .asst-hint-close:focus-visible{outline:2px solid var(--color-ai-gold);outline-offset:1px}
     .asst-launcher[aria-expanded="true"] ~ .asst-hint{opacity:0;visibility:hidden;pointer-events:none}
     @media (prefers-reduced-motion: reduce){
       .asst-launcher{transition:none}
       .asst-launcher:hover{transform:none}
       .asst-launcher.asst-pulse{animation:none}
+      .asst-launcher::after{display:none;animation:none}
       .asst-hint{transition:none;transform:none}
     }
     body:not([data-auth="authenticated"]) .asst-launcher,
@@ -1027,24 +1039,24 @@
     body:not([data-auth="authenticated"]) .asst-panel,
     body:not([data-auth="authenticated"]) .asst-backdrop{display:none!important}
     .asst-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:65;border:0}
-    .asst-panel{position:fixed;top:0;right:0;height:100vh;height:100dvh;width:420px;max-width:100vw;z-index:70;background:var(--color-surface);border-left:1px solid var(--color-border);box-shadow:-18px 0 40px rgba(0,0,0,.35);display:flex;flex-direction:column;transform:translateX(102%);transition:transform .22s ease}
+    .asst-panel{position:fixed;top:0;right:0;height:100vh;height:100dvh;width:420px;max-width:100vw;z-index:70;background:var(--color-surface);border-left:1px solid rgba(212,180,90,.22);box-shadow:-18px 0 40px rgba(0,0,0,.35);display:flex;flex-direction:column;transform:translateX(102%);transition:transform .22s ease}
     .asst-panel.open{transform:translateX(0)}
-    .asst-header{display:flex;align-items:flex-start;gap:12px;padding:16px;border-bottom:1px solid var(--color-border)}
+    .asst-header{display:flex;align-items:flex-start;gap:12px;padding:16px;border-bottom:1px solid rgba(212,180,90,.22)}
     .asst-header-text{display:flex;flex-direction:column;gap:2px;min-width:0}
-    .asst-header-text strong{font-size:15px}
+    .asst-header-text strong{font-size:15px;color:var(--color-ai-gold-bright)}
     .asst-header-text span{font-size:12px;color:var(--color-text-muted)}
     .asst-header-actions{margin-left:auto;display:flex;gap:6px;flex-shrink:0}
     .asst-icon-btn{width:32px;height:32px;border-radius:8px;border:1px solid var(--color-border);background:transparent;color:var(--color-text-muted);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px}
-    .asst-icon-btn:hover{border-color:var(--color-primary);color:var(--color-text)}
-    .asst-icon-btn:focus-visible{outline:2px solid var(--color-primary);outline-offset:1px}
+    .asst-icon-btn:hover{border-color:var(--color-ai-gold);color:var(--color-ai-gold-bright)}
+    .asst-icon-btn:focus-visible{outline:2px solid var(--color-ai-gold-glow);outline-offset:1px}
     .asst-body{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px}
     .asst-welcome{color:var(--color-text-muted);font-size:13px;line-height:1.5}
     .asst-suggestions{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
     .asst-chip{border:1px solid var(--color-border);background:var(--color-surface-2);color:var(--color-text);border-radius:999px;padding:7px 12px;font-size:12px;cursor:pointer;text-align:left}
-    .asst-chip:hover{border-color:var(--color-primary);color:#ffc093}
-    .asst-chip:focus-visible{outline:2px solid var(--color-primary);outline-offset:1px}
+    .asst-chip:hover{border-color:var(--color-ai-gold);color:var(--color-ai-gold-bright);background:rgba(212,180,90,.10)}
+    .asst-chip:focus-visible{outline:2px solid var(--color-ai-gold-glow);outline-offset:1px}
     .asst-msg{max-width:88%;padding:10px 12px;border-radius:12px;font-size:13px;line-height:1.5;word-wrap:break-word;overflow-wrap:anywhere}
-    .asst-msg.user{align-self:flex-end;background:var(--color-primary-soft);border:1px solid rgba(244,121,32,.3);color:var(--color-text);border-bottom-right-radius:4px}
+    .asst-msg.user{align-self:flex-end;background:rgba(212,180,90,.12);border:1px solid rgba(212,180,90,.28);color:var(--color-text);border-bottom-right-radius:4px}
     .asst-msg.assistant{align-self:flex-start;background:var(--color-surface-2);border:1px solid var(--color-border);border-bottom-left-radius:4px}
     .asst-msg.error{align-self:flex-start;background:rgba(239,107,115,.1);border:1px solid rgba(239,107,115,.4);color:#ffb0b5}
     .asst-msg-badge{display:inline-flex;align-items:center;gap:5px;font-size:10px;text-transform:uppercase;letter-spacing:.05em;font-weight:700;padding:2px 8px;border-radius:999px;margin-bottom:6px}
@@ -1065,7 +1077,7 @@
     .asst-warnings{margin-top:8px;display:flex;flex-direction:column;gap:4px}
     .asst-warning{font-size:12px;color:var(--color-warning);background:rgba(246,189,75,.1);border:1px solid rgba(246,189,75,.3);border-radius:8px;padding:6px 8px;line-height:1.4}
     .asst-retry{margin-top:8px;height:30px;padding:0 12px;border-radius:8px;border:1px solid var(--color-border-strong);background:transparent;color:var(--color-text);cursor:pointer;font-size:12px}
-    .asst-retry:hover{border-color:var(--color-primary)}
+    .asst-retry:hover{border-color:var(--color-ai-gold)}
     .asst-loading{align-self:flex-start;display:flex;align-items:center;gap:8px;color:var(--color-text-muted);font-size:12px}
     .asst-dots{display:inline-flex;gap:3px}
     .asst-dots i{width:6px;height:6px;border-radius:50%;background:var(--color-text-subtle);animation:asstpulse 1s infinite ease-in-out}
@@ -1075,11 +1087,12 @@
     .asst-footer{border-top:1px solid var(--color-border);padding:12px 16px calc(12px + env(safe-area-inset-bottom,0px))}
     .asst-input-row{display:flex;gap:8px;align-items:flex-end}
     .asst-input{flex:1;min-height:40px;max-height:120px;resize:none;border:1px solid var(--color-border);background:var(--color-surface-2);color:var(--color-text);border-radius:10px;padding:10px 12px;line-height:1.4;width:100%}
-    .asst-input:focus{border-color:var(--color-primary);box-shadow:0 0 0 3px var(--color-primary-tint);outline:none}
-    .asst-send{flex-shrink:0;width:40px;height:40px;border-radius:10px;border:1px solid var(--color-primary);background:var(--color-primary);color:#17110d;cursor:pointer;display:flex;align-items:center;justify-content:center}
+    .asst-input:focus{border-color:var(--color-ai-gold);box-shadow:0 0 0 3px var(--color-ai-gold-glow);outline:none}
+    .asst-send{flex-shrink:0;width:40px;height:40px;border-radius:10px;border:1px solid var(--color-ai-gold);background:linear-gradient(180deg,rgba(240,215,140,.92),var(--color-ai-gold));color:var(--color-ai-gold-ink);cursor:pointer;display:flex;align-items:center;justify-content:center}
     .asst-send svg{width:18px;height:18px}
     .asst-send:disabled{opacity:.5;cursor:not-allowed}
-    .asst-send:focus-visible{outline:2px solid var(--color-text);outline-offset:1px}
+    .asst-send:hover:not(:disabled){filter:brightness(1.06);box-shadow:0 0 12px var(--color-ai-gold-glow)}
+    .asst-send:focus-visible{outline:2px solid var(--color-ai-gold-glow);outline-offset:1px}
     .asst-disclaimer{margin:8px 0 0;font-size:11px;color:var(--color-text-subtle);line-height:1.4}
     @media(max-width:520px){
       .asst-panel{width:100vw}
@@ -1128,7 +1141,10 @@
     @media(max-width:780px){#view-executive .exec-north-star,#view-executive .exec-blocks,#view-executive .exec-charts{grid-template-columns:1fr}}
 
     #view-ep .summary.kpis-ep-primary,#view-statistical-crosses .summary.kpis-sc-primary{grid-template-columns:repeat(3,1fr);margin-bottom:10px}
-    #view-ep .metric.kpi-primary,#view-statistical-crosses .metric.kpi-primary{border-color:rgba(244,121,32,.55);background:linear-gradient(180deg,rgba(244,121,32,.12),rgba(26,26,26,.9))}
+    #view-ep .metric.kpi-primary,#view-statistical-crosses .metric.kpi-primary{
+      border-color:rgba(244,121,32,.36);
+      background:linear-gradient(165deg,rgba(244,121,32,.09),transparent 46%),linear-gradient(145deg,var(--color-surface),#171717);
+    }
     #view-ep .metric.kpi-primary .metric-label,#view-statistical-crosses .metric.kpi-primary .metric-label{color:#f0b07a}
     #view-ep .metric.kpi-primary .metric-value,#view-statistical-crosses .metric.kpi-primary .metric-value{color:#ffc796}
     #view-ep .charts.ep-charts,#view-statistical-crosses .charts.sc-charts{grid-template-columns:repeat(2,minmax(0,1fr))}
@@ -1459,7 +1475,7 @@
     #view-statistical-crosses .sc-group-legend i{width:14px;height:14px;border-radius:3px;display:inline-block}
     @media print{
       body{background:#fff!important;color:#111!important}
-      .sidebar,.topbar,#assistantLauncher,#assistantPanel,#assistantBackdrop,.filters,.status-actions,.export-host,.portal-alert__close,.btn,.sc-matrix-drawer{display:none!important}
+      .sidebar,.topbar,#assistantLauncher,#assistantPanel,#assistantBackdrop,#aiAnalysisModal,.btn-ai-analysis,.filters,.status-actions,.export-host,.portal-alert__close,.btn,.sc-matrix-drawer{display:none!important}
       .layout{display:block!important}
       main{padding:0!important}
       .view{display:none!important}
@@ -1729,13 +1745,289 @@
     @media(max-width:900px){.embedded-global-filter{align-items:flex-start;flex-direction:column}.global-filter-main,.global-filter-actions{width:100%;flex-wrap:wrap}.global-filter-actions{justify-content:space-between}.filters.is-sticky{top:58px}}
     @media(max-width:520px){.global-program-options{width:100%}.global-program-options label{flex:1;justify-content:center}.page-up-btn{right:16px;bottom:148px;min-width:42px;width:42px;padding:0}.page-up-btn span{display:none}}
 
+    :root{--color-ai-gold:#d4b45a;--color-ai-gold-bright:#f0d78c;--color-ai-gold-deep:#8f6f28;--color-ai-gold-ink:#16120a;--color-ai-gold-glow:rgba(212,180,90,.32)}
+    .page-header > div:first-child{min-width:0;flex:1 1 auto}
+    .page-header-title-row{display:flex;align-items:center;justify-content:flex-start;gap:10px 12px;flex-wrap:wrap;width:fit-content;max-width:100%;min-width:0}
+    .page-header-title-row h1{flex:0 1 auto;width:auto;max-width:100%;min-width:0;overflow-wrap:anywhere;margin:5px 0 8px}
+    .page-header-title-row .btn-ai-analysis{flex:0 0 auto;margin:2px 0 8px}
+
+    /* -------- Análise com IA (Etapa 8.4) -------- */
+    @keyframes aiGoldSheen{
+      0%,58%{transform:translateX(-180%) skewX(-18deg);opacity:0}
+      64%{opacity:.95}
+      82%{transform:translateX(280%) skewX(-18deg);opacity:.7}
+      88%,100%{transform:translateX(280%) skewX(-18deg);opacity:0}
+    }
+    .btn-ai-analysis{
+      position:relative;display:inline-flex;align-items:center;justify-content:center;gap:9px;
+      height:46px;padding:0 20px;border-radius:999px;
+      border:1px solid rgba(240,215,140,.72);
+      background:linear-gradient(180deg,rgba(240,215,140,.22),rgba(20,16,8,.92) 58%,rgba(14,12,8,.96));
+      color:var(--color-ai-gold-bright);
+      font-family:inherit;font-size:14.5px;font-weight:700;letter-spacing:.02em;
+      cursor:pointer;white-space:nowrap;overflow:hidden;isolation:isolate;
+      box-shadow:0 0 0 1px rgba(212,180,90,.18),0 8px 20px rgba(0,0,0,.28),0 0 18px var(--color-ai-gold-glow);
+      transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease,background .18s ease,filter .18s ease;
+    }
+    .btn-ai-analysis::after{
+      content:"";position:absolute;top:-30%;bottom:-30%;left:0;width:38%;
+      background:linear-gradient(105deg,transparent 10%,rgba(255,248,220,.16) 38%,rgba(255,255,255,.38) 50%,rgba(240,215,140,.12) 62%,transparent 88%);
+      transform:translateX(-180%) skewX(-18deg);
+      animation:aiGoldSheen 6.4s ease-in-out infinite;
+      pointer-events:none;z-index:1;
+    }
+    .btn-ai-analysis:hover{
+      transform:translateY(-1px);
+      border-color:rgba(255,236,180,.95);
+      box-shadow:0 0 0 1px rgba(240,215,140,.22),0 12px 26px rgba(0,0,0,.32),0 0 24px var(--color-ai-gold-glow);
+      filter:brightness(1.07);
+    }
+    .btn-ai-analysis:hover::after{animation-duration:4.8s}
+    .btn-ai-analysis:focus-visible{outline:3px solid var(--color-ai-gold-glow);outline-offset:2px}
+    .btn-ai-analysis.is-disabled,
+    .btn-ai-analysis:disabled{
+      cursor:not-allowed;opacity:.55;color:#b7b7b7;
+      border-color:#444;background:#1c1c1c;
+      box-shadow:none;filter:none;transform:none;
+    }
+    .btn-ai-analysis.is-disabled::after,
+    .btn-ai-analysis:disabled::after{display:none;animation:none}
+    .btn-ai-analysis.is-disabled:hover,
+    .btn-ai-analysis:disabled:hover{
+      transform:none;filter:none;box-shadow:none;border-color:#444;background:#1c1c1c;
+    }
+    .btn-ai-analysis-icon{width:18px;height:18px;flex-shrink:0;position:relative;z-index:2}
+    .btn-ai-analysis-label{position:relative;z-index:2}
+    html.ai-analysis-open,body.ai-analysis-open{overflow:hidden}
+    .ai-analysis-overlay{
+      position:fixed;inset:0;z-index:90;display:flex;align-items:center;justify-content:center;
+      padding:clamp(8px,5vh,36px) clamp(8px,5vw,40px);box-sizing:border-box;
+      background:rgba(6,6,6,.72);
+      -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
+    }
+    .ai-analysis-overlay[hidden]{display:none!important}
+    .ai-analysis-dialog{
+      width:100%;max-width:680px;height:auto;max-height:min(88vh,900px);
+      display:flex;flex-direction:column;min-width:0;
+      background:linear-gradient(180deg,#1c1913 0%,#151513 42%,#121212 100%);
+      border:1px solid rgba(212,180,90,.28);
+      border-radius:18px;
+      box-shadow:0 28px 80px rgba(0,0,0,.55),0 0 0 1px rgba(240,215,140,.06);
+      overflow:hidden;color:var(--color-text);
+    }
+    .ai-analysis-dialog.is-success{
+      max-width:1280px;height:min(90vh,900px);
+    }
+    .ai-analysis-dialog.is-loading{max-width:640px;height:auto}
+    .ai-analysis-dialog.is-error,.ai-analysis-dialog.is-unsupported{max-width:560px;height:auto}
+    .ai-analysis-stamp[hidden]{display:none!important}
+    .ai-analysis-lead[hidden]{display:none!important}
+    .ai-analysis-header{
+      display:flex;align-items:flex-start;justify-content:space-between;gap:16px;
+      padding:22px 24px 18px;border-bottom:1px solid rgba(212,180,90,.16);
+      flex:0 0 auto;background:rgba(20,18,14,.72);
+    }
+    .ai-analysis-kicker{
+      display:inline-flex;align-items:center;gap:7px;
+      font-size:11px;letter-spacing:.12em;text-transform:uppercase;
+      color:var(--color-ai-gold-bright);font-weight:700;margin:0 0 6px;
+    }
+    .ai-analysis-kicker svg{width:14px;height:14px}
+    .ai-analysis-header h2{margin:0 0 6px;font-size:24px;line-height:1.25;font-weight:700;color:var(--color-text)}
+    .ai-analysis-lead{margin:0;font-size:14px;color:var(--color-text-muted);max-width:640px}
+    .ai-analysis-header-meta{display:flex;align-items:center;gap:10px;flex-shrink:0}
+    .ai-analysis-stamp{
+      font-size:12px;color:var(--color-ai-gold);white-space:nowrap;
+      padding:6px 10px;border-radius:999px;border:1px solid rgba(212,180,90,.22);
+      background:rgba(212,180,90,.08);
+    }
+    .ai-analysis-close{
+      width:36px;height:36px;border-radius:10px;border:1px solid var(--color-border);
+      background:transparent;color:var(--color-text-muted);cursor:pointer;font-size:20px;line-height:1;
+      display:inline-flex;align-items:center;justify-content:center;
+    }
+    .ai-analysis-close:hover{border-color:var(--color-ai-gold);color:var(--color-text);background:rgba(212,180,90,.08)}
+    .ai-analysis-close:focus-visible{outline:3px solid var(--color-ai-gold-glow);outline-offset:2px}
+    .ai-analysis-body{flex:1 1 auto;min-height:0;overflow:auto;overflow-x:hidden;padding:24px;display:grid;gap:22px;align-content:start}
+    .ai-analysis-dialog.is-error .ai-analysis-body,
+    .ai-analysis-dialog.is-unsupported .ai-analysis-body,
+    .ai-analysis-dialog.is-loading .ai-analysis-body{
+      display:flex;align-items:center;justify-content:center;
+      flex:0 1 auto;overflow:auto;padding:28px 32px 32px;
+    }
+    .ai-analysis-section h3{margin:0 0 12px;font-size:15px;letter-spacing:.04em;text-transform:uppercase;color:var(--color-text-subtle)}
+    .ai-analysis-card{
+      border:1px solid var(--color-border);border-radius:14px;padding:18px 20px;
+      background:rgba(26,26,26,.92);box-shadow:0 10px 24px rgba(0,0,0,.16);
+    }
+    .ai-analysis-card--hero{
+      border-color:rgba(212,180,90,.28);
+      background:linear-gradient(180deg,rgba(212,180,90,.09),rgba(22,22,20,.94));
+      padding:22px 24px;
+    }
+    .ai-analysis-card--hero p{margin:0;font-size:16px;line-height:1.6;color:var(--color-text);overflow-wrap:anywhere}
+    .ai-analysis-attention{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+    .ai-analysis-card--critical{border-color:rgba(239,107,115,.38);background:rgba(239,107,115,.07)}
+    .ai-analysis-card--watch{border-color:rgba(212,180,90,.32);background:rgba(212,180,90,.06)}
+    .ai-analysis-card--positive{border-color:rgba(66,201,133,.28);background:rgba(66,201,133,.06)}
+    .ai-analysis-card--action{border-color:rgba(255,255,255,.08)}
+    .ai-analysis-ep-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+    @media(max-width:900px){.ai-analysis-ep-grid{grid-template-columns:1fr}}
+    .ai-analysis-ep-card{
+      border:1px solid var(--color-border);border-radius:14px;padding:16px 18px;
+      background:rgba(26,26,26,.92);
+    }
+    .ai-analysis-ep-card--positive{border-color:rgba(66,201,133,.28);background:rgba(66,201,133,.06)}
+    .ai-analysis-ep-card--attention{border-color:rgba(244,121,32,.32);background:rgba(244,121,32,.06)}
+    .ai-analysis-ep-card h4{margin:0 0 6px;font-size:15px;color:var(--color-text)}
+    .ai-analysis-ep-card p{margin:0 0 10px;font-size:13px;line-height:1.5;color:var(--color-text-muted)}
+    .ai-analysis-ep-metrics{display:flex;flex-direction:column;gap:4px}
+    .ai-analysis-ep-metric{display:flex;justify-content:space-between;gap:8px;font-size:12px;color:var(--color-text)}
+    .ai-analysis-ep-metric span{color:var(--color-text-muted)}
+    .ai-analysis-ep-badge{
+      display:inline-flex;margin-left:6px;padding:1px 7px;border-radius:999px;
+      font-size:10px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;
+      color:#f0d78c;border:1px solid rgba(212,180,90,.35);background:rgba(212,180,90,.12);
+    }
+    .ai-analysis-card h4{margin:0 0 8px;font-size:15px;color:var(--color-text);overflow-wrap:anywhere}
+    .ai-analysis-card p{margin:0;font-size:14px;line-height:1.55;color:var(--color-text-muted);overflow-wrap:anywhere}
+    .ai-sev{
+      display:inline-flex;align-items:center;gap:6px;margin-bottom:10px;
+      font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+      padding:4px 9px;border-radius:999px;border:1px solid transparent;
+    }
+    .ai-sev--critical{color:#ffb4b8;background:rgba(239,107,115,.14);border-color:rgba(239,107,115,.35)}
+    .ai-sev--watch{color:#f0d78c;background:rgba(212,180,90,.12);border-color:rgba(212,180,90,.32)}
+    .ai-sev--positive{color:#b9f0d2;background:rgba(66,201,133,.12);border-color:rgba(66,201,133,.32)}
+    .ai-analysis-limits{
+      border:1px solid var(--color-border);border-radius:12px;background:#171717;padding:4px 16px;
+    }
+    .ai-analysis-limits summary{
+      cursor:pointer;list-style:none;padding:12px 0;font-size:14px;font-weight:600;color:var(--color-text);
+    }
+    .ai-analysis-limits summary::-webkit-details-marker{display:none}
+    .ai-analysis-limits summary::after{content:'▸';float:right;color:var(--color-ai-gold);transition:transform .15s ease}
+    .ai-analysis-limits[open] summary::after{transform:rotate(90deg)}
+    .ai-analysis-limits p{margin:0 0 14px;font-size:13px;color:var(--color-text-muted);line-height:1.55;overflow-wrap:anywhere}
+    .ai-analysis-footer{
+      display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
+      padding:14px 24px;border-top:1px solid rgba(212,180,90,.16);background:rgba(16,16,14,.9);flex:0 0 auto;
+    }
+    .ai-analysis-footer-actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:flex-end;margin-left:auto}
+    .ai-analysis-footer-actions [hidden]{display:none!important}
+    .ai-analysis-dialog.is-error .ai-analysis-footer,
+    .ai-analysis-dialog.is-unsupported .ai-analysis-footer,
+    .ai-analysis-dialog.is-loading .ai-analysis-footer{justify-content:flex-end}
+    .ai-analysis-dialog.is-error .ai-analysis-hint,
+    .ai-analysis-dialog.is-unsupported .ai-analysis-hint,
+    .ai-analysis-dialog.is-loading .ai-analysis-hint{display:none}
+    .ai-analysis-hint{margin:0;font-size:12px;color:var(--color-ai-gold-bright);min-height:1.2em}
+    .ai-analysis-btn-refresh{
+      display:inline-flex;align-items:center;gap:7px;height:40px;padding:0 14px;border-radius:var(--radius-md);
+      border:1px solid rgba(212,180,90,.5);background:rgba(212,180,90,.12);color:var(--color-ai-gold-bright);
+      font:inherit;font-size:13px;font-weight:600;cursor:pointer;
+    }
+    .ai-analysis-btn-refresh:hover{border-color:var(--color-ai-gold-bright);background:rgba(212,180,90,.18)}
+    .ai-analysis-btn-export{
+      display:inline-flex;align-items:center;gap:7px;height:40px;padding:0 14px;border-radius:var(--radius-md);
+      border:1px solid rgba(212,180,90,.28);background:transparent;color:var(--color-ai-gold);
+      font:inherit;font-size:13px;font-weight:600;opacity:.45;cursor:not-allowed;
+    }
+    .ai-analysis-footer .btn{align-self:center}
+    .ai-analysis-headline{
+      margin:0;font-size:clamp(20px,2.2vw,28px);line-height:1.35;font-weight:700;
+      color:var(--color-ai-gold-bright);overflow-wrap:anywhere;
+    }
+    .ai-analysis-scope{
+      margin:0;font-size:13px;color:var(--color-text-muted);
+      display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;
+    }
+    .ai-analysis-scope-dot{width:7px;height:7px;border-radius:50%;background:var(--color-ai-gold);display:inline-block}
+    .ai-analysis-highlights{
+      display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;
+    }
+    .ai-analysis-highlight{
+      border:1px solid rgba(212,180,90,.22);border-radius:12px;padding:12px 14px;
+      background:rgba(20,18,14,.55);min-width:0;
+    }
+    .ai-analysis-highlight strong{
+      display:block;font-size:22px;line-height:1.15;color:var(--color-ai-gold-bright);font-weight:700;
+      overflow-wrap:anywhere;
+    }
+    .ai-analysis-highlight span{display:block;margin-top:4px;font-size:12px;color:var(--color-text-muted)}
+    .ai-analysis-evidence{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+    .ai-analysis-evidence-item{
+      min-width:0;padding:8px 10px;border-radius:10px;
+      border:1px solid rgba(212,180,90,.22);background:rgba(12,12,10,.45);
+    }
+    .ai-analysis-evidence-item strong{display:block;font-size:12px;color:var(--color-text);font-weight:600;overflow-wrap:anywhere}
+    .ai-analysis-evidence-item span{display:block;margin-top:2px;font-size:13px;color:var(--color-ai-gold-bright)}
+    .ai-analysis-stack{display:grid;gap:12px}
+    .ai-analysis-loading{
+      display:grid;gap:12px;justify-items:center;text-align:center;width:100%;max-width:420px;
+    }
+    .ai-analysis-loading-icon{
+      width:36px;height:36px;color:var(--color-ai-gold-bright);
+      filter:drop-shadow(0 0 12px var(--color-ai-gold-glow));
+      animation:aiPulse 1.8s ease-in-out infinite;
+    }
+    .ai-analysis-loading h3{margin:0;font-size:20px;color:var(--color-text);line-height:1.35}
+    .ai-analysis-loading p{margin:0;max-width:380px;color:var(--color-text-muted);font-size:14px;line-height:1.55}
+    .ai-analysis-skel-lines{width:100%;display:grid;gap:8px;margin-top:8px}
+    .ai-skel{
+      border-radius:8px;border:1px solid rgba(212,180,90,.12);
+      background:linear-gradient(90deg,rgba(212,180,90,.05),rgba(240,215,140,.16),rgba(212,180,90,.05));
+      background-size:640px 100%;animation:aiShimmer 1.7s linear infinite;
+    }
+    .ai-skel--line{height:12px;width:100%}
+    .ai-skel--short{width:62%}
+    .ai-analysis-state{display:grid;gap:10px;justify-items:center;text-align:center;width:100%;max-width:420px;margin:0 auto}
+    .ai-analysis-state-icon{width:34px;height:34px;color:var(--color-ai-gold-bright);filter:drop-shadow(0 0 10px var(--color-ai-gold-glow))}
+    .ai-analysis-state--rate .ai-analysis-state-icon{color:#e8c47a;filter:drop-shadow(0 0 10px rgba(246,189,75,.38))}
+    .ai-analysis-state--soon .ai-analysis-state-icon{color:var(--color-ai-gold);opacity:.9}
+    .ai-analysis-state h3{margin:0;font-size:20px;line-height:1.35;color:var(--color-text);overflow-wrap:anywhere;text-align:center}
+    .ai-analysis-state p{margin:0;color:var(--color-text-muted);font-size:14px;line-height:1.55;text-align:center;max-width:380px}
+    .ai-analysis-state-actions{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:8px}
+    .ai-analysis-btn-refresh:disabled,.ai-analysis-btn-ask:disabled{opacity:.45;cursor:not-allowed}
+    .ai-analysis-btn-ask{
+      display:inline-flex;align-items:center;height:40px;padding:0 14px;border-radius:var(--radius-md);
+      border:1px solid var(--color-border);background:transparent;color:var(--color-text-subtle);
+      font:inherit;font-size:13px;font-weight:600;
+    }
+    @keyframes aiPulse{0%,100%{opacity:.55}50%{opacity:1}}
+    @keyframes aiShimmer{0%{background-position:-400px 0}100%{background-position:400px 0}}
+    @media(max-width:780px){
+      .page-header-title-row{gap:8px 10px}
+      .page-header-title-row .btn-ai-analysis{height:auto;min-height:44px;padding:8px 14px;font-size:13px;white-space:normal;text-align:center;line-height:1.25}
+      .ai-analysis-overlay{padding:8px;align-items:stretch}
+      .ai-analysis-dialog,.ai-analysis-dialog.is-error,.ai-analysis-dialog.is-unsupported,.ai-analysis-dialog.is-loading,.ai-analysis-dialog.is-success{
+        max-width:100%;width:100%;height:100%;max-height:100%;border-radius:14px
+      }
+      .ai-analysis-dialog.is-error .ai-analysis-body,
+      .ai-analysis-dialog.is-unsupported .ai-analysis-body,
+      .ai-analysis-dialog.is-loading .ai-analysis-body{flex:1 1 auto}
+      .ai-analysis-header{flex-direction:column}
+      .ai-analysis-header-meta{width:100%;justify-content:space-between}
+      .ai-analysis-header h2,.ai-analysis-headline{font-size:20px;overflow-wrap:anywhere}
+      .ai-analysis-attention{grid-template-columns:1fr}
+      .ai-analysis-footer{align-items:stretch}
+      .ai-analysis-footer-actions{width:100%}
+      .ai-analysis-footer-actions .btn,.ai-analysis-btn-refresh,.ai-analysis-btn-export,.ai-analysis-btn-ask{flex:1 1 140px;justify-content:center}
+    }
+    @media (prefers-reduced-motion: reduce){
+      .btn-ai-analysis,.ai-analysis-close,.ai-analysis-btn-refresh{transition:none}
+      .btn-ai-analysis:hover{transform:none}
+      .btn-ai-analysis::after,.ai-analysis-loading-icon,.ai-skel{animation:none}
+      .btn-ai-analysis::after{display:none}
+    }
+
     </style>
 </head>
 <body data-auth="loading">
   <div id="auth-root" aria-live="polite">
     <div class="auth-card">
       <div class="auth-brand">
-        <div class="brand-mark" aria-label="Quarta Via">QV</div>
+        <img class="brand-mark" src="/favicon.ico" width="36" height="36" alt="Quarta Via">
         <div>
           <strong>Quarta Via</strong>
           <span>Dados & Inteligência</span>
@@ -1762,7 +2054,7 @@
 
   <div id="portal-root" hidden>
   <header class="topbar">
-    <div class="brand"><div class="brand-mark" aria-label="Quarta Via">QV</div><div>Quartavia</div><span>Dados & Inteligência</span></div>
+    <div class="brand"><img class="brand-mark" src="/favicon.ico" width="30" height="30" alt="Quarta Via"><div>Quartavia</div><span>Dados & Inteligência</span></div>
     <div class="topbar-user">
       <img id="auth-user-avatar" alt="" width="32" height="32" hidden />
       <div class="topbar-user-meta">
@@ -4370,6 +4662,36 @@
   </div>
 
   <!-- Glossário (somente Análises Estatísticas) -->
+
+  <div id="aiAnalysisModal" class="ai-analysis-overlay" hidden>
+    <div class="ai-analysis-dialog" role="dialog" aria-modal="true" aria-labelledby="aiAnalysisTitle" tabindex="-1">
+      <header class="ai-analysis-header">
+        <div>
+          <p class="ai-analysis-kicker">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2.4 13.3 8l5.7 1.3L13.3 10.6 12 16.2l-1.3-5.6L5 9.3 10.7 8 12 2.4Zm7.2 11.1 1 3.2 3.2 1-3.2 1-1 3.2-1-3.2-3.2-1 3.2-1 1-3.2ZM4.6 13.8l.8 2.4 2.4.8-2.4.8-.8 2.4-.8-2.4-2.4-.8 2.4-.8.8-2.4Z"/></svg>
+            Análise com IA
+          </p>
+          <h2 id="aiAnalysisTitle">Análise Executiva</h2>
+          <p class="ai-analysis-lead" id="aiAnalysisLead" hidden>Leitura executiva dos principais sinais desta página.</p>
+        </div>
+        <div class="ai-analysis-header-meta">
+          <span class="ai-analysis-stamp" id="aiAnalysisStamp" hidden></span>
+          <button type="button" class="ai-analysis-close" id="aiAnalysisClose" aria-label="Fechar análise">×</button>
+        </div>
+      </header>
+      <div class="ai-analysis-body" id="aiAnalysisBody"></div>
+      <footer class="ai-analysis-footer">
+        <p class="ai-analysis-hint" id="aiAnalysisHint" aria-live="polite"></p>
+        <div class="ai-analysis-footer-actions">
+          <button type="button" class="ai-analysis-btn-refresh" id="aiAnalysisRefresh" hidden>Atualizar análise</button>
+          <button type="button" class="ai-analysis-btn-ask" id="aiAnalysisAsk" hidden disabled title="Integração disponível em breve.">Perguntar ao assistente</button>
+          <button type="button" class="ai-analysis-btn-export" id="aiAnalysisExport" hidden disabled title="Disponível após a conclusão da análise.">Exportar PDF</button>
+          <button type="button" class="btn" id="aiAnalysisDismiss">Fechar</button>
+        </div>
+      </footer>
+    </div>
+  </div>
+
   <button id="scGlossaryLauncher" class="sc-glossary-launcher" type="button" aria-label="Abrir glossário de Análises Estatísticas" title="Glossário" aria-controls="scGlossaryPanel" aria-expanded="false" hidden>
     <span aria-hidden="true">?</span>
     <span class="sc-glossary-label">Glossário</span>
@@ -4422,6 +4744,7 @@
     </footer>
   </div>
 
+  <script src="ai-analysis-fixtures.js"></script>
   <script>
     const fmt = new Intl.NumberFormat('pt-BR');
     const pct = n => n.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + '%';
@@ -5524,6 +5847,668 @@ ${dataRows}
       mechanisms: 'mechanisms', financial: 'financial_updates', platform: 'platform_usage',
       support: 'support', cancellations: 'cancellations', ep: 'ep_performance', 'statistical-crosses': 'statistical_crosses', exploration: 'exploration', quality: 'quality', executive: 'executive_summary',
     })[window.__portalCurrentPage] || window.__portalCurrentPage;
+
+    /* -------- Análise com IA (Etapa 8.4 — modal funcional) -------- */
+    (function aiAnalysisChrome() {
+      window.AI_ANALYSIS_PAGES = {
+        general: { enabled: true, title: 'Dados Gerais', backendPage: 'general' },
+        meetings: { enabled: true, title: 'Reuniões', backendPage: 'meetings' },
+        'statistical-crosses': { enabled: true, title: 'Análises Estatísticas', backendPage: 'statistical-crosses' },
+        journey: { enabled: false, title: 'Jornada e onboarding' },
+        plan: { enabled: false, title: 'Plano Patrimonial' },
+        mechanisms: { enabled: false, title: 'Implementação de Mecanismos' },
+        platform: { enabled: false, title: 'Uso da Plataforma' },
+        financial: { enabled: false, title: 'Atualização Financeira' },
+        support: { enabled: false, title: 'Atendimento' },
+        satisfaction: { enabled: false, title: 'Pesquisa de Satisfação' },
+        cancellations: { enabled: false, title: 'Cancelamento' },
+        renewal: { enabled: true, title: 'Renovação', backendPage: 'renewal' },
+        ep: { enabled: true, title: 'Performance do EP', backendPage: 'ep' },
+        temporal: { enabled: true, title: 'Indicadores Temporais', backendPage: 'temporal' },
+        quality: { enabled: false, title: 'Qualidade' },
+        engagement: { enabled: false, title: 'Engajamento' },
+        performance: { enabled: false, title: 'Performance' },
+        crossings: { enabled: false, title: 'Cruzamentos estatísticos' },
+        exploration: { enabled: false, title: 'Descobertas exploratórias' }
+      };
+
+      const SPARKLE_SVG = '<svg class="btn-ai-analysis-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2.4 13.3 8l5.7 1.3L13.3 10.6 12 16.2l-1.3-5.6L5 9.3 10.7 8 12 2.4Zm7.2 11.1 1 3.2 3.2 1-3.2 1-1 3.2-1-3.2-3.2-1 3.2-1 1-3.2ZM4.6 13.8l.8 2.4 2.4.8-2.4.8-.8 2.4-.8-2.4-2.4-.8 2.4-.8.8-2.4Z"/></svg>';
+      const SPARKLE_LG = '<svg class="ai-analysis-loading-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2.4 13.3 8l5.7 1.3L13.3 10.6 12 16.2l-1.3-5.6L5 9.3 10.7 8 12 2.4Zm7.2 11.1 1 3.2 3.2 1-3.2 1-1 3.2-1-3.2-3.2-1 3.2-1 1-3.2ZM4.6 13.8l.8 2.4 2.4.8-2.4.8-.8 2.4-.8-2.4-2.4-.8 2.4-.8.8-2.4Z"/></svg>';
+      const STATE_ICON = SPARKLE_LG.replace('ai-analysis-loading-icon', 'ai-analysis-state-icon');
+      const REQUEST_TIMEOUT_MS = 90000;
+      const overlay = document.getElementById('aiAnalysisModal');
+      const dialog = overlay && overlay.querySelector('.ai-analysis-dialog');
+      const titleEl = document.getElementById('aiAnalysisTitle');
+      const leadEl = document.getElementById('aiAnalysisLead');
+      const stampEl = document.getElementById('aiAnalysisStamp');
+      const hintEl = document.getElementById('aiAnalysisHint');
+      const bodyEl = document.getElementById('aiAnalysisBody');
+      const refreshBtn = document.getElementById('aiAnalysisRefresh');
+      const askBtn = document.getElementById('aiAnalysisAsk');
+      const exportBtn = document.getElementById('aiAnalysisExport');
+      let lastTrigger = null;
+      let hintTimer = null;
+      let stepTimer = null;
+      let open = false;
+      let inFlight = false;
+      let hasResult = false;
+      let currentPageId = null;
+      let abortCtl = null;
+
+      function pageMeta(pageId) {
+        return window.AI_ANALYSIS_PAGES[pageId] || null;
+      }
+
+      function backendPageId(pageId) {
+        return pageMeta(pageId)?.backendPage || null;
+      }
+
+      function isLocalDev() {
+        const h = location.hostname;
+        return h === 'localhost' || h === '127.0.0.1' || h === '::1';
+      }
+
+      function pageTitle(pageId) {
+        const view = document.getElementById('view-' + pageId);
+        const heading = view && view.querySelector('.page-header h1');
+        const fromHeading = heading && heading.textContent.trim();
+        return fromHeading || pageMeta(pageId)?.title || 'esta página';
+      }
+
+      function setHint(text) {
+        if (!hintEl) return;
+        hintEl.textContent = text || '';
+        if (hintTimer) clearTimeout(hintTimer);
+        if (text) {
+          hintTimer = setTimeout(() => { hintEl.textContent = ''; hintTimer = null; }, 3200);
+        }
+      }
+
+      function setBusy(busy) {
+        inFlight = busy;
+        if (overlay) overlay.setAttribute('aria-busy', busy ? 'true' : 'false');
+        if (refreshBtn && !refreshBtn.hidden) refreshBtn.disabled = Boolean(busy);
+      }
+
+      function setStamp(text) {
+        if (!stampEl) return;
+        const value = text || '';
+        stampEl.textContent = value;
+        stampEl.hidden = !value;
+      }
+
+      function setModalMode(mode) {
+        if (!dialog) return;
+        ['loading', 'success', 'error', 'unsupported'].forEach((name) => {
+          dialog.classList.toggle('is-' + name, name === mode);
+        });
+        const isSuccess = mode === 'success';
+        if (refreshBtn) {
+          refreshBtn.hidden = !isSuccess;
+          refreshBtn.disabled = !isSuccess || inFlight;
+        }
+        if (askBtn) askBtn.hidden = !isSuccess;
+        if (exportBtn) exportBtn.hidden = !isSuccess;
+        if (leadEl) {
+          leadEl.hidden = true;
+          leadEl.textContent = '';
+        }
+      }
+
+      function formatGeneratedAt(iso) {
+        if (!iso) return 'Gerada agora';
+        const d = new Date(iso);
+        if (Number.isNaN(d.getTime())) return 'Gerada agora';
+        return d.toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' });
+      }
+
+      function stopSteps() {
+        if (stepTimer) {
+          clearInterval(stepTimer);
+          stepTimer = null;
+        }
+      }
+
+      function startSteps() {
+        stopSteps();
+        const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        const nodes = bodyEl ? bodyEl.querySelectorAll('.ai-analysis-step') : [];
+        if (!nodes.length || reduce) return;
+        let i = 0;
+        nodes.forEach((el, idx) => el.classList.toggle('is-on', idx === 0));
+        stepTimer = setInterval(() => {
+          i = (i + 1) % nodes.length;
+          nodes.forEach((el, idx) => el.classList.toggle('is-on', idx === i));
+        }, 2800);
+      }
+
+      function kpiLabel(kpis, ev) {
+        if (ev && typeof ev === 'object' && ev.label && !/[_]|vw_|public\./.test(String(ev.label))) {
+          return String(ev.label);
+        }
+        const metric = ev && typeof ev === 'object' ? ev.metric : ev;
+        const hit = (kpis || []).find((k) => k && k.metric === metric);
+        const label = hit && hit.label ? String(hit.label) : '';
+        if (!label || /[_]|vw_|public\./.test(label)) return '';
+        return label;
+      }
+
+      function formatEvidenceValue(value, unit) {
+        if (value == null || value === '') return '';
+        const n = Number(value);
+        if (!Number.isFinite(n)) return String(value);
+        if (unit === 'percent') {
+          return n.toLocaleString('pt-BR', { maximumFractionDigits: 1 }) + '%';
+        }
+        if (unit === 'days') {
+          return n.toLocaleString('pt-BR', { maximumFractionDigits: 0 }) + ' dias';
+        }
+        if (unit === 'currency' || unit === 'brl') {
+          return n.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 });
+        }
+        if (unit === 'association' || unit === 'auc' || unit === 'std_diff' || unit === 'index') {
+          return n.toLocaleString('pt-BR', { maximumFractionDigits: 2 });
+        }
+        return n.toLocaleString('pt-BR', { maximumFractionDigits: Math.abs(n) % 1 ? 1 : 0 });
+      }
+
+      function renderEvidence(list, kpis) {
+        const items = (list || []).filter((ev) => ev && (ev.value != null || ev.label));
+        if (!items.length) return '';
+        return '<div class="ai-analysis-evidence">' + items.map((ev) => {
+          const label = kpiLabel(kpis, ev) || '';
+          const value = formatEvidenceValue(ev.value, ev.unit);
+          if (!label && !value) return '';
+          return '<div class="ai-analysis-evidence-item">'
+            + (label ? '<strong>' + escapeHtml(label) + '</strong>' : '')
+            + (value ? '<span>' + escapeHtml(value) + '</span>' : '')
+            + '</div>';
+        }).join('') + '</div>';
+      }
+
+      function severityBadge(severity) {
+        if (severity === 'critical') {
+          return '<span class="ai-sev ai-sev--critical">Crítico</span>';
+        }
+        if (severity === 'attention') {
+          return '<span class="ai-sev ai-sev--watch">Atenção</span>';
+        }
+        return '';
+      }
+
+      function renderLoading() {
+        if (!bodyEl) return;
+        stopSteps();
+        setModalMode('loading');
+        setStamp('Gerando…');
+        bodyEl.innerHTML = '<div class="ai-analysis-loading" role="status" aria-live="polite">'
+          + SPARKLE_LG
+          + '<h3>Preparando análise executiva</h3>'
+          + '<p>Estamos lendo os principais indicadores desta página.</p>'
+          + '<div class="ai-analysis-skel-lines" aria-hidden="true">'
+          + '<div class="ai-skel ai-skel--line"></div>'
+          + '<div class="ai-skel ai-skel--line"></div>'
+          + '<div class="ai-skel ai-skel--line ai-skel--short"></div>'
+          + '</div>'
+          + '</div>';
+      }
+
+      function renderState(title, paragraphs, actionsHtml, variant) {
+        stopSteps();
+        if (!bodyEl) return;
+        const cls = variant ? ' ai-analysis-state--' + variant : '';
+        bodyEl.innerHTML = '<div class="ai-analysis-state' + cls + '" role="alert">'
+          + STATE_ICON
+          + '<h3>' + escapeHtml(title) + '</h3>'
+          + paragraphs.map((p) => '<p>' + escapeHtml(p) + '</p>').join('')
+          + (actionsHtml ? '<div class="ai-analysis-state-actions">' + actionsHtml + '</div>' : '')
+          + '</div>';
+      }
+
+      function retryBtn() {
+        return '<button type="button" class="ai-analysis-btn-refresh" data-ai-retry>Tentar novamente</button>';
+      }
+
+      function renderUnsupported() {
+        setModalMode('unsupported');
+        setStamp('Em breve');
+        renderState(
+          'Análise com IA em breve nesta página',
+          ['Estamos expandindo a leitura executiva para este conjunto de indicadores.'],
+          '',
+          'soon',
+        );
+        setBusy(false);
+      }
+
+      function renderRateLimit() {
+        setModalMode('error');
+        setStamp('Indisponível');
+        renderState(
+          'Análise temporariamente indisponível',
+          [
+            'O serviço de IA atingiu o limite temporário de processamento.',
+            'Tente novamente em alguns instantes.',
+          ],
+          retryBtn(),
+          'rate',
+        );
+      }
+
+      function renderNotConfigured() {
+        setModalMode('error');
+        setStamp('Indisponível');
+        const extra = isLocalDev()
+          ? 'A funcionalidade estará disponível após a configuração do serviço de IA.'
+          : '';
+        renderState(
+          'Análise com IA ainda não está configurada neste ambiente.',
+          extra ? [extra] : [],
+          retryBtn(),
+          'soon',
+        );
+      }
+
+      function renderGenericError() {
+        setModalMode('error');
+        setStamp('Indisponível');
+        renderState(
+          'Não foi possível gerar a análise agora.',
+          ['Os indicadores da página continuam disponíveis normalmente.'],
+          retryBtn(),
+        );
+      }
+
+      function renderNetworkError() {
+        setModalMode('error');
+        setStamp('Indisponível');
+        renderState(
+          'Não foi possível conectar ao serviço de análise.',
+          ['Os indicadores da página continuam disponíveis normalmente.'],
+          retryBtn(),
+        );
+      }
+
+      function formatHighlightValue(item) {
+        if (item == null || item.value == null || item.value === '') return '';
+        const n = Number(item.value);
+        if (!Number.isFinite(n)) return String(item.value);
+        if (item.unit === 'percent') {
+          return n.toLocaleString('pt-BR', { maximumFractionDigits: 1 }) + '%';
+        }
+        if (item.unit === 'days') {
+          return n.toLocaleString('pt-BR', { maximumFractionDigits: 0 }) + ' dias';
+        }
+        if (item.unit === 'association' || item.unit === 'auc' || item.unit === 'std_diff' || item.unit === 'index') {
+          return n.toLocaleString('pt-BR', { maximumFractionDigits: 2 });
+        }
+        return n.toLocaleString('pt-BR', { maximumFractionDigits: Math.abs(n) % 1 ? 1 : 0 });
+      }
+
+      function renderEpPersonCard(item, kind) {
+        const name = escapeHtml(item?.ep_name || 'Engenheiro');
+        const summary = escapeHtml(item?.summary || '');
+        const metrics = Array.isArray(item?.metrics) ? item.metrics : [];
+        const metricHtml = metrics.slice(0, 4).map((m) => {
+          const value = formatHighlightValue(m);
+          if (!value) return '';
+          const badge = m.badge ? '<span class="ai-analysis-ep-badge">' + escapeHtml(m.badge) + '</span>' : '';
+          return '<div class="ai-analysis-ep-metric"><span>' + escapeHtml(m.label || '') + badge
+            + '</span><strong>' + escapeHtml(value) + '</strong></div>';
+        }).join('');
+        return '<article class="ai-analysis-ep-card ai-analysis-ep-card--' + kind + '">'
+          + '<h4>' + name + '</h4>'
+          + (summary ? '<p>' + summary + '</p>' : '')
+          + '<div class="ai-analysis-ep-metrics">' + metricHtml + '</div>'
+          + '</article>';
+      }
+
+      function renderSuccess(payload) {
+        const analysis = payload?.executive_analysis || {};
+        const kpis = payload?.analysis_context?.kpis || [];
+        const attention = Array.isArray(analysis.attention_points) ? analysis.attention_points : [];
+        const positives = Array.isArray(analysis.positive_signals) ? analysis.positive_signals : [];
+        const actions = Array.isArray(analysis.recommended_actions) ? analysis.recommended_actions : [];
+        const limitations = Array.isArray(analysis.limitations) ? analysis.limitations : [];
+        setModalMode('success');
+        setStamp('Análise gerada agora');
+
+        const scope = analysis.scope || payload?.executive_snapshot?.scope || payload?.metadata?.scope || null;
+        const highlights = Array.isArray(analysis.highlight_numbers) && analysis.highlight_numbers.length
+          ? analysis.highlight_numbers
+          : (payload?.executive_snapshot?.highlight_numbers || []);
+
+        let html = '';
+        if (analysis.headline) {
+          html += '<p class="ai-analysis-headline">' + escapeHtml(analysis.headline) + '</p>';
+        }
+        if (scope && (scope.label || scope.count != null)) {
+          const count = scope.count != null && Number.isFinite(Number(scope.count))
+            ? Number(scope.count).toLocaleString('pt-BR')
+            : '';
+          html += '<p class="ai-analysis-scope">'
+            + '<span class="ai-analysis-scope-dot" aria-hidden="true"></span>'
+            + '<span>Escopo · ' + escapeHtml(scope.label || 'Base analisada')
+            + (count ? ' · ' + escapeHtml(count) + ' clientes' : '')
+            + '</span></p>';
+        }
+        if (highlights.length) {
+          html += '<div class="ai-analysis-highlights" aria-label="Números de destaque">'
+            + highlights.slice(0, 4).map((item) => {
+              const value = formatHighlightValue(item);
+              if (!value) return '';
+              return '<div class="ai-analysis-highlight"><strong>' + escapeHtml(value) + '</strong><span>'
+                + escapeHtml(item.label || '') + '</span></div>';
+            }).join('')
+            + '</div>';
+        }
+        if (analysis.executive_summary) {
+          html += '<section class="ai-analysis-section" aria-labelledby="aiAnalysisBriefTitle">'
+            + '<h3 id="aiAnalysisBriefTitle">Em 30 segundos</h3>'
+            + '<article class="ai-analysis-card ai-analysis-card--hero"><p>' + escapeHtml(analysis.executive_summary) + '</p></article>'
+            + '</section>';
+        }
+        const epHighlights = Array.isArray(analysis.ep_highlights) ? analysis.ep_highlights : [];
+        const epAttention = Array.isArray(analysis.ep_attention) ? analysis.ep_attention : [];
+        if (epHighlights.length) {
+          html += '<section class="ai-analysis-section" aria-labelledby="aiAnalysisEpHighlightsTitle">'
+            + '<h3 id="aiAnalysisEpHighlightsTitle">Destaques entre engenheiros</h3>'
+            + '<div class="ai-analysis-ep-grid">'
+            + epHighlights.slice(0, 3).map((item) => renderEpPersonCard(item, 'positive')).join('')
+            + '</div></section>';
+        }
+        if (epAttention.length) {
+          html += '<section class="ai-analysis-section" aria-labelledby="aiAnalysisEpAttentionTitle">'
+            + '<h3 id="aiAnalysisEpAttentionTitle">Carteiras que pedem atenção</h3>'
+            + '<div class="ai-analysis-ep-grid">'
+            + epAttention.slice(0, 3).map((item) => renderEpPersonCard(item, 'attention')).join('')
+            + '</div></section>';
+        }
+        if (attention.length) {
+          html += '<section class="ai-analysis-section" aria-labelledby="aiAnalysisAttentionTitle">'
+            + '<h3 id="aiAnalysisAttentionTitle">Pontos que exigem atenção</h3>'
+            + '<div class="ai-analysis-attention">'
+            + attention.map((item) => {
+              const sev = item.severity === 'critical' ? 'critical' : 'watch';
+              return '<article class="ai-analysis-card ai-analysis-card--' + sev + '">'
+                + severityBadge(item.severity)
+                + '<h4>' + escapeHtml(item.title || '') + '</h4>'
+                + '<p>' + escapeHtml(item.description || '') + '</p>'
+                + renderEvidence(item.evidence, kpis)
+                + '</article>';
+            }).join('')
+            + '</div></section>';
+        }
+        if (positives.length) {
+          html += '<section class="ai-analysis-section" aria-labelledby="aiAnalysisPositiveTitle">'
+            + '<h3 id="aiAnalysisPositiveTitle">Sinais positivos</h3>'
+            + '<div class="ai-analysis-stack">'
+            + positives.map((item) => '<article class="ai-analysis-card ai-analysis-card--positive">'
+              + '<span class="ai-sev ai-sev--positive">Positivo</span>'
+              + '<h4>' + escapeHtml(item.title || '') + '</h4>'
+              + '<p>' + escapeHtml(item.description || '') + '</p>'
+              + renderEvidence(item.evidence, kpis)
+              + '</article>').join('')
+            + '</div></section>';
+        }
+        if (actions.length) {
+          html += '<section class="ai-analysis-section" aria-labelledby="aiAnalysisActionsTitle">'
+            + '<h3 id="aiAnalysisActionsTitle">Possíveis ações</h3>'
+            + '<div class="ai-analysis-stack">'
+            + actions.map((item) => '<article class="ai-analysis-card ai-analysis-card--action">'
+              + '<h4>' + escapeHtml(item.title || '') + '</h4>'
+              + '<p>' + escapeHtml(item.description || '') + '</p>'
+              + '</article>').join('')
+            + '</div></section>';
+        }
+        const limCount = limitations.length;
+        html += '<section class="ai-analysis-section" aria-labelledby="aiAnalysisLimitsTitle">'
+          + '<details class="ai-analysis-limits"' + (limCount ? ' open' : '') + '>'
+          + '<summary id="aiAnalysisLimitsTitle">' + (limCount ? 'Cobertura e limitações (' + limCount + ')' : 'Cobertura e limitações') + '</summary>';
+        if (limCount) {
+          html += limitations.map((item) => '<p><strong>' + escapeHtml(item.title || '') + '</strong><br>' + escapeHtml(item.description || '') + '</p>').join('');
+        } else {
+          html += '<p>Nenhuma limitação relevante sinalizada para esta análise.</p>';
+        }
+        html += '</details></section>';
+
+        stopSteps();
+        if (bodyEl) bodyEl.innerHTML = html;
+      }
+
+      function classifyPayload(payload, httpStatus) {
+        if (payload?.success && payload?.executive_analysis) return 'success';
+        if (payload?.code === 'page_not_supported') return 'unsupported';
+        if (payload?.code === 'ai_not_configured') return 'not_configured';
+        if (payload?.reason === 'rate_limited' || payload?.code === 'unavailable') return 'rate_limited';
+        if (httpStatus === 429 || httpStatus === 503) return 'rate_limited';
+        return 'generic';
+      }
+
+      function applyPayload(payload, httpStatus) {
+        const kind = classifyPayload(payload, httpStatus);
+        if (kind === 'success') {
+          renderSuccess(payload);
+          hasResult = true;
+          return;
+        }
+        hasResult = false;
+        if (kind === 'rate_limited') renderRateLimit();
+        else if (kind === 'not_configured') renderNotConfigured();
+        else if (kind === 'unsupported') renderUnsupported();
+        else renderGenericError();
+      }
+
+      function fixtureName() {
+        if (!isLocalDev()) return '';
+        const q = new URLSearchParams(location.search).get('aiFixture');
+        if (q) return q;
+        return String(window.__AI_ANALYSIS_FIXTURE || '');
+      }
+
+      function resolveFixture(pageId) {
+        const name = fixtureName();
+        if (!name || name === 'live') return null;
+        if (name === 'unsupported') return { kind: 'unsupported' };
+        if (name === 'network') return { kind: 'network' };
+        if (name === 'loading') return { kind: 'loading' };
+        const pack = window.AI_ANALYSIS_FIXTURES || {};
+        if (!pack[name]) return null;
+        return { kind: 'payload', payload: pack[name] };
+      }
+
+      async function fetchAnalysis(pageId, opts) {
+        const started = Date.now();
+        abortCtl = new AbortController();
+        const timer = setTimeout(() => abortCtl.abort('timeout'), REQUEST_TIMEOUT_MS);
+        try {
+          const response = await apiFetch('/api/ai-analysis', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              page: backendPageId(pageId),
+              filters: {},
+              generate: true,
+              refresh: Boolean(opts?.refresh),
+            }),
+            signal: abortCtl.signal,
+            cache: 'no-store',
+          });
+          const raw = await response.text();
+          let payload = {};
+          try { payload = raw ? JSON.parse(raw) : {}; } catch { payload = {}; }
+          if (isLocalDev()) {
+            console.info('[ai-analysis]', {
+              page: pageId,
+              status: response.status,
+              success: payload?.success === true,
+              duration_ms: Date.now() - started,
+            });
+          }
+          applyPayload(payload, response.status);
+        } catch (err) {
+          if (err?.name === 'AbortError' || String(err).includes('abort')) {
+            if (!open) return;
+            renderNetworkError();
+            return;
+          }
+          if (err?.code === 'AUTH_REQUIRED') {
+            renderNetworkError();
+            return;
+          }
+          renderNetworkError();
+        } finally {
+          clearTimeout(timer);
+          abortCtl = null;
+        }
+      }
+
+      async function startAnalysis(pageId, opts) {
+        const backend = backendPageId(pageId);
+        if (!backend) {
+          renderUnsupported();
+          return;
+        }
+        if (inFlight && !opts?.refresh) return;
+        hasResult = false;
+        setBusy(true);
+        renderLoading();
+        const fx = resolveFixture(pageId);
+        try {
+          if (fx?.kind === 'loading') {
+            return;
+          }
+          if (fx?.kind === 'unsupported') {
+            renderUnsupported();
+            return;
+          }
+          if (fx?.kind === 'network') {
+            await new Promise((r) => setTimeout(r, 400));
+            renderNetworkError();
+            return;
+          }
+          if (fx?.kind === 'payload') {
+            await new Promise((r) => setTimeout(r, 700));
+            applyPayload(fx.payload, fx.payload?.success ? 200 : 200);
+            return;
+          }
+          await fetchAnalysis(pageId, opts);
+        } finally {
+          if (fx?.kind !== 'loading') setBusy(false);
+        }
+      }
+
+      function closeAiAnalysis() {
+        if (!overlay || !open) return;
+        open = false;
+        hasResult = false;
+        inFlight = false;
+        if (abortCtl) {
+          try { abortCtl.abort(); } catch { /* ignore */ }
+          abortCtl = null;
+        }
+        stopSteps();
+        overlay.hidden = true;
+        document.documentElement.classList.remove('ai-analysis-open');
+        document.body.classList.remove('ai-analysis-open');
+        document.querySelectorAll('.btn-ai-analysis').forEach((btn) => btn.setAttribute('aria-expanded', 'false'));
+        setHint('');
+        if (lastTrigger && typeof lastTrigger.focus === 'function') lastTrigger.focus();
+      }
+
+      function openAiAnalysis(pageId, trigger, opts) {
+        const meta = pageMeta(pageId);
+        if (!meta || !meta.enabled || !overlay || !dialog) return;
+        const sameOpen = open && currentPageId === pageId && hasResult && !opts?.refresh;
+        lastTrigger = trigger || document.querySelector('.btn-ai-analysis[data-ai-page="' + pageId + '"]');
+        const name = pageTitle(pageId);
+        if (titleEl) titleEl.textContent = 'Análise Executiva — ' + name;
+        overlay.hidden = false;
+        document.documentElement.classList.add('ai-analysis-open');
+        document.body.classList.add('ai-analysis-open');
+        document.querySelectorAll('.btn-ai-analysis').forEach((btn) => {
+          btn.setAttribute('aria-expanded', btn.dataset.aiPage === pageId ? 'true' : 'false');
+        });
+        open = true;
+        setHint('');
+        dialog.focus();
+        if (sameOpen) return;
+        if (inFlight && currentPageId === pageId && !opts?.refresh) return;
+        currentPageId = pageId;
+        startAnalysis(pageId, opts);
+      }
+
+      function mountAiAnalysisChrome() {
+        Object.entries(window.AI_ANALYSIS_PAGES).forEach(([pageId, meta]) => {
+          if (!meta) return;
+          const view = document.getElementById('view-' + pageId);
+          const h1 = view && view.querySelector('.page-header h1');
+          if (!h1) return;
+          if (view.querySelector('.btn-ai-analysis')) return;
+          let row = h1.parentElement;
+          if (!row.classList.contains('page-header-title-row')) {
+            row = document.createElement('div');
+            row.className = 'page-header-title-row';
+            h1.parentNode.insertBefore(row, h1);
+            row.appendChild(h1);
+          }
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = meta.enabled ? 'btn-ai-analysis' : 'btn-ai-analysis is-disabled';
+          btn.dataset.aiPage = pageId;
+          btn.innerHTML = SPARKLE_SVG + '<span class="btn-ai-analysis-label">Resumo analisado pela IA</span>';
+          if (meta.enabled) {
+            btn.setAttribute('aria-haspopup', 'dialog');
+            btn.setAttribute('aria-controls', 'aiAnalysisModal');
+            btn.setAttribute('aria-expanded', 'false');
+            btn.setAttribute('aria-label', 'Abrir resumo analisado pela IA de ' + (meta.title || pageId));
+          } else {
+            btn.disabled = true;
+            btn.setAttribute('aria-disabled', 'true');
+            btn.title = 'Resumo com IA disponível em breve nesta página.';
+            btn.setAttribute('aria-label', 'Resumo com IA disponível em breve nesta página.');
+          }
+          row.appendChild(btn);
+        });
+      }
+
+      mountAiAnalysisChrome();
+
+      document.addEventListener('click', (e) => {
+        const retry = e.target.closest && e.target.closest('[data-ai-retry]');
+        if (retry) {
+          e.preventDefault();
+          if (currentPageId) openAiAnalysis(currentPageId, lastTrigger, { refresh: true });
+          return;
+        }
+        const btn = e.target.closest && e.target.closest('.btn-ai-analysis');
+        if (btn) {
+          e.preventDefault();
+          if (btn.disabled || btn.classList.contains('is-disabled') || btn.getAttribute('aria-disabled') === 'true') return;
+          openAiAnalysis(btn.dataset.aiPage, btn);
+        }
+      });
+
+      overlay && overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) closeAiAnalysis();
+      });
+      document.getElementById('aiAnalysisClose')?.addEventListener('click', closeAiAnalysis);
+      document.getElementById('aiAnalysisDismiss')?.addEventListener('click', closeAiAnalysis);
+      refreshBtn?.addEventListener('click', () => {
+        if (!currentPageId || inFlight || refreshBtn.disabled) return;
+        openAiAnalysis(currentPageId, lastTrigger, { refresh: true });
+      });
+      document.querySelectorAll('[data-nav]').forEach((btn) => {
+        btn.addEventListener('click', () => { if (open) closeAiAnalysis(); });
+      });
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && open) {
+          e.preventDefault();
+          e.stopPropagation();
+          closeAiAnalysis();
+        }
+      }, true);
+    })();
 
     /* -------- Performance do EP -------- */
     const epState = {
@@ -16895,7 +17880,7 @@ ${dataRows}
         ? ` ${fmt.format(effectiveWithoutConfirmed)} efetivados sem data confirmada.`
         : '';
       setHtml('#cKpisPrimary', `
-        <article class="metric kpi-effective">
+        <article class="metric kpi-effective kpi-card--highlight">
           <div class="metric-label">Cancelamentos efetivados ${portalMetricTip('Somente cancelamentos efetivados retiram o cliente da carteira ativa. Fórmula: churn_efetivado_at OU distrato_assinado_at OU distrato Assinado OU clients.data_churn. Fonte: BASE QV. Unidade: clientes distintos. Respeita os filtros.', 'Cancelamentos efetivados')}</div>
           <div class="metric-value">${fmt.format(filteredSummary.effectiveCancellations || 0)}</div>
           <div class="metric-note">Churn, distrato assinado/Assinado ou data_churn.${effectiveNoteExtra}</div>
@@ -16905,7 +17890,7 @@ ${dataRows}
           <div class="metric-value">${fmt.format(filteredSummary.intentionsOrOrdersRegistered || 0)}</div>
           <div class="metric-note">data_pedido OU intencao_registrada_at OU status · clientes distintos.</div>
         </article>
-        <article class="metric kpi-primary">
+        <article class="metric kpi-primary kpi-card--highlight">
           <div class="metric-label">Clientes em processo de cancelamento ${portalMetricTip('Clientes distintos com intenção ou pedido em registro não arquivado e sem evidência de cancelamento efetivado. Efetivação considera churn_efetivado_at, distrato_assinado_at, distrato igual a Assinado ou clients.data_churn. A diferença para Intenções/pedidos corresponde a clientes que já possuem evidência de efetivação. Fonte: BASE QV.', 'Em processo')}</div>
           <div class="metric-value">${fmt.format(filteredSummary.clientsInCancellationProcess || 0)}</div>
           <div class="metric-note">Intenção/pedido sem cancelamento efetivado.</div>

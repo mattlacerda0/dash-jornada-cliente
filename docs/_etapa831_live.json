@@ -1,0 +1,46 @@
+{
+  "ping": {
+    "ok": true,
+    "skipped": true,
+    "model": "gemini-3.5-flash",
+    "temperature": 0.2,
+    "key_present": true
+  },
+  "pages": [
+    {
+      "page": "general",
+      "http_status": 200,
+      "success": true,
+      "code": null,
+      "error": null,
+      "ai_generated": true,
+      "model": "gemini-3.5-flash",
+      "headline": "A base da QuartaVia registra 3.416 clientes totais, com destaque para o crescimento de 133,8% nas aquisições de clientes no último mês.",
+      "executive_summary": "A base conta com 1.816 clientes ativos e 3.038 clientes com diagnóstico financeiro. O volume de aquisições subiu de 71 para 166 clientes entre julho e agosto de 2026. Há um ponto de atenção com 811 clientes marcados como cancelados sem data de confirmação. A análise de aquisição utiliza a data de início do ciclo devido a limitações técnicas de timeout na leitura completa da assinatura do contrato.",
+      "attention_points": [],
+      "positive_signals": [],
+      "recommended_actions": [],
+      "limitations": [],
+      "counts": {
+        "attention": 0,
+        "positive": 0,
+        "actions": 0,
+        "limitations": 0
+      },
+      "invented_numbers": 0,
+      "invented_samples": [],
+      "validation_reason": null,
+      "validation_details": null,
+      "pii": 0,
+      "causality": 0,
+      "timing_ms": {
+        "compute_payload": 3243,
+        "engine": 6,
+        "gemini": 11005,
+        "total": 14254
+      },
+      "wall_ms": 14341,
+      "has_context": true
+    }
+  ]
+}

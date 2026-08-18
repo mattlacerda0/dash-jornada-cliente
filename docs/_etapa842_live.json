@@ -1,0 +1,116 @@
+[
+  {
+    "page": "general",
+    "http_status": 200,
+    "success": true,
+    "code": null,
+    "reason": null,
+    "error": null,
+    "gemini_http": null,
+    "quota_metric": null,
+    "quota_class": null,
+    "scope": {
+      "type": "active_clients",
+      "label": "Clientes ativos",
+      "source": "page_default",
+      "count": 1813
+    },
+    "has_executive_analysis": true,
+    "headline": true,
+    "summary": true,
+    "highlight_numbers": 4,
+    "counts": {
+      "attention": 0,
+      "positive": 0,
+      "actions": 1,
+      "limitations": 3
+    },
+    "snapshot_bytes": 2953,
+    "context_bytes_without_snapshot": 3774,
+    "timing_ms": {
+      "compute_payload": 2039,
+      "snapshot": 6,
+      "engine": 1,
+      "gemini": 16544,
+      "total": 18590
+    },
+    "wall_ms": 18595,
+    "headline_text": "A carteira ativa alcança 1.813 clientes, impulsionada por um crescimento expressivo de novas aquisições no último mês."
+  },
+  {
+    "page": "meetings",
+    "http_status": 200,
+    "success": false,
+    "code": "ai_generation_failed",
+    "reason": "unanchored_number",
+    "error": "A análise citou número que não existe no contexto oficial.",
+    "gemini_http": null,
+    "quota_metric": null,
+    "quota_class": null,
+    "scope": {
+      "type": "active_clients",
+      "label": "Clientes ativos",
+      "source": "page_default",
+      "count": 1813
+    },
+    "has_executive_analysis": false,
+    "headline": false,
+    "summary": false,
+    "highlight_numbers": 0,
+    "counts": {
+      "attention": 0,
+      "positive": 0,
+      "actions": 0,
+      "limitations": 0
+    },
+    "snapshot_bytes": 2357,
+    "context_bytes_without_snapshot": null,
+    "timing_ms": {
+      "compute_payload": 5037,
+      "snapshot": 5,
+      "engine": 1,
+      "gemini": 14961,
+      "total": 20004
+    },
+    "wall_ms": 20006,
+    "headline_text": null
+  },
+  {
+    "page": "statistical-crosses",
+    "http_status": 200,
+    "success": false,
+    "code": "ai_generation_failed",
+    "reason": "rate_limited",
+    "error": "Não foi possível gerar a análise executiva.",
+    "gemini_http": 429,
+    "quota_metric": "generativelanguage.googleapis.com/generate_content_free_tier_requests",
+    "quota_class": "rate_limited",
+    "scope": {
+      "type": "methodological",
+      "label": "População metodológica oficial",
+      "source": "page_default",
+      "count": 2304
+    },
+    "has_executive_analysis": false,
+    "headline": false,
+    "summary": false,
+    "highlight_numbers": 0,
+    "counts": {
+      "attention": 0,
+      "positive": 0,
+      "actions": 0,
+      "limitations": 0
+    },
+    "snapshot_bytes": 2695,
+    "context_bytes_without_snapshot": null,
+    "timing_ms": {
+      "compute_payload": 10614,
+      "snapshot": 1,
+      "engine": 2,
+      "gemini": 13565,
+      "total": 24182
+    },
+    "wall_ms": 24186,
+    "headline_text": null
+  }
+]

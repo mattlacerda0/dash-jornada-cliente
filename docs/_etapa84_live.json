@@ -1,0 +1,26 @@
+{
+  "page": "general",
+  "gemini_api_key_loaded": true,
+  "http_status": 200,
+  "success": true,
+  "code": null,
+  "reason": null,
+  "error": null,
+  "details": null,
+  "has_executive_analysis": true,
+  "headline": true,
+  "summary": true,
+  "counts": {
+    "attention": 1,
+    "positive": 1,
+    "actions": 0,
+    "limitations": 2
+  },
+  "timing_ms": {
+    "compute_payload": 2416,
+    "engine": 2,
+    "gemini": 12323,
+    "total": 14741
+  },
+  "wall_ms": 14746
+}

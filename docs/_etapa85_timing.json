@@ -1,0 +1,117 @@
+{
+  "general": {
+    "compute": 2177,
+    "snapshot": 5,
+    "composer": 0,
+    "gemini": 0,
+    "total": 2183,
+    "wall_ms": 2185,
+    "generation_mode": "deterministic",
+    "headline": "A carteira reúne 1.806 clientes ativos, com aceleração recente nas novas aquisições.",
+    "highlights": [
+      {
+        "metric": "active_clients",
+        "label": "Clientes ativos",
+        "value": 1806,
+        "unit": "clients"
+      },
+      {
+        "metric": "median_stay_days",
+        "label": "Permanência típica",
+        "value": 172,
+        "unit": "days"
+      },
+      {
+        "metric": "financial_coverage",
+        "label": "Cobertura financeira",
+        "value": 92.6,
+        "unit": "percent"
+      },
+      {
+        "metric": "latest_month_acquisitions",
+        "label": "Novas aquisições",
+        "value": 167,
+        "unit": "clients"
+      }
+    ],
+    "attention": 0,
+    "positive": 1,
+    "actions": 1,
+    "limitations": 1
+  },
+  "meetings": {
+    "compute": 7298,
+    "snapshot": 14,
+    "composer": 1,
+    "gemini": 0,
+    "total": 7314,
+    "wall_ms": 7315,
+    "generation_mode": "deterministic",
+    "headline": "70% dos clientes ativos possuem reunião registrada; 541 ainda não tiveram acompanhamento.",
+    "highlights": [
+      {
+        "metric": "clients_with_meeting",
+        "label": "Clientes com reunião",
+        "value": 1265,
+        "unit": "clients"
+      },
+      {
+        "metric": "meeting_coverage_rate",
+        "label": "Cobertura de reuniões",
+        "value": 70,
+        "unit": "percent"
+      },
+      {
+        "metric": "attendance_rate",
+        "label": "Taxa de comparecimento",
+        "value": 76.5,
+        "unit": "percent"
+      },
+      {
+        "metric": "no_show_rate",
+        "label": "Taxa de ausência",
+        "value": 23.5,
+        "unit": "percent"
+      }
+    ],
+    "attention": 3,
+    "positive": 0,
+    "actions": 3,
+    "limitations": 1
+  },
+  "statistical-crosses": {
+    "compute": 25918,
+    "snapshot": 3,
+    "composer": 0,
+    "gemini": 0,
+    "total": 25927,
+    "wall_ms": 25930,
+    "generation_mode": "deterministic",
+    "headline": "Tempo até a primeira reunião aparece de forma consistente em diferentes análises.",
+    "highlights": [
+      {
+        "metric": "sc_active_clients",
+        "label": "Clientes ativos no recorte",
+        "value": 1806,
+        "unit": "clients"
+      },
+      {
+        "metric": "sc_top_association",
+        "label": "Associação · tempo até a 1ª reunião",
+        "value": 0.4855,
+        "unit": "association"
+      },
+      {
+        "metric": "sc_nps",
+        "label": "NPS",
+        "value": 64.8,
+        "unit": "index"
+      }
+    ],
+    "attention": 4,
+    "positive": 0,
+    "actions": 3,
+    "limitations": 1
+  },
+  "general_cache_hit_ms": 1
+}

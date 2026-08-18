@@ -1,0 +1,138 @@
+{
+  "etapa": "8.3.3",
+  "interval_ms": 30000,
+  "round2_wait_ms": 60000,
+  "mocks": {
+    "etapa832": {
+      "total": 14,
+      "pass": 14,
+      "fail": 0
+    },
+    "etapa83": {
+      "total": 14,
+      "pass": 14,
+      "fail": 0
+    }
+  },
+  "rounds": {
+    "1": [
+      {
+        "page": "general",
+        "round": 1,
+        "http_status": 200,
+        "success": false,
+        "api_success": false,
+        "code": "ai_generation_failed",
+        "error": "Não foi possível gerar a análise executiva.",
+        "reason": "rate_limited",
+        "classification": "INFRASTRUCTURE_RATE_LIMIT",
+        "headline": null,
+        "counts": {
+          "attention": 0,
+          "positive": 0,
+          "actions": 0,
+          "limitations": 0
+        },
+        "candidate_counts": {
+          "attention": 1,
+          "positive": 1,
+          "limitation": 1
+        },
+        "checks": {
+          "issues": [],
+          "safety_failed": false,
+          "quality_failed": false,
+          "invented_numbers": 0,
+          "pii": 0,
+          "causality": 0,
+          "passed": false
+        },
+        "timing_ms": {
+          "compute_payload": 3882,
+          "engine": 8,
+          "gemini": 14357,
+          "total": 18247
+        },
+        "wall_ms": 35421
+      },
+      {
+        "page": "meetings",
+        "round": 1,
+        "http_status": 200,
+        "success": false,
+        "api_success": false,
+        "code": "ai_generation_failed",
+        "error": "Não foi possível gerar a análise executiva.",
+        "reason": "rate_limited",
+        "classification": "INFRASTRUCTURE_RATE_LIMIT",
+        "headline": null,
+        "counts": {
+          "attention": 0,
+          "positive": 0,
+          "actions": 0,
+          "limitations": 0
+        },
+        "candidate_counts": {
+          "attention": 1,
+          "positive": 0,
+          "limitation": 12
+        },
+        "checks": {
+          "issues": [],
+          "safety_failed": false,
+          "quality_failed": false,
+          "invented_numbers": 0,
+          "pii": 0,
+          "causality": 0,
+          "passed": false
+        },
+        "timing_ms": {
+          "compute_payload": 7588,
+          "engine": 9,
+          "gemini": 14634,
+          "total": 22231
+        },
+        "wall_ms": 22240
+      }
+    ],
+    "2": []
+  },
+  "second_round": {
+    "performed": false,
+    "reason": "aborted_after_consecutive_429_or_503"
+  },
+  "aborted": true,
+  "abort_reason": "consecutive_infrastructure_rate_limit",
+  "rate_limit": {
+    "http_429": 2,
+    "http_503": 0,
+    "consecutive_page_429": 0
+  },
+  "by_page": {
+    "general": {
+      "live_valid": false,
+      "consistency": "n/a",
+      "classifications": [
+        "INFRASTRUCTURE_RATE_LIMIT"
+      ]
+    },
+    "meetings": {
+      "live_valid": false,
+      "consistency": "n/a",
+      "classifications": [
+        "INFRASTRUCTURE_RATE_LIMIT"
+      ]
+    },
+    "statistical-crosses": {
+      "live_valid": false,
+      "consistency": "n/a",
+      "classifications": []
+    }
+  },
+  "failures": {
+    "infrastructure": 2,
+    "format": 0,
+    "safety": 0,
+    "executive_quality": 0
+  }
+}

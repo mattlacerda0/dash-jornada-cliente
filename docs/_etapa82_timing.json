@@ -1,0 +1,26 @@
+{
+  "generated_at": "2026-08-18T14:08:31.963Z",
+  "timings": {
+    "general": {
+      "computeMs": 2154,
+      "engineMs": 6,
+      "bytes": 6791,
+      "kpis": 11,
+      "signals": 0
+    },
+    "meetings": {
+      "computeMs": 5435,
+      "engineMs": 7,
+      "bytes": 7957,
+      "kpis": 11,
+      "signals": 2
+    },
+    "statistical-crosses": {
+      "computeMs": 10006,
+      "engineMs": 3,
+      "bytes": 14578,
+      "kpis": 7,
+      "signals": 2
+    }
+  }
+}

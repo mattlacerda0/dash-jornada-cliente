@@ -3,6 +3,9 @@ import { computeGeneralDataPayload } from "./general-data.mjs";
 import { computeMeetingsPayload } from "./meetings.mjs";
 import { computeMechanismsPayload } from "./mechanisms.mjs";
 import { computeSupportPayload } from "./support.mjs";
+import { getMetricDef, resolveCanonicalMetricId } from "./_shared/portal-metric-catalog.mjs";
+import { getRegistryMetric } from "./_shared/portal-metric-registry.mjs";
+import { executeMetricQuery } from "./_shared/metric-executor.mjs";
 
 /**
  * Endpoint interno servidor-servidor para o chatbot (n8n → portal).
@@ -273,7 +276,43 @@ function nowIso() {
  * a métrica não existir. Fonte única compartilhada por /api/assistant.
  */
 export async function resolveMetric(metricKey) {
-  const metric = METRICS[metricKey];
+  const canonical = resolveCanonicalMetricId(metricKey);
+  const catalogDef = getMetricDef(canonical);
+  const metric = METRICS[canonical] || METRICS[metricKey];
+
+  const exec = catalogDef
+    ? await executeMetricQuery({
+      metric: canonical,
+      domain: catalogDef.domain,
+      intent: "value",
+      filters: {},
+    })
+    : null;
+
+  if (exec && (exec.value != null || exec.success)) {
+    const warnings = [...(exec.warnings || [])];
+    if (exec.value == null) {
+      warnings.push({
+        code: "NOT_CALCULABLE",
+        message: "Indicador ainda não calculável com os dados disponíveis.",
+      });
+    }
+    return {
+      metric: canonical,
+      requested_metric: metricKey,
+      value: exec.value === undefined ? null : exec.value,
+      unit: exec.unit || null,
+      label: exec.label || catalogDef?.label || metric?.label || canonical,
+      sources: exec.sources?.length ? exec.sources : (catalogDef?.sources || metric?.sources || []),
+      definition: catalogDef?.description || exec.definition_text || null,
+      aliases: catalogDef?.aliases || [],
+      sample_size: exec.sample_size ?? null,
+      warnings,
+      realtime_database: Boolean(exec.realtime_database),
+      generated_at: nowIso(),
+    };
+  }
+
   if (!metric) return null;
   const payload = await COMPUTE[metric.source]();
   const rawValue = metric.value(payload);
@@ -285,11 +324,20 @@ export async function resolveMetric(metricKey) {
       message: "Indicador ainda não calculável com os dados disponíveis.",
     });
   }
+  if (catalogDef?.status === "needs_business_validation") {
+    warnings.push({
+      code: "NEEDS_BUSINESS_VALIDATION",
+      message: "Regra ainda não unificada; não tratar o valor como verdade oficial única.",
+    });
+  }
   return {
-    metric: metricKey,
+    metric: canonical,
+    requested_metric: metricKey,
     value,
-    label: metric.label,
-    sources: metric.sources,
+    label: catalogDef?.label || metric.label,
+    sources: catalogDef?.sources || metric.sources,
+    definition: catalogDef?.description || null,
+    aliases: catalogDef?.aliases || [],
     warnings,
     generated_at: nowIso(),
   };
@@ -339,8 +387,9 @@ export default async (request) => {
   }
 
   const metricKey = typeof body?.metric === "string" ? body.metric.trim() : "";
-  const metric = METRICS[metricKey];
-  if (!metric) {
+  const canonical = resolveCanonicalMetricId(metricKey);
+  const metric = METRICS[canonical] || METRICS[metricKey];
+  if (!metric && !getRegistryMetric(canonical)) {
     return errorJson(400, "Métrica desconhecida ou não suportada.", "unknown_metric");
   }
 

@@ -26,6 +26,9 @@ if (Bun.env.PHARUS_SUPABASE_SERVICE_ROLE_KEY) process.env.PHARUS_SUPABASE_SERVIC
 if (Bun.env.PHARUS_SUPABASE_SCHEMA) process.env.PHARUS_SUPABASE_SCHEMA = Bun.env.PHARUS_SUPABASE_SCHEMA;
 if (Bun.env.N8N_CHAT_WEBHOOK_URL) process.env.N8N_CHAT_WEBHOOK_URL = Bun.env.N8N_CHAT_WEBHOOK_URL;
 if (Bun.env.N8N_INTERNAL_API_TOKEN) process.env.N8N_INTERNAL_API_TOKEN = Bun.env.N8N_INTERNAL_API_TOKEN;
+if (Bun.env.GEMINI_API_KEY) process.env.GEMINI_API_KEY = Bun.env.GEMINI_API_KEY;
+if (Bun.env.GOOGLE_GENERATIVE_AI_API_KEY) process.env.GOOGLE_GENERATIVE_AI_API_KEY = Bun.env.GOOGLE_GENERATIVE_AI_API_KEY;
+if (Bun.env.GEMINI_MODEL) process.env.GEMINI_MODEL = Bun.env.GEMINI_MODEL;
 if (Bun.env.QV360_SUPABASE_URL) process.env.QV360_SUPABASE_URL = Bun.env.QV360_SUPABASE_URL;
 if (Bun.env.QV360_SUPABASE_SCHEMA) process.env.QV360_SUPABASE_SCHEMA = Bun.env.QV360_SUPABASE_SCHEMA;
 if (Bun.env.QV360_SUPABASE_SERVICE_ROLE_KEY) process.env.QV360_SUPABASE_SERVICE_ROLE_KEY = Bun.env.QV360_SUPABASE_SERVICE_ROLE_KEY;
@@ -259,6 +262,10 @@ const server = Bun.serve({
     }
     if (url.pathname === "/api/assistant") return assistantHandler(request);
     if (url.pathname === "/api/assistant-data") return assistantDataHandler(request);
+    if (url.pathname === "/api/ai-analysis") {
+      const { default: aiAnalysisHandler } = await import("./netlify/functions/ai-analysis.mjs");
+      return aiAnalysisHandler(request);
+    }
     if (url.pathname.startsWith("/js/")) {
       const file = Bun.file(`${ROOT}${url.pathname}`);
       if (await file.exists()) {

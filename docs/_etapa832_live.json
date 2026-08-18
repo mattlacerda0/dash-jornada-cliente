@@ -1,0 +1,123 @@
+{
+  "interval_ms": 15000,
+  "gens_per_page": 3,
+  "pages": {
+    "general": [
+      {
+        "page": "general",
+        "gen": 1,
+        "http_status": 200,
+        "success": false,
+        "code": "ai_generation_failed",
+        "error": "Não foi possível gerar a análise executiva.",
+        "reason": "rate_limited",
+        "headline": null,
+        "headline_ok": false,
+        "summary_ok": false,
+        "counts": {
+          "attention": 0,
+          "positive": 0,
+          "actions": 0,
+          "limitations": 0
+        },
+        "candidate_counts": {
+          "attention": 1,
+          "limitation": 1,
+          "positive": 1
+        },
+        "expected_attention": true,
+        "expected_limitations": true,
+        "attention_filled_if_expected": false,
+        "limitations_filled_if_expected": false,
+        "actions_unbound": 0,
+        "invented_numbers": 0,
+        "invented_samples": [],
+        "pii": 0,
+        "causality": 0,
+        "timing_ms": {
+          "compute_payload": 3002,
+          "engine": 3,
+          "gemini": 4551,
+          "total": 7556
+        },
+        "wall_ms": 7599
+      },
+      {
+        "page": "general",
+        "gen": 2,
+        "http_status": 200,
+        "success": false,
+        "code": "ai_generation_failed",
+        "error": "Não foi possível gerar a análise executiva.",
+        "reason": "rate_limited",
+        "headline": null,
+        "headline_ok": false,
+        "summary_ok": false,
+        "counts": {
+          "attention": 0,
+          "positive": 0,
+          "actions": 0,
+          "limitations": 0
+        },
+        "candidate_counts": {
+          "attention": 1,
+          "limitation": 1,
+          "positive": 1
+        },
+        "expected_attention": true,
+        "expected_limitations": true,
+        "attention_filled_if_expected": false,
+        "limitations_filled_if_expected": false,
+        "actions_unbound": 0,
+        "invented_numbers": 0,
+        "invented_samples": [],
+        "pii": 0,
+        "causality": 0,
+        "timing_ms": {
+          "compute_payload": 2320,
+          "engine": 1,
+          "gemini": 4288,
+          "total": 6609
+        },
+        "wall_ms": 6612
+      }
+    ]
+  },
+  "aborted": true,
+  "abort_reason": "repeated_429",
+  "rate_limit": {
+    "found_429": 2,
+    "retries_logged": 0,
+    "aborted_calls": 1
+  },
+  "summary": {
+    "general": {
+      "gens": 2,
+      "success": 0,
+      "consistency": "baixa",
+      "attention": [
+        0,
+        0
+      ],
+      "positive": [
+        0,
+        0
+      ],
+      "actions": [
+        0,
+        0
+      ],
+      "limitations": [
+        0,
+        0
+      ],
+      "invented": 0,
+      "causality": 0,
+      "pii": 0,
+      "times_ms": [
+        7599,
+        6612
+      ]
+    }
+  }
+}

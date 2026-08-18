@@ -13,6 +13,13 @@ import { computePharusEpMeetingsPayload } from "../pharus-ep-meetings.mjs";
 import { computeSupportPayload } from "../support.mjs";
 import { computeCancellationsPayload } from "../cancellations.mjs";
 import { computePharusMechanismsPayload } from "../pharus-mechanisms.mjs";
+import { computeFinancialUpdatesPayload } from "../financial-updates.mjs";
+import { computeTemporalIndicatorsPayload } from "../temporal-indicators.mjs";
+import {
+  resolveCanonicalMetricId,
+  getMetricDef,
+  LIVE_QUERY_DOMAINS,
+} from "./portal-metric-catalog.mjs";
 
 /** Lazy import — Cruzamentos não pode bloquear o carregamento do catálogo/assistente. */
 let statisticalCrossesComputePromise = null;
@@ -86,6 +93,21 @@ export const portalDomainExecutors = {
     id: "pharus_ep_meetings",
     label: "Reuniões App Pharus (EP)",
     compute: computePharusEpMeetingsPayload,
+  },
+  financial_updates: {
+    id: "financial_updates",
+    label: "Atualização Financeira",
+    compute: computeFinancialUpdatesPayload,
+  },
+  temporal: {
+    id: "temporal",
+    label: "Indicadores Temporais",
+    compute: computeTemporalIndicatorsPayload,
+  },
+  renewal: {
+    id: "renewal",
+    label: "Renovação",
+    compute: computeGeneralDataPayload,
   },
 };
 
@@ -532,6 +554,35 @@ export const portalMetricRegistry = {
       "media de onboarding ate o primeiro mecanismo",
     ],
   },
+  average_days_to_first_meeting: {
+    domain: "journey",
+    label: "Mediana de dias até a primeira reunião",
+    payloadPath: "summary.averageFirstMeetingDays",
+    sampleSizePath: "summary.firstMeetingCount",
+    unit: "days",
+    aggregation: "median",
+    definition:
+      "Mediana na coorte da Jornada até a primeira client_meetings.start_time (sem exigir comparecimento). O campo average* do payload é mediana.",
+  },
+  average_days_to_plan_delivery: {
+    domain: "journey",
+    label: "Mediana de dias até a entrega do plano",
+    payloadPath: "summary.averagePlanDeliveryDays",
+    sampleSizePath: "summary.planDeliveryCount",
+    unit: "days",
+    aggregation: "median",
+    definition:
+      "Proxy: mediana até a primeira reunião Central de Inteligência na coorte comparável. Não é aprovação formal.",
+  },
+  average_onboarding_days: {
+    domain: "journey",
+    label: "Mediana de dias de onboarding",
+    payloadPath: "summary.averageTotalOnboardingDays",
+    sampleSizePath: "summary.totalOnboardingCount",
+    unit: "days",
+    aggregation: "median",
+    definition: "Mediana do onboarding total na coorte da Jornada. O campo average* do payload é mediana.",
+  },
   completed_onboarding_clients: {
     domain: "journey",
     label: "Clientes que concluíram onboarding",
@@ -578,6 +629,70 @@ export const portalMetricRegistry = {
     definition:
       "Média aritmética dos intervalos positivos entre reuniões válidas consecutivas com presença confirmada.",
     aliases: ["intervalo medio entre reunioes", "intervalo medio", "intervalo tipico entre reunioes"],
+  },
+  total_meetings: {
+    domain: "meetings",
+    label: "Total de reuniões",
+    payloadPath: "summary.totalMeetings",
+    sampleSizePath: "summary.totalMeetings",
+    unit: "meetings",
+    aggregation: "count",
+    definition: "Contagem de reuniões analíticas no recorte (client_meetings + manual_meetings).",
+  },
+  no_show_meetings: {
+    domain: "meetings",
+    label: "Reuniões com no-show",
+    payloadPath: "summary.totalNoShows",
+    sampleSizePath: "summary.eligibleMeetings",
+    unit: "meetings",
+    aggregation: "count",
+    definition: "Reuniões já ocorridas, não canceladas, com meeting_attendance.status = não compareceu.",
+  },
+  eligible_meetings: {
+    domain: "meetings",
+    label: "Reuniões elegíveis",
+    payloadPath: "summary.eligibleMeetings",
+    sampleSizePath: "summary.totalMeetings",
+    unit: "meetings",
+    aggregation: "count",
+    definition: "totalMeetings − futureMeetings − cancelledMeetings.",
+  },
+  future_meetings: {
+    domain: "meetings",
+    label: "Reuniões futuras",
+    payloadPath: "summary.futureMeetings",
+    sampleSizePath: "summary.totalMeetings",
+    unit: "meetings",
+    aggregation: "count",
+    definition: "Reuniões com start_time posterior a agora.",
+  },
+  attended_meetings: {
+    domain: "meetings",
+    label: "Comparecimentos",
+    payloadPath: "summary.attendedMeetings",
+    sampleSizePath: "summary.eligibleMeetings",
+    unit: "meetings",
+    aggregation: "count",
+    definition: "Elegíveis − no-shows.",
+  },
+  average_meetings_per_month: {
+    domain: "meetings",
+    label: "Média de reuniões/mês",
+    payloadPath: "summary.averageMeetingsPerMonth",
+    sampleSizePath: "summary.totalMeetings",
+    unit: "meetings_per_month",
+    aggregation: "average",
+    definition:
+      "Volume de reuniões ÷ mesesBetween(primeira, última) no payload de meetings.mjs. A UI pode usar outro divisor de período. Não é média por cliente.",
+  },
+  days_since_latest_meeting: {
+    domain: "meetings",
+    label: "Dias desde a última reunião",
+    payloadPath: "summary.daysSinceLatestMeeting",
+    sampleSizePath: "summary.totalMeetings",
+    unit: "days",
+    aggregation: "value",
+    definition: "Hoje − MAXDATE de reunião válida do recorte.",
   },
   total_meeting_reschedules: {
     domain: "meetings",
@@ -1342,14 +1457,216 @@ export const portalMetricRegistry = {
     aggregation: "count",
     definition: "Count na categoria Não renovação.",
   },
+
+  financial_clients_with_data: {
+    domain: "financial_updates",
+    label: "Clientes com dados financeiros",
+    payloadPath: "summary.clientsWithFinancialData",
+    sampleSizePath: "summary.totalClients",
+    unit: "clients",
+    aggregation: "count",
+    definition: "Clientes com ≥1 registro em client_financial_data no recorte da tela Atualização Financeira.",
+  },
+  financial_post_creation_updates: {
+    domain: "financial_updates",
+    label: "Clientes com registro alterado após a criação",
+    payloadPath: "summary.clientsWithPostCreationUpdate",
+    sampleSizePath: "summary.clientsWithFinancialData",
+    unit: "clients",
+    aggregation: "count",
+    definition: "Atualização real: updated_at > created_at. A criação inicial não conta.",
+  },
+  financial_updated_last_30_days: {
+    domain: "financial_updates",
+    label: "Atualizados nos últimos 30 dias",
+    payloadPath: "summary.updatedLast30Days",
+    sampleSizePath: "summary.clientsWithFinancialData",
+    unit: "clients",
+    aggregation: "count",
+    definition: "Clientes com updated_at > created_at e atualização nos últimos 30 dias.",
+  },
+  financial_median_days_since_update: {
+    domain: "financial_updates",
+    label: "Recência da atualização financeira",
+    payloadPath: "summary.medianDaysSinceUpdate",
+    sampleSizePath: "summary.clientsWithPostCreationUpdate",
+    unit: "days",
+    aggregation: "median",
+    definition: "Mediana de dias desde a última atualização válida (updated_at > created_at).",
+  },
+  financial_outdated_over_90_days: {
+    domain: "financial_updates",
+    label: "Clientes com dados desatualizados",
+    payloadPath: "summary.outdatedOver90Days",
+    sampleSizePath: "summary.clientsWithFinancialData",
+    unit: "clients",
+    aggregation: "count",
+    definition: "Clientes com atualização válida há mais de 90 dias.",
+  },
+
+  temporal_total_subjects: {
+    domain: "temporal",
+    label: "Clientes/usuários (temporais)",
+    payloadPath: "summary.totalSubjects",
+    sampleSizePath: "summary.totalSubjects",
+    unit: "subjects",
+    aggregation: "count",
+    definition: "BASE QV + usuários App Pharus na tela Indicadores Temporais.",
+  },
+  temporal_financial_updates: {
+    domain: "temporal",
+    label: "Atualizações financeiras (temporais)",
+    payloadPath: "summary.totalFinancialUpdates",
+    sampleSizePath: "summary.totalSubjects",
+    unit: "events",
+    aggregation: "count",
+    definition: "Nesta tela o código usa updated_at || created_at.",
+  },
+  temporal_active_with_signals: {
+    domain: "temporal",
+    label: "Clientes ativos com sinais",
+    payloadPath: "summary.activeClientsWithSignals",
+    sampleSizePath: "summary.totalSubjects",
+    unit: "clients",
+    aggregation: "count",
+    definition: "Heurística da tela de sinais — não é modelo preditivo oficial.",
+  },
+
+  renewed_clients: {
+    domain: "renewal",
+    label: "Renovaram",
+    payloadPath: null,
+    countFromClients: (c) => c.renewed === true || Number(c.currentCycle) > 1,
+    sampleSizePath: "summary.totalClients",
+    unit: "clients",
+    aggregation: "count",
+    definition: "hasRenewed = clients.ciclo > 1. Tela de renovação reusa /api/general-data.",
+  },
+  total_renewals: {
+    domain: "renewal",
+    label: "Quantidade de renovações",
+    payloadPath: null,
+    sumFromClients: (c) => Number(c.renewalCount) || 0,
+    sampleSizePath: "summary.totalClients",
+    unit: "renewals",
+    aggregation: "sum",
+    definition: "Soma de max(ciclo − 1, 0) por cliente. Não é histórico de eventos de renovação.",
+  },
+  max_current_cycle: {
+    domain: "renewal",
+    label: "Maior ciclo atual",
+    payloadPath: null,
+    maxFromClients: (c) => {
+      const n = Number(c.currentCycle);
+      return Number.isFinite(n) ? n : null;
+    },
+    sampleSizePath: "summary.totalClients",
+    unit: "cycles",
+    aggregation: "max",
+    definition: "Máximo de clients.ciclo no recorte.",
+  },
+  non_renewed_clients: {
+    domain: "renewal",
+    label: "Não renovaram (ciclo 1)",
+    payloadPath: null,
+    countFromClients: (c) => Number(c.currentCycle) === 1,
+    sampleSizePath: "summary.totalClients",
+    unit: "clients",
+    aggregation: "count",
+    definition: "Clientes com ciclo = 1. Ciclo inválido não entra. Não usar como preditor se o desfecho for renovação.",
+  },
+  renewal_rate: {
+    domain: "renewal",
+    label: "Taxa de renovação (ciclo > 1)",
+    payloadPath: null,
+    rateFromClients: {
+      numerator: (c) => c.renewed === true || Number(c.currentCycle) > 1,
+      denominator: (c) => Number(c.currentCycle) >= 1,
+    },
+    sampleSizePath: "summary.totalClients",
+    unit: "percent",
+    aggregation: "rate",
+    definition: "100 * count(ciclo>1) / count(ciclo≥1). Descritivo; não é taxa contratual formal.",
+  },
+
+  nps_official_index: {
+    domain: "ep_performance",
+    label: "NPS oficial (helper)",
+    payloadPath: "summary.npsRaw",
+    sampleSizePath: "summary.npsResponses",
+    unit: "nps_index",
+    aggregation: "value",
+    definition:
+      "Helper nps-metrics.mjs via payload de Performance do EP. Índice = %P − %D. Não é a regra da tela Pesquisa de Satisfação.",
+  },
+  nps_official_responses: {
+    domain: "ep_performance",
+    label: "Respostas NPS oficiais",
+    payloadPath: "summary.npsResponses",
+    sampleSizePath: "summary.totalClients",
+    unit: "responses",
+    aggregation: "count",
+    definition: "Clientes com última resposta NPS válida 0–10 no helper oficial (payload EP).",
+  },
+  nps_official_promoters: {
+    domain: "ep_performance",
+    label: "Promotores NPS (oficial)",
+    payloadPath: "summary.npsPromoters",
+    sampleSizePath: "summary.npsResponses",
+    unit: "clients",
+    aggregation: "count",
+    definition: "Última nota ≥9 por cliente no helper nps-metrics.mjs.",
+  },
+  nps_official_passives: {
+    domain: "ep_performance",
+    label: "Neutros NPS (oficial)",
+    payloadPath: "summary.npsPassives",
+    sampleSizePath: "summary.npsResponses",
+    unit: "clients",
+    aggregation: "count",
+    definition: "Última nota 7–8 por cliente no helper nps-metrics.mjs.",
+  },
+  nps_official_detractors: {
+    domain: "ep_performance",
+    label: "Detratores NPS (oficial)",
+    payloadPath: "summary.npsDetractors",
+    sampleSizePath: "summary.npsResponses",
+    unit: "clients",
+    aggregation: "count",
+    definition: "Última nota ≤6 por cliente no helper nps-metrics.mjs.",
+  },
+  nps_official_coverage: {
+    domain: "ep_performance",
+    label: "Cobertura NPS oficial",
+    payloadPath: "summary.npsPortfolioCoverage",
+    sampleSizePath: "summary.totalClients",
+    unit: "percent",
+    aggregation: "rate",
+    definition: "Percentual da carteira com última resposta NPS válida (helper oficial no payload EP).",
+  },
 };
 
 export function getRegistryMetric(metricId) {
-  return portalMetricRegistry[metricId] || null;
+  const canonical = resolveCanonicalMetricId(metricId);
+  return portalMetricRegistry[canonical] || portalMetricRegistry[metricId] || null;
 }
 
 export function listRegistryMetrics() {
   return Object.entries(portalMetricRegistry).map(([id, m]) => ({ id, ...m }));
+}
+
+function inferRegistryExecutionKind(id, entry) {
+  if (entry.executionKind) return entry.executionKind;
+  const def = getMetricDef(id);
+  if (def?.executionKind) return def.executionKind;
+  if (LIVE_QUERY_DOMAINS.includes(entry.domain)) return "live";
+  if (entry.domain === "statistical_crosses") return "derived";
+  if (portalDomainExecutors[entry.domain]?.compute) return "dashboard_payload";
+  return "pending";
+}
+
+for (const [id, entry] of Object.entries(portalMetricRegistry)) {
+  entry.executionKind = inferRegistryExecutionKind(id, entry);
 }
 
 /**
@@ -1357,7 +1674,8 @@ export function listRegistryMetrics() {
  * Chama a mesma compute*Payload da página e lê o path — sem recalcular.
  */
 export async function resolveMetricFromDashboard(domain, metricId, filters = {}, options = {}) {
-  const entry = getRegistryMetric(metricId);
+  const canonicalId = resolveCanonicalMetricId(metricId);
+  const entry = getRegistryMetric(canonicalId);
   if (!entry) {
     return {
       success: false,
@@ -1377,7 +1695,7 @@ export async function resolveMetricFromDashboard(domain, metricId, filters = {},
   }
 
   // Soma bruta BASE QV + App Pharus (sem chave confiável de deduplicação)
-  if (metricId === "combined_people_with_mechanisms") {
+  if (canonicalId === "combined_people_with_mechanisms") {
     const mechExec = portalDomainExecutors.mechanisms;
     const phExec = portalDomainExecutors.pharus_mechanisms;
     const [mechPayload, phPayload] = await Promise.all([
@@ -1432,7 +1750,7 @@ export async function resolveMetricFromDashboard(domain, metricId, filters = {},
   });
 
   let clientsRows = Array.isArray(payload.clients) ? payload.clients : [];
-  if (hasFilters && entry.domain === "mechanisms" && clientsRows.length) {
+  if (hasFilters && ["mechanisms", "renewal", "general"].includes(entry.domain) && clientsRows.length) {
     clientsRows = applyDashboardClientFilters(clientsRows, filters);
   }
 
@@ -1465,6 +1783,20 @@ export async function resolveMetricFromDashboard(domain, metricId, filters = {},
   } else if (typeof entry.countFromClients === "function") {
     value = clientsRows.filter(entry.countFromClients).length;
     sampleSize = clientsRows.length;
+  } else if (typeof entry.sumFromClients === "function") {
+    value = clientsRows.reduce((acc, row) => acc + (Number(entry.sumFromClients(row)) || 0), 0);
+    sampleSize = clientsRows.length;
+  } else if (entry.rateFromClients) {
+    const denRows = clientsRows.filter(entry.rateFromClients.denominator);
+    const numRows = denRows.filter(entry.rateFromClients.numerator);
+    value = denRows.length ? Math.round((numRows.length / denRows.length) * 1000) / 10 : null;
+    sampleSize = denRows.length;
+  } else if (typeof entry.maxFromClients === "function") {
+    const nums = clientsRows
+      .map((row) => entry.maxFromClients(row))
+      .filter((n) => Number.isFinite(n));
+    value = nums.length ? Math.max(...nums) : null;
+    sampleSize = nums.length;
   } else if (hasFilters && entry.domain === "support" && Array.isArray(payload.tickets)) {
     const recomputed = recomputeSupportSummaryLikeDashboard(ticketRows);
     value = pickFromRecomputed(recomputed, entry.payloadPath);

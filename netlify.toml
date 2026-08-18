@@ -96,3 +96,8 @@
   from = "/api/portal-snapshot/refresh"
   to = "/.netlify/functions/portal-snapshot"
   status = 200
+
+[[redirects]]
+  from = "/api/ai-analysis"
+  to = "/.netlify/functions/ai-analysis"
+  status = 200

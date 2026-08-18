@@ -2,6 +2,12 @@
 import { computeMeetingsPayload } from "../meetings.mjs";
 import { computeOnboardingPayload } from "../onboarding.mjs";
 import { matchesAnalyticalStatusFilter as matchAnalyticalStatus } from "./analytical-cancellation.mjs";
+import { getMetricDef, resolveCanonicalMetricId } from "./portal-metric-catalog.mjs";
+import {
+  getRegistryMetric,
+  listRegistryMetrics,
+  resolveMetricFromDashboard,
+} from "./portal-metric-registry.mjs";
 
 /**
  * Motor central de consulta do portal ("Assistente da Jornada" global).
@@ -12,7 +18,8 @@ import { matchesAnalyticalStatusFilter as matchAnalyticalStatus } from "./analyt
  *    e devolve query_result; Gemini (mode=answer) apenas verbaliza.
  *  - mode=rule usa o catálogo (sem número inventado).
  *
- * Fase 1: general, meetings, journey. Demais domínios: pending.
+ * Fase 1: general, meetings, journey com recálculo fiel aos filtros da tela.
+ * Etapa 4: demais domínios com compute*Payload existente via registry (sem SQL livre).
  */
 
 const SUPABASE = "public";
@@ -716,6 +723,9 @@ const MEETINGS_METRICS = {
   attendance_rate: { label: "Taxa de comparecimento (%)", field: "attendanceRate", type: "rate", definition: "1 - noShows/(total-future-cancelled)", sources: ATTENDANCE_SOURCE },
   no_show_rate: { label: "Taxa de no-show (%)", field: "noShowRate", type: "rate", definition: "noShows/(total-future-cancelled)", sources: ATTENDANCE_SOURCE },
   cancelled_meetings: { label: "Reuniões canceladas", field: "cancelledMeetings", definition: "cancelled", sources: ATTENDANCE_SOURCE },
+  cancelled_meetings_count: { label: "Reuniões canceladas", field: "cancelledMeetings", definition: "cancelled", sources: ATTENDANCE_SOURCE },
+  total_meeting_reschedules: { label: "Remarcações", field: "totalReschedules", definition: "rescheduled", sources: ATTENDANCE_SOURCE },
+  days_since_latest_meeting: { label: "Dias desde a última reunião", field: "daysSinceLatestMeeting", type: "median", definition: "days_since_maxdate", sources: MEETING_SOURCES },
   eligible_meetings: { label: "Reuniões elegíveis", field: "eligibleMeetings", definition: "total-future-cancelled", sources: MEETING_SOURCES },
   future_meetings: { label: "Reuniões futuras", field: "futureMeetings", definition: "future", sources: MEETING_SOURCES },
   attended_meetings: { label: "Comparecimentos", field: "attendedMeetings", definition: "eligible-noshow", sources: ATTENDANCE_SOURCE },
@@ -844,14 +854,45 @@ export const portalDomains = {
   general: { compute: computeGeneralDataPayload, metrics: GENERAL_METRICS, allowedFilters: GENERAL_ALLOWED_FILTERS },
   meetings: { compute: computeMeetingsPayload, metrics: MEETINGS_METRICS, allowedFilters: MEETINGS_ALLOWED_FILTERS },
   journey: { compute: computeOnboardingPayload, metrics: JOURNEY_METRICS, allowedFilters: JOURNEY_ALLOWED_FILTERS },
-  // Alias amigável
   onboarding: { compute: computeOnboardingPayload, metrics: JOURNEY_METRICS, allowedFilters: JOURNEY_ALLOWED_FILTERS },
-  // Fases seguintes:
+  mechanisms: {
+    viaRegistry: true,
+    allowedFilters: ["engineer", "status", "segment", "search", "mechanismStatus"],
+  },
+  financial_updates: {
+    viaRegistry: true,
+    allowedFilters: ["engineer", "search"],
+  },
+  renewal: {
+    viaRegistry: true,
+    allowedFilters: ["engineer", "status", "segment", "search"],
+  },
+  support: {
+    viaRegistry: true,
+    allowedFilters: ["engineer", "search"],
+  },
+  cancellations: {
+    viaRegistry: true,
+    allowedFilters: ["engineer", "status", "segment", "search"],
+  },
+  ep_performance: {
+    viaRegistry: true,
+    allowedFilters: ["engineer"],
+  },
+  satisfaction: {
+    viaRegistry: true,
+    allowedFilters: ["engineer"],
+  },
+  statistical_crosses: {
+    viaRegistry: true,
+    allowedFilters: ["engineer", "status", "segment"],
+  },
+  temporal: {
+    viaRegistry: true,
+    allowedFilters: ["engineer"],
+  },
   patrimonial_plan: { pending: true },
-  mechanisms: { pending: true },
-  financial_updates: { pending: true },
   platform_usage: { pending: true },
-  support: { pending: true },
   quality: { pending: true },
 };
 
@@ -864,11 +905,8 @@ export const portalQueryRegistry = portalDomains;
  */
 const PENDING_DOMAIN_CUES = [
   ["quality", /preenchiment|preenchid|campos? com alerta|qualidade dos dados|taxa de preenchimento|dados ausentes|valores ausentes|duplicad/],
-  ["support", /chamad|ticket|atendimento|demanda|reclamac|elogio|escalonad|escalad|prioridade|priorit|\bsla\b/],
   ["platform_usage", /usuarios? (qv360|da plataforma)|fizeram login|realizaram login|total de logins|uso da plataforma|sessoes/],
-  ["patrimonial_plan", /plano patrimonial|qv360|app pharus|planos entregues|planos aprovados/],
-  ["mechanisms", /mecanismos? conclu|mecanismos? implement|taxa de implementacao|mecanismos? aptos|clientes com mecanismos/],
-  ["financial_updates", /atualizacao financeira|atualizaram os dados|atualizaram o cadastro|sem atualizac|sem atualizar|desatualizad|recencia financeira|dias sem atualiz|nao atualizaram/],
+  ["patrimonial_plan", /plano patrimonial|planos entregues|planos aprovados|dias ate aprovacao/],
 ];
 
 function detectPendingDomain(n) {
@@ -882,7 +920,39 @@ function detectPendingDomain(n) {
  * Detecção de métrica (ordem importa: específicas antes das genéricas).
  */
 const METRIC_PATTERNS = [
-  // journey — antes de mechanisms/pending
+  // renewal — antes de cancelad genérico
+  [/taxa de renovacao|percentual renovado|percentual de renovacao/, "renewal", "renewal_rate"],
+  [/nao renovaram|nao renovados|não renovaram|clientes nao renovados/, "renewal", "non_renewed_clients"],
+  [/quantidade de renovacoes|total de renovacoes|soma das renovacoes/, "renewal", "total_renewals"],
+  [/maior ciclo|ciclo maximo|ciclo atual maximo/, "renewal", "max_current_cycle"],
+  [/renovaram|clientes renovados|quantos renovaram|ciclo maior que 1/, "renewal", "renewed_clients"],
+  // financial updates — atualização real distinta de diagnóstico
+  [/atualizacao financeira real|alterado apos a criacao|updated_at maior que created_at|com atualizacao financeira/, "financial_updates", "financial_post_creation_updates"],
+  [/atualizados nos ultimos 30|atualizacao financeira recente/, "financial_updates", "financial_updated_last_30_days"],
+  [/mediana.*(atualizacao|recencia) financeira|dias desde (a )?ultima atualizacao financeira|recencia da atualizacao financeira/, "financial_updates", "financial_median_days_since_update"],
+  [/desatualizad|mais de 90 dias sem atualizacao financeira/, "financial_updates", "financial_outdated_over_90_days"],
+  [/clientes com dados financeiros na (tela )?financeira|cobertura financeira da tela/, "financial_updates", "financial_clients_with_data"],
+  // mechanisms
+  [/taxa de implementacao|percentual de implementacao/, "mechanisms", "implementation_rate"],
+  [/mecanismo mais (utiliz|usado)|mecanismo com mais clientes/, "mechanisms", "most_used_mechanism"],
+  [/mecanismos? implementad/, "mechanisms", "implemented_mechanisms"],
+  [/mecanismos? em andamento/, "mechanisms", "in_progress_mechanisms"],
+  [/mecanismos? disponiveis|vinculos cliente/, "mechanisms", "available_mechanisms"],
+  [/clientes com mecanismos|possuem mecanismos/, "mechanisms", "clients_with_mechanisms"],
+  [/implementacao recente|implementaram recentemente/, "mechanisms", "clients_with_recent_implementation"],
+  // NPS oficial (helper) — não usar satisfaction_nps_index
+  [/quantos responderam nps|respostas nps validas|respostas nps/, "satisfaction", "nps_official_responses"],
+  [/quantos sao promotores|promotores nps|\bpromotores\b/, "satisfaction", "nps_official_promoters"],
+  [/neutros nps|passivos nps|quantos sao neutros/, "satisfaction", "nps_official_passives"],
+  [/quantos sao detratores|detratores nps|\bdetratores\b/, "satisfaction", "nps_official_detractors"],
+  [/cobertura nps|cobertura da carteira nps/, "satisfaction", "nps_official_coverage"],
+  [/nps oficial|indice nps oficial/, "satisfaction", "nps_official_index"],
+  // support
+  [/acionamentos? abertos|chamados abertos/, "support", "open_support_tickets"],
+  [/acionamentos? urgentes/, "support", "urgent_support_tickets"],
+  [/taxa de resolucao/, "support", "resolution_rate"],
+  [/acionamentos?|chamados|tickets de atendimento/, "support", "total_support_tickets"],
+  // journey — antes de mechanisms genéricos restantes
   [/media ate o primeiro mecanismo na jornada|media.*primeiro mecanismo.*(jornada|onboarding)/, "journey", "average_days_to_first_mechanism"],
   [/tempo tipico ate (a )?primeira implementacao|mediana ate (a )?primeira implementacao|mediana ate o primeiro mecanismo/, "mechanisms", "median_days_to_first_implementation"],
   [/media ate (a )?primeira implementacao|media ate o primeiro mecanismo|dias ate o primeiro mecanismo/, "mechanisms", "average_days_to_first_implementation"],
@@ -971,6 +1041,7 @@ export function resolvePortalQuestion(question, now = new Date()) {
     const pendingDomain = detectPendingDomain(n);
     if (pendingDomain) domain = pendingDomain;
   }
+  if (metric) metric = resolveCanonicalMetricId(metric);
 
   const filters = emptyFilters();
   const filterLabels = [];
@@ -1133,6 +1204,20 @@ function buildFilterLabels(filters, period) {
 const ALLOWED_INTENTS = new Set(["value", "rule", "location", "quality", "mixed", "general"]);
 const FORBIDDEN_PLAN_KEYS = new Set(["sql", "url", "query", "raw_sql", "endpoint"]);
 
+function registryMetricsForPortalDomain(domain) {
+  const name = domain === "onboarding" ? "journey" : domain;
+  return listRegistryMetrics().filter((m) => {
+    if (name === "satisfaction") return String(m.id).startsWith("nps_official_");
+    if (name === "ep_performance") return m.domain === "ep_performance";
+    return m.domain === name;
+  });
+}
+
+function isRegistryBackedDomain(domain) {
+  const cfg = portalDomains[domain === "onboarding" ? "journey" : domain];
+  return Boolean(cfg?.viaRegistry);
+}
+
 /** Catálogo compacto enviado ao modo plan do n8n (sem funções). */
 export function buildPlanCatalog() {
   const domains = {};
@@ -1141,14 +1226,22 @@ export function buildPlanCatalog() {
       domains[name] = { pending: true, metrics: [], filters: [] };
       continue;
     }
-    domains[name] = {
-      pending: false,
-      metrics: Object.entries(cfg.metrics || {}).map(([id, m]) => ({
+    const metrics = cfg.viaRegistry
+      ? registryMetricsForPortalDomain(name).map((m) => ({
+        id: m.id,
+        label: m.label,
+        definition: m.definition || null,
+        rule: null,
+      }))
+      : Object.entries(cfg.metrics || {}).map(([id, m]) => ({
         id,
         label: m.label,
         definition: m.definition || null,
         rule: m.rule || null,
-      })),
+      }));
+    domains[name] = {
+      pending: false,
+      metrics,
       filters: cfg.allowedFilters || [],
     };
   }
@@ -1238,9 +1331,18 @@ export function validateQueryPlan(rawPlan) {
       pending: true,
     };
   }
-  if (domain && metric && cfg && !cfg.metrics?.[metric]) {
+  if (metric) metric = resolveCanonicalMetricId(metric);
+  if (domain && metric && cfg && !cfg.viaRegistry && !cfg.metrics?.[metric]) {
     warnings.push(`Métrica "${metric}" não existe no domínio ${domain}.`);
     metric = null;
+  }
+  if (domain && metric && cfg?.viaRegistry) {
+    const entry = getRegistryMetric(metric);
+    const allowed = registryMetricsForPortalDomain(domain).some((m) => m.id === (entry ? resolveCanonicalMetricId(metric) : metric) || m.id === metric);
+    if (!entry || !allowed) {
+      warnings.push(`Métrica "${metric}" não está mapeada no registry para ${domain}.`);
+      metric = null;
+    }
   }
   if (intent === "value" && domain && !metric) clarification.push("Qual indicador você quer consultar?");
 
@@ -1300,11 +1402,57 @@ export async function executePortalQuery(queryPlan, now = new Date(), options = 
   };
 
   const cfg = portalQueryRegistry[domain];
-  if (!cfg || cfg.pending || !cfg.metrics?.[metric]) {
+  if (!cfg || cfg.pending) {
     base.warnings.push("Consulta a este indicador ainda não está disponível.");
     return base;
   }
-  const def = cfg.metrics[metric];
+
+  const canonicalMetric = resolveCanonicalMetricId(metric);
+  const catalogDef = getMetricDef(canonicalMetric);
+
+  if (catalogDef?.status === "needs_business_validation" && ["satisfaction_nps_index", "sc_lift"].includes(canonicalMetric)) {
+    base.warnings.push("Indicador exige validação de negócio; não há executor oficial nesta etapa.");
+    base.metric_definition = catalogDef.description || null;
+    return base;
+  }
+
+  if (cfg.viaRegistry) {
+    const entry = getRegistryMetric(canonicalMetric);
+    if (!entry) {
+      base.warnings.push("Indicador não mapeado no registry do dashboard.");
+      return base;
+    }
+    try {
+      const resolved = await resolveMetricFromDashboard(entry.domain, canonicalMetric, filters);
+      if (catalogDef?.status === "needs_business_validation") {
+        base.warnings.push("Regra ainda não unificada entre telas; o valor segue a implementação atual do dashboard, sem promover uma verdade oficial única.");
+      }
+      if (!resolved.success) {
+        base.warnings.push(resolved.message || resolved.answerHint || "Não foi possível obter o indicador.");
+        return base;
+      }
+      base.value = resolved.value === undefined ? null : resolved.value;
+      base.label = resolved.label || catalogDef?.label || entry.label;
+      base.sources = catalogDef?.sources || [];
+      base.filter_labels = buildFilterLabels(filters, { label: periodLabel });
+      base.filters = filters;
+      base.realtime_database = base.value != null;
+      base.metric = canonicalMetric;
+      base.metric_definition = catalogDef?.description || entry.definition || null;
+      if (base.value == null) base.warnings.push("Indicador não calculável com os dados disponíveis para este recorte.");
+      return base;
+    } catch (err) {
+      console.error("[portal-query] executePortalQuery registry", domain, canonicalMetric, err?.message || err);
+      base.warnings.push("Não foi possível calcular o indicador no momento.");
+      return base;
+    }
+  }
+
+  if (!cfg.metrics?.[canonicalMetric] && !cfg.metrics?.[metric]) {
+    base.warnings.push("Consulta a este indicador ainda não está disponível.");
+    return base;
+  }
+  const def = cfg.metrics[canonicalMetric] || cfg.metrics[metric];
 
   try {
     const payload = await cfg.compute();

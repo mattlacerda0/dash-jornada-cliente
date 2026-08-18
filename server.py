@@ -1192,6 +1192,28 @@ def assistant_data_payload(auth_header, raw_body):
     return int(envelope.get("__status", 200)), envelope.get("body", "{}")
 
 
+def ai_analysis_payload(email, raw_body):
+    """Proxy da Executive Analysis Engine (Etapa 8.2). Sem Gemini."""
+    env = os.environ.copy()
+    env["PORTAL_INTERNAL_DATA_RUN"] = "1"
+    env["PORTAL_USER_EMAIL"] = email or ""
+    env["PORTAL_AI_ANALYSIS_BODY"] = raw_body if raw_body else "{}"
+    result = subprocess.run(
+        [NODE_EXECUTABLE, str(ROOT / "run_ai_analysis_api.mjs")],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        env=env,
+        timeout=300,
+    )
+    if result.returncode != 0:
+        detail = (result.stderr or result.stdout or "falha ao montar o contexto da análise").strip()
+        raise RuntimeError(detail[:240])
+    envelope = json.loads(result.stdout)
+    return int(envelope.get("__status", 200)), envelope.get("body", "{}")
+
+
 class Handler(SimpleHTTPRequestHandler):
     def do_GET(self):
         path = urlparse(self.path).path
@@ -1322,6 +1344,54 @@ class Handler(SimpleHTTPRequestHandler):
             self.wfile.write(body_bytes)
             return
 
+        if path == "/api/ai-analysis":
+            error, email = resolve_corporate_user(self)
+            if error:
+                status, payload = error
+                send_json(self, status, payload)
+                return
+            try:
+                length = int(self.headers.get("Content-Length") or 0)
+            except ValueError:
+                length = 0
+            raw = self.rfile.read(length) if length > 0 else b""
+            try:
+                status, body_text = ai_analysis_payload(email, raw.decode("utf-8", errors="replace"))
+            except Exception as exc:
+                print(f"ai-analysis error: {exc}")
+                send_json(self, 500, {
+                    "success": False,
+                    "error": "Erro interno ao montar o contexto da análise.",
+                    "code": "internal_error",
+                    "generated_at": datetime.now(timezone.utc).isoformat(),
+                })
+                return
+            try:
+                parsed = json.loads(body_text) if body_text else {}
+            except Exception:
+                parsed = {}
+            meta = parsed.get("metadata") if isinstance(parsed, dict) else None
+            print(
+                "[ai-analysis]",
+                {
+                    "status": status,
+                    "success": parsed.get("success") if isinstance(parsed, dict) else None,
+                    "code": parsed.get("code") if isinstance(parsed, dict) else None,
+                    "reason": parsed.get("reason") if isinstance(parsed, dict) else None,
+                    "has_executive_analysis": bool(isinstance(parsed, dict) and parsed.get("executive_analysis")),
+                    "ai_generated": (meta or {}).get("ai_generated") if isinstance(meta, dict) else None,
+                    "timing_ms": parsed.get("timing_ms") if isinstance(parsed, dict) else None,
+                },
+            )
+            body_bytes = body_text.encode("utf-8")
+            self.send_response(status)
+            self.send_header("Content-Type", "application/json; charset=utf-8")
+            self.send_header("Cache-Control", "no-store")
+            self.send_header("Content-Length", str(len(body_bytes)))
+            self.end_headers()
+            self.wfile.write(body_bytes)
+            return
+
         send_json(self, 404, {"error": "Não encontrado.", "code": "not_found"})
 
     def log_message(self, fmt, *args):
@@ -1360,6 +1430,12 @@ if __name__ == "__main__":
             "len=",
             len(str(os.environ.get("AUTH_SUPABASE_ANON_KEY") or "").strip()),
         )
+        gemini_loaded = bool(str(
+            os.environ.get("GEMINI_API_KEY")
+            or os.environ.get("GOOGLE_GENERATIVE_AI_API_KEY")
+            or ""
+        ).strip())
+        print("GEMINI_API_KEY loaded:", gemini_loaded)
     except Exception as exc:
         # Nunca imprimir valores de chaves — apenas a mensagem com nomes.
         print(f"Configuração inválida: {exc}", file=sys.stderr)

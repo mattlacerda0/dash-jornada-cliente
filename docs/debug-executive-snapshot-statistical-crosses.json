@@ -1,0 +1,323 @@
+{
+  "executive_snapshot": {
+    "page": "statistical-crosses",
+    "scope": {
+      "type": "methodological",
+      "label": "População metodológica oficial",
+      "source": "methodological",
+      "count": 2298
+    },
+    "generated_at": "2026-08-18T14:08:09.827Z",
+    "filters_applied": {},
+    "profile_version": "8.4.3",
+    "snapshot_version": "1.1",
+    "highlights": {
+      "analyzed_clients": 2298,
+      "active_clients": 1807,
+      "confirmed_cancellations": 491,
+      "top_association": {
+        "id": "daysToFirstMeeting",
+        "label": "Dias até primeira reunião",
+        "value": 0.4856,
+        "abs": 0.4856,
+        "coverage": 43.7,
+        "sample": 1005
+      },
+      "top_associations": [
+        {
+          "id": "daysToFirstMeeting",
+          "label": "Dias até primeira reunião",
+          "value": 0.4856,
+          "abs": 0.4856,
+          "coverage": 43.7,
+          "sample": 1005
+        },
+        {
+          "id": "hasMeeting",
+          "label": "Possui reunião",
+          "value": 0.4046,
+          "abs": 0.4046,
+          "coverage": 100,
+          "sample": 2298
+        },
+        {
+          "id": "engineer",
+          "label": "Engenheiro Patrimonial",
+          "value": 0.4005,
+          "abs": 0.4005,
+          "coverage": 97.6,
+          "sample": 2298
+        }
+      ],
+      "top_auc": {
+        "id": "daysToFirstMeeting",
+        "label": "Dias até primeira reunião",
+        "auc": 0.8642,
+        "coverage": 43.7,
+        "sample": 1005
+      },
+      "top_aucs": [
+        {
+          "id": "daysToFirstMeeting",
+          "label": "Dias até primeira reunião",
+          "auc": 0.8642,
+          "coverage": 43.7,
+          "sample": 1005
+        },
+        {
+          "id": "meetingsPerMonth",
+          "label": "Reuniões por mês de permanência",
+          "auc": 0.7969,
+          "coverage": 99.5,
+          "sample": 2287
+        },
+        {
+          "id": "meetingCount",
+          "label": "Total de reuniões",
+          "auc": 0.7867,
+          "coverage": 100,
+          "sample": 2298
+        }
+      ],
+      "top_group_difference": {
+        "id": "daysToFirstMeeting",
+        "label": "Dias até primeira reunião",
+        "stdDiff": 2.9462,
+        "coverage": 43.7,
+        "sample": 1005
+      },
+      "top_group_differences": [
+        {
+          "id": "daysToFirstMeeting",
+          "label": "Dias até primeira reunião",
+          "stdDiff": 2.9462,
+          "coverage": 43.7,
+          "sample": 1005
+        },
+        {
+          "id": "implementationPercent",
+          "label": "Percentual implementado",
+          "stdDiff": -2.0935,
+          "coverage": 5.5,
+          "sample": 127
+        },
+        {
+          "id": "stayDays",
+          "label": "Permanência (dias)",
+          "stdDiff": 1.3882,
+          "coverage": 99.5,
+          "sample": 2287
+        }
+      ],
+      "survival": {
+        "median_survival": 430,
+        "log_rank_p": 0.8499
+      },
+      "cohort": {
+        "age": 12,
+        "mean_retention_pct": 76.71,
+        "delta_pp": -16.971,
+        "cohort_count": 20,
+        "granularity": "month"
+      },
+      "nps": {
+        "index": 64.8,
+        "responses": 273,
+        "coverage": 11.9
+      }
+    },
+    "growth": null,
+    "coverage": {
+      "nps": 11.9
+    },
+    "data_quality": {
+      "nps_coverage": 11.9
+    },
+    "comparisons": [],
+    "limitations": [
+      {
+        "code": "LOW_COVERAGE",
+        "category": "coverage",
+        "metric": "sc_nps",
+        "message": "Cobertura NPS 11.9% — vale para respondentes, não para toda a carteira.",
+        "value": 11.9
+      }
+    ],
+    "highlight_numbers": [
+      {
+        "metric": "sc_active_clients",
+        "label": "Clientes ativos (recorte)",
+        "value": 1807,
+        "unit": "clients"
+      },
+      {
+        "metric": "sc_top_association",
+        "label": "Dias até primeira reunião",
+        "value": 0.4856,
+        "unit": "association"
+      },
+      {
+        "metric": "sc_nps",
+        "label": "NPS (respondentes)",
+        "value": 64.8,
+        "unit": "index"
+      }
+    ],
+    "discoveries": [
+      {
+        "kind": "association",
+        "id": "daysToFirstMeeting",
+        "label": "Dias até primeira reunião",
+        "value": 0.4856,
+        "abs": 0.4856,
+        "coverage": 43.7,
+        "sample": 1005
+      },
+      {
+        "kind": "predictive_discrimination",
+        "id": "daysToFirstMeeting",
+        "label": "Dias até primeira reunião",
+        "auc": 0.8642,
+        "coverage": 43.7,
+        "sample": 1005
+      },
+      {
+        "kind": "group_difference",
+        "id": "daysToFirstMeeting",
+        "label": "Dias até primeira reunião",
+        "stdDiff": 2.9462,
+        "coverage": 43.7,
+        "sample": 1005
+      },
+      {
+        "kind": "survival",
+        "median_survival": 430,
+        "log_rank_p": 0.8499
+      },
+      {
+        "kind": "cohort",
+        "age": 12,
+        "mean_retention_pct": 76.71,
+        "delta_pp": -16.971,
+        "cohort_count": 20,
+        "granularity": "month"
+      }
+    ],
+    "page_profile": {
+      "id": "statistical-crosses",
+      "title": "Análises Estatísticas",
+      "objective": "Destacar as descobertas mais relevantes sobre permanência/cancelamento e o que vale investigar, sem causalidade.",
+      "questions": [
+        "Qual associação merece mais atenção?",
+        "Qual descoberta é mais relevante?",
+        "Qual a força e a limitação da evidência?",
+        "O que vale investigar?"
+      ],
+      "default_scope": "methodological",
+      "default_scope_label": "População metodológica oficial",
+      "allow_active_default": false,
+      "max_insights": 5,
+      "max_attention": 3,
+      "max_positives": 2,
+      "max_actions": 3,
+      "interpretation": [
+        "Não altere a população metodológica oficial.",
+        "Nunca atribua causalidade.",
+        "AUC é capacidade de discriminação, nunca taxa de acerto.",
+        "No máximo 3–5 descobertas; ignore o restante da matriz."
+      ],
+      "highlight_metrics": [
+        "sc_active_clients",
+        "sc_top_association",
+        "sc_nps"
+      ],
+      "priority_metrics": [
+        "sc_top_association",
+        "sc_active_clients",
+        "sc_confirmed_cancellations"
+      ],
+      "max_highlight_numbers": 4,
+      "profile_version": "8.4.3"
+    },
+    "timing_ms": {
+      "snapshot": 1
+    },
+    "metadata_size": {
+      "bytes": 4212,
+      "approx_tokens": 1053
+    }
+  },
+  "candidates": {
+    "attention": [
+      {
+        "id": "sc:association:daysToFirstMeeting",
+        "metric": "daysToFirstMeeting",
+        "reason": "association",
+        "category": "association",
+        "language": "usar \"associado\", \"relacionado\", \"apresentou relação\" — nunca causa",
+        "title": "Dias até primeira reunião",
+        "message": "Dias até primeira reunião no recorte metodológico oficial.",
+        "evidence": {
+          "metric": "daysToFirstMeeting",
+          "value": 0.4856,
+          "unit": "association"
+        }
+      },
+      {
+        "id": "sc:predictive_discrimination:daysToFirstMeeting",
+        "metric": "daysToFirstMeeting",
+        "reason": "predictive_discrimination",
+        "category": "predictive_discrimination",
+        "language": "usar \"capacidade de discriminação\" — nunca \"taxa de acerto\"",
+        "title": "Dias até primeira reunião",
+        "message": "Dias até primeira reunião: capacidade de discriminação (AUC), não taxa de acerto.",
+        "evidence": {
+          "metric": "daysToFirstMeeting",
+          "value": 0.8642,
+          "unit": "predictive_discrimination"
+        }
+      },
+      {
+        "id": "sc:group_difference:daysToFirstMeeting",
+        "metric": "daysToFirstMeeting",
+        "reason": "group_difference",
+        "category": "group_difference",
+        "language": "usar \"o grupo apresentou diferença\"",
+        "title": "Dias até primeira reunião",
+        "message": "Dias até primeira reunião no recorte metodológico oficial.",
+        "evidence": {
+          "metric": "daysToFirstMeeting",
+          "value": 2.9462,
+          "unit": "group_difference"
+        }
+      }
+    ],
+    "positive": [],
+    "limitation": [
+      {
+        "id": "lim:LOW_COVERAGE:sc_nps",
+        "metric": "sc_nps",
+        "code": "LOW_COVERAGE",
+        "category": "coverage",
+        "reason": "coverage",
+        "title": "LOW COVERAGE",
+        "message": "Cobertura NPS 11.9% — vale para respondentes, não para toda a carteira.",
+        "evidence": {
+          "metric": "sc_nps",
+          "value": 11.9,
+          "unit": null
+        }
+      }
+    ]
+  },
+  "metadata": {
+    "snapshot_bytes": 4264,
+    "previous_bytes": 10250,
+    "reduction_pct": 58.4,
+    "timing_ms": {
+      "compute_payload": null,
+      "snapshot": 1,
+      "engine": 2
+    }
+  }
+}

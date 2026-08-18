@@ -1,0 +1,217 @@
+{
+  "executive_snapshot": {
+    "page": "meetings",
+    "scope": {
+      "type": "active_clients",
+      "label": "Clientes ativos",
+      "source": "page_default",
+      "count": 1807
+    },
+    "generated_at": "2026-08-18T14:08:00.418Z",
+    "filters_applied": {},
+    "profile_version": "8.4.3",
+    "snapshot_version": "1.1",
+    "highlights": {
+      "scoped_clients": 1807,
+      "clients_with_meeting": 1267,
+      "meeting_coverage_rate": 70.1,
+      "attendance_rate": 76.5,
+      "no_show_rate": 23.5,
+      "typical_days_since_last_meeting": 32,
+      "typical_interval_days": 25,
+      "never_met": 540,
+      "long_gap": 188,
+      "official_recency_bands_days": [
+        30,
+        31,
+        60,
+        61,
+        90,
+        91,
+        180
+      ]
+    },
+    "growth": {
+      "latest_month_completed": 1288,
+      "previous_month_completed": 1532,
+      "relative_change": -15.9
+    },
+    "coverage": {
+      "meeting_coverage_rate": 70.1,
+      "attendance_source": "active_clients_subset"
+    },
+    "data_quality": {
+      "never_met": 540,
+      "long_gap": 188
+    },
+    "comparisons": [
+      {
+        "metric": "meetings_completed_by_month",
+        "current": 1288,
+        "previous": 1532,
+        "absolute_change": -244,
+        "relative_change": -15.9,
+        "direction": "down",
+        "unit": "meetings",
+        "period": {
+          "current": "2026-08",
+          "previous": "2026-07"
+        }
+      }
+    ],
+    "limitations": [
+      {
+        "code": "PARTIAL_SOURCE",
+        "category": "coverage",
+        "metric": "total_meeting_reschedules",
+        "message": "Cobertura parcial: este valor considera apenas remarcações registradas de forma estruturada e pode não representar o total real."
+      }
+    ],
+    "highlight_numbers": [
+      {
+        "metric": "clients_with_meeting",
+        "label": "Ativos com reunião",
+        "value": 1267,
+        "unit": "clients"
+      },
+      {
+        "metric": "meeting_coverage_rate",
+        "label": "Cobertura de reuniões",
+        "value": 70.1,
+        "unit": "percent"
+      },
+      {
+        "metric": "attendance_rate",
+        "label": "Comparecimento",
+        "value": 76.5,
+        "unit": "percent"
+      },
+      {
+        "metric": "no_show_rate",
+        "label": "No-show",
+        "value": 23.5,
+        "unit": "percent"
+      }
+    ],
+    "metric_origin": {
+      "meeting_coverage_rate": "active_clients_rows",
+      "attendance_rate": "active_clients_subset",
+      "meetings_completed_by_month": "active_clients_meetings"
+    },
+    "page_profile": {
+      "id": "meetings",
+      "title": "Reuniões",
+      "objective": "Entender se os clientes ativos estão sendo acompanhados e se cobertura, cadência e comparecimento mudaram.",
+      "questions": [
+        "Os clientes ativos estão sendo acompanhados?",
+        "Qual a cobertura de reuniões?",
+        "A frequência está adequada ou estável?",
+        "Comparecimento ou no-show está mudando?",
+        "Existem clientes ativos sem contato recente?"
+      ],
+      "default_scope": "active_clients",
+      "default_scope_label": "Clientes ativos",
+      "allow_active_default": true,
+      "max_insights": 4,
+      "max_attention": 3,
+      "max_positives": 2,
+      "max_actions": 3,
+      "interpretation": [
+        "Se o recorte for clientes ativos, não generalize para cancelados.",
+        "Não distorça regras oficiais de presença: só recorte o universo de clientes quando o payload permitir."
+      ],
+      "highlight_metrics": [
+        "clients_with_meeting",
+        "meeting_coverage_rate",
+        "attendance_rate",
+        "no_show_rate"
+      ],
+      "priority_metrics": [
+        "meeting_coverage_rate",
+        "clients_with_meeting",
+        "attendance_rate",
+        "no_show_rate"
+      ],
+      "max_highlight_numbers": 4,
+      "profile_version": "8.4.3"
+    },
+    "timing_ms": {
+      "snapshot": 4
+    },
+    "metadata_size": {
+      "bytes": 2804,
+      "approx_tokens": 701
+    }
+  },
+  "candidates": {
+    "attention": [
+      {
+        "id": "cmp:meetings_completed_by_month",
+        "metric": "meetings_completed_by_month",
+        "reason": "relevant_unfavorable_change",
+        "title": "Variação relevante em meetings_completed_by_month",
+        "message": "meetings_completed_by_month: 1532 → 1288 (-15.9%).",
+        "evidence": {
+          "metric": "meetings_completed_by_month",
+          "current": 1288,
+          "previous": 1532,
+          "relative_change": -15.9,
+          "direction": "down",
+          "unit": "meetings",
+          "value": 1288
+        }
+      },
+      {
+        "id": "meet:never_met",
+        "metric": "clients_with_meeting",
+        "reason": "active_without_meeting",
+        "title": "Clientes ativos sem reunião",
+        "message": "540 clientes no recorte nunca realizaram reunião (faixa oficial \"Nunca realizou reunião\").",
+        "evidence": {
+          "metric": "never_met",
+          "value": 540,
+          "unit": "clients"
+        }
+      },
+      {
+        "id": "meet:long_gap",
+        "metric": "days_since_latest_meeting",
+        "reason": "no_recent_contact",
+        "title": "Contato antigo na carteira ativa",
+        "message": "188 clientes no recorte estão nas faixas oficiais 91–180 dias ou mais de 180 dias desde a última reunião.",
+        "evidence": {
+          "metric": "long_gap",
+          "value": 188,
+          "unit": "clients"
+        }
+      }
+    ],
+    "positive": [],
+    "limitation": [
+      {
+        "id": "lim:PARTIAL_SOURCE:total_meeting_reschedules",
+        "metric": "total_meeting_reschedules",
+        "code": "PARTIAL_SOURCE",
+        "category": "coverage",
+        "reason": "coverage",
+        "title": "PARTIAL SOURCE",
+        "message": "Cobertura parcial: este valor considera apenas remarcações registradas de forma estruturada e pode não representar o total real.",
+        "evidence": {
+          "metric": "total_meeting_reschedules",
+          "value": null,
+          "unit": null
+        }
+      }
+    ]
+  },
+  "metadata": {
+    "snapshot_bytes": 2855,
+    "previous_bytes": 5042,
+    "reduction_pct": 43.4,
+    "timing_ms": {
+      "compute_payload": null,
+      "snapshot": 4,
+      "engine": 1
+    }
+  }
+}

@@ -101,6 +101,10 @@
                        "dest":  "/api/quality.js?fn=temporal-indicators"
                    },
                    {
+                       "src":  "/api/ai-analysis",
+                       "dest":  "/api/quality.js?fn=ai-analysis"
+                   },
+                   {
                        "src":  "/api/(.*)",
                        "dest":  "/api/$1.js"
                    },

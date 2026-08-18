@@ -201,3 +201,40 @@ export function getPharusSupabaseClient(options = {}) {
     fetchAll,
   };
 }
+
+const DEFAULT_GEMINI_MODEL = "gemini-3.5-flash";
+
+/**
+ * Gemini da Análise com IA (Etapa 8.3). Independente do chatbot/n8n.
+ * A chave permanece só no backend — nunca no navegador.
+ */
+export function getGeminiEnv() {
+  const apiKey = (
+    process.env.GEMINI_API_KEY
+    || process.env.GOOGLE_GENERATIVE_AI_API_KEY
+    || process.env.GOOGLE_AI_API_KEY
+    || ""
+  ).trim();
+  const rawModel = (process.env.GEMINI_MODEL || DEFAULT_GEMINI_MODEL).trim() || DEFAULT_GEMINI_MODEL;
+  const model = rawModel.replace(/^models\//, "");
+  return { apiKey, model, defaultModel: DEFAULT_GEMINI_MODEL };
+}
+
+export function geminiConfigurationError() {
+  const { apiKey, model } = getGeminiEnv();
+  if (!apiKey) {
+    return "Configure GEMINI_API_KEY no backend (nunca no frontend).";
+  }
+  if (!model) return "Configure GEMINI_MODEL com um modelo Gemini válido.";
+  return null;
+}
+
+/**
+ * Refinamento textual opcional. false desliga Gemini mesmo com chave.
+ * Default: ligado (se houver chave).
+ */
+export function isExecutiveGeminiEnabled() {
+  const raw = String(process.env.AI_ANALYSIS_GEMINI_ENABLED ?? "").trim().toLowerCase();
+  if (raw === "false" || raw === "0" || raw === "off" || raw === "no") return false;
+  return true;
+}

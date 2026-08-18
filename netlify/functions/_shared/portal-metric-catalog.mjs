@@ -16,6 +16,34 @@ export { normalize };
 
 const SUPABASE = "public";
 
+export const METRIC_STATUS = {
+  confirmed: "confirmed",
+  partial: "partial",
+  needs_business_validation: "needs_business_validation",
+  legacy: "legacy",
+};
+
+/** Domínios com consulta de valor em portal-query.mjs (Fase 1). Não expandir aqui. */
+export const LIVE_QUERY_DOMAINS = Object.freeze(["general", "meetings", "journey"]);
+
+/**
+ * IDs antigos (assistant-data / portal-query) → ID canônico do catálogo.
+ * Não duplicar definição: o executor e o matcher resolvem para o canônico.
+ */
+export const LEGACY_METRIC_IDS = Object.freeze({
+  cancelled_meetings: "cancelled_meetings_count",
+  rescheduled_meetings: "total_meeting_reschedules",
+  sc_kaplan_meier: "sc_survival",
+  sc_spearman: "sc_correlation_matrix",
+  sc_cohort_retention: "sc_cohort",
+});
+
+export function resolveCanonicalMetricId(id) {
+  if (!id) return id;
+  const key = String(id);
+  return LEGACY_METRIC_IDS[key] || key;
+}
+
 /** Intenções semânticas suportadas. */
 export const SEMANTIC_INTENTS = [
   "value",
@@ -64,20 +92,29 @@ export const portalMetricCatalog = {
     aliases: [
       "clientes ativos",
       "quantos clientes ativos",
+      "quantos clientes estao ativos",
+      "quantos clientes estão ativos",
+      "quantos estao ativos",
+      "quantos estão ativos",
       "ativos",
       "clientes com status ativo",
+      "clientes em atividade",
+      "quantidade de clientes ativos",
     ],
     description:
       "Cliente com status bruto ativo e sem a regra consolidada (churn_efetivado_at OU distrato_assinado_at OU distrato='Assinado' OU clients.data_churn (união distinta por client_id; não arquivado)).",
     aggregation: "count",
     allowedAggregations: ["count"],
     unit: "clients",
-    formula: "analyticalStatus === Ativo (sem churn_efetivado_at e sem distrato_assinado_at)",
+    formula:
+      "analyticalStatus === Ativo: status bruto ativo E sem cancelamento efetivado (churn_efetivado_at OU distrato_assinado_at OU distrato textual Assinado OU clients.data_churn; registros arquivados ignorados)",
     supportedFilters: ["search", "segment", "engineer"],
     sources: [
       { schema: SUPABASE, table: "clients", column: "status" },
       { schema: SUPABASE, table: "cancellations", column: "churn_efetivado_at" },
       { schema: SUPABASE, table: "cancellations", column: "distrato_assinado_at" },
+      { schema: SUPABASE, table: "cancellations", column: "distrato" },
+      { schema: SUPABASE, table: "clients", column: "data_churn" },
     ],
     executor: "general",
     summaryField: "activeClients",
@@ -120,6 +157,8 @@ export const portalMetricCatalog = {
       "quantos clientes cancelados",
       "cancelados",
       "clientes com status cancelado",
+      "como calculam cliente cancelado",
+      "como e calculado cliente cancelado",
     ],
     description:
       "Cliente cancelado é aquele que possui evidência consolidada: churn_efetivado_at OU distrato_assinado_at OU distrato='Assinado' OU clients.data_churn (união distinta por client_id; não arquivado). prioridade: churn_efetivado_at > distrato_assinado_at > clients.data_churn; distrato Assinado sem data = efetivado sem data confirmada.",
@@ -203,8 +242,14 @@ export const portalMetricCatalog = {
       "tempo de permanencia",
       "tempo de casa tipico",
       "mediana de permanencia",
+      "permanencia media",
+      "permanência média",
+      "permanencia",
+      "o que e permanencia",
+      "o que significa permanencia",
     ],
-    description: "Mediana dos dias de permanência calculáveis (typicalStayDays).",
+    description:
+      "Mediana dos dias de permanência analítica (typicalStayDays). O card da UI chama isso de “Permanência média”, mas o valor é a mediana. Inclui ajuste +365 quando ciclo≥2 e permanência base < 365. Não é a duração usada em Kaplan–Meier/cohort.",
     aggregation: "median",
     allowedAggregations: ["median", "average", "comparison"],
     unit: "days",
@@ -296,6 +341,8 @@ export const portalMetricCatalog = {
       "clientes com cadastro financeiro",
       "quantos possuem diagnostico financeiro",
       "quantos clientes com diagnostico financeiro",
+      "quantos clientes tem dados financeiros",
+      "quantos clientes têm dados financeiros",
       "diagnostico financeiro",
       "com diagnostico financeiro",
     ],
@@ -422,6 +469,8 @@ export const portalMetricCatalog = {
       "comparecimento",
       "taxa de presenca",
       "taxa de presença",
+      "o que significa taxa de comparecimento",
+      "o que e taxa de comparecimento",
     ],
     description:
       "1 − (no-shows ÷ elegíveis). Elegíveis = total − futuras − canceladas. Fonte: meeting_attendance.status (não CSV Marked as No-Show).",
@@ -469,7 +518,7 @@ export const portalMetricCatalog = {
       "tipos de reunião mais frequentes",
     ],
     description:
-      "Distribuição exclusiva de Agendamentos.calendly_eventos (Business Data) no gráfico Reuniões por tipo. Não altera KPIs operacionais.",
+      "Distribuição exclusiva de Agendamentos.calendly_eventos (Business Data) no gráfico Reuniões por tipo, via meeting-types-calendly.mjs. Não altera KPIs operacionais. Há CSV legado; a fonte canônica da tela é o código atual, sem migração nesta etapa.",
     aggregation: "top",
     unit: "meetings",
     executor: "meetings",
@@ -580,7 +629,7 @@ export const portalMetricCatalog = {
       "tempo medio ate a primeira reuniao",
     ],
     description:
-      "Mediana na coorte única dos quatro prazos entre a data inicial e a primeira reunião do cliente.",
+      "Mediana (não média) na coorte única dos quatro prazos entre a data inicial e a primeira reunião do cliente. Na Jornada a primeira reunião é o menor client_meetings.start_time, sem exigir comparecimento. A tela Reuniões usa comparecimento e fallbacks — regras ainda divergentes.",
     aggregation: "median",
     allowedAggregations: ["average", "median", "comparison"],
     unit: "days",
@@ -711,6 +760,8 @@ export const portalMetricCatalog = {
       "onboarding concluido",
       "clientes com onboarding concluido",
       "contabilizados os clientes que concluiram onboarding",
+      "o que e onboarding",
+      "onboarding",
     ],
     description:
       "Contagem de clientes cujo estágio atual está fora dos estágios abertos OU que possuem primeira reunião OU dados financeiros informados.",
@@ -940,6 +991,13 @@ export const portalMetricCatalog = {
       "implementados",
       "implementados por segmento",
       "andamento por segmento",
+      "quantos tem mecanismos implementados",
+      "quantos tem mecanismos implementados",
+      "quantos clientes tem mecanismos implementados",
+      "onde vejo mecanismos",
+      "onde encontro mecanismos",
+      "tela de mecanismos",
+      "em qual tela vejo mecanismos",
     ],
     description: "Vínculos cliente × mecanismo com status normalizado como Implementado (concluído). O gráfico Implementados por segmento usa somente esses vínculos.",
     aggregation: "sum",
@@ -1258,6 +1316,7 @@ export const portalMetricCatalog = {
       "quantidade de acionamentos",
       "quantos acionamentos",
       "total de chamados",
+      "o que e atendimento",
     ],
     description: "Contagem distinta de acionamentos em research.acionamentos (mesmo payload do dashboard Atendimento).",
     aggregation: "count",
@@ -1895,13 +1954,16 @@ export const portalMetricCatalog = {
       "sobrevivencia",
       "sobrevivência",
       "kaplan meier",
+      "curva de sobrevivencia",
     ],
-    description: "Kaplan–Meier com evento = cancelamento confirmado.",
+    description:
+      "Métrica DERIVADA (não é coluna de banco). Kaplan–Meier: evento = cancelamento efetivado COM data; censura = data de corte (America/Sao_Paulo). Usa permanência CRONOLÓGICA (sem +365). Probabilidade de permanência ≠ percentual de ativos.",
     aggregation: "trend",
     allowedAggregations: ["trend"],
-    unit: "label",
+    unit: "probability",
+    derivedMetric: true,
     executor: "statistical_crosses",
-    summaryField: null,
+    summaryField: "survival",
   },
   sc_nps: {
     id: "sc_nps",
@@ -1967,10 +2029,13 @@ export const portalMetricCatalog = {
       "quantos cancelamentos",
       "total de cancelamentos",
       "quantidade de cancelamentos",
-      "clientes cancelados",
       "cancelamentos efetivados",
       "quantos foram efetivamente cancelados",
       "efetivamente cancelados",
+      "onde vejo churn",
+      "onde encontro churn",
+      "em qual tela vejo churn",
+      "tela de churn",
     ],
     description:
       "Clientes com cancelamento efetivado (churn_efetivado_at ou distrato_assinado_at ou distrato Assinado ou clients.data_churn em registro não arquivado). Intenção e pedido não contam.",
@@ -2024,12 +2089,31 @@ export const portalMetricCatalog = {
       "quanto tempo tipico no processo de cancelamento",
     ],
     description:
-      "Mediana de dias em processo para clientes ainda não efetivados (hoje − data de entrada = coalesce(data_pedido, intencao_registrada_at)).",
+      "O payload de cancelamentos expõe mediana em timing.medianDaysInProcess.median. Se o card da UI mostrar “média”, não unificar o rótulo sem validação humana.",
     aggregation: "median",
     allowedAggregations: ["median"],
     unit: "days",
     executor: "cancellations",
     summaryField: "timing.medianDaysInProcess.median",
+    status: "needs_business_validation",
+  },
+  cancellation_process_by_status: {
+    id: "cancellation_process_by_status",
+    domain: "cancellations",
+    page: "cancellations",
+    label: "Clientes por etapa do processo de cancelamento",
+    aliases: [
+      "quantos estao em cada etapa do processo",
+      "distribuicao por status do processo de cancelamento",
+      "etapas do processo de cancelamento",
+    ],
+    description:
+      "Distribuição de clientes em processo por cancellation_statuses.name. Processo/intenção/pedido não é cancelamento efetivado.",
+    aggregation: "distribution",
+    unit: "clients",
+    executor: "cancellations",
+    distributionLookup: { path: "distributions.byProcessStatus" },
+    status: "confirmed",
   },
   cancellation_intentions: {
     id: "cancellation_intentions",
@@ -2426,30 +2510,1110 @@ export const portalMetricCatalog = {
     executor: "cancellations",
     distributionLookup: { path: "distributions.byReasonCategory", label: "Não renovação" },
   },
+
+  /* -------------------- REUNIÕES (lacunas da auditoria) -------------------- */
+  total_meetings: {
+    id: "total_meetings",
+    domain: "meetings",
+    page: "meetings",
+    section: "KPIs",
+    label: "Total de reuniões",
+    aliases: [
+      "total de reunioes",
+      "total de reuniões",
+      "quantidade de reunioes",
+      "quantidade de reuniões",
+      "quantas reunioes",
+      "quantas reuniões",
+      "numero de reunioes",
+    ],
+    questions: ["quantas reuniões temos?", "qual o total de reuniões?"],
+    description:
+      "Contagem de reuniões analíticas no recorte (client_meetings + manual_meetings). Exclui anteriores à entrada do cliente e inválidas. Não é média por cliente. Não usa o gráfico de tipos Calendly.",
+    aggregation: "count",
+    unit: "meetings",
+    formula: "count reuniões analíticas no recorte filtrado",
+    sources: [
+      { schema: SUPABASE, table: "client_meetings", column: "id" },
+      { schema: SUPABASE, table: "manual_meetings", column: "id" },
+    ],
+    executor: "meetings",
+    summaryField: "totalMeetings",
+    realtime: true,
+    status: "confirmed",
+  },
+  no_show_meetings: {
+    id: "no_show_meetings",
+    domain: "meetings",
+    page: "meetings",
+    label: "Reuniões com no-show",
+    aliases: [
+      "reunioes com no-show",
+      "total de no-shows",
+      "no-shows",
+      "faltas em reunioes",
+      "quantos no-shows",
+    ],
+    description: "Reuniões já ocorridas, não canceladas, com meeting_attendance.status = não compareceu.",
+    aggregation: "count",
+    unit: "meetings",
+    sources: [{ schema: SUPABASE, table: "meeting_attendance", column: "status" }],
+    executor: "meetings",
+    summaryField: "totalNoShows",
+    status: "confirmed",
+  },
+  eligible_meetings: {
+    id: "eligible_meetings",
+    domain: "meetings",
+    page: "meetings",
+    label: "Reuniões elegíveis",
+    aliases: ["reunioes elegiveis", "reuniões elegíveis", "elegiveis para comparecimento"],
+    description: "Total analítico − futuras − canceladas. Denominador das taxas de comparecimento e no-show.",
+    aggregation: "count",
+    unit: "meetings",
+    formula: "totalMeetings - futureMeetings - cancelledMeetings",
+    executor: "meetings",
+    summaryField: "eligibleMeetings",
+    status: "confirmed",
+  },
+  future_meetings: {
+    id: "future_meetings",
+    domain: "meetings",
+    page: "meetings",
+    label: "Reuniões futuras",
+    aliases: ["reunioes futuras", "reuniões futuras", "agendadas no futuro"],
+    description: "Reuniões com start_time posterior a agora (UTC no dashboard de Reuniões).",
+    aggregation: "count",
+    unit: "meetings",
+    executor: "meetings",
+    summaryField: "futureMeetings",
+    status: "confirmed",
+  },
+  attended_meetings: {
+    id: "attended_meetings",
+    domain: "meetings",
+    page: "meetings",
+    label: "Comparecimentos",
+    aliases: ["comparecimentos", "reunioes realizadas", "reuniões realizadas", "reunioes com comparecimento"],
+    description: "Elegíveis − no-shows. Presença confirmada em reuniões já ocorridas e não canceladas.",
+    aggregation: "count",
+    unit: "meetings",
+    executor: "meetings",
+    summaryField: "attendedMeetings",
+    status: "confirmed",
+  },
+  average_meetings_per_month: {
+    id: "average_meetings_per_month",
+    domain: "meetings",
+    page: "meetings",
+    label: "Média de reuniões/mês",
+    aliases: [
+      "media de reunioes por mes",
+      "média de reuniões/mês",
+      "media de reunioes/mes",
+      "reunioes por mes",
+    ],
+    description:
+      "Volume de reuniões dividido por meses — NÃO é média por cliente. A UI usa o divisor do período filtrado quando há período; o payload de meetings.mjs usa monthsBetween(primeira, última) datada. As duas fórmulas ainda divergem.",
+    aggregation: "average",
+    unit: "meetings_per_month",
+    formula: "UI: total / periodMonthDivisor se período ativo; senão total / span(first,last). Backend: analyticMeetings.length / monthsBetween(first,last).",
+    executor: "meetings",
+    summaryField: "averageMeetingsPerMonth",
+    status: "needs_business_validation",
+    limitations: ["Não unificar UI e backend sem validação humana."],
+  },
+  days_since_latest_meeting: {
+    id: "days_since_latest_meeting",
+    domain: "meetings",
+    page: "meetings",
+    label: "Dias desde a última reunião",
+    aliases: ["dias desde a ultima reuniao", "dias sem reuniao", "recencia da ultima reuniao"],
+    description: "Hoje − MAXDATE de reunião válida do recorte (número principal do card). Futuras, canceladas, inválidas e pré-entrada não definem o MAXDATE. A nota do card também mostra mediana/média por cliente.",
+    aggregation: "value",
+    unit: "days",
+    executor: "meetings",
+    summaryField: "daysSinceLatestMeeting",
+    status: "confirmed",
+  },
+
+  chronological_stay_days: {
+    id: "chronological_stay_days",
+    domain: "general",
+    page: "general",
+    label: "Permanência cronológica",
+    aliases: ["permanencia cronologica", "permanencia sem ajuste", "stayDaysBase"],
+    description:
+      "Dias civis contratação → cancelamento com data (se efetivado) ou hoje (America/Sao_Paulo). Sem o bônus +365 de renovação. É a duração usada em Kaplan–Meier e cohort.",
+    aggregation: "value",
+    unit: "days",
+    formula: "tenureDaysBetween(hire, end); end = data analítica de cancelamento ou hoje SP",
+    status: "confirmed",
+    executionKind: "knowledge_only",
+    realtime: false,
+  },
+
+  /* -------------------- PLANO PATRIMONIAL -------------------- */
+  plan_baseqv_clients: {
+    id: "plan_baseqv_clients",
+    domain: "patrimonial_plan",
+    page: "plan",
+    label: "Clientes BASE QV",
+    aliases: ["clientes base qv", "clientes na base do plano"],
+    description: "Distinct clients.id na tela Plano Patrimonial.",
+    aggregation: "count",
+    unit: "clients",
+    sources: [{ schema: SUPABASE, table: "clients", column: "id" }],
+    status: "confirmed",
+    executionKind: "pending",
+    realtime: false,
+    limitations: ["computePatrimonialPlanPayload não é exportado; valor ao vivo fica para etapa posterior."],
+  },
+  plan_delivered_meetings: {
+    id: "plan_delivered_meetings",
+    domain: "patrimonial_plan",
+    page: "plan",
+    label: "Plano entregue",
+    aliases: ["planos entregues", "plano entregue", "reunioes central de inteligencia", "quantos planos foram entregues"],
+    description:
+      "Proxy: CONTAGEM DE REUNIÕES cujo event_name contém “central de inteligencia”, não contagem de clientes. Não é aprovação formal.",
+    aggregation: "count",
+    unit: "meetings",
+    formula: "count client_meetings where event_name ILIKE central de inteligencia",
+    sources: [{ schema: SUPABASE, table: "client_meetings", column: "event_name" }],
+    status: "partial",
+    executionKind: "pending",
+    realtime: false,
+    limitations: ["Proxy de reunião; validar com negócio se o nome “plano entregue” é aceitável."],
+  },
+  plan_approved_clients: {
+    id: "plan_approved_clients",
+    domain: "patrimonial_plan",
+    page: "plan",
+    label: "Plano aprovado",
+    aliases: ["plano aprovado", "planos aprovados"],
+    description: "Proxy: clientes distintos com ≥1 reunião Central de Inteligência. Não representa aprovação formal.",
+    aggregation: "count",
+    unit: "clients",
+    sources: [{ schema: SUPABASE, table: "client_meetings", column: "event_name" }],
+    status: "partial",
+    executionKind: "pending",
+    realtime: false,
+  },
+  plan_days_to_approval: {
+    id: "plan_days_to_approval",
+    domain: "patrimonial_plan",
+    page: "plan",
+    label: "Dias até aprovação",
+    aliases: ["dias ate aprovacao", "tempo ate aprovacao do plano"],
+    description: "Proxy: diferença não negativa contratação → última reunião Central. Não é aprovação formal.",
+    aggregation: "average",
+    unit: "days",
+    status: "partial",
+    executionKind: "pending",
+    realtime: false,
+  },
+
+  /* -------------------- ATUALIZAÇÃO FINANCEIRA -------------------- */
+  financial_clients_with_data: {
+    id: "financial_clients_with_data",
+    domain: "financial_updates",
+    page: "financial",
+    label: "Clientes com dados financeiros",
+    aliases: [
+      "clientes com dados financeiros na atualizacao financeira",
+      "cobertura financeira da tela financeira",
+      "clientes com diagnostico financeiro na tela financeira",
+    ],
+    description: "Clientes com ≥1 registro em client_financial_data no recorte da tela Atualização Financeira.",
+    aggregation: "count",
+    unit: "clients",
+    sources: [{ schema: SUPABASE, table: "client_financial_data", column: "client_id" }],
+    executor: "financial_updates",
+    summaryField: "clientsWithFinancialData",
+    status: "confirmed",
+  },
+  financial_post_creation_updates: {
+    id: "financial_post_creation_updates",
+    domain: "financial_updates",
+    page: "financial",
+    label: "Clientes com registro alterado após a criação",
+    aliases: [
+      "atualizacao financeira real",
+      "updated_at maior que created_at",
+      "clientes com atualizacao financeira",
+      "atualizacoes financeiras",
+      "como funciona a atualizacao financeira",
+      "como e calculada a atualizacao financeira",
+    ],
+    description:
+      "Atualização real: updated_at > created_at. A criação inicial NÃO conta. Sem histórico de eventos: o total é o número de clientes cujo registro foi alterado após a criação.",
+    aggregation: "count",
+    unit: "clients",
+    formula: "isUpdated = updated_at > created_at",
+    sources: [
+      { schema: SUPABASE, table: "client_financial_data", column: "updated_at" },
+      { schema: SUPABASE, table: "client_financial_data", column: "created_at" },
+    ],
+    executor: "financial_updates",
+    summaryField: "clientsWithPostCreationUpdate",
+    status: "confirmed",
+  },
+  financial_updated_last_30_days: {
+    id: "financial_updated_last_30_days",
+    domain: "financial_updates",
+    page: "financial",
+    label: "Atualizados nos últimos 30 dias",
+    aliases: ["atualizados nos ultimos 30 dias", "atualizacao financeira recente"],
+    description: "Clientes com updated_at > created_at e atualização nos últimos 30 dias.",
+    aggregation: "count",
+    unit: "clients",
+    executor: "financial_updates",
+    summaryField: "updatedLast30Days",
+    status: "confirmed",
+  },
+  financial_median_days_since_update: {
+    id: "financial_median_days_since_update",
+    domain: "financial_updates",
+    page: "financial",
+    label: "Recência da atualização financeira",
+    aliases: ["recencia media da atualizacao", "dias desde atualizacao financeira", "mediana dias desde atualizacao"],
+    description:
+      "Mediana de dias desde a última atualização válida (updated_at > created_at). O card da UI diz “média”; o número principal é a mediana; a média aparece na nota.",
+    aggregation: "median",
+    unit: "days",
+    executor: "financial_updates",
+    summaryField: "medianDaysSinceUpdate",
+    status: "confirmed",
+  },
+  financial_outdated_over_90_days: {
+    id: "financial_outdated_over_90_days",
+    domain: "financial_updates",
+    page: "financial",
+    label: "Clientes com dados desatualizados",
+    aliases: ["dados financeiros desatualizados", "atualizacao ha mais de 90 dias"],
+    description: "Clientes com atualização válida há mais de 90 dias.",
+    aggregation: "count",
+    unit: "clients",
+    executor: "financial_updates",
+    summaryField: "outdatedOver90Days",
+    status: "confirmed",
+  },
+
+  /* -------------------- USO DA PLATAFORMA -------------------- */
+  platform_pharus_users: {
+    id: "platform_pharus_users",
+    domain: "platform_usage",
+    page: "platform",
+    label: "Usuários App Pharus",
+    aliases: ["usuarios app pharus", "usuarios da plataforma", "uso da plataforma", "o que e uso da plataforma", "quantos usuarios app pharus"],
+    description: "Distinct user_id em metrics.events (App Pharus). Fonte não validada no MCP BASE QV.",
+    aggregation: "count",
+    unit: "users",
+    sources: [{ project: "App Pharus", schema: "metrics", table: "events", column: "metadata.user_id" }],
+    status: "partial",
+    executionKind: "pending",
+    realtime: false,
+  },
+  platform_users_with_login: {
+    id: "platform_users_with_login",
+    domain: "platform_usage",
+    page: "platform",
+    label: "Realizaram login",
+    aliases: ["realizaram login", "usuarios com login", "logins da plataforma"],
+    description: "Usuários App Pharus com histórico de login. Fonte metrics.events.",
+    aggregation: "count",
+    unit: "users",
+    sources: [{ project: "App Pharus", schema: "metrics", table: "events", column: "event_name" }],
+    status: "partial",
+    executionKind: "pending",
+    realtime: false,
+  },
+  platform_session_duration: {
+    id: "platform_session_duration",
+    domain: "platform_usage",
+    page: "platform",
+    label: "Tempo médio de sessão",
+    aliases: ["tempo medio de sessao", "duracao de sessao"],
+    description: "Card da UI exibe “Sem Dados” — sem base confiável.",
+    aggregation: "average",
+    unit: "minutes",
+    status: "partial",
+    executionKind: "knowledge_only",
+    realtime: false,
+  },
+
+  /* -------------------- SATISFAÇÃO -------------------- */
+  satisfaction_nps_index: {
+    id: "satisfaction_nps_index",
+    domain: "satisfaction",
+    page: "satisfaction",
+    label: "NPS (tela Pesquisa de Satisfação)",
+    aliases: ["nps da pesquisa de satisfacao", "nps da tela de satisfacao", "indice nps satisfacao"],
+    description:
+      "Índice %promotores − %detratores sobre TODAS as notas válidas 0–10 em nps_responses (dedupe typeform_response_id/id), usando created_at. NÃO usa nps-metrics.mjs (última por cliente / submitted_at / filtro tipo NPS). Não é média da nota.",
+    aggregation: "value",
+    unit: "nps_index",
+    formula: "(% notas ≥9) − (% notas ≤6) em todas as respostas válidas da tela",
+    sources: [{ schema: SUPABASE, table: "nps_responses", column: "score" }],
+    status: "needs_business_validation",
+    executionKind: "pending",
+    realtime: false,
+    limitations: ["Divergente do helper oficial nps-metrics.mjs usado em EP e Análises Estatísticas."],
+  },
+  nps_official_index: {
+    id: "nps_official_index",
+    domain: "satisfaction",
+    page: "ep",
+    label: "NPS oficial (helper)",
+    aliases: [
+      "nps oficial",
+      "indice nps oficial",
+      "nps ultima resposta por cliente",
+      "como e calculado o nps",
+      "como calculam o nps",
+      "o que e nps",
+      "onde vejo nps",
+      "onde encontro nps",
+    ],
+    description:
+      "Helper nps-metrics.mjs: última resposta válida 0–10 por client_id (submitted_at, depois created_at); ignora tipo_de_forms que não começa com NPS. Promotor ≥9, neutro 7–8, detrator ≤6. Índice = %P − %D. EP oculta amostra <5 ou cobertura <20%. Análises Estatísticas preditivas excluem NPS pós-cancelamento.",
+    aggregation: "value",
+    unit: "nps_index",
+    sources: [{ schema: SUPABASE, table: "nps_responses", column: "score" }],
+    status: "confirmed",
+    executionKind: "dashboard_payload",
+    executor: "ep_performance",
+    summaryField: "npsRaw",
+    realtime: false,
+  },
+  nps_official_responses: {
+    id: "nps_official_responses",
+    domain: "satisfaction",
+    page: "ep",
+    label: "Respostas NPS oficiais",
+    aliases: [
+      "quantos responderam nps",
+      "quantos responderam",
+      "e quantos responderam",
+      "respostas nps",
+      "clientes com nps",
+    ],
+    description:
+      "Número de clientes com última resposta NPS válida 0–10 no helper nps-metrics.mjs (payload de Performance do EP). Não usa a regra da tela Pesquisa de Satisfação.",
+    aggregation: "count",
+    unit: "responses",
+    sources: [{ schema: SUPABASE, table: "nps_responses", column: "score" }],
+    status: "confirmed",
+    executionKind: "dashboard_payload",
+    executor: "ep_performance",
+    summaryField: "npsResponses",
+  },
+  nps_official_promoters: {
+    id: "nps_official_promoters",
+    domain: "satisfaction",
+    page: "ep",
+    label: "Promotores NPS (oficial)",
+    aliases: ["quantos sao promotores", "promotores nps", "promotores", "clientes promotores"],
+    description: "Última nota válida ≥9 por cliente no helper nps-metrics.mjs. Não é a regra da tela Pesquisa de Satisfação.",
+    aggregation: "count",
+    unit: "clients",
+    sources: [{ schema: SUPABASE, table: "nps_responses", column: "score" }],
+    status: "confirmed",
+    executionKind: "dashboard_payload",
+    executor: "ep_performance",
+    summaryField: "npsPromoters",
+  },
+  nps_official_passives: {
+    id: "nps_official_passives",
+    domain: "satisfaction",
+    page: "ep",
+    label: "Neutros NPS (oficial)",
+    aliases: ["neutros nps", "passivos nps", "quantos sao neutros no nps"],
+    description: "Última nota válida 7–8 por cliente no helper nps-metrics.mjs.",
+    aggregation: "count",
+    unit: "clients",
+    sources: [{ schema: SUPABASE, table: "nps_responses", column: "score" }],
+    status: "confirmed",
+    executionKind: "dashboard_payload",
+    executor: "ep_performance",
+    summaryField: "npsPassives",
+  },
+  nps_official_detractors: {
+    id: "nps_official_detractors",
+    domain: "satisfaction",
+    page: "ep",
+    label: "Detratores NPS (oficial)",
+    aliases: ["detratores nps", "quantos sao detratores", "detratores"],
+    description: "Última nota válida ≤6 por cliente no helper nps-metrics.mjs.",
+    aggregation: "count",
+    unit: "clients",
+    sources: [{ schema: SUPABASE, table: "nps_responses", column: "score" }],
+    status: "confirmed",
+    executionKind: "dashboard_payload",
+    executor: "ep_performance",
+    summaryField: "npsDetractors",
+  },
+  nps_official_coverage: {
+    id: "nps_official_coverage",
+    domain: "satisfaction",
+    page: "ep",
+    label: "Cobertura NPS oficial",
+    aliases: [
+      "cobertura nps",
+      "cobertura da carteira nps",
+      "qual a cobertura do nps",
+      "cobertura do nps",
+    ],
+    description: "Percentual da carteira do EP com última resposta NPS válida (helper oficial).",
+    aggregation: "rate",
+    unit: "percent",
+    sources: [{ schema: SUPABASE, table: "nps_responses", column: "score" }],
+    status: "confirmed",
+    executionKind: "dashboard_payload",
+    executor: "ep_performance",
+    summaryField: "npsPortfolioCoverage",
+  },
+  satisfaction_csat_average: {
+    id: "satisfaction_csat_average",
+    domain: "satisfaction",
+    page: "satisfaction",
+    label: "CSAT médio",
+    aliases: ["csat medio", "csat", "satisfacao csat"],
+    description:
+      "Média de csat_responses.score com tipo_de_forms contendo “csat”; notas >5 truncadas para 5. Satisfeito = nota igual a 5.",
+    aggregation: "average",
+    unit: "score",
+    sources: [{ schema: SUPABASE, table: "csat_responses", column: "score" }],
+    status: "confirmed",
+    executionKind: "pending",
+    realtime: false,
+  },
+  satisfaction_ces: {
+    id: "satisfaction_ces",
+    domain: "satisfaction",
+    page: "satisfaction",
+    label: "CES",
+    aliases: ["ces", "customer effort score", "esforco do cliente"],
+    description: "Sem campo estruturado identificado. Card da UI: Sem dado.",
+    aggregation: "value",
+    unit: "score",
+    status: "partial",
+    executionKind: "knowledge_only",
+    realtime: false,
+  },
+
+  /* -------------------- RENOVAÇÃO -------------------- */
+  renewed_clients: {
+    id: "renewed_clients",
+    domain: "renewal",
+    page: "renewal",
+    label: "Renovaram",
+    aliases: [
+      "renovaram",
+      "clientes renovados",
+      "quantos renovaram",
+      "quantos clientes renovaram",
+      "ciclo maior que 1",
+      "renovacao",
+      "o que e renovacao",
+      "o que significa renovacao",
+    ],
+    description: "hasRenewed = clients.ciclo > 1. Ciclo null/≤0 é inválido (não conta como renovado). Tela reusa /api/general-data.",
+    aggregation: "count",
+    unit: "clients",
+    formula: "count clientes com ciclo > 1",
+    sources: [{ schema: SUPABASE, table: "clients", column: "ciclo" }],
+    executor: "renewal",
+    status: "confirmed",
+  },
+  total_renewals: {
+    id: "total_renewals",
+    domain: "renewal",
+    page: "renewal",
+    label: "Quantidade de renovações",
+    aliases: ["quantidade de renovacoes", "total de renovacoes", "soma das renovacoes"],
+    description: "Soma de max(ciclo − 1, 0) por cliente. Não é histórico de eventos de renovação.",
+    aggregation: "sum",
+    unit: "renewals",
+    sources: [{ schema: SUPABASE, table: "clients", column: "ciclo" }],
+    executor: "renewal",
+    status: "confirmed",
+  },
+  max_current_cycle: {
+    id: "max_current_cycle",
+    domain: "renewal",
+    page: "renewal",
+    label: "Maior ciclo atual",
+    aliases: ["maior ciclo atual", "ciclo maximo"],
+    description: "Máximo de clients.ciclo no recorte.",
+    aggregation: "max",
+    unit: "cycles",
+    sources: [{ schema: SUPABASE, table: "clients", column: "ciclo" }],
+    executor: "renewal",
+    status: "confirmed",
+  },
+  non_renewed_clients: {
+    id: "non_renewed_clients",
+    domain: "renewal",
+    page: "renewal",
+    label: "Não renovaram (ciclo 1)",
+    aliases: [
+      "nao renovaram",
+      "não renovaram",
+      "clientes nao renovados",
+      "clientes não renovados",
+      "quantos nao renovaram",
+      "nao renovados",
+      "os nao renovados",
+      "e os nao renovados",
+    ],
+    description:
+      "Clientes com ciclo = 1 (ainda no primeiro ciclo). Ciclo null/≤0 é inválido e não entra. Não usar este recorte como preditor se o desfecho da análise for a própria renovação.",
+    aggregation: "count",
+    unit: "clients",
+    formula: "count clientes com ciclo === 1",
+    sources: [{ schema: SUPABASE, table: "clients", column: "ciclo" }],
+    executor: "renewal",
+    status: "confirmed",
+  },
+  renewal_rate: {
+    id: "renewal_rate",
+    domain: "renewal",
+    page: "renewal",
+    label: "Taxa de renovação (ciclo > 1)",
+    aliases: ["taxa de renovacao", "percentual renovado", "percentual de renovacao"],
+    description:
+      "Percentual descritivo: clientes com ciclo > 1 sobre clientes com ciclo ≥ 1. Não é taxa contratual formal nem evento de renovação. Não usar ciclo como variável explicativa se o desfecho for renovação (leakage).",
+    aggregation: "rate",
+    unit: "percent",
+    formula: "100 * count(ciclo>1) / count(ciclo>=1)",
+    sources: [{ schema: SUPABASE, table: "clients", column: "ciclo" }],
+    executor: "renewal",
+    status: "confirmed",
+  },
+  renewal_time_to_renew: {
+    id: "renewal_time_to_renew",
+    domain: "renewal",
+    page: "renewal",
+    label: "Tempo até renovação",
+    aliases: ["tempo ate renovacao"],
+    description: "Sem dado — não há histórico do primeiro ciclo/evento real.",
+    aggregation: "value",
+    unit: "days",
+    status: "partial",
+    executionKind: "knowledge_only",
+    realtime: false,
+  },
+  renewal_on_time: {
+    id: "renewal_on_time",
+    domain: "renewal",
+    page: "renewal",
+    label: "Renovou no prazo?",
+    aliases: ["renovou no prazo"],
+    description: "Sem dado — falta fim do ciclo anterior e data de renovação.",
+    status: "partial",
+    executionKind: "knowledge_only",
+    realtime: false,
+  },
+  renewal_value: {
+    id: "renewal_value",
+    domain: "renewal",
+    page: "renewal",
+    label: "Valor da renovação",
+    aliases: ["valor da renovacao"],
+    description: "Sem dado. clients.valor_total_pago não é valor de renovação.",
+    status: "partial",
+    executionKind: "knowledge_only",
+    realtime: false,
+  },
+
+  /* -------------------- TEMPORAIS -------------------- */
+  temporal_total_subjects: {
+    id: "temporal_total_subjects",
+    domain: "temporal",
+    page: "temporal",
+    label: "Clientes/usuários (temporais)",
+    aliases: [
+      "clientes usuarios temporais",
+      "sujeitos nos indicadores temporais",
+      "indicadores temporais",
+      "o que sao indicadores temporais",
+      "quantos sujeitos nos indicadores temporais",
+    ],
+    description: "BASE QV + usuários App Pharus na tela Indicadores Temporais.",
+    aggregation: "count",
+    unit: "subjects",
+    executor: "temporal",
+    summaryField: "totalSubjects",
+    status: "partial",
+  },
+  temporal_financial_updates: {
+    id: "temporal_financial_updates",
+    domain: "temporal",
+    page: "temporal",
+    label: "Atualizações financeiras (temporais)",
+    aliases: ["atualizacoes financeiras temporais"],
+    description:
+      "Nesta tela o código usa updated_at || created_at (criação inicial pode entrar). Diferente da tela Atualização Financeira (updated_at > created_at).",
+    aggregation: "count",
+    unit: "events",
+    executor: "temporal",
+    summaryField: "totalFinancialUpdates",
+    status: "needs_business_validation",
+    limitations: ["Não unificar com financial_post_creation_updates sem validação humana."],
+  },
+  temporal_active_with_signals: {
+    id: "temporal_active_with_signals",
+    domain: "temporal",
+    page: "temporal",
+    label: "Clientes ativos com sinais",
+    aliases: ["clientes ativos com sinais", "sinais de possivel cancelamento"],
+    description:
+      "Heurística da tela: queda de login, sem reunião 60d, sem implementação 90d, sem financeiro 60d, NPS detrator recente, 30+ dias sem atividade. Não é modelo preditivo oficial.",
+    aggregation: "count",
+    unit: "clients",
+    executor: "temporal",
+    summaryField: "activeClientsWithSignals",
+    status: "partial",
+  },
+  temporal_interactions: {
+    id: "temporal_interactions",
+    domain: "temporal",
+    page: "temporal",
+    label: "Interações",
+    aliases: ["interacoes", "interações temporais"],
+    description: "Sem fonte confiável. Card: Sem dado.",
+    status: "partial",
+    executionKind: "knowledge_only",
+    realtime: false,
+  },
+
+  /* -------------------- QUALIDADE -------------------- */
+  quality_overall_completeness: {
+    id: "quality_overall_completeness",
+    domain: "quality",
+    page: "quality",
+    label: "Completude geral",
+    aliases: ["completude geral", "preenchimento dos dados", "qualidade dos dados", "cobertura de preenchimento"],
+    description:
+      "Percentual de células preenchidas sobre todas as células auditadas na tela Qualidade (não é NPS). Completude de coluna = não nulo/vazio ÷ linhas da tabela.",
+    aggregation: "rate",
+    unit: "percent",
+    status: "confirmed",
+    executionKind: "pending",
+    realtime: false,
+  },
+  quality_column_fill: {
+    id: "quality_column_fill",
+    domain: "quality",
+    page: "quality",
+    label: "Preenchimento por coluna",
+    aliases: ["preenchimento por coluna", "coluna vazia", "ausencia de campo"],
+    description: "Para cada coluna auditada: preenchidos vs linhas da tabela, com filtros de domínio e faixa de preenchimento.",
+    aggregation: "rate",
+    unit: "percent",
+    status: "confirmed",
+    executionKind: "knowledge_only",
+    realtime: false,
+  },
+
+  /* -------------------- ENGAJAMENTO (legado de tela) -------------------- */
+  engagement_paused: {
+    id: "engagement_paused",
+    domain: "engagement",
+    page: "engagement",
+    label: "Engajamento",
+    aliases: ["engajamento", "indicadores de engajamento"],
+    description:
+      "Tela desabilitada nesta versão. loadEngagement() não chama /api/engagement. Não há indicador confiável a apresentar como oficial.",
+    status: "legacy",
+    executionKind: "knowledge_only",
+    realtime: false,
+  },
+
+  /* -------------------- ANÁLISES ESTATÍSTICAS (derivadas; registry já tinha paths) -------------------- */
+  sc_auc: {
+    id: "sc_auc",
+    domain: "statistical_crosses",
+    page: "statistical-crosses",
+    label: "AUC ajustada",
+    aliases: ["auc", "auc ajustada", "area sob a curva"],
+    description:
+      "Métrica DERIVADA (não é coluna de banco). Univariada: max(AUC, 1−AUC). Não é taxa de acerto de um modelo completo. Arquivo: stats-tests.mjs. Amostra mínima de inferência no backend: 30 (MIN_AUC).",
+    aggregation: "value",
+    unit: "auc",
+    derivedMetric: true,
+    executor: "statistical_crosses",
+    status: "confirmed",
+    executionKind: "knowledge_only",
+    realtime: false,
+  },
+  sc_standardized_diff: {
+    id: "sc_standardized_diff",
+    domain: "statistical_crosses",
+    page: "statistical-crosses",
+    label: "Diferença padronizada",
+    aliases: ["diferenca padronizada", "efeito padronizado"],
+    description:
+      "Métrica DERIVADA (não é coluna de banco). Compara grupos (ex.: ativos vs cancelados) em escala comum. Positivo no cancelamento = maior entre cancelados. Não é causalidade.",
+    aggregation: "value",
+    unit: "std_diff",
+    derivedMetric: true,
+    executor: "statistical_crosses",
+    status: "confirmed",
+    executionKind: "knowledge_only",
+    realtime: false,
+  },
+  sc_lift: {
+    id: "sc_lift",
+    domain: "statistical_crosses",
+    page: "statistical-crosses",
+    label: "Lift",
+    aliases: ["lift", "lift estatistico"],
+    description: "Métrica DERIVADA em análises exploratórias. Denominador específico da regra ainda merece validação humana para verbalização de valor. Não é coluna de banco.",
+    aggregation: "value",
+    unit: "ratio",
+    derivedMetric: true,
+    status: "needs_business_validation",
+    executionKind: "knowledge_only",
+    realtime: false,
+  },
+  sc_active_clients: {
+    id: "sc_active_clients",
+    domain: "statistical_crosses",
+    page: "statistical-crosses",
+    label: "Clientes ativos (Análises Estatísticas)",
+    aliases: ["ativos nas analises estatisticas"],
+    description: "Status analítico Ativo no recorte da tela de cruzamentos.",
+    aggregation: "count",
+    unit: "clients",
+    executor: "statistical_crosses",
+    summaryField: "activeClients",
+    status: "confirmed",
+    executionKind: "derived",
+  },
+  sc_renewed_clients: {
+    id: "sc_renewed_clients",
+    domain: "statistical_crosses",
+    page: "statistical-crosses",
+    label: "Clientes renovados (Análises Estatísticas)",
+    aliases: ["renovados nas analises estatisticas", "clientes renovados na analise estatistica"],
+    description: "ciclo > 1 no universo da tela. O card pode incluir congelados; não usar ciclo como preditor se o desfecho da análise for a própria renovação (leakage).",
+    aggregation: "count",
+    unit: "clients",
+    executor: "statistical_crosses",
+    status: "confirmed",
+    executionKind: "derived",
+  },
+  sc_cycle1_clients: {
+    id: "sc_cycle1_clients",
+    domain: "statistical_crosses",
+    page: "statistical-crosses",
+    label: "Clientes ciclo 1",
+    aliases: ["ciclo 1", "clientes no primeiro ciclo"],
+    description: "Clientes com ciclo = 1 no recorte estatístico.",
+    aggregation: "count",
+    unit: "clients",
+    executor: "statistical_crosses",
+    status: "confirmed",
+    executionKind: "derived",
+  },
+  sc_nps_responses: {
+    id: "sc_nps_responses",
+    domain: "statistical_crosses",
+    page: "statistical-crosses",
+    label: "Respostas NPS válidas (cruzamentos)",
+    aliases: ["respostas nps validas", "cobertura nps estatistica"],
+    description: "Última resposta 0–10 por cliente via helper oficial; preditivo exclui NPS pós-cancelamento.",
+    aggregation: "count",
+    unit: "responses",
+    executor: "statistical_crosses",
+    status: "confirmed",
+    executionKind: "derived",
+  },
+  sc_top_auc: {
+    id: "sc_top_auc",
+    domain: "statistical_crosses",
+    page: "statistical-crosses",
+    label: "Maior AUC individual",
+    aliases: ["maior auc", "melhor auc individual"],
+    description: "Maior AUC ajustada entre variáveis elegíveis — poder discriminativo, não precisão.",
+    aggregation: "value",
+    unit: "auc",
+    derivedMetric: true,
+    executor: "statistical_crosses",
+    status: "confirmed",
+    executionKind: "derived",
+  },
+  sc_median_survival: {
+    id: "sc_median_survival",
+    domain: "statistical_crosses",
+    page: "statistical-crosses",
+    label: "Mediana de sobrevivência",
+    aliases: ["mediana de sobrevivencia", "tempo mediano de permanencia km"],
+    description: "Tempo em que a curva KM atinge 50%, se atingido. Derivado; permanência cronológica.",
+    aggregation: "median",
+    unit: "days",
+    derivedMetric: true,
+    executor: "statistical_crosses",
+    status: "confirmed",
+    executionKind: "derived",
+  },
+  sc_discoveries: {
+    id: "sc_discoveries",
+    domain: "statistical_crosses",
+    page: "statistical-crosses",
+    label: "Principais descobertas",
+    aliases: ["principais descobertas", "descobertas estatisticas"],
+    description: "Textos determinísticos com cobertura/amostra suficientes. Não afirmam causalidade. Não são gerados por LLM.",
+    aggregation: "list",
+    unit: "list",
+    derivedMetric: true,
+    executor: "statistical_crosses",
+    status: "confirmed",
+    executionKind: "derived",
+  },
+  sc_correlation_matrix: {
+    id: "sc_correlation_matrix",
+    domain: "statistical_crosses",
+    page: "statistical-crosses",
+    label: "Matriz de correlação",
+    aliases: ["matriz de correlacao", "spearman", "correlacao spearman", "matriz spearman"],
+    description:
+      "Métrica DERIVADA (não é coluna de banco). Spearman (padrão) ou Pearson entre variáveis numéricas; pares completos; diagonal = 1. Arquivo: correlation-matrix.mjs. Associação observada, não causalidade.",
+    aggregation: "matrix",
+    derivedMetric: true,
+    executor: "statistical_crosses",
+    status: "confirmed",
+    executionKind: "derived",
+  },
+  sc_cohort: {
+    id: "sc_cohort",
+    domain: "statistical_crosses",
+    page: "statistical-crosses",
+    label: "Coorte (payload)",
+    aliases: ["coorte de retencao", "coorte", "retencao por coorte", "cohort"],
+    description:
+      "Métrica DERIVADA (não é coluna de banco). Retenção por mês/trimestre de contratação e idade em meses. Permanência cronológica, sem +365. Meses futuros não observáveis ficam vazios. Arquivo: cohort-retention.mjs.",
+    aggregation: "cohort",
+    derivedMetric: true,
+    executor: "statistical_crosses",
+    status: "confirmed",
+    executionKind: "derived",
+  },
 };
 
+const DOMAIN_PAGE = {
+  general: "general",
+  journey: "journey",
+  meetings: "meetings",
+  mechanisms: "mechanisms",
+  pharus_mechanisms: "mechanisms",
+  patrimonial_plan: "plan",
+  financial_updates: "financial",
+  platform_usage: "platform",
+  support: "support",
+  cancellations: "cancellations",
+  ep_performance: "ep",
+  statistical_crosses: "statistical-crosses",
+  quality: "quality",
+  renewal: "renewal",
+  temporal: "temporal",
+  satisfaction: "satisfaction",
+  engagement: "engagement",
+};
+
+export const PAGE_LABELS = {
+  general: "Dados Gerais",
+  journey: "Jornada e onboarding",
+  meetings: "Reuniões",
+  mechanisms: "Implementação de Mecanismos",
+  plan: "Plano Patrimonial",
+  financial: "Atualização Financeira",
+  platform: "Uso da Plataforma",
+  support: "Atendimento",
+  cancellations: "Cancelamento",
+  ep: "Performance do EP",
+  "statistical-crosses": "Análises Estatísticas",
+  quality: "Qualidade dos Dados",
+  renewal: "Renovação",
+  temporal: "Indicadores Temporais",
+  satisfaction: "Pesquisa de Satisfação",
+  engagement: "Engajamento (desabilitada)",
+};
+
+export const ACTIVE_PORTAL_PAGES = [
+  "general",
+  "journey",
+  "meetings",
+  "mechanisms",
+  "plan",
+  "financial",
+  "platform",
+  "support",
+  "cancellations",
+  "ep",
+  "statistical-crosses",
+  "quality",
+  "renewal",
+  "temporal",
+  "satisfaction",
+];
+
+export const VALUE_UNAVAILABLE_ASSISTANT_MESSAGE =
+  "Consigo explicar esse indicador, mas a consulta do valor atual ainda não está disponível pelo assistente.";
+
+const PAGE_LOCATION_HINTS = [
+  { re: /mecanismo/, page: "mechanisms", metric: "implemented_mechanisms" },
+  { re: /\bnps\b/, page: "ep", metric: "nps_official_index" },
+  { re: /\bchurn\b/, page: "cancellations", metric: "total_cancellations" },
+  { re: /cancelamento/, page: "cancellations", metric: "total_cancellations" },
+  { re: /renovac/, page: "renewal", metric: "renewed_clients" },
+  { re: /permanencia/, page: "general", metric: "median_stay_days" },
+  { re: /atendimento|acionamento|chamado/, page: "support", metric: "total_support_tickets" },
+  { re: /qualidade/, page: "quality", metric: "quality_overall_completeness" },
+  { re: /plano patrimonial|plano entregue/, page: "plan", metric: "plan_delivered_meetings" },
+  { re: /uso da plataforma|plataforma pharus/, page: "platform", metric: "platform_pharus_users" },
+  { re: /indicadores temporais/, page: "temporal", metric: "temporal_financial_updates" },
+];
+
+const RELATED_FOLLOWUPS = [
+  {
+    from: ["renewed_clients", "renewal_rate", "total_renewals"],
+    re: /nao renovad|nao renovaram|ciclo 1|primeiro ciclo/,
+    to: "non_renewed_clients",
+  },
+  {
+    from: ["non_renewed_clients"],
+    re: /renovaram|renovados|ciclo maior/,
+    to: "renewed_clients",
+  },
+  {
+    from: [
+      "nps_official_coverage",
+      "nps_official_index",
+      "nps_official_promoters",
+      "nps_official_passives",
+      "nps_official_detractors",
+    ],
+    re: /responderam|respostas/,
+    to: "nps_official_responses",
+  },
+  {
+    from: ["nps_official_responses", "nps_official_coverage", "nps_official_index"],
+    re: /promotores/,
+    to: "nps_official_promoters",
+  },
+];
+
+/** Status de auditoria para métricas já existentes (não sobrescreve status explícito). */
+const STATUS_OVERRIDES = {
+  average_days_to_first_meeting: "needs_business_validation",
+  average_days_to_plan_delivery: "partial",
+  top_meeting_types: "needs_business_validation",
+  combined_people_with_mechanisms: "partial",
+  typical_days_in_cancellation_process: "needs_business_validation",
+  pharus_users_with_suggestions: "partial",
+  pharus_total_suggestions: "partial",
+  pharus_top_suggested_mechanism: "partial",
+  total_meeting_reschedules: "partial",
+  ep_pharus_meetings: "partial",
+};
+
+function inferExecutionKind(m) {
+  if (m.executionKind) return m.executionKind;
+  if (m.derivedMetric || m.domain === "statistical_crosses") return "derived";
+  if (m.status === "legacy") return "knowledge_only";
+  if (LIVE_QUERY_DOMAINS.includes(m.domain) && m.executor) return "live";
+  if (m.executor) return "dashboard_payload";
+  return "pending";
+}
+
+function enrichCatalogEntries(catalog) {
+  for (const m of Object.values(catalog)) {
+    if (!m.page) m.page = DOMAIN_PAGE[m.domain] || m.domain;
+    if (!m.status) m.status = STATUS_OVERRIDES[m.id] || METRIC_STATUS.confirmed;
+    m.executionKind = inferExecutionKind(m);
+    if (m.realtime == null) m.realtime = m.executionKind === "live";
+    if (!Array.isArray(m.limitations)) m.limitations = m.caveats ? [...m.caveats] : [];
+    if (m.derivedMetric || m.executionKind === "derived") {
+      const note = "Métrica derivada — não é coluna física do banco.";
+      if (!m.limitations.includes(note)) m.limitations.push(note);
+    }
+    m.officialForChatbot = m.status === "confirmed" || m.status === "partial";
+    if (!Array.isArray(m.aliases)) m.aliases = [];
+    if (!Array.isArray(m.questions)) m.questions = [];
+  }
+}
+
+enrichCatalogEntries(portalMetricCatalog);
+
 export function getMetricDef(id) {
-  return portalMetricCatalog[id] || null;
+  const canonical = resolveCanonicalMetricId(id);
+  return portalMetricCatalog[canonical] || portalMetricCatalog[id] || null;
 }
 
 export function listMetricsForPlanner() {
   return Object.values(portalMetricCatalog).map((m) => ({
     id: m.id,
     domain: m.domain,
+    page: m.page,
     label: m.label,
     aliases: m.aliases,
+    questions: m.questions,
     aggregation: m.aggregation,
     allowedAggregations: m.allowedAggregations,
     unit: m.unit,
     description: m.description,
     formula: m.formula,
     supportedFilters: m.supportedFilters,
+    status: m.status,
+    executionKind: m.executionKind,
+    officialForChatbot: m.officialForChatbot,
+    derivedMetric: Boolean(m.derivedMetric),
   }));
+}
+
+/** Recorte curto para fallback de planejamento — nunca enviar o catálogo inteiro ao Gemini. */
+export function listMetricsForPlannerSlice({ currentPage = null, lastMetric = null, limit = 24 } = {}) {
+  const page = normalizePortalPage(currentPage);
+  const items = [];
+  const seen = new Set();
+  const push = (m) => {
+    if (!m || seen.has(m.id) || items.length >= limit) return;
+    seen.add(m.id);
+    items.push({
+      id: m.id,
+      domain: m.domain,
+      page: m.page,
+      label: m.label,
+      aliases: (m.aliases || []).slice(0, 6),
+      aggregation: m.aggregation,
+      executionKind: m.executionKind,
+      status: m.status,
+    });
+  };
+  if (lastMetric) push(getMetricDef(lastMetric));
+  if (page) {
+    for (const m of Object.values(portalMetricCatalog)) {
+      if (m.page === page || m.domain === page || DOMAIN_PAGE[m.domain] === page) push(m);
+    }
+  }
+  return items;
 }
 
 export function buildMetricDefinitionText(metricId) {
   const m = getMetricDef(metricId);
   if (!m) return null;
+  const statusNote = m.status === "needs_business_validation"
+    ? "Há regra ainda não unificada entre telas ou catálogos; não tratar este indicador como verdade oficial única."
+    : m.status === "legacy"
+      ? "Indicador legado/desabilitado; não faz parte do fluxo principal."
+      : null;
+  const derivedNote = m.derivedMetric || m.executionKind === "derived"
+    ? "É um cálculo derivado, não uma coluna física do banco."
+    : null;
   const parts = [
     m.description,
     m.formula ? `Cálculo: ${m.formula}` : null,
@@ -2459,21 +3623,44 @@ export function buildMetricDefinitionText(metricId) {
     m.inclusionRules?.length ? `Entram: ${m.inclusionRules.join("; ")}.` : null,
     m.exclusionRules?.length ? `Não entram: ${m.exclusionRules.join("; ")}.` : null,
     m.aggregation === "median"
-      ? "O valor típico usa a mediana porque sofre menos influência de casos extremos."
+      ? "O valor típico usa a mediana porque sofre menos influência de casos extremos. O rótulo da UI pode dizer “média” mesmo quando o número principal é a mediana."
       : m.aggregation === "average"
         ? (m.domain === "journey"
-          ? "A página Jornada exibe a média aritmética deste indicador."
+          ? "Na página Jornada os campos average* do payload são medianas da coorte, não média aritmética."
           : "A média aritmética é o valor complementar exibido junto à mediana na página.")
         : null,
+    derivedNote,
+    statusNote,
+    m.limitations?.length ? `Limitações: ${m.limitations.join(" ")}` : null,
   ].filter(Boolean);
   return parts.join(" ");
 }
 
+function formatCatalogSource(source) {
+  if (!source) return null;
+  const path = [source.schema, source.table, source.column].filter(Boolean).join(".");
+  if (source.origin || source.system) {
+    return `${source.origin || source.system}${path ? ` · ${path}` : ""}`;
+  }
+  if (source.schema === "research") return `research · ${path}`;
+  if (/calendly/i.test(String(source.table || "")) || /calendly/i.test(String(source.column || ""))) {
+    return `Calendly / Business Data · ${path}`;
+  }
+  if (source.schema === "public" || source.schema === SUPABASE) return `BASE QV · ${path}`;
+  return path || null;
+}
+
 export function buildMetricLocationText(metricId) {
   const m = getMetricDef(metricId);
-  if (!m?.sources?.length) return null;
-  const locs = m.sources.map((s) => `${s.schema}.${s.table}.${s.column}`).join("; ");
-  return `Os dados vêm de ${locs}.`;
+  if (!m) return null;
+  const pageLabel = PAGE_LABELS[m.page] || m.page || null;
+  const section = m.section ? `, seção ${m.section}` : "";
+  const screen = pageLabel
+    ? `O indicador "${m.label}" aparece na tela ${pageLabel}${section}.`
+    : `O indicador "${m.label}" está catalogado no portal.`;
+  const locs = (m.sources || []).map(formatCatalogSource).filter(Boolean);
+  const sourceBit = locs.length ? ` Os dados vêm de ${locs.join("; ")}.` : "";
+  return `${screen}${sourceBit}`.trim();
 }
 
 /**
@@ -2495,13 +3682,13 @@ export function detectSemanticIntent(question, conversationContext = {}) {
     return conversationContext.last_metric ? "value" : "value";
   }
 
-  if (/\bonde\b|qual (schema|tabela|coluna)|em qual tabela|onde fica|onde esta|de onde vem|qual a fonte/.test(n)) {
+  if (/\bonde\b|em qual tela|qual (schema|tabela|coluna)|em qual tabela|onde fica|onde esta|de onde vem|qual a fonte/.test(n)) {
     return "location";
   }
-  if (/como (sao|e|estão|estão) contabiliz|como (sao|e) contad|o que significa|o que (e|é) considerad|como funciona a contagem|como se conta|definicao|definição|como (sao|e) classificados/.test(n)) {
+  if (/o que (e|eh|sao|significa)\b|o que (e|é) considerad|definicao|definição|como (sao|e|estão) contabiliz|como (sao|e) contad|como funciona a contagem|como se conta|como (sao|e) classificados/.test(n)) {
     return "definition";
   }
-  if (/como e calcul|como calcul|qual (e )?a regra|qual (e )?a formula|quais registros (entram|sao excluidos)|por que (usa|usa-se) (media|mediana)/.test(n)) {
+  if (/como e calcul|como calcul|como funciona\b|qual (e )?a regra|qual (e )?a formula|quais registros (entram|sao excluidos)|por que (usa|usa-se) (media|mediana)/.test(n)) {
     return "formula";
   }
   if (/media e (a )?mediana|mediana e (a )?media|ambas|compar(ar|e) media/.test(n)) {
@@ -2554,7 +3741,7 @@ export function resolveMetricFromQuestion(question, conversationContext = {}, pr
   const scored = [];
   for (const m of Object.values(portalMetricCatalog)) {
     let score = 0;
-    for (const alias of m.aliases || []) {
+    for (const alias of metricMatchPhrases(m)) {
       const a = normalize(alias);
       if (!a) continue;
       if (n === a || n.includes(a)) {
@@ -2670,6 +3857,14 @@ export function normalizePortalPage(page) {
     "analises-estatisticas": "statistical_crosses",
     analises: "statistical_crosses",
     quality: "quality",
+    renewal: "renewal",
+    renovacao: "renewal",
+    satisfaction: "satisfaction",
+    satisfacao: "satisfaction",
+    temporal: "temporal",
+    "indicadores-temporais": "temporal",
+    engagement: "engagement",
+    engajamento: "engagement",
   };
   return map[p] || p || null;
 }
@@ -2681,10 +3876,18 @@ export function pageToCatalogDomain(page) {
 function stripQuestionPrefix(n) {
   return n
     .replace(/^(me diga |informe |quero saber |pode me dizer )/, "")
+    .replace(/^(o que (e|eh|significa|sao) )/, "")
+    .replace(/^(onde (vejo|encontro|fica|esta) )/, "")
+    .replace(/^(em qual tela (vejo|encontro) )/, "")
+    .replace(/^(como (e|eh|sao) calculad[oa]s? |como calculam |como funciona )/, "")
     .replace(/^(qual( e| eh)? (a|o|as|os)? |quais (sao |as |os )?)/, "")
     .replace(/^(quantos? |quantas? |quanto e |quanto )/, "")
     .replace(/^(o |a |os |as )/, "")
     .trim();
+}
+
+function metricMatchPhrases(m) {
+  return [...(m.aliases || []), ...(m.questions || [])].filter(Boolean);
 }
 
 /**
@@ -2697,7 +3900,7 @@ export function matchMetricDeterministically(question, currentPage = null) {
   const hits = [];
 
   for (const m of Object.values(portalMetricCatalog)) {
-    for (const alias of m.aliases || []) {
+    for (const alias of metricMatchPhrases(m)) {
       const a = normalize(alias);
       if (!a || a.length < 4) continue;
 
@@ -2809,6 +4012,105 @@ export function matchMetricDeterministically(question, currentPage = null) {
   };
 }
 
+function resolveRelatedFollowUp(n, lastMetric) {
+  if (!lastMetric) return null;
+  for (const pair of RELATED_FOLLOWUPS) {
+    if (pair.from.includes(lastMetric) && pair.re.test(n)) return pair.to;
+  }
+  return null;
+}
+
+function isVagueStandaloneQuestion(n) {
+  return /^(qual a media|qual e a media|qual o total|qual e o total|como esta isso|como esta|e agora|e esse indicador)\??$/.test(n);
+}
+
+function metricsOnPage(page) {
+  const pageKey = normalizePortalPage(page);
+  if (!pageKey) return [];
+  return Object.values(portalMetricCatalog).filter((m) =>
+    m.page === pageKey || DOMAIN_PAGE[m.domain] === pageKey || m.domain === pageKey,
+  );
+}
+
+function listVagueCandidates(n, page) {
+  const onPage = metricsOnPage(page).filter((m) => m.status !== "legacy");
+  const wantAvg = /\bmedia\b/.test(n);
+  const wantTotal = /\btotal\b/.test(n);
+  if (wantAvg) {
+    return onPage.filter((m) =>
+      m.aggregation === "average"
+      || m.aggregation === "median"
+      || /media|mediana|típico|tipico/i.test(m.label),
+    );
+  }
+  if (wantTotal) {
+    return onPage.filter((m) =>
+      m.aggregation === "count" && /total|quantidade/i.test(`${m.label} ${(m.aliases || []).join(" ")}`),
+    );
+  }
+  return onPage.filter((m) => m.status === "confirmed" || m.status === "partial").slice(0, 6);
+}
+
+function clarificationPlan({ domain, message, options = [], conversationContext, confidence = 0.4 }) {
+  const labels = options.map((o) => (typeof o === "string" ? o : o.label)).filter(Boolean);
+  const clarification = message || (labels.length
+    ? `Qual indicador você quer consultar? ${labels.join("; ")}.`
+    : "Não identifiquei o indicador com segurança. Pode citar o nome do card ou a tela?");
+  return {
+    intent: "clarification",
+    domain: domain || null,
+    metric: null,
+    aggregation: null,
+    filters: {},
+    use_realtime_query: false,
+    use_metric_definition: false,
+    clarification,
+    confidence,
+    match_source: "ambiguity",
+    options: options.map((o) => (typeof o === "string" ? { label: o } : o)),
+    conversation_context: conversationContext,
+  };
+}
+
+function planFromMetricId(metricId, { intent, conversationContext, portalContext, n, confidence, matchSource }) {
+  const def = getMetricDef(metricId);
+  let nextIntent = intent;
+  let aggregation = def?.aggregation || null;
+  if (nextIntent === "average") aggregation = "average";
+  if (nextIntent === "median") aggregation = "median";
+  if (nextIntent === "comparison") aggregation = "comparison";
+  if (nextIntent === "value" && def) aggregation = def.aggregation;
+  if (/\btipic/.test(n || "")) {
+    aggregation = "median";
+    if (nextIntent === "value" || nextIntent === "average") nextIntent = "median";
+  }
+  const needsValue = ["value", "average", "median", "comparison", "mixed"].includes(nextIntent);
+  const needsDefinition = ["definition", "formula", "location"].includes(nextIntent);
+  return {
+    intent: nextIntent,
+    domain: def?.domain || null,
+    metric: metricId,
+    aggregation,
+    filters: {},
+    use_realtime_query: needsValue && confidence >= 0.8,
+    use_metric_definition: needsDefinition || nextIntent === "mixed",
+    clarification: null,
+    confidence,
+    match_source: matchSource,
+    resolved_metric: metricId
+      ? { domain: def?.domain || null, metric: metricId, label: def?.label || null }
+      : null,
+    conversation_context: {
+      last_domain: def?.domain || conversationContext.last_domain || null,
+      last_metric: metricId || conversationContext.last_metric || null,
+      last_filters: conversationContext.last_filters || {},
+      last_intent: nextIntent,
+      last_aggregation: aggregation || conversationContext.last_aggregation || null,
+      current_page: portalContext?.current_page || conversationContext.current_page || null,
+    },
+  };
+}
+
 /**
  * Planejador semântico local (fonte confiável; Gemini só sugere).
  */
@@ -2821,6 +4123,67 @@ export function planSemanticQuery(question, conversationContext = {}, portalCont
     || conversationContext?.last_domain
     || null,
   );
+
+  const relatedId = resolveRelatedFollowUp(n, conversationContext.last_metric);
+  if (relatedId) {
+    const relatedIntent = ["definition", "formula", "location"].includes(intent) ? intent : "value";
+    return planFromMetricId(relatedId, {
+      intent: relatedIntent,
+      conversationContext,
+      portalContext,
+      n,
+      confidence: 0.95,
+      matchSource: "conversation_followup",
+    });
+  }
+
+  if (isVagueStandaloneQuestion(n)) {
+    if (conversationContext.last_metric && !/\btotal\b/.test(n)) {
+      return planFromMetricId(conversationContext.last_metric, {
+        intent: /\bmedia\b/.test(n) ? "average" : intent === "general" ? "value" : intent,
+        conversationContext,
+        portalContext,
+        n,
+        confidence: 0.92,
+        matchSource: "conversation_context",
+      });
+    }
+    const page = portalContext?.current_page || conversationContext.current_page || null;
+    const candidates = listVagueCandidates(n, page);
+    if (candidates.length === 1) {
+      return planFromMetricId(candidates[0].id, {
+        intent: /\bmedia\b/.test(n) ? "average" : (/\btotal\b/.test(n) ? "value" : intent),
+        conversationContext,
+        portalContext,
+        n,
+        confidence: 0.86,
+        matchSource: "page_disambiguation",
+      });
+    }
+    return clarificationPlan({
+      domain: pageToCatalogDomain(page),
+      message: candidates.length
+        ? `Qual indicador você quer consultar? ${candidates.slice(0, 4).map((m) => m.label).join("; ")}.`
+        : "Essa pergunta está genérica. Pode citar o indicador ou o card da tela?",
+      options: candidates.slice(0, 4).map((m) => ({ metric: m.id, label: m.label, domain: m.domain })),
+      conversationContext,
+    });
+  }
+
+  if (intent === "location") {
+    const pageHint = PAGE_LOCATION_HINTS.find((h) => h.re.test(n));
+    const hasSpecificCard = /indicador|card|kpi|taxa|media|mediana|total de/.test(n);
+    if (pageHint && !hasSpecificCard) {
+      return planFromMetricId(pageHint.metric, {
+        intent: "location",
+        conversationContext,
+        portalContext,
+        n,
+        confidence: 0.93,
+        matchSource: "page_location",
+      });
+    }
+  }
 
   // 0) Follow-ups curtos de regra/fonte usam last_metric antes do matching
   const shortRuleFollowUp = /^(como e calculad[oa]\??|como calculad[oa]\??|qual a regra\??|qual e a regra\??|e a regra\??|a regra\??|qual a formula\??|e a formula\??|onde (esta|fica)( esse dado)?\??|e a fonte\??|qual a fonte\??)$/.test(n);
@@ -2997,30 +4360,23 @@ export function planSemanticQuery(question, conversationContext = {}, portalCont
 
   const needsValue = ["value", "average", "median", "comparison", "mixed"].includes(intent);
   const needsDefinition = ["definition", "formula", "location"].includes(intent);
-
-  // Never execute realtime for pure definition/formula/location
-  const useRealtime = needsValue && confidence >= 0.8;
   const useDefinition = needsDefinition || intent === "mixed";
+  const finalConfidence = resolved.source?.startsWith("deterministic") || resolved.fromContext ? 1 : confidence;
 
-  if (confidence < 0.8 && !resolved.fromContext && needsValue && !metricId) {
-    return {
-      intent: "clarification",
+  if (needsValue && finalConfidence < 0.8 && !resolved.fromContext) {
+    return clarificationPlan({
       domain,
-      metric: null,
-      aggregation: null,
-      filters: {},
-      use_realtime_query: false,
-      use_metric_definition: false,
-      clarification: det?.clarification
-        || "Não identifiquei o indicador. Pode citar o nome do card (ex.: renda mensal típica, total de clientes)?",
-      confidence,
-      conversation_context: conversationContext,
-    };
+      message: def
+        ? `Não identifiquei o indicador com segurança. Você quis dizer ${def.label}?`
+        : (det?.clarification
+          || "Não identifiquei o indicador. Pode citar o nome do card (ex.: renda mensal típica, total de clientes)?"),
+      options: def ? [{ metric: metricId, label: def.label, domain: domain || def.domain }] : [],
+      conversationContext,
+      confidence: finalConfidence,
+    });
   }
 
-  // Determinístico ou alta confiança → sempre executar valor
-  const finalConfidence = resolved.source?.startsWith("deterministic") ? 1 : confidence;
-  const useRealtimeFinal = needsValue && (finalConfidence >= 0.8 || Boolean(metricId && def));
+  const useRealtimeFinal = needsValue && finalConfidence >= 0.8;
 
   const filters = {};
   if (domain === "support" || def?.domain === "support" || /acionamento|chamado|solicitac/.test(n)) {
@@ -3122,7 +4478,17 @@ export function validateSemanticQueryPlan(queryPlan, options = {}) {
         && plan.aggregation !== "comparison") {
         errors.push(`Agregação "${plan.aggregation}" não permitida para ${plan.metric}.`);
       }
-      if (!def.executor) errors.push(`Executor indisponível para ${plan.metric}.`);
+      const needsExecutor = ["value", "average", "median", "comparison"].includes(intent)
+        && ["live", "dashboard_payload", "derived"].includes(def.executionKind);
+      if (needsExecutor && !def.executor) {
+        errors.push(`Executor indisponível para ${plan.metric}.`);
+      } else if (["value", "average", "median", "comparison"].includes(intent)
+        && (def.executionKind === "knowledge_only" || def.executionKind === "pending")) {
+        warnings.push(`Métrica ${plan.metric} não tem consulta de valor confiável (${def.executionKind}).`);
+      }
+      if (def.status === "needs_business_validation") {
+        warnings.push(`Métrica ${plan.metric} exige validação de negócio; não apresentar como verdade oficial única.`);
+      }
       const filters = plan.filters || {};
       for (const key of Object.keys(filters)) {
         if (def.supportedFilters?.length && !def.supportedFilters.includes(key)) {

@@ -81,3 +81,8 @@
   from = "/api/assistant-data"
   to = "/.netlify/functions/assistant-data"
   status = 200
+
+[[redirects]]
+  from = "/api/ai-analysis"
+  to = "/.netlify/functions/ai-analysis"
+  status = 200

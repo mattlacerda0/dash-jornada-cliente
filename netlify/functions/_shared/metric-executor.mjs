@@ -6,6 +6,8 @@ import {
   getMetricDef,
   buildMetricDefinitionText,
   buildMetricLocationText,
+  resolveCanonicalMetricId,
+  VALUE_UNAVAILABLE_ASSISTANT_MESSAGE,
 } from "./portal-metric-catalog.mjs";
 import {
   getRegistryMetric,
@@ -29,8 +31,10 @@ function formatUnit(unit, value) {
  * executeMetricQuery(queryPlan)
  * definition/formula/location → texto; value/average/median/comparison → registry.
  */
+const NBV_NO_OFFICIAL_EXECUTOR = new Set(["satisfaction_nps_index", "sc_lift"]);
+
 export async function executeMetricQuery(queryPlan, options = {}) {
-  const metricId = queryPlan.metric;
+  const metricId = resolveCanonicalMetricId(queryPlan.metric);
   const intent = queryPlan.intent || "value";
   const registryEntry = getRegistryMetric(metricId);
   const catalogDef = getMetricDef(metricId);
@@ -64,6 +68,24 @@ export async function executeMetricQuery(queryPlan, options = {}) {
     return base;
   }
 
+  if (queryPlan.metric && !catalogDef) {
+    base.success = false;
+    base.warnings.push("Métrica desconhecida; execução arbitrária não é permitida.");
+    return base;
+  }
+
+  if (NBV_NO_OFFICIAL_EXECUTOR.has(metricId) && ["value", "average", "median", "comparison"].includes(intent)) {
+    base.success = false;
+    base.warnings.push("Indicador exige validação de negócio e não possui executor oficial.");
+    base.definition_text = buildMetricDefinitionText(metricId);
+    base.location_text = buildMetricLocationText(metricId);
+    return base;
+  }
+
+  if (catalogDef?.status === "needs_business_validation") {
+    base.warnings.push("Regra ainda não unificada; o valor segue a implementação atual, sem promover uma verdade oficial única.");
+  }
+
   if (intent === "definition" || intent === "formula") {
     base.definition_text =
       registryEntry?.definition
@@ -74,6 +96,9 @@ export async function executeMetricQuery(queryPlan, options = {}) {
     }
     if (registryEntry?.exclusionRules?.length) {
       base.definition_text += ` Não entram: ${registryEntry.exclusionRules.join("; ")}.`;
+    }
+    if (catalogDef?.status === "needs_business_validation") {
+      base.definition_text += " Há regra em validação; não tratar este texto como verdade oficial única entre telas.";
     }
     base.use_metric_definition = true;
     base.realtime_database = false;
@@ -90,11 +115,25 @@ export async function executeMetricQuery(queryPlan, options = {}) {
     return base;
   }
 
+  const kind = catalogDef?.executionKind;
+  if (kind === "pending" || kind === "knowledge_only") {
+    base.success = false;
+    base.definition_text = [
+      buildMetricDefinitionText(metricId),
+      VALUE_UNAVAILABLE_ASSISTANT_MESSAGE,
+    ].filter(Boolean).join(" ");
+    base.location_text = buildMetricLocationText(metricId);
+    base.warnings.push(`Métrica ${metricId} sem executor de valor (${kind}).`);
+    return base;
+  }
+
   if (!registryEntry) {
     base.success = false;
     base.warnings.push("Indicador não mapeado no registry do dashboard.");
-    base.definition_text =
-      "Ainda não tenho esse indicador mapeado com segurança. Pode especificar qual card ou página você está consultando?";
+    base.definition_text = [
+      buildMetricDefinitionText(metricId),
+      VALUE_UNAVAILABLE_ASSISTANT_MESSAGE,
+    ].filter(Boolean).join(" ");
     return base;
   }
 
@@ -128,8 +167,9 @@ export async function executeMetricQuery(queryPlan, options = {}) {
     base.value_detail = resolved.value_detail;
     base.sample_size = resolved.sample_size;
     base.unit = resolved.unit;
-    base.definition_text = resolved.definition;
-    base.realtime_database = true;
+    base.definition_text = catalogDef?.description || resolved.definition;
+    base.sources = catalogDef?.sources || resolved.sources || [];
+    base.realtime_database = resolved.value != null;
     base.payload_path = resolved.payload_path;
     return base;
   } catch (err) {
@@ -240,6 +280,40 @@ export function verbalizeMetricResult(queryPlan, result) {
     return `${article} ${labelTxt.toLowerCase()} é de ${withUnit(result.value)}.`;
   }
   return `${label}: ${withUnit(result.value)}.`;
+}
+
+const APPROX_RE = /\b(aproximadamente|cerca de|quase|em torno de|por volta de|mais ou menos)\b/i;
+
+export function officialNumberVariants(value) {
+  if (value == null || typeof value !== "number" || Number.isNaN(value)) return [];
+  return [...new Set([
+    String(value),
+    String(Math.round(value * 100) / 100),
+    value.toLocaleString("pt-BR"),
+    value.toLocaleString("pt-BR", { maximumFractionDigits: 2 }),
+    value.toLocaleString("pt-BR", { maximumFractionDigits: 0 }),
+  ])];
+}
+
+export function geminiAlteredOfficialNumber(answer, result) {
+  const text = String(answer || "");
+  if (!text.trim()) return true;
+  if (APPROX_RE.test(text)) return true;
+  const values = [];
+  if (typeof result?.value === "number") values.push(result.value);
+  if (typeof result?.average === "number") values.push(result.average);
+  if (typeof result?.median === "number") values.push(result.median);
+  if (typeof result?.value?.median === "number") values.push(result.value.median);
+  if (typeof result?.value?.average === "number") values.push(result.value.average);
+  if (!values.length) return false;
+  return values.some((v) => !officialNumberVariants(v).some((variant) => text.includes(variant)));
+}
+
+export function sanitizeVerbalizedAnswer(answer, result, fallback) {
+  const text = String(answer || "").trim();
+  if (!text) return fallback;
+  if (geminiAlteredOfficialNumber(text, result)) return fallback;
+  return text;
 }
 
 export { formatUnit };

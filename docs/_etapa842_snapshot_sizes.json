@@ -1,0 +1,198 @@
+{
+  "general": {
+    "previous": 3774,
+    "snapshot": 2957,
+    "full": 6791,
+    "reduction": 21.6,
+    "scope": {
+      "type": "active_clients",
+      "label": "Clientes ativos",
+      "source": "page_default",
+      "count": 1807
+    },
+    "highlights": {
+      "active_clients": 1807,
+      "total_clients": 3416,
+      "active_share": 52.9,
+      "median_tenure_days": 172,
+      "median_income": 35000,
+      "median_liquid_reserve": 140000,
+      "median_last_contribution": 5000,
+      "financial_coverage": 92.6
+    },
+    "timing": {
+      "compute_payload": null,
+      "snapshot": 5,
+      "engine": 1
+    }
+  },
+  "meetings": {
+    "previous": 5042,
+    "snapshot": 2855,
+    "full": 7957,
+    "reduction": 43.4,
+    "scope": {
+      "type": "active_clients",
+      "label": "Clientes ativos",
+      "source": "page_default",
+      "count": 1807
+    },
+    "highlights": {
+      "scoped_clients": 1807,
+      "clients_with_meeting": 1267,
+      "meeting_coverage_rate": 70.1,
+      "attendance_rate": 76.5,
+      "no_show_rate": 23.5,
+      "typical_days_since_last_meeting": 32,
+      "typical_interval_days": 25,
+      "never_met": 540,
+      "long_gap": 188,
+      "official_recency_bands_days": [
+        30,
+        31,
+        60,
+        61,
+        90,
+        91,
+        180
+      ]
+    },
+    "timing": {
+      "compute_payload": null,
+      "snapshot": 4,
+      "engine": 1
+    }
+  },
+  "statistical-crosses": {
+    "previous": 10250,
+    "snapshot": 4264,
+    "full": 14575,
+    "reduction": 58.4,
+    "scope": {
+      "type": "methodological",
+      "label": "População metodológica oficial",
+      "source": "methodological",
+      "count": 2298
+    },
+    "highlights": {
+      "analyzed_clients": 2298,
+      "active_clients": 1807,
+      "confirmed_cancellations": 491,
+      "top_association": {
+        "id": "daysToFirstMeeting",
+        "label": "Dias até primeira reunião",
+        "value": 0.4856,
+        "abs": 0.4856,
+        "coverage": 43.7,
+        "sample": 1005
+      },
+      "top_associations": [
+        {
+          "id": "daysToFirstMeeting",
+          "label": "Dias até primeira reunião",
+          "value": 0.4856,
+          "abs": 0.4856,
+          "coverage": 43.7,
+          "sample": 1005
+        },
+        {
+          "id": "hasMeeting",
+          "label": "Possui reunião",
+          "value": 0.4046,
+          "abs": 0.4046,
+          "coverage": 100,
+          "sample": 2298
+        },
+        {
+          "id": "engineer",
+          "label": "Engenheiro Patrimonial",
+          "value": 0.4005,
+          "abs": 0.4005,
+          "coverage": 97.6,
+          "sample": 2298
+        }
+      ],
+      "top_auc": {
+        "id": "daysToFirstMeeting",
+        "label": "Dias até primeira reunião",
+        "auc": 0.8642,
+        "coverage": 43.7,
+        "sample": 1005
+      },
+      "top_aucs": [
+        {
+          "id": "daysToFirstMeeting",
+          "label": "Dias até primeira reunião",
+          "auc": 0.8642,
+          "coverage": 43.7,
+          "sample": 1005
+        },
+        {
+          "id": "meetingsPerMonth",
+          "label": "Reuniões por mês de permanência",
+          "auc": 0.7969,
+          "coverage": 99.5,
+          "sample": 2287
+        },
+        {
+          "id": "meetingCount",
+          "label": "Total de reuniões",
+          "auc": 0.7867,
+          "coverage": 100,
+          "sample": 2298
+        }
+      ],
+      "top_group_difference": {
+        "id": "daysToFirstMeeting",
+        "label": "Dias até primeira reunião",
+        "stdDiff": 2.9462,
+        "coverage": 43.7,
+        "sample": 1005
+      },
+      "top_group_differences": [
+        {
+          "id": "daysToFirstMeeting",
+          "label": "Dias até primeira reunião",
+          "stdDiff": 2.9462,
+          "coverage": 43.7,
+          "sample": 1005
+        },
+        {
+          "id": "implementationPercent",
+          "label": "Percentual implementado",
+          "stdDiff": -2.0935,
+          "coverage": 5.5,
+          "sample": 127
+        },
+        {
+          "id": "stayDays",
+          "label": "Permanência (dias)",
+          "stdDiff": 1.3882,
+          "coverage": 99.5,
+          "sample": 2287
+        }
+      ],
+      "survival": {
+        "median_survival": 430,
+        "log_rank_p": 0.8499
+      },
+      "cohort": {
+        "age": 12,
+        "mean_retention_pct": 76.71,
+        "delta_pp": -16.971,
+        "cohort_count": 20,
+        "granularity": "month"
+      },
+      "nps": {
+        "index": 64.8,
+        "responses": 273,
+        "coverage": 11.9
+      }
+    },
+    "timing": {
+      "compute_payload": null,
+      "snapshot": 1,
+      "engine": 2
+    }
+  }
+}

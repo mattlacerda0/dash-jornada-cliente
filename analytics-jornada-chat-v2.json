@@ -1,0 +1,169 @@
+{
+  "name": "analytics-jornada-chat-v2",
+  "description": "Proposta local Etapa 5: Gemini verbaliza query_result/metric_rule do portal. Sem catálogo hardcoded. NÃO publicado.",
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "analytics-jornada-chat-v2",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "148862e5-2513-49c1-83b1-6caedae47e63",
+      "name": "Webhook Chat",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [208, 528],
+      "webhookId": "analytics-jornada-chat-v2"
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $json.body ?? $json;\nconst pergunta = String(body.pergunta ?? body.message ?? body.chatInput ?? '').trim();\nif (!pergunta) throw new Error('Envie a pergunta no campo pergunta, message ou chatInput.');\nconst sessionId = String(body.session_id ?? body.sessionId ?? body.user_id ?? body.userId ?? `sessao-${Date.now()}`).trim();\nconst modeRaw = String(body.mode || 'answer').toLowerCase();\nconst mode = ['plan', 'answer', 'rule'].includes(modeRaw) ? modeRaw : 'answer';\nconst allowed = ['value', 'definition', 'formula', 'average', 'median', 'comparison', 'location', 'quality', 'mixed', 'clarification', 'general', 'rule'];\nconst intent = allowed.includes(body.intent) ? body.intent : (mode === 'rule' ? 'formula' : 'general');\nconst queryPlan = (body.query_plan && typeof body.query_plan === 'object') ? body.query_plan : null;\nconst queryResult = (body.query_result && typeof body.query_result === 'object') ? body.query_result : null;\nconst resolvedMetric = (body.resolved_metric && typeof body.resolved_metric === 'object') ? body.resolved_metric : null;\nconst portalContext = (body.portal_context && typeof body.portal_context === 'object')\n  ? body.portal_context\n  : (body.current_page ? { current_page: body.current_page } : null);\nconst conversationContext = (body.conversation_context && typeof body.conversation_context === 'object')\n  ? {\n      last_domain: body.conversation_context.last_domain ?? null,\n      last_metric: body.conversation_context.last_metric ?? null,\n      last_filters: body.conversation_context.last_filters || {},\n      last_intent: body.conversation_context.last_intent ?? null,\n      last_aggregation: body.conversation_context.last_aggregation ?? null,\n      current_page: body.conversation_context.current_page ?? portalContext?.current_page ?? null,\n    }\n  : { last_domain: null, last_metric: null, last_filters: {}, last_intent: null, last_aggregation: null, current_page: portalContext?.current_page ?? null };\nconst metricRule = typeof body.metric_rule === 'string' ? body.metric_rule : null;\nreturn [{ json: {\n  mode,\n  pergunta,\n  session_id: sessionId,\n  sessionId,\n  intent,\n  query_plan: queryPlan,\n  query_result: queryResult,\n  resolved_metric: resolvedMetric,\n  portal_context: portalContext,\n  current_page: portalContext?.current_page ?? body.current_page ?? null,\n  conversation_context: conversationContext,\n  metric_rule: metricRule,\n  usuario: { nome: body.user_name ?? body.userName ?? null, email: body.user_email ?? body.userEmail ?? null },\n  origem: body.origem ?? 'portal-analytics-jornada',\n  recebido_em: new Date().toISOString()\n} }];"
+      },
+      "id": "5e63b28d-14a5-4df2-b741-b6ba3de1f606",
+      "name": "Validar e Normalizar Entrada",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [448, 528]
+    },
+    {
+      "parameters": {
+        "jsCode": "const instrucoes = `Você é o assistente do portal Analytics QuartaVia.\\n\\nO backend já resolveu a pergunta e envia neste payload: métrica, intenção, definição oficial, resultado numérico, fontes, avisos e contexto da conversa/página.\\n\\nRegras absolutas:\\n- Nunca invente métricas, valores, tabelas, SQL ou regras de negócio.\\n- Nunca use um catálogo interno de indicadores: a fonte oficial é o backend.\\n- Se query_result.value existir, verbalize exatamente esse número. Proibido aproximadamente, cerca de, arredondar ou recalcular.\\n- Em mode=rule, use somente metric_rule, definition_text e location_text.\\n- Em mode=plan, devolva SOMENTE JSON com query_plan ou clarification. Nunca use total_clients como fallback. Se confidence < 0.8, peça esclarecimento com opções.\\n- Em ambiguidade, peça esclarecimento.\\n- Português do Brasil, texto simples, sem Markdown.`;\nreturn [{ json: { ...$json, instrucoes } }];"
+      },
+      "id": "d8689da7-e655-4831-b355-52acc5b55e02",
+      "name": "Instruções do Assistente",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [688, 528]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ (() => { const j = $json; const ctx = 'CONTEXTO CONVERSACIONAL:\\n' + JSON.stringify(j.conversation_context) + '\\n\\nPAGINA ATUAL:\\n' + JSON.stringify(j.portal_context); if (j.mode === 'plan') { return 'MODO: PLAN\\nPERGUNTA:\\n' + j.pergunta + '\\n\\n' + ctx + '\\n\\nResponda SOMENTE com JSON valido, sem Markdown.'; } if (j.mode === 'rule') { return 'MODO: RULE\\nPERGUNTA:\\n' + j.pergunta + '\\n\\nINTENCAO:\\n' + j.intent + '\\n\\n' + ctx + '\\n\\nPLANO:\\n' + JSON.stringify(j.query_plan) + '\\n\\nREGRA OFICIAL DO BACKEND:\\n' + (j.metric_rule || 'null') + '\\n\\nRESULTADO:\\n' + JSON.stringify(j.query_result); } return 'MODO: ANSWER\\nPERGUNTA:\\n' + j.pergunta + '\\n\\nINTENCAO:\\n' + j.intent + '\\n\\n' + ctx + '\\n\\nPLANO:\\n' + JSON.stringify(j.query_plan) + '\\n\\nRESULTADO OFICIAL DO BACKEND:\\n' + JSON.stringify(j.query_result); })() }}",
+        "options": {
+          "returnIntermediateSteps": false,
+          "systemMessage": "={{ (() => { const mode = $json.mode || 'answer'; const base = ($json.instrucoes || '') + '\\n'; if (mode === 'plan') { return base + 'Planejador de fallback. Devolva SOMENTE JSON {query_plan, clarification}. Nunca invente números nem SQL. Nunca use total_clients como fallback. confidence < 0.8 => clarification.'; } if (mode === 'rule') { return base + 'Explique somente definição, regra, fonte ou tela. Use exclusivamente o texto oficial do backend. NUNCA devolva só um número. Sem Markdown.'; } return base + 'O backend já calculou query_result. Apenas verbalize value/unit/label. PROIBIDO trocar, arredondar, estimar ou recalcular. Se value for null, diga que a consulta de valor ainda não está disponível. Sem Markdown.'; })() }}"
+        }
+      },
+      "id": "9adc1415-d5bc-444c-bd82-12a1f61ee3bc",
+      "name": "Agente Analytics Jornada",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [992, 528]
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-3.5-flash",
+        "options": { "temperature": 0.2 }
+      },
+      "id": "bd31e6b4-cd21-4b77-a0ea-82908f54185b",
+      "name": "Google Gemini Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [992, 688]
+    },
+    {
+      "parameters": {
+        "sessionKey": "={{ $('Validar e Normalizar Entrada').item.json.sessionId }}",
+        "contextWindowLength": 10,
+        "sessionIdType": "customKey"
+      },
+      "id": "42acc97b-5aa8-4980-8879-89ad25e939ca",
+      "name": "Memória da Conversa",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [1088, 768]
+    },
+    {
+      "parameters": {
+        "jsCode": "const original = $('Validar e Normalizar Entrada').item.json;\nconst agent = $json;\nconst mode = original.mode || 'answer';\nconst rawAnswer = agent.output ?? agent.text ?? agent.response ?? '';\nif (mode === 'plan') {\n  let parsed = null;\n  const text = String(rawAnswer || '');\n  const m = text.match(/\\{[\\s\\S]*\\}/);\n  if (m) { try { parsed = JSON.parse(m[0]); } catch (e) { parsed = null; } }\n  if (!parsed || typeof parsed !== 'object') {\n    return [{ json: { success: true, mode: 'plan', session_id: original.session_id ?? original.sessionId, query_plan: null, clarification: 'Não foi possível interpretar a consulta. Reformule a pergunta.', conversation_context: original.conversation_context || null, generated_at: new Date().toISOString() } }];\n  }\n  const plan = parsed.query_plan || (parsed.domain || parsed.metric ? parsed : null);\n  return [{ json: { success: true, mode: 'plan', session_id: original.session_id ?? original.sessionId, query_plan: plan, clarification: parsed.clarification ?? null, conversation_context: original.conversation_context || null, generated_at: new Date().toISOString() } }];\n}\nlet answer = String(rawAnswer || 'Não foi possível gerar uma resposta.').trim();\nconst qp = original.query_plan || {};\nconst qr = original.query_result || {};\nconst intent = original.intent || qp.intent || 'general';\nconst sources = Array.isArray(qr.sources) ? qr.sources : [];\nconst warnings = Array.isArray(qr.warnings) ? qr.warnings : [];\nconst filterLabels = Array.isArray(qr.filter_labels) ? qr.filter_labels : [];\nconst realtime = !!(qr && qr.realtime_database === true);\nconst onlyNumber = /^\\s*[\\d.,]+\\s*%?\\s*$/.test(answer);\nif ((intent === 'formula' || intent === 'definition' || intent === 'location' || mode === 'rule') && onlyNumber) {\n  const fallback = qr.definition_text || qr.location_text || original.metric_rule || 'Consulte a regra do indicador no catálogo do portal.';\n  return [{ json: { success: true, mode, session_id: original.session_id ?? original.sessionId, answer: fallback, intent, domain: qp.domain ?? qr.domain ?? null, metric: qp.metric ?? qr.metric ?? null, aggregation: qp.aggregation ?? qr.aggregation ?? null, value: null, sources, warnings, filter_labels: filterLabels, conversation_context: original.conversation_context || null, realtime_database: false, generated_at: new Date().toISOString() } }];\n}\nif (qr && qr.value != null && typeof qr.value === 'number') {\n  const variants = [String(qr.value), Number(qr.value).toLocaleString('pt-BR'), Number(qr.value).toLocaleString('pt-BR', { maximumFractionDigits: 2 })];\n  const hasOfficial = variants.some((v) => answer.includes(v));\n  const approx = /\\b(aproximadamente|cerca de|quase|em torno de|por volta de|mais ou menos)\\b/i.test(answer);\n  if (approx || !hasOfficial) {\n    const unit = qr.unit === 'clients' ? 'clientes' : qr.unit === 'percent' ? '%' : qr.unit === 'days' ? 'dias' : (qr.unit || '');\n    answer = `Temos ${qr.value} ${unit}`.trim() + '.';\n  }\n}\nreturn [{ json: { success: true, mode, session_id: original.session_id ?? original.sessionId, answer, intent, domain: qp.domain ?? qr.domain ?? null, metric: qp.metric ?? qr.metric ?? null, aggregation: qp.aggregation ?? qr.aggregation ?? null, value: qr.value ?? null, value_detail: qr.value_detail ?? null, sample_size: qr.sample_size ?? null, unit: qr.unit ?? null, filters: qr.filters ?? qp.filters ?? null, filter_labels: filterLabels, sources, warnings, conversation_context: original.conversation_context || null, realtime_database: realtime, generated_at: new Date().toISOString() } }];"
+      },
+      "id": "2c5ec1c9-2318-4261-aca1-3444cd279505",
+      "name": "Montar Resposta",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1280, 528]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {
+          "responseCode": 200,
+          "responseHeaders": {
+            "entries": [
+              { "name": "Content-Type", "value": "application/json; charset=utf-8" },
+              { "name": "Access-Control-Allow-Origin", "value": "*" }
+            ]
+          }
+        }
+      },
+      "id": "c969e86a-b1bf-4df6-ab45-68ec91eed486",
+      "name": "Responder ao Frontend",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [1520, 528]
+    },
+    {
+      "id": "051dde90-6f90-4097-aaaa-4ad424f6d727",
+      "name": "Consultar Métrica do Portal",
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.4,
+      "position": [900, 900],
+      "disabled": true,
+      "parameters": {
+        "toolDescription": "Ferramenta desabilitada. O backend já executa o registry e envia query_result. Não consultar números por conta própria.",
+        "method": "POST",
+        "url": "https://placeholder.invalid/api/assistant-data",
+        "sendHeaders": true,
+        "specifyHeaders": "keypair",
+        "headerParameters": {
+          "parameters": [{ "name": "Content-Type", "value": "application/json" }]
+        },
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ metric: $fromAI('metric', 'ID canônico do catálogo oficial', 'string'), filters: {} }) }}"
+      }
+    }
+  ],
+  "connections": {
+    "Webhook Chat": {
+      "main": [[{ "node": "Validar e Normalizar Entrada", "type": "main", "index": 0 }]]
+    },
+    "Validar e Normalizar Entrada": {
+      "main": [[{ "node": "Instruções do Assistente", "type": "main", "index": 0 }]]
+    },
+    "Instruções do Assistente": {
+      "main": [[{ "node": "Agente Analytics Jornada", "type": "main", "index": 0 }]]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [[{ "node": "Agente Analytics Jornada", "type": "ai_languageModel", "index": 0 }]]
+    },
+    "Memória da Conversa": {
+      "ai_memory": [[{ "node": "Agente Analytics Jornada", "type": "ai_memory", "index": 0 }]]
+    },
+    "Agente Analytics Jornada": {
+      "main": [[{ "node": "Montar Resposta", "type": "main", "index": 0 }]]
+    },
+    "Montar Resposta": {
+      "main": [[{ "node": "Responder ao Frontend", "type": "main", "index": 0 }]]
+    },
+    "Consultar Métrica do Portal": {
+      "ai_tool": [[{ "node": "Agente Analytics Jornada", "type": "ai_tool", "index": 0 }]]
+    }
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "etapa5Proposal": true,
+    "doNotPublishAutomatically": true
+  }
+}

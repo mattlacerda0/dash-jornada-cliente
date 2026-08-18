@@ -1,0 +1,200 @@
+{
+  "executive_snapshot": {
+    "page": "general",
+    "scope": {
+      "type": "active_clients",
+      "label": "Clientes ativos",
+      "source": "page_default",
+      "count": 1807
+    },
+    "generated_at": "2026-08-18T14:07:54.648Z",
+    "filters_applied": {},
+    "profile_version": "8.4.3",
+    "snapshot_version": "1.1",
+    "highlights": {
+      "active_clients": 1807,
+      "total_clients": 3416,
+      "active_share": 52.9,
+      "median_tenure_days": 172,
+      "median_income": 35000,
+      "median_liquid_reserve": 140000,
+      "median_last_contribution": 5000,
+      "financial_coverage": 92.6
+    },
+    "growth": {
+      "latest_month_acquisitions": 166,
+      "previous_month_acquisitions": 71,
+      "relative_change": 133.8,
+      "current_month": "2026-08",
+      "previous_month": "2026-07"
+    },
+    "coverage": {
+      "financial_coverage": 92.6
+    },
+    "data_quality": {
+      "cancelled_without_confirmed_date": 811,
+      "financial_coverage": 92.6
+    },
+    "comparisons": [
+      {
+        "metric": "latest_month_acquisitions",
+        "current": 166,
+        "previous": 71,
+        "absolute_change": 95,
+        "relative_change": 133.8,
+        "direction": "up",
+        "unit": "clients",
+        "period": {
+          "current": "2026-08",
+          "previous": "2026-07"
+        }
+      }
+    ],
+    "limitations": [
+      {
+        "code": "CANCELLED_WITHOUT_CONFIRMED_DATE",
+        "category": "data_quality",
+        "metric": "cancelled_without_confirmed_date",
+        "message": "811 registros marcados como cancelados sem data confirmada. Não descreve a carteira ativa.",
+        "value": 811
+      },
+      {
+        "code": "TECHNICAL",
+        "category": "technical",
+        "metric": "latest_month_acquisitions",
+        "message": "data_assinatura_contrato confirmada em vw_info_cliente, mas a view estoura timeout em leitura completa; aquisição usa data_inicio_ciclo → created_at."
+      }
+    ],
+    "highlight_numbers": [
+      {
+        "metric": "active_clients",
+        "label": "Clientes ativos",
+        "value": 1807,
+        "unit": "clients"
+      },
+      {
+        "metric": "median_stay_days",
+        "label": "Permanência típica",
+        "value": 172,
+        "unit": "days"
+      },
+      {
+        "metric": "financial_coverage",
+        "label": "Cobertura financeira",
+        "value": 92.6,
+        "unit": "percent"
+      },
+      {
+        "metric": "latest_month_acquisitions",
+        "label": "Aquisições no mês",
+        "value": 166,
+        "unit": "clients"
+      }
+    ],
+    "page_profile": {
+      "id": "general",
+      "title": "Dados Gerais",
+      "objective": "Descrever o estado atual da carteira ativa, sua evolução recente e o perfil financeiro típico.",
+      "questions": [
+        "Qual é o tamanho atual da carteira ativa?",
+        "Como a carteira está evoluindo?",
+        "Qual é o perfil financeiro típico dos clientes ativos?",
+        "Há problemas relevantes de qualidade cadastral?"
+      ],
+      "default_scope": "active_clients",
+      "default_scope_label": "Clientes ativos",
+      "allow_active_default": true,
+      "max_insights": 4,
+      "max_attention": 3,
+      "max_positives": 2,
+      "max_actions": 3,
+      "interpretation": [
+        "Priorize o estado da carteira ativa na headline.",
+        "Cancelamento sem data confirmada é qualidade de dado, não o insight principal da carteira ativa.",
+        "Limitações técnicas (timeout de view/contrato) ficam no accordion, não na headline."
+      ],
+      "highlight_metrics": [
+        "active_clients",
+        "median_stay_days",
+        "financial_coverage",
+        "latest_month_acquisitions"
+      ],
+      "priority_metrics": [
+        "active_clients",
+        "latest_month_acquisitions",
+        "median_stay_days",
+        "median_monthly_income"
+      ],
+      "max_highlight_numbers": 4,
+      "profile_version": "8.4.3"
+    },
+    "timing_ms": {
+      "snapshot": 4
+    },
+    "metadata_size": {
+      "bytes": 2906,
+      "approx_tokens": 727
+    }
+  },
+  "candidates": {
+    "attention": [],
+    "positive": [
+      {
+        "id": "cmp:latest_month_acquisitions",
+        "metric": "latest_month_acquisitions",
+        "reason": "relevant_favorable_change",
+        "title": "Variação favorável em latest_month_acquisitions",
+        "message": "latest_month_acquisitions: 71 → 166 (133.8%).",
+        "evidence": {
+          "metric": "latest_month_acquisitions",
+          "current": 166,
+          "previous": 71,
+          "relative_change": 133.8,
+          "direction": "up",
+          "unit": "clients",
+          "value": 166
+        }
+      }
+    ],
+    "limitation": [
+      {
+        "id": "lim:CANCELLED_WITHOUT_CONFIRMED_DATE:cancelled_without_confirmed_date",
+        "metric": "cancelled_without_confirmed_date",
+        "code": "CANCELLED_WITHOUT_CONFIRMED_DATE",
+        "category": "data_quality",
+        "reason": "data_quality",
+        "title": "CANCELLED WITHOUT CONFIRMED DATE",
+        "message": "811 registros marcados como cancelados sem data confirmada. Não descreve a carteira ativa.",
+        "evidence": {
+          "metric": "cancelled_without_confirmed_date",
+          "value": 811,
+          "unit": null
+        }
+      },
+      {
+        "id": "lim:TECHNICAL:latest_month_acquisitions",
+        "metric": "latest_month_acquisitions",
+        "code": "TECHNICAL",
+        "category": "technical",
+        "reason": "technical",
+        "title": "TECHNICAL",
+        "message": "data_assinatura_contrato confirmada em vw_info_cliente, mas a view estoura timeout em leitura completa; aquisição usa data_inicio_ciclo → created_at.",
+        "evidence": {
+          "metric": "latest_month_acquisitions",
+          "value": null,
+          "unit": null
+        }
+      }
+    ]
+  },
+  "metadata": {
+    "snapshot_bytes": 2957,
+    "previous_bytes": 3774,
+    "reduction_pct": 21.6,
+    "timing_ms": {
+      "compute_payload": null,
+      "snapshot": 5,
+      "engine": 1
+    }
+  }
+}
